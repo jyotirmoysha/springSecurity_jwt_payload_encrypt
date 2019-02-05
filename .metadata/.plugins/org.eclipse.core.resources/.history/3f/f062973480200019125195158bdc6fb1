@@ -1,0 +1,48 @@
+package com.livespread.command;
+
+public class GoldenCaseWorkQueueCommand {
+
+	int wqId;
+	int filingId;
+	int caseId;
+	String companyName;
+	String goldenFlag;
+	int goldenBatchId;
+	public int getWqId() {
+		return wqId;
+	}
+	public void setWqId(int wqId) {
+		this.wqId = wqId;
+	}
+	public int getFilingId() {
+		return filingId;
+	}
+	public void setFilingId(int filingId) {
+		this.filingId = filingId;
+	}
+	public int getCaseId() {
+		return caseId;
+	}
+	public void setCaseId(int caseId) {
+		this.caseId = caseId;
+	}
+	public String getCompanyName() {
+		return companyName;
+	}
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
+	}
+	public String getGoldenFlag() {
+		return goldenFlag;
+	}
+	public void setGoldenFlag(String goldenFlag) {
+		this.goldenFlag = goldenFlag;
+	}
+	public int getGoldenBatchId() {
+		return goldenBatchId;
+	}
+	public void setGoldenBatchId(int goldenBatchId) {
+		this.goldenBatchId = goldenBatchId;
+	}
+	
+}

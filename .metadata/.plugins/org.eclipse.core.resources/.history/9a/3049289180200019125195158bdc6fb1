@@ -1,0 +1,33 @@
+
+.mar-top20{margin-top:20px !important;}
+.mar-top10{margin-top:10px !important;}
+.pad-20{padding:0 40px 0 40px !important;}
+
+.expandOrCollapse{padding:4px 0 0 0 !important;}
+.uicTblHdr{background:#51b2b6 !important;}
+.UicHorzShowScroll{height:380px !important;}
+.fixTable_workQueue{margin-top:-1px;}
+.table.uic_dynamictable{font:1.0em/18px Helvetica Neue, Helvetica, Arial, sans-serif !important;}
+#workQueueSearchElementsContainer div.UicSearchElementDiv{width: 216px !important;}
+
+/* show adminpanel css */
+.navigation{margin-left:0px !important; width:100% !important}
+
+.manageuserTable tr td{padding:5px;}
+.release-tbl th{padding:5px;}
+.error {color: #ff0000;font-weight: bolder;padding: 0.5em}
+d .success {background: #85A366; color:white; font-weight:bolder;}
+#UicPaginationContainer{/* margin-bottom:60px !important; */}
+select#uicDropDown_workQueue_17_0{width:120px !important}
+select#uicDropDown_workQueue_18_0{width:120px !important}
+select#uicDropDown_workQueue_19_0{width:120px !important}
+#workQueueSearchElementsContainer{width:180px !important}
+#workQueueSearchElementsContainer div.UicTblCaptionH2 {width: 14%;} 
+.jumbotron{width:1300px !important}
+.wdt_120 select{width:120px !important;}
+
+
+
+
+
+

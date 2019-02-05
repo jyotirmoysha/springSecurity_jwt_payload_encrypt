@@ -1,0 +1,216 @@
+package com.livespread.controller;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.livespread.domain.DealerMetadata;
+import com.livespread.domain.DealerTemplate;
+import com.livespread.domain.DealerTemplateAudit;
+import com.livespread.domain.NormItemLabels;
+import com.livespread.domain.User;
+import com.livespread.service.BulkUploadService;
+import com.livespread.service.DealerTemplateService;
+
+@Controller
+public class DealerTemplateController {
+
+	private Logger LOGGER = Logger.getLogger(DealerTemplateController.class);
+	
+	@Autowired
+	private DealerTemplateService dealerTemplateService;
+	
+	@Autowired
+	private BulkUploadService bulkUploadService;
+		
+   	@RequestMapping(value = "/downloadExtractRulesFile.htm")
+	public ModelAndView downloadExtractRulesFile(HttpSession session) {
+  		LOGGER.info("** Start-- downloadExtractRulesFile functuion");
+   		int filingId=(int) session.getAttribute("sessionfillingId");
+   		/**
+   		 * Here we required dealer id from customer_details table based on  based on filing id and customer_id
+   		 */
+   		String dealerName=dealerTemplateService.f_getDealerName(filingId);
+  		
+   	   /**
+   		* Here we fetch rules based by dealer name.
+   		*/
+   		Collection<DealerTemplate> templateList=dealerTemplateService.f_getExtractRulesByDealerName(dealerName);
+	return new ModelAndView("downloadExtractRulesExcel","templateList", templateList);
+
+	}
+ 	
+   	
+	@RequestMapping(value = "/uploadTemplet.htm", method = { RequestMethod.GET,RequestMethod.POST })
+	public String uploadTemplet(HttpServletRequest request,
+			HttpServletResponse response, HttpSession session,Model map) {
+		LOGGER.info("------------------ uploadTemplet  starts --------------------");
+try{
+		User user = (User) session.getAttribute("user");
+		Integer userGroupId = user.getUserGroupId();
+		Map<String,String> userGrpAttrMappingMap =bulkUploadService.getUserGrpAttrMappingList(userGroupId,"Normalization Rules");
+		map.addAttribute("userGrpAttrMappingMap", userGrpAttrMappingMap);
+		/**
+		 * Here we fetch Dealer Template based on dealer name
+		 */
+		
+		List<DealerMetadata> dealerList=(List<DealerMetadata>) bulkUploadService.f_getDealsersList();
+		map.addAttribute("dealerList", dealerList);
+		map.addAttribute("userAccess", user.getUserAccess());
+}catch(Exception e){
+	e.printStackTrace();
+	LOGGER.error("Error:",e);
+}
+	return "uploadTemplet";
+}
+
+	@RequestMapping(value = "/searchRulesByDealerName.htm", method = {RequestMethod.GET,RequestMethod.POST})
+	public String searchRulesByDealerName(HttpServletRequest request,HttpServletResponse response, HttpSession session,Model map){
+		LOGGER.info("**start--searchRulesByDealerName methode start");
+		String dealerName=request.getParameter("dealerName");
+		Collection<DealerTemplate> templateList=dealerTemplateService.f_getExtractRulesByDealerName(dealerName);
+		map.addAttribute("templateList", templateList);
+		/**
+		 * Here we get all list from norm_item_lable table based on template id
+		 */
+		Collection<NormItemLabels> normItemList=dealerTemplateService.f_normItemLabelsListByTemplateId(410);
+		map.addAttribute("normItemList", normItemList);
+		List<DealerMetadata> dealerList=(List<DealerMetadata>) bulkUploadService.f_getDealsersList();
+		map.addAttribute("dealerList", dealerList);
+		map.addAttribute("dealerShortName", dealerName);
+		map.addAttribute("clickedButton", true);
+		LOGGER.info("**end--searchRulesByDealerName methode start");
+		return "uploadTemplet";
+	}
+	
+	
+	
+	@RequestMapping(value = "/showRulesAuthentication.htm", method = { RequestMethod.GET,
+			RequestMethod.POST })
+	public String showRulesAuthentication(HttpServletRequest request,
+			HttpServletResponse response, HttpSession session,Model map) {
+		
+		/**
+		 * Here we get distinct dealer name from dealer_template_audit table
+		 */
+		List<String> dealersNameList=dealerTemplateService.f_getDistinctDealerName();
+		map.addAttribute("dealersNameList", dealersNameList);
+		return "rules_authentication";
+	}
+
+	/**
+	 * This method used for search result for selected dealer name
+	 */
+	@RequestMapping(value = "/searchDealerTemplateAudit.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody List<DealerTemplateAudit> searchDealerTemplateAudit(@RequestParam("dealerName") String dealerName,HttpSession session,Model map){
+		LOGGER.info("**start-- searchDealerTemplateAudit methode");
+		List<DealerTemplateAudit> dealerTemplateAuditsList=null;
+		 try {
+		 dealerTemplateAuditsList=dealerTemplateService.f_getDealerTemplateAudit(dealerName);
+		 } catch (Exception e) {
+			LOGGER.error("Error:", e);
+		}
+		return dealerTemplateAuditsList;
+	}
+
+	/**
+	 * This method used for submitdealertemplateaudit form 
+	 */
+	@RequestMapping(value = "/submitDealerTemplateAuditForm.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody boolean searchDealerTemplateAudit(HttpServletRequest request){
+	LOGGER.info("**start-- submitDealerTemplateAuditForm methode");
+	boolean flag=false;
+		 try {
+		/**
+		 * Here user select multiple radio button from UI whose input name dynamic
+		 * thats y we have written below code
+		 */
+		List<Integer> idList = new ArrayList<Integer>();
+		 Enumeration<String> parameterNames = request.getParameterNames();
+		 while (parameterNames.hasMoreElements()) {
+			 String paramName = parameterNames.nextElement();
+			  if(request.getParameter(paramName)!=null){
+		     	String paramValues = (String) request.getParameter(paramName);
+		     	if(paramName.contains("auditId")){
+		     		idList.add(Integer.parseInt(paramValues));
+		     	}
+			 }
+			 
+		 }
+
+		
+		/**
+		 * In this function 1) we get DealerTemplate Object by id
+		 * 2) update NORM_ID,NORM_LABEL in DEALER_TEMPLATE table
+		 * 3)update CRUD_STATUS to 'D' and IS_Apporved to 'Y' DEALER_TEMPLATE_AUDIT table
+		 */
+		 flag=dealerTemplateService.f_RulesAuthenticationProcess(idList);
+		
+		 } catch (Exception e) {
+			LOGGER.error("Error:", e);
+		}
+    	LOGGER.info("**end-- submitDealerTemplateAuditForm methode");
+	    return flag;
+	}
+	
+	
+	
+	/**
+	 * This method used for updateDealerMapping in Dealers Template table form normlization screen after click on dealer level button  
+	 */
+	@RequestMapping(value = "/updateDealerMappingLevel.htm", method = {RequestMethod.GET, RequestMethod.POST})
+	public @ResponseBody boolean updateDealerMappingLevel(@RequestParam(value="myArray[]") String[] myArray,HttpServletRequest request,HttpServletResponse response,HttpSession session){
+	LOGGER.info("**start-- updateDealerMappingLevel methode");
+	boolean flag=false;
+		 try {
+
+			int filingId=(int) session.getAttribute("sessionfillingId");
+	   		/**
+	   		 * Here we required dealer id from customer_details table based on  based on filing id and customer_id
+	   		 */
+	   		String dealerName=dealerTemplateService.f_getDealerName(filingId);
+	   		List<DealerTemplateAudit> objList=new ArrayList<DealerTemplateAudit>();
+	   		
+	   		for(int i=0;i<myArray.length;i++){
+	   			DealerTemplateAudit audit=new DealerTemplateAudit();
+	   			String[] str1=myArray[i].split("~");
+	   			Integer poId=Integer.parseInt(str1[0]);
+	   			Integer norm_id=Integer.parseInt(str1[1]);
+	   			String norm_label=str1[2].toString();
+	   			audit.setNewNormItem(norm_id);
+	   			audit.setNewNormLabel(norm_label);
+	   			audit.setDealerName(dealerName);
+	   			audit.setId(poId);
+	   			objList.add(audit);
+	   		}
+	   		
+	/**
+     * Here we required old norm_id ,norm_label and as_rep_label from parsser_output table based on po_id			
+	*/
+	   		User user=(User) request.getSession().getAttribute("user");
+	   	 flag=dealerTemplateService.f_UpdateDealerLevelMappingProcess(objList,user);	
+	   		
+		 } catch (Exception e) {
+			LOGGER.error("Error:", e);
+		}
+    	LOGGER.info("**end-- updateDealerMappingLevel methode");
+	    return flag;
+	}
+}

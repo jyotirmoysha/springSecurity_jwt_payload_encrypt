@@ -1,0 +1,40 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+
+@Embeddable
+public class LsFinancialMetaRowDataCompositKey implements Serializable {
+	
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Column(name = "METADATA_ID", nullable = false)
+	private long metadataId;
+	
+	@Column(name = "COLUMNNUMBER", nullable = false)
+	private Integer columnNumber;
+
+	public long getMetadataId() {
+		return metadataId;
+	}
+
+	public void setMetadataId(long metadataId) {
+		this.metadataId = metadataId;
+	}
+
+	public Integer getColumnNumber() {
+		return columnNumber;
+	}
+
+	public void setColumnNumber(Integer columnNumber) {
+		this.columnNumber = columnNumber;
+	}
+
+
+}

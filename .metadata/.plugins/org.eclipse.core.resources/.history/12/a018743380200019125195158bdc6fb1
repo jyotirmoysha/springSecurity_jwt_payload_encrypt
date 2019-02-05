@@ -1,0 +1,52 @@
+package com.livespread.service;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.dao.DataAccessException;
+
+/**
+ * 
+ * @author Ganesh.Dudhade
+ *
+ */
+public interface AuditReportService {
+/**
+ * This method is used for fetch records from parser_output_audit table
+ */
+	
+	public List<Object> f_fetchAuditRecordsByFilingId(Integer filingId,Date startDate,Date endDate);
+/**
+ * This method used for fetch records from Reproess_Audit table based on filing id
+ *  
+ */
+	public List<Object> f_fetchReporcessAuditRecordsByFilingId(Integer filingId,Date startDate,Date endDate);
+	
+/**	
+ * This function used for fetch all filing id's from Parser_Ouput_Audit table
+*/
+  public List<Integer> f_gerAllFilingIdFromParserOutputAudit();
+
+  
+ /**	
+  * This function used for fetch all filing id's from Reproess_Audit table
+ */
+  public List<Integer> f_gerAllFilingIdFromParserReprocessAudit();
+  
+
+ public List<Object> f_findArsPoMappingDataByFilingIdList(Integer filingId,Date startDate,Date endDate) throws DataAccessException;
+ 
+ /**
+  * This method used for get data from AUDIT_TRAIL_STATEMENT_SUMMARY and AUDIT_TRAIL_ROLE_SUMMARY table 
+  */
+ 
+ public Map<String,List<? extends Object>> f_findStatementSummaryRoleSummaryForAudit(Integer filingId,Date startDate,Date endDate) throws DataAccessException;
+ public List<Object> f_findProcessingReportTrackerForAudit(Integer filingId,Date startDate,Date endDate) throws DataAccessException;
+ 
+ public List<Integer> f_gerAllFilingIdForAuditTrail(Integer userGroupId,Integer userAccess) throws Exception;
+
+ public Map<String,Map<String,List<? extends Object>>> f_createDataValMapForExcel(Map<String, List<Object>> sheetDataMap) throws Exception;
+ public List<Object> f_findAccuracyReportForAudit(Integer filingId,Date startDate,Date endDate) throws DataAccessException;
+ public List<Object> f_findMappingStatsReportForAudit(Integer filingId,Date startDate,Date endDate) throws DataAccessException;
+}

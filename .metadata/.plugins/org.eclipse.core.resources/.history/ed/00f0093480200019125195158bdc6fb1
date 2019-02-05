@@ -1,0 +1,566 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "PARSER_OUTPUT_AUDIT_TRAIL")
+@NamedQueries({ @NamedQuery(name = "getMaxTransactionId", query = "select max(poaTransactionId) From ParserOutputAuditTrail"),
+                @NamedQuery(name = "findAllFilingIdFromParseroutputAudit", query = "select filingId From ParserOutputAuditTrail group by filingId")
+})
+@NamedNativeQueries({
+	@NamedNativeQuery(name = "getAuditRecordsByFilingId", query = "select POAT.FILING_ID,U.Login,POAT.USER_ROLE,POAT.CREATED_DATE,POAT.PO_DOC_OLD_STATUS,POAT.PO_DOC_NEW_STATUS,POAT.PO_INDEX_ORDER,"
+			+ "POAT.PO_CRUD_STATUS,POAT.IS_EXTRACTION,POAT.CATEGORY,CDM.Type,POAT.ARS_LABEL,POAT.NIL_LABEL,POAT.SECTION,POAT.BREAKUP,POAT.PAGE_NO,POAT.PO_VAL1,"
+			+ "POAT.PO_VAL2,POAT.PO_VAL3,POAT.PO_VAL4,POAT.PO_VAL5,POAT.PO_VAL6,POAT.PO_VAL7,POAT.PO_VAL8,POAT.PO_VAL9,POAT.PO_VAL10,POAT.PO_VAL11,"
+			+ "POAT.PO_VAL12,POAT.PO_VAL13,POAT.PO_VAL14,POAT.PO_VAL15,POAT.PO_VAL16,POAT.PO_VAL17,POAT.PO_VAL18,POAT.PO_VAL19,POAT.PO_VAL20 "
+			+ "from PARSER_OUTPUT_AUDIT_TRAIL POAT left outer join CategoryID_Mapping_Stats CMS on POAT.POA_ID=CMS.POA_ID left outer join Category_Details_Metadata CDM on "
+			+ "CMS.Category_ID=CDM.Category_ID,users U where POAT.FILING_ID=:filingId and POAT.CREATED_BY =U.USER_ID order by POAT.POA_ID"),
+	@NamedNativeQuery(name = "getAuditRecordsByFilingId_StartDate_EndDate", query = "select POAT.FILING_ID,U.Login,POAT.USER_ROLE,POAT.CREATED_DATE,POAT.PO_DOC_OLD_STATUS,POAT.PO_DOC_NEW_STATUS,POAT.PO_INDEX_ORDER,"
+			+ "POAT.PO_CRUD_STATUS,POAT.IS_EXTRACTION,POAT.CATEGORY,CDM.Type,POAT.ARS_LABEL,POAT.NIL_LABEL,POAT.SECTION,POAT.BREAKUP,POAT.PAGE_NO,POAT.PO_VAL1,"
+			+ "POAT.PO_VAL2,POAT.PO_VAL3,POAT.PO_VAL4,POAT.PO_VAL5,POAT.PO_VAL6,POAT.PO_VAL7,POAT.PO_VAL8,POAT.PO_VAL9,POAT.PO_VAL10,POAT.PO_VAL11,"
+			+ "POAT.PO_VAL12,POAT.PO_VAL13,POAT.PO_VAL14,POAT.PO_VAL15,POAT.PO_VAL16,POAT.PO_VAL17,POAT.PO_VAL18,POAT.PO_VAL19,POAT.PO_VAL20 "
+			+ "from PARSER_OUTPUT_AUDIT_TRAIL POAT left outer join CategoryID_Mapping_Stats CMS on POAT.POA_ID=CMS.POA_ID left outer join Category_Details_Metadata CDM on "
+			+ "CMS.Category_ID=CDM.Category_ID,users U where POAT.FILING_ID=:filingId and POAT.CREATED_DATE BETWEEN :startDate AND :endDate and POAT.CREATED_BY =U.USER_ID order by POAT.POA_ID"),
+
+	@NamedNativeQuery(name = "getAuditRecordsByStartDate_EndDate", query = "select POAT.FILING_ID,U.Login,POAT.USER_ROLE,POAT.CREATED_DATE,POAT.PO_DOC_OLD_STATUS,POAT.PO_DOC_NEW_STATUS,POAT.PO_INDEX_ORDER,"
+			+ "POAT.PO_CRUD_STATUS,POAT.IS_EXTRACTION,POAT.CATEGORY,CDM.Type,POAT.ARS_LABEL,POAT.NIL_LABEL,POAT.SECTION,POAT.BREAKUP,POAT.PAGE_NO,POAT.PO_VAL1,"
+			+ "POAT.PO_VAL2,POAT.PO_VAL3,POAT.PO_VAL4,POAT.PO_VAL5,POAT.PO_VAL6,POAT.PO_VAL7,POAT.PO_VAL8,POAT.PO_VAL9,POAT.PO_VAL10,POAT.PO_VAL11,"
+			+ "POAT.PO_VAL12,POAT.PO_VAL13,POAT.PO_VAL14,POAT.PO_VAL15,POAT.PO_VAL16,POAT.PO_VAL17,POAT.PO_VAL18,POAT.PO_VAL19,POAT.PO_VAL20 "
+			+ "from PARSER_OUTPUT_AUDIT_TRAIL POAT left outer join CategoryID_Mapping_Stats CMS on POAT.POA_ID=CMS.POA_ID left outer join Category_Details_Metadata CDM on "
+			+ "CMS.Category_ID=CDM.Category_ID,users U where POAT.CREATED_DATE BETWEEN :startDate AND :endDate and POAT.CREATED_BY =U.USER_ID order by POAT.POA_ID"),
+	
+  })
+
+public class ParserOutputAuditTrail implements Serializable, BaseEntity,Cloneable {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "POA_ID")
+	private Integer poaId;
+	
+	@Column(name = "PO_ID")
+	private Integer poId;
+	
+	@Column(name = "FILING_ID")
+	private Integer filingId;
+	
+	@Column(name = "PO_CRUD_STATUS")
+	private String poCrudStatus;
+	
+	@Column(name = "PO_DOC_OLD_STATUS")
+	private String poDocOldStatus;
+	
+	@Column(name = "PO_DOC_NEW_STATUS")
+	private String poDocNewStatus;
+	
+	@Column(name = "USER_ROLE")
+	private String userRole;
+	
+	@Column(name = "CREATED_BY", updatable = false)
+	private Integer createdBy;
+	
+	@Column(name = "CREATED_DATE", updatable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date createdDate;
+	
+	@Column(name = "CATEGORY")
+	private String category;
+	
+	@Column(name = "PO_INDEX_ORDER")
+	private Integer poIndexOrder;
+	
+	@Column(name = "ARS_LABEL")
+	private String arsLabel;
+	
+	@Column(name = "BREAKUP")
+	private String breakup;
+	
+	@Column(name="PO_NOTE")
+	private String poNote;
+	
+	@Column(name = "NI_ITEM")
+	private Integer niItem;
+	
+	@Column(name = "NIL_LABEL")
+	private String nilLabel;
+	
+	@Column(name = "PO_VAL1")
+	private String poVal1;
+
+	@Column(name = "PO_VAL2")
+	private String poVal2;
+
+	@Column(name = "PO_VAL3")
+	private String poVal3;
+
+	@Column(name = "PO_VAL4")
+	private String poVal4;
+
+	@Column(name = "PO_VAL5")
+	private String poVal5;
+
+	@Column(name = "PO_VAL6")
+	private String poVal6;
+
+	@Column(name = "PO_VAL7")
+	private String poVal7;
+
+	@Column(name = "PO_VAL8")
+	private String poVal8;
+	
+	@Column(name = "IS_EXTRACTION")
+	private String isExtraction;
+	
+	@Column(name = "POA_PROCESSED_STATUS")
+	private String poaProcessedStatus;
+	
+	@Column(name = "POA_TRANSACTION_ID")
+	private Integer poaTransactionId;
+	
+	@Column(name = "PO_SUBSECTION")
+	private String poSubSection;
+	
+	@Column(name = "SECTION")
+	private String section;
+	
+	@Column(name = "PAGE_NO")
+	private String pageNumber;
+	
+	@Column(name = "NI_ITEM_SUGGESTIVE")
+	private String niItemSuggestive;
+	
+	@Column(name = "PO_VAL9")
+	private String poVal9;
+
+	@Column(name = "PO_VAL10")
+	private String poVal10;
+
+	@Column(name = "PO_VAL11")
+	private String poVal11;
+
+	@Column(name = "PO_VAL12")
+	private String poVal12;
+
+	@Column(name = "PO_VAL13")
+	private String poVal13;
+
+	@Column(name = "PO_VAL14")
+	private String poVal14;
+
+	@Column(name = "PO_VAL15")
+	private String poVal15;
+
+	@Column(name = "PO_VAL16")
+	private String poVal16;
+
+	@Column(name = "PO_VAL17")
+	private String poVal17;
+	
+	@Column(name = "PO_VAL18")
+	private String poVal18;
+
+	@Column(name = "PO_VAL19")
+	private String poVal19;
+
+	@Column(name = "PO_VAL20")
+	private String poVal20;
+	
+	
+	@Transient
+	private String userName;
+	
+	
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public String getSection() {
+		return section;
+	}
+
+	public void setSection(String section) {
+		this.section = section;
+	}
+
+	
+	public String getPageNumber() {
+		return pageNumber;
+	}
+
+	public void setPageNumber(String pageNumber) {
+		this.pageNumber = pageNumber;
+	}
+
+	public Integer getPoaId() {
+		return poaId;
+	}
+
+	public void setPoaId(Integer poaId) {
+		this.poaId = poaId;
+	}
+
+	public Integer getPoId() {
+		return poId;
+	}
+
+	public void setPoId(Integer poId) {
+		this.poId = poId;
+	}
+
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public String getPoCrudStatus() {
+		return poCrudStatus;
+	}
+
+	public void setPoCrudStatus(String poCrudStatus) {
+		this.poCrudStatus = poCrudStatus;
+	}
+
+	public String getPoDocOldStatus() {
+		return poDocOldStatus;
+	}
+
+	public void setPoDocOldStatus(String poDocOldStatus) {
+		this.poDocOldStatus = poDocOldStatus;
+	}
+
+	public String getPoDocNewStatus() {
+		return poDocNewStatus;
+	}
+
+	public void setPoDocNewStatus(String poDocNewStatus) {
+		this.poDocNewStatus = poDocNewStatus;
+	}
+
+	public String getUserRole() {
+		return userRole;
+	}
+
+	public void setUserRole(String userRole) {
+		this.userRole = userRole;
+	}
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+	public Integer getPoIndexOrder() {
+		return poIndexOrder;
+	}
+
+	public void setPoIndexOrder(Integer poIndexOrder) {
+		this.poIndexOrder = poIndexOrder;
+	}
+
+	public String getArsLabel() {
+		return arsLabel;
+	}
+
+	public void setArsLabel(String arsLabel) {
+		this.arsLabel = arsLabel;
+	}
+
+	public String getBreakup() {
+		return breakup;
+	}
+
+	public void setBreakup(String breakup) {
+		this.breakup = breakup;
+	}
+
+	public String getPoNote() {
+		return poNote;
+	}
+
+	public void setPoNote(String poNote) {
+		this.poNote = poNote;
+	}
+
+	public Integer getNiItem() {
+		return niItem;
+	}
+
+	public void setNiItem(Integer niItem) {
+		this.niItem = niItem;
+	}
+
+	public String getNilLabel() {
+		return nilLabel;
+	}
+
+	public void setNilLabel(String nilLabel) {
+		this.nilLabel = nilLabel;
+	}
+
+	public String getPoVal1() {
+		return poVal1;
+	}
+
+	public void setPoVal1(String poVal1) {
+		this.poVal1 = poVal1;
+	}
+
+	public String getPoVal2() {
+		return poVal2;
+	}
+
+	public void setPoVal2(String poVal2) {
+		this.poVal2 = poVal2;
+	}
+
+	public String getPoVal3() {
+		return poVal3;
+	}
+
+	public void setPoVal3(String poVal3) {
+		this.poVal3 = poVal3;
+	}
+
+	public String getPoVal4() {
+		return poVal4;
+	}
+
+	public void setPoVal4(String poVal4) {
+		this.poVal4 = poVal4;
+	}
+
+	public String getPoVal5() {
+		return poVal5;
+	}
+
+	public void setPoVal5(String poVal5) {
+		this.poVal5 = poVal5;
+	}
+
+	public String getPoVal6() {
+		return poVal6;
+	}
+
+	public void setPoVal6(String poVal6) {
+		this.poVal6 = poVal6;
+	}
+
+	public String getPoVal7() {
+		return poVal7;
+	}
+
+	public void setPoVal7(String poVal7) {
+		this.poVal7 = poVal7;
+	}
+
+	public String getPoVal8() {
+		return poVal8;
+	}
+
+	public void setPoVal8(String poVal8) {
+		this.poVal8 = poVal8;
+	}
+
+	public String getIsExtraction() {
+		return isExtraction;
+	}
+
+	public void setIsExtraction(String isExtraction) {
+		this.isExtraction = isExtraction;
+	}
+
+	public String getPoaProcessedStatus() {
+		return poaProcessedStatus;
+	}
+
+	public void setPoaProcessedStatus(String poaProcessedStatus) {
+		this.poaProcessedStatus = poaProcessedStatus;
+	}
+
+	public Integer getPoaTransactionId() {
+		return poaTransactionId;
+	}
+
+	public void setPoaTransactionId(Integer poaTransactionId) {
+		this.poaTransactionId = poaTransactionId;
+	}
+
+	public String getPoSubSection() {
+		return poSubSection;
+	}
+
+	public void setPoSubSection(String poSubSection) {
+		this.poSubSection = poSubSection;
+	}
+	
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+	/**
+	 * @return the niItemSuggestive
+	 */
+	public String getNiItemSuggestive() {
+		return niItemSuggestive;
+	}
+
+	/**
+	 * @param niItemSuggestive the niItemSuggestive to set
+	 */
+	public void setNiItemSuggestive(String niItemSuggestive) {
+		this.niItemSuggestive = niItemSuggestive;
+	}
+
+	public String getPoVal9() {
+		return poVal9;
+	}
+
+	public void setPoVal9(String poVal9) {
+		this.poVal9 = poVal9;
+	}
+
+	public String getPoVal10() {
+		return poVal10;
+	}
+
+	public void setPoVal10(String poVal10) {
+		this.poVal10 = poVal10;
+	}
+
+	public String getPoVal11() {
+		return poVal11;
+	}
+
+	public void setPoVal11(String poVal11) {
+		this.poVal11 = poVal11;
+	}
+
+	public String getPoVal12() {
+		return poVal12;
+	}
+
+	public void setPoVal12(String poVal12) {
+		this.poVal12 = poVal12;
+	}
+
+	public String getPoVal13() {
+		return poVal13;
+	}
+
+	public void setPoVal13(String poVal13) {
+		this.poVal13 = poVal13;
+	}
+
+	public String getPoVal14() {
+		return poVal14;
+	}
+
+	public void setPoVal14(String poVal14) {
+		this.poVal14 = poVal14;
+	}
+
+	public String getPoVal15() {
+		return poVal15;
+	}
+
+	public void setPoVal15(String poVal15) {
+		this.poVal15 = poVal15;
+	}
+
+	public String getPoVal16() {
+		return poVal16;
+	}
+
+	public void setPoVal16(String poVal16) {
+		this.poVal16 = poVal16;
+	}
+
+	public String getPoVal17() {
+		return poVal17;
+	}
+
+	public void setPoVal17(String poVal17) {
+		this.poVal17 = poVal17;
+	}
+
+	public String getPoVal18() {
+		return poVal18;
+	}
+
+	public void setPoVal18(String poVal18) {
+		this.poVal18 = poVal18;
+	}
+
+	public String getPoVal19() {
+		return poVal19;
+	}
+
+	public void setPoVal19(String poVal19) {
+		this.poVal19 = poVal19;
+	}
+
+	public String getPoVal20() {
+		return poVal20;
+	}
+
+	public void setPoVal20(String poVal20) {
+		this.poVal20 = poVal20;
+	}
+
+	
+	
+}

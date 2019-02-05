@@ -1,0 +1,61 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author sd0e482
+ *
+ */
+@Entity
+@Table(name = "DOWNLOAD_TEMPLATE_CONTRL_ASOC")
+@NamedQueries({ 
+  @NamedQuery(name = "getDownloadTemplateController", query = "SELECT controllerAssociation from DownloadTemplateControllerAssociation controllerAssociation")
+})
+public class DownloadTemplateControllerAssociation implements Serializable, BaseEntity {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	@Id
+	@Column(name = "TEMPLATE_ID")
+	private Integer templateId;
+	
+	@Column(name = "CONTROLLER")
+	private String controllerName;
+	
+	public Integer getTemplateId() {
+		return templateId;
+	}
+
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+
+	public String getControllerName() {
+		return controllerName;
+	}
+
+	public void setControllerName(String controllerName) {
+		this.controllerName = controllerName;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

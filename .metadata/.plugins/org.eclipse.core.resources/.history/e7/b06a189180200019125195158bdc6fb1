@@ -1,0 +1,217 @@
+@media screen and (min-width: 800px) and (min-height: 600px){
+.lt-panel{min-height:260px !important}
+.upload-panel{margin-top:-10px;}
+.download-panel{margin-top:-10px;}
+.expo-import-panel{margin-top:-10px;}
+.expo-import-extraction-panel{margin-top:-10px;}
+.download-finance-item-panel{margin-top:-10px; margin-bottom:50px;}
+.comp-name{float:left}
+.comp-id{float:left}
+.str-dt{float:left}
+.end-dt{float:left}
+#startDateToExport{width:90px}
+#endDateToExport{width:90px}
+#startDateToExportExtraction{width:90px}
+#endDateToExportExtraction{width:90px}
+#companyName{width:490px}
+.btn-panel{margin-top:14px;}
+}
+
+@media screen and (min-width: 1024px) and (min-height: 768px){
+.lt-panel{min-height:587px !important}
+.upload-panel{margin-top:0px;}
+.download-panel{margin-top:0px;}
+.panel-min-ht{min-height:148px;}
+.comp-name{float:left}
+.comp-id{float:left}
+.str-dt{float:left}
+.end-dt{float:left}
+#startDateToExport{width:90px}
+#endDateToExport{width:90px}
+#startDateToExportExtraction{width:90px}
+#endDateToExportExtraction{width:90px}
+#companyName{width:150px}
+.btn-panel{margin-top:26px; width:117px;}
+}
+
+@media screen and (min-width: 1024px) and (min-height: 1366px){
+.lt-panel{min-height:587px !important}
+.upload-panel{margin-top:0px;}
+.download-panel{margin-top:0px;}
+.panel-min-ht{min-height:148px;}
+.comp-name{float:left}
+.comp-id{float:left}
+.str-dt{float:left}
+.end-dt{float:left}
+#startDateToExport{width:90px}
+#endDateToExport{width:90px}
+#startDateToExportExtraction{width:90px}
+#endDateToExportExtraction{width:90px}
+#companyName{width:150px}
+.btn-panel{margin-top:26px; width:117px;}
+}
+
+@media screen and (min-width: 1152px) and (min-height: 864px){
+.lt-panel{min-height:684px !important}
+.upload-panel{margin-top:0px;}
+.download-panel{margin-top:0px;}
+.panel-min-ht{min-height:148px;}
+.comp-name{float:left}
+.comp-id{float:left}
+.str-dt{float:left}
+.end-dt{float:left}
+#companyName{width:150px}
+.btn-panel{margin-top:26px; width:117px;}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 600px){
+.lt-panel{min-height:443px !important}
+.upload-panel{margin-top:0px;}
+.download-panel{margin-top:0px;}
+.comp-name{float:left}
+.comp-id{float:left}
+.str-dt{float:left}
+.end-dt{float:left}
+#companyName{width:200px}
+.btn-panel{margin-top:26px; width:117px;}
+.expo-import-panel{margin-top:-18px;}
+.expo-import-extraction-panel{margin-top:-18px;}
+.download-finance-item-panel{margin-top:-18px; margin-bottom:25px;}
+#startDateToExport{width:100%}
+#endDateToExport{width:100%}
+#startDateToExportExtraction{width:100%}
+#endDateToExportExtraction{width:100%}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 720px){
+.lt-panel{min-height:542px !important}
+.upload-panel{margin-top:0px;}
+.download-panel{margin-top:0px;}
+.comp-name{float:left}
+.comp-id{float:left}
+.str-dt{float:left}
+.end-dt{float:left}
+#companyName{width:200px}
+.btn-panel{margin-top:26px; width:117px;}
+.expo-import-panel{margin-top:-15px;}
+.expo-import-extraction-panel{margin-top:-15px;}
+.download-finance-item-panel{margin-top:-15px; margin-bottom:25px;}
+#startDateToExport{width:100%}
+#endDateToExport{width:100%}
+#startDateToExportExtraction{width:100%}
+#endDateToExportExtraction{width:100%}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 768px){
+.lt-panel{min-height:589px !important}
+.upload-panel{margin-top:0px;}
+.download-panel{margin-top:0px;}
+.comp-name{float:left}
+.comp-id{float:left}
+.str-dt{float:left}
+.end-dt{float:left}
+#companyName{width:200px}
+.btn-panel{margin-top:26px; width:117px;}
+.expo-import-panel{margin-top:-10px;}
+.expo-import-extraction-panel{margin-top:-10px;}
+.download-finance-item-panel{margin-top:-10px; margin-bottom:25px;}
+#startDateToExport{width:100%}
+#endDateToExport{width:100%}
+#startDateToExportExtraction{width:100%}
+#endDateToExportExtraction{width:100%}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 800px){
+.lt-panel{min-height:620px !important}
+.upload-panel{margin-top:0px;}
+.download-panel{margin-top:0px;}
+.comp-name{float:left}
+.comp-id{float:left}
+.str-dt{float:left}
+.end-dt{float:left}
+#companyName{width:200px}
+.btn-panel{margin-top:26px; width:117px;}
+.expo-import-panel{margin-top:0px;}
+.expo-import-extraction-panel{margin-top:0px;}
+.download-finance-item-panel{margin-top:0px;}
+#startDateToExport{width:100%}
+#endDateToExport{width:100%}
+#startDateToExportExtraction{width:100%}
+#endDateToExportExtraction{width:100%}
+}
+
+@media screen and (min-width: 1360px){
+.lt-panel{min-height:458px !important}
+.upload-panel{margin-top:0px;}
+.download-panel{margin-top:0px;}
+.comp-name{float:left}
+.comp-id{float:left}
+.str-dt{float:left}
+.end-dt{float:left}
+#companyName{width:200px}
+.btn-panel{margin-top:26px; width:117px;}
+.expo-import-panel{margin-top:-13px;}
+.expo-import-extraction-panel{margin-top:-13px;}
+.download-finance-item-panel{margin-top:-13px; margin-bottom:0px;}
+#startDateToExport{width:100%}
+#endDateToExport{width:100%}
+#startDateToExportExtraction{width:100%}
+#endDateToExportExtraction{width:100%}
+}
+
+@media screen and (min-width: 1440px) and (min-height: 900px){
+.lt-panel{min-height:720px !important}
+.upload-panel{margin-top:0px;}
+.download-panel{margin-top:0px;}
+.comp-name{float:left}
+.comp-id{float:left}
+.str-dt{float:left}
+.end-dt{float:left}
+#companyName{width:200px}
+.btn-panel{margin-top:26px; width:117px;}
+.expo-import-panel{margin-top:-13px;}
+.expo-import-extraction-panel{margin-top:-13px;}
+.download-finance-item-panel{margin-top:-13px; margin-bottom:0px;}
+#startDateToExport{width:100%}
+#endDateToExport{width:100%}
+#startDateToExportExtraction{width:100%}
+#endDateToExportExtraction{width:100%}
+}
+
+@media screen and (min-width: 1600px) and (min-height: 900px){
+.lt-panel{min-height:720px !important}
+.upload-panel{margin-top:0px;}
+.download-panel{margin-top:0px;}
+.comp-name{float:left}
+.comp-id{float:left}
+.str-dt{float:left}
+.end-dt{float:left}
+#companyName{width:200px}
+.btn-panel{margin-top:26px; width:117px;}
+.expo-import-panel{margin-top:-13px;}
+.expo-import-extraction-panel{margin-top:-13px;}
+.download-finance-item-panel{margin-top:-13px; margin-bottom:0px;}
+#startDateToExport{width:100%}
+#endDateToExport{width:100%}
+#startDateToExportExtraction{width:100%}
+#endDateToExportExtraction{width:100%}
+}
+
+@media screen and (min-width: 1680px) and (min-height: 1050px){
+.lt-panel{min-height:869px !important}
+.upload-panel{margin-top:0px;}
+.download-panel{margin-top:0px;}
+.comp-name{float:left}
+.comp-id{float:left}
+.str-dt{float:left}
+.end-dt{float:left}
+#companyName{width:200px}
+.btn-panel{margin-top:26px; width:117px;}
+.expo-import-panel{margin-top:-13px;}
+.expo-import-extraction-panel{margin-top:-13px;}
+.download-finance-item-panel{margin-top:-13px; margin-bottom:0px;}
+#startDateToExport{width:100%}
+#endDateToExport{width:100%}
+#startDateToExportExtraction{width:100%}
+#endDateToExportExtraction{width:100%}
+}

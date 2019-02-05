@@ -1,0 +1,142 @@
+package com.livespread.util;
+
+public class GetQuartorByMonthPeriod {
+
+	
+	public static String f_getQuartorByMonthPeriod(int fiscalYearEnd, int month) {
+		if (fiscalYearEnd == 12) {
+			if (month == 3) {
+  			return "Q1";
+			}else if(month == 6){
+				return "Q2";
+			}else if(month == 9){
+				return "Q3";
+			}else if(month == 12){
+				return "Q4";
+			}
+		}if (fiscalYearEnd == 11) {
+			if (month == 2) {
+  			return "Q1";
+			}else if(month == 5){
+			return "Q2";
+			}else if(month == 8){
+			return "Q3";
+			}else if(month == 11){
+			return "Q4";
+			}
+		}if (fiscalYearEnd == 10) {
+			if (month == 1) {
+  			return "Q1";
+			}else if(month == 4){
+			return "Q2";
+			}else if(month == 7){
+			return "Q3";
+			}else if(month == 10){
+			return "Q4";
+			}
+		}if (fiscalYearEnd == 9) {
+			if (month == 12) {
+  			return "Q1";
+			}else if(month == 3){
+			return "Q2";
+			}else if(month == 6){
+			return "Q3";
+			}else if(month == 9){
+			return "Q4";
+			}
+		}if (fiscalYearEnd == 8) {
+			if (month == 11) {
+  			return "Q1";
+			}else if(month == 2){
+			return "Q2";
+			}else if(month == 5){
+			return "Q3";
+			}else if(month == 8){
+			return "Q4";
+			}
+		}if (fiscalYearEnd == 7) {
+			if (month == 10) {
+  			return "Q1";
+			}else if(month == 1){
+			return "Q2";
+			}else if(month == 4){
+			return "Q3";
+			}else if(month == 7){
+			return "Q4";
+			}
+		}if (fiscalYearEnd == 6) {
+			if (month == 9) {
+  			return "Q1";
+			}else if(month == 12){
+			return "Q2";
+			}else if(month == 3){
+			return "Q3";
+			}else if(month == 6){
+			return "Q4";
+			}
+		}if (fiscalYearEnd == 6) {
+			if (month == 9) {
+  			return "Q1";
+			}else if(month == 12){
+			return "Q2";
+			}else if(month == 3){
+			return "Q3";
+			}else if(month == 6){
+			return "Q4";
+			}
+		}if (fiscalYearEnd == 5) {
+			if (month == 8) {
+  			return "Q1";
+			}else if(month == 11){
+			return "Q2";
+			}else if(month == 2){
+			return "Q3";
+			}else if(month == 5){
+			return "Q4";
+			}
+		}if (fiscalYearEnd == 4) {
+			if (month == 7) {
+  			return "Q1";
+			}else if(month == 10){
+			return "Q2";
+			}else if(month == 1){
+			return "Q3";
+			}else if(month == 4){
+			return "Q4";
+			}
+		}if (fiscalYearEnd == 3) {
+			if (month == 6) {
+  			return "Q1";
+			}else if(month == 9){
+			return "Q2";
+			}else if(month == 12){
+			return "Q3";
+			}else if(month == 3){
+			return "Q4";
+			}
+		}if (fiscalYearEnd == 2) {
+			if (month == 5) {
+  			return "Q1";
+			}else if(month == 8){
+			return "Q2";
+			}else if(month == 11){
+			return "Q3";
+			}else if(month == 2){
+			return "Q4";
+			}
+		}if (fiscalYearEnd == 1) {
+			if (month == 4) {
+  			return "Q1";
+			}else if(month == 7){
+			return "Q2";
+			}else if(month == 10){
+			return "Q3";
+			}else if(month == 1){
+			return "Q4";
+			}
+		}
+		return "";
+	}
+}
+
+

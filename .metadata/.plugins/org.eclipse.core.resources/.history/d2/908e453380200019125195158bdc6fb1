@@ -1,0 +1,170 @@
+package com.livespread.util;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.log4j.Logger;
+import org.springframework.web.servlet.view.document.AbstractJExcelView;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import com.livespread.domain.UserAuditModel;
+
+import jxl.CellView;
+import jxl.format.Border;
+import jxl.format.BorderLineStyle;
+import jxl.format.Colour;
+import jxl.format.VerticalAlignment;
+import jxl.write.Label;
+import jxl.write.WritableCellFormat;
+import jxl.write.WritableFont;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+
+public class BuildUserAuditReportExcelDocument extends AbstractJExcelView{
+	private Logger LOGGER = Logger.getLogger(BuildAuditReportExcelDocument.class);
+	private WritableCellFormat headcellFormat;
+	private WritableCellFormat cellFormat;
+	private WritableCellFormat cellFormat1;
+	private WritableCellFormat cellFormatWithBorder;
+
+
+	@SuppressWarnings("unchecked")
+	@Override
+	protected void buildExcelDocument(Map<String, Object> model,
+			WritableWorkbook workbook, HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+	
+	
+        // get data model which is passed by the Spring container
+		List<UserAuditModel> userAuditList = (ArrayList<UserAuditModel>) model.get("userAuditList");
+		
+        WritableSheet sheet = null;
+        String fileName="UserAuditReport.xls";
+        response.reset();
+		response.setContentType("application/vnd.ms-excel");
+		response.setHeader("Content-Disposition", "attachment;filename=\""
+				+ StringEscapeUtils.escapeJava(fileName) + "\"");
+		
+		WritableFont headcellFont = new WritableFont(WritableFont.TAHOMA, 10);
+		headcellFont.setBoldStyle(WritableFont.BOLD);
+		
+		
+		headcellFormat = new WritableCellFormat(headcellFont);
+		headcellFormat.setWrap(true);
+		headcellFormat.setAlignment(jxl.format.Alignment.LEFT);
+		headcellFormat.setVerticalAlignment(VerticalAlignment.TOP);
+		headcellFormat.setBackground(Colour.GRAY_25);
+		
+		WritableFont cellFont = new WritableFont(WritableFont.TAHOMA, 10);
+		cellFormat = new WritableCellFormat(cellFont);
+		cellFormat.setWrap(true);
+		cellFormat.setAlignment(jxl.format.Alignment.LEFT);
+		cellFormat.setVerticalAlignment(VerticalAlignment.TOP);
+		
+		cellFormat1 = new WritableCellFormat(cellFont);
+		cellFormat1.setWrap(true);
+		cellFormat1.setAlignment(jxl.format.Alignment.LEFT);
+		cellFormat1.setVerticalAlignment(VerticalAlignment.TOP);
+		cellFormat1 = new WritableCellFormat(cellFont);
+		cellFormat1.setVerticalAlignment(VerticalAlignment.TOP);
+		cellFormat1.setBorder(Border.ALL, BorderLineStyle.THIN);
+		cellFormat1.setBackground(Colour.YELLOW);
+		
+		cellFormatWithBorder = new WritableCellFormat(cellFont);
+		cellFormatWithBorder.setVerticalAlignment(VerticalAlignment.TOP);
+		cellFormatWithBorder.setBorder(Border.ALL, BorderLineStyle.THIN);
+
+		CellView cellView = new CellView();
+		cellView.setHidden(true); // set hidden
+		
+		
+		sheet = workbook.createSheet("UserAudit", 0);
+		sheet=workbook.getSheet("UserAudit");
+		if(userAuditList!=null){
+		if(userAuditList.size()>0)
+			sheet=f_createSheetForUserAudit(sheet, headcellFormat, userAuditList, cellFormatWithBorder, cellFormat1);
+		}
+		
+		
+	}
+	/**
+	 * This function used for to create UserAudit Excel sheet
+	 * @param sheet
+	 * @param headcellFormat
+	 * @param reprocessAuditList
+	 * @param cellFormatWithBorder
+	 * @param cellFormat1
+	 * @return
+	 * @throws Exception
+	 */
+	public WritableSheet f_createSheetForUserAudit(WritableSheet userAuditsheet,WritableCellFormat headcellFormat,List<UserAuditModel> userAuditList,WritableCellFormat cellFormatWithBorder,WritableCellFormat cellFormat1) throws Exception{
+		try
+		{
+		SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss a");
+		userAuditsheet.setColumnView(0,20);
+		userAuditsheet.setColumnView(1,20);
+		userAuditsheet.setColumnView(2,20);
+		userAuditsheet.setColumnView(3,20);
+		userAuditsheet.setColumnView(4,25);
+		userAuditsheet.setColumnView(5,25);
+		userAuditsheet.setColumnView(6,25);
+
+
+		userAuditsheet.addCell(new Label(0, 0,"User Name",headcellFormat));
+		userAuditsheet.addCell(new Label(1, 0, "Audit Date",headcellFormat));
+		userAuditsheet.addCell(new Label(2, 0, "LogIn Time",headcellFormat));
+		userAuditsheet.addCell(new Label(3, 0, "LogOut Time",headcellFormat));
+		userAuditsheet.addCell(new Label(4, 0, "User IP Address",headcellFormat));
+		userAuditsheet.addCell(new Label(5, 0, "Visited Page",headcellFormat));
+		userAuditsheet.addCell(new Label(6, 0, "Visited Time",headcellFormat));
+		
+		
+		int rowCount=1;
+		for(UserAuditModel userAuditModel:userAuditList){
+			userAuditsheet.addCell(new Label(0,rowCount,userAuditModel.getUserName(), cellFormatWithBorder));
+			userAuditsheet.addCell(new Label(1,rowCount,sdf.format(userAuditModel.getCreatedDate()),cellFormatWithBorder));
+			userAuditsheet.addCell(new Label(2,rowCount,sdf.format(userAuditModel.getLoginTime()),cellFormatWithBorder));
+			userAuditsheet.addCell(new Label(3,rowCount,sdf.format(userAuditModel.getLogoutTime()),cellFormatWithBorder));
+			userAuditsheet.addCell(new Label(4,rowCount,userAuditModel.getUser_IPAddress(),cellFormatWithBorder));
+
+			Document doc =ParseXMLFile.convertStringToDocument(userAuditModel.getUserAuditFile());
+			doc.getDocumentElement().normalize();
+	        NodeList pageList = doc.getElementsByTagName("page");
+	  
+			for (int i = 0; i < pageList.getLength(); i++) {
+				NodeList childList = pageList.item(i).getChildNodes();
+				for (int j = 0; j < childList.getLength(); j++) {
+					Node childNode = childList.item(j);
+					if ("pagename".equals(childNode.getNodeName())) {
+						userAuditsheet.addCell(new Label(5, rowCount, childList.item(j).getTextContent().trim(),cellFormatWithBorder));
+					}
+					if ("pagetime".equals(childNode.getNodeName())) {
+						userAuditsheet.addCell(new Label(6, rowCount, childList.item(j).getTextContent().trim(),cellFormatWithBorder));
+						rowCount++;
+					}
+
+				}
+
+			}
+			rowCount++;
+		}// ENd for
+		}catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:", e);
+		}
+		
+		return userAuditsheet;
+	}
+	
+	
+	
+
+}

@@ -1,0 +1,99 @@
+.xdsoft_datetimepicker .xdsoft_calendar th {color:#999 !important}
+.xdsoft_datetimepicker .xdsoft_calendar td {color:#666 !important}
+.open>.dropdown-menu{width:100% !important}
+button.multiselect {padding:3px 10px 3px 10px !important; line-height:20px !important; border-radius:2px;}
+
+.pad-lr-rt0{padding-left:0px !important; padding-right:0px !important;}
+.html-viewer{background:#fff; color:#000}
+.pdf-show{display:none; z-index:9999}
+.mar-lt60{margin-left:60px}
+.custom-mar{margin:90px 26px 10px 0px}
+.wdt83-perc{width:83% !important;}
+
+body{overflow:hidden !important}
+.UicShowScroll{overflow:auto; height:55% !important;}
+
+/* @media screen and (max-width:768px){
+.UicShowScroll{height:72% !important;}
+.menu_wpr ul li{margin-top:-2px !important}
+.menu_wpr ul li a{padding:8px 20px 9px 5px !important}
+} */
+
+@media screen and (min-width: 800px) and (min-height: 600px){
+.menu_wpr ul li a {font: 1.1em/18px Helvetica Neue, Helvetica, Arial, sans-serif !important;}
+.uic_whitebg{margin-top:120px;}
+.UicShowScroll{height:55% !important;}
+.col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-md-1, .col-md-10, .col-md-11, .col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-xs-1, .col-xs-10, .col-xs-11, .col-xs-12, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9 {position: inherit;}
+#uic_DynamicSearchButton_workQueue{margin-top:10px;}
+#uic_DynamicResetButton_workQueue{margin-top:10px;}
+.modal-body {padding: 20px 20px 4px 20px;}
+}
+
+@media screen and (min-width: 1024px) and (min-height: 768px){
+.UicShowScroll{height:64% !important;}
+}
+
+@media screen and (min-width: 1024px) and (min-height: 1366px){
+.UicShowScroll{height:78% !important;}
+}
+
+@media screen and (min-width: 1152px) and (min-height: 864px){
+.UicShowScroll{height:67% !important;}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 600px){
+ .UicShowScroll{height:54% !important;}
+ .uic_whitebg{margin-top:0px;}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 720px){
+ .UicShowScroll{height:60% !important;}
+ .uic_whitebg{margin-top:0px;}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 768px){
+ .menu_wpr ul li{margin-top: -4px;}
+ .UicShowScroll{height:63% !important;}
+ .uic_whitebg{margin-top:0px;}
+}
+
+@media screen and (min-width: 1360px){
+  .UicShowScroll{height:59% !important;}
+}
+
+
+@media screen and (min-width: 1440px) and (min-height: 900px){
+ .UicShowScroll{height:69% !important;}
+}
+
+
+@media screen and (min-width: 1680px) and (min-height: 1050px){
+.UicShowScroll{height:72% !important;}
+}
+
+.caret-custom {
+    display: inline-block !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin-left: 2px !important;
+    vertical-align: middle !important;
+    border-top: 4px dashed !important;
+    border-top: 4px solid !important;
+    border-right: 4px solid transparent !important;
+    border-left: 4px solid transparent !important;
+}
+
+.jumbotron{width:100% !important}
+.UicSearchElementDiv{width:33% !important}
+#workQueueSearchElementsContainer{display:none !important}
+ul.multiselect-container.dropdown-menu{margin-top:0px; left:0px; min-width:210px;}
+.multiselect-container>li>a>label.radio, .multiselect-container>li>a>label.checkbox{margin-left:-24px;}
+
+.batch-process-wrapper{position:absolute; top:90px; left:40px;}
+.btn-batch-process{padding:8px 17px 6px 18px !important; border-radius:2px !important}
+
+.btn-info{padding:6px 8px !important}
+/* div#uicParentDiv_workQueue {
+    height: 400px !important;
+} */
+#uicColHdrSpan_workQueue_17055, #uicColHdrSpan_workQueue_17069, #uicColHdrSpan_workQueue_17054 {width: 120px; display: block;} 

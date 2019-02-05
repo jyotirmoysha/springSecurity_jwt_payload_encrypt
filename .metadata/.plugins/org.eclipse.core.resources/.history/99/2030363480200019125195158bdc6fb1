@@ -1,0 +1,71 @@
+package com.livespread.controller;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.livespread.domain.User;
+import com.livespread.domain.UsersGroup;
+import com.livespread.service.UserGroupService;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Controller
+public class AdminController  {
+	private Logger LOGGER = Logger.getLogger(AdminController.class);
+
+	@Autowired
+	private UserGroupService userGroupService;
+
+	@RequestMapping(value = "/showAdminPanel.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public String showDoubleTables(HttpServletRequest request,
+			HttpServletResponse response, Model map) {
+
+		LOGGER.info("** Start--show admin panel page");
+		List<UsersGroup> groupList=null;
+		try {
+			// TableComponent Code Started
+			String tableIds = request.getParameter(ReusableConstant.TABLE_ID);
+			String[] tables = tableIds.split(ReusableConstant.SEPARATOR);
+			map.addAttribute("tableId", tables[0]);
+			
+			User userObject=null;
+			 userObject = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+			Integer userGroupId=userObject.getUserGroupId();
+			groupList = userGroupService.getAllUserGroupList(userGroupId.longValue());
+			/*TableComponent Code ended
+			 * Here we fetch All User group names;if user group user_access is 2 means user is group admin else if access is 1 means user
+			 * is super admin */
+	
+			ObjectMapper mapper = new ObjectMapper();
+			String jsonUserGroupList = "";
+			try {
+				jsonUserGroupList = mapper.writeValueAsString(groupList);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			map.addAttribute("userAccess", userObject.getUserAccess());
+			map.addAttribute("groupList", groupList);
+			map.addAttribute("groupListJSON", jsonUserGroupList);
+			map.addAttribute("userGroupId", userGroupId);
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:", e);
+		}
+		return "showAdminPanel";
+	}
+}

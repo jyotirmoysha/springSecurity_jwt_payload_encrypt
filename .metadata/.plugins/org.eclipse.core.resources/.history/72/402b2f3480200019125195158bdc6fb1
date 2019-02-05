@@ -1,0 +1,50 @@
+package com.livespread.dao;
+
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
+import org.springframework.beans.factory.annotation.Required;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.livespread.rage.domain.RequestQueue;
+
+@Repository
+public class RageDAOImpl implements RageDAO {
+
+
+	private EntityManager entityManager;
+	
+	
+	@Required
+	@PersistenceContext(unitName="uicRagePunit")
+	public void setApplicationEntityManager(EntityManager applicationEntityManager) {
+		this.entityManager = applicationEntityManager;
+	}
+
+	@Override
+	@Transactional(value="uicRageTransactionManager")
+	public void saveRequestQueue(RequestQueue requestQueue) throws Exception 
+	{
+		try {
+			entityManager.persist(requestQueue);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public Integer generatePkForRequestQueue(String sequenceName) throws Exception 
+	{
+		Query query = entityManager.createQuery("update RageSequenceMaster set sequenceNumber = sequenceNumber+1 where sequenceName=:sequenceName");
+		query.setParameter("sequenceName", sequenceName);
+		query.executeUpdate();
+		entityManager.flush();
+		entityManager.createQuery("select sequenceNumber from  RageSequenceMaster where sequenceName=:sequenceName");
+		query.setParameter("sequenceName", sequenceName);
+		Integer pkVal = (Integer) query.getSingleResult();
+		return pkVal;
+	}
+}

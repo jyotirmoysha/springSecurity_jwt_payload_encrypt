@@ -1,0 +1,162 @@
+package com.livespread.command;
+
+public class CheckIdPopUpDataCommand {
+
+	private String labels;
+	private String values;
+	private Integer arsId;
+	private String arv_value;
+	private String aggregate_type;
+	private String year;
+	private String subTotal;
+	private String diffValue;
+	private String refPoId;
+	private String isClickAvailable;
+	private String isParent;
+	
+	private String xCordinate;
+	private String yCordinate;
+	
+	private String x2Cordinate;
+	private String y1Cordinate;
+	private String pageNo;
+	private String clickbackCoordinates;
+	private Integer uploadId;
+	
+	private String niId;
+
+	private String niItem;
+	
+	public String getRefPoId() {
+		return refPoId;
+	}
+	public void setRefPoId(String refPoId) {
+		this.refPoId = refPoId;
+	}
+	public String getIsClickAvailable() {
+		return isClickAvailable;
+	}
+	public void setIsClickAvailable(String isClickAvailable) {
+		this.isClickAvailable = isClickAvailable;
+	}
+	public String getIsParent() {
+		return isParent;
+	}
+	public void setIsParent(String isParent) {
+		this.isParent = isParent;
+	}
+	public String getxCordinate() {
+		return xCordinate;
+	}
+	public void setxCordinate(String xCordinate) {
+		this.xCordinate = xCordinate;
+	}
+	public String getyCordinate() {
+		return yCordinate;
+	}
+	public void setyCordinate(String yCordinate) {
+		this.yCordinate = yCordinate;
+	}
+	public String getX2Cordinate() {
+		return x2Cordinate;
+	}
+	public void setX2Cordinate(String x2Cordinate) {
+		this.x2Cordinate = x2Cordinate;
+	}
+	public String getY1Cordinate() {
+		return y1Cordinate;
+	}
+	public void setY1Cordinate(String y1Cordinate) {
+		this.y1Cordinate = y1Cordinate;
+	}
+	public String getPageNo() {
+		return pageNo;
+	}
+	public void setPageNo(String pageNo) {
+		this.pageNo = pageNo;
+	}
+	public String getNiId() {
+		return niId;
+	}
+	public void setNiId(String niId) {
+		this.niId = niId;
+	}
+	public String getNiItem() {
+		return niItem;
+	}
+	public void setNiItem(String niItem) {
+		this.niItem = niItem;
+	}
+	public String getYear() {
+		return year;
+	}
+	public String getSubTotal() {
+		return subTotal;
+	}
+	public void setSubTotal(String subTotal) {
+		this.subTotal = subTotal;
+	}
+	public String getDiffValue() {
+		return diffValue;
+	}
+	public void setDiffValue(String diffValue) {
+		this.diffValue = diffValue;
+	}
+	public void setYear(String year) {
+		this.year = year;
+	}
+	public String getLabels() {
+		return labels;
+	}
+	public void setLabels(String labels) {
+		this.labels = labels;
+	}
+	public String getValues() {
+		return values;
+	}
+	public void setValues(String values) {
+		this.values = values;
+	}
+	public Integer getArsId() {
+		return arsId;
+	}
+	public void setArsId(Integer arsId) {
+		this.arsId = arsId;
+	}
+	public String getArv_value() {
+		return arv_value;
+	}
+	public void setArv_value(String arv_value) {
+		this.arv_value = arv_value;
+	}
+	public String getAggregate_type() {
+		return aggregate_type;
+	}
+	public void setAggregate_type(String aggregate_type) {
+		this.aggregate_type = aggregate_type;
+	}
+	/**
+	 * @return the clickbackCoordinates
+	 */
+	public String getClickbackCoordinates() {
+		return clickbackCoordinates;
+	}
+	/**
+	 * @param clickbackCoordinates the clickbackCoordinates to set
+	 */
+	public void setClickbackCoordinates(String clickbackCoordinates) {
+		this.clickbackCoordinates = clickbackCoordinates;
+	}
+	/**
+	 * @return the uploadId
+	 */
+	public Integer getUploadId() {
+		return uploadId;
+	}
+	/**
+	 * @param uploadId the uploadId to set
+	 */
+	public void setUploadId(Integer uploadId) {
+		this.uploadId = uploadId;
+	}
+}

@@ -1,0 +1,81 @@
+package com.livespread.controller;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.livespread.domain.User;
+import com.livespread.domain.WorkQueue;
+import com.livespread.service.WorkQueueService;
+
+@Controller
+public class ReleaseLockController {
+@Autowired
+private WorkQueueService workQueueService;
+	private Logger LOGGER = Logger.getLogger(ReleaseLockController.class);
+	
+	@RequestMapping(value = "/showReleaseLock.htm", method = { RequestMethod.GET,RequestMethod.POST })
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public String showReleaseLock(HttpServletRequest request,
+			HttpServletResponse response, Model map) {
+		LOGGER.info("**start--showReleaseLock methode");
+		
+		User loginUserDeatials = (User) request.getSession().getAttribute("user");
+		
+		List<WorkQueue> lockedCasesList= workQueueService.f_getLockedCases(loginUserDeatials.getUserGroupId(),loginUserDeatials.getUserAccess());
+		
+		map.addAttribute("workQueueList",lockedCasesList );
+		LOGGER.info("**end--showReleaseLock methode");
+     	return "release_lock";
+	}
+	
+	@RequestMapping(value = "/updateReleaseLock.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody String updateReleaseLock(@RequestParam("checkboxArray") String checkboxArray) {
+		String msg = null;
+		LOGGER.info("** Start-updateReleaseLock methode");
+		try {
+			/*
+			 * This function used to set locked_by=null in work_queue table based on filing id
+			 */
+			
+			List<String> filingIdList = new ArrayList<String>(Arrays.asList(checkboxArray.split(",")));
+			List<Integer> filingIdIntList=new ArrayList<Integer>();
+			for(String s : filingIdList){
+				filingIdIntList.add(Integer.valueOf(s));
+			}
+			
+			int i=workQueueService.f_releaseCasesByFilingId(filingIdIntList);
+			if(i==1){
+			msg="Case lock released successfully";
+			}else{
+			msg="Error occured while releasing cases";
+			}
+
+		} catch (NullPointerException npe) {
+			npe.printStackTrace();
+			LOGGER.error("error:", npe);
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error", e);
+		}
+
+		LOGGER.info("** End-updateReleaseLock methode");
+
+		return msg;
+
+	}
+	
+}

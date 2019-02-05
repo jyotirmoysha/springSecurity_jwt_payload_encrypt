@@ -1,0 +1,130 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author SD0e482
+ *
+ */
+@Entity
+@Table(name = "JSON_TRACKER")
+public class JsonTracker implements Serializable, BaseEntity{
+	
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	/*@GeneratedValue(generator = "sequence")
+	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_ARS_PO_MAPPING_ID") })*/
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "JT_ID")
+	private Integer jtId;
+
+	@Column(name = "FILING_ID")
+	private Integer filingId;
+	
+	@Column(name = "PROCESSED")
+	private String processed;
+	
+	@Column(name = "PROCESS_STATUS")
+	private String processStatus;
+	
+	@Column(name = "CREATED_ON")
+	private Date createdOn;
+
+	/**
+	 * @return the jtId
+	 */
+	public Integer getJtId() {
+		return jtId;
+	}
+
+	/**
+	 * @param jtId the jtId to set
+	 */
+	public void setJtId(Integer jtId) {
+		this.jtId = jtId;
+	}
+
+	/**
+	 * @return the filingId
+	 */
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	/**
+	 * @param filingId the filingId to set
+	 */
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	/**
+	 * @return the processed
+	 */
+	public String getProcessed() {
+		return processed;
+	}
+
+	/**
+	 * @param processed the processed to set
+	 */
+	public void setProcessed(String processed) {
+		this.processed = processed;
+	}
+
+	/**
+	 * @return the processStatus
+	 */
+	public String getProcessStatus() {
+		return processStatus;
+	}
+
+	/**
+	 * @param processStatus the processStatus to set
+	 */
+	public void setProcessStatus(String processStatus) {
+		this.processStatus = processStatus;
+	}
+
+	/**
+	 * @return the createdOn
+	 */
+	public Date getCreatedOn() {
+		return createdOn;
+	}
+
+	/**
+	 * @param createdOn the createdOn to set
+	 */
+	public void setCreatedOn(Date createdOn) {
+		this.createdOn = createdOn;
+	}
+
+	@Override
+	public EntityType getEntityType() 
+	{
+		return EntityType.APPLICATION;
+	}
+
+	
+
+}

@@ -1,0 +1,23 @@
+package com.livespread.util;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+public class LargetstKeyFromMap {
+	
+	  public static List<Integer> largestKeyFromMap(Map<Integer,Integer> map){
+			 
+		  List<Integer> largestMonthkey=new ArrayList<Integer>(); 
+		  int maxValueInMap=(Collections.max(map.values()));  
+	        for (Entry<Integer, Integer> entry : map.entrySet()) { 
+	            if (entry.getValue()==maxValueInMap) {
+	                largestMonthkey.add(entry.getKey());
+	            }
+	        }
+	        return largestMonthkey;
+	  }
+
+}

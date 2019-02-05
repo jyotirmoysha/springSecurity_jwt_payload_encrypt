@@ -1,0 +1,17 @@
+package com.livespread.service;
+
+import java.util.List;
+
+public interface StandardTagsDeinitionService {
+
+	/*
+	 * This method used for fetch distinct section
+	 */
+	List<String> f_getDistinctSection();
+
+	/*
+	 * This method used for fetch tag name based on section name
+	 */
+	List<String> f_getTagNameBySection(String section);
+
+}

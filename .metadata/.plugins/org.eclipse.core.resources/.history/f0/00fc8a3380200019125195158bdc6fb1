@@ -1,0 +1,51 @@
+package com.livespread.service;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import com.livespread.command.CheckIdPopUpDataCommand;
+import com.livespread.command.QACheckListData;
+import com.livespread.domain.AsRepStatement;
+import com.livespread.domain.NormQaChecksMeta;
+import com.livespread.domain.ParserOutput;
+import com.livespread.domain.QAMessageChecklist;
+
+public interface QAMessageChecklistService {
+
+	List<QAMessageChecklist> findAllQAMessagesBasedOnFilingId(Integer filingId);
+
+	int updateQACheckListComment(QACheckListData qaCheckListData);
+
+	List<Object> getSubTotalsByArsId(Integer checkId, Integer qaMessageId,
+			Integer filingId, Integer year);
+
+	ParserOutput getRecordUsingPOID(Integer poId);
+
+	AsRepStatement getAsRepStmtByArsId(Integer arsId, Integer filingId);
+
+	/*
+	 * This methode used for get ars value from as_rep_values table based on ars
+	 * id
+	 */
+	String getArsValueFromAsRepValue(Integer arsId, Integer norm_item,
+			Integer filingId);
+
+	/*
+	 * This function used for get NormQaChecksMeta record from NormQaChecksMeta
+	 * table depend on check id
+	 */
+	NormQaChecksMeta f_getNormQaChecksRecord(Integer checkId);
+	
+	Map<String,List<CheckIdPopUpDataCommand>> f_getQACheckListDataPopUpHeader(Integer checkId,Integer filingId);
+	
+	List<AsRepStatement> getAsRepStmtYearByFilingId(Integer filingId);
+	
+	List<QAMessageChecklist> findAllQAMessagesBasedOnFilingIdCheckStage(Integer filingId,List<String> checkStageList) throws Exception;
+
+	 Map<Integer,String> findLineItemsByCheckId(Integer templateId,Set<Integer> checkIdList)  throws Exception;
+	 
+	List<QACheckListData>  getNormValidationList(Integer decryptedFillingId, String checkName,String templateName);
+   Map<String,List<CheckIdPopUpDataCommand>> f_getQACheckListDataPopUpHeaderAsc(Integer checkId,Integer filingId) throws Exception;
+  List<QACheckListData> f_stmtAttrValidationList(Integer filingid, String checkName);
+}

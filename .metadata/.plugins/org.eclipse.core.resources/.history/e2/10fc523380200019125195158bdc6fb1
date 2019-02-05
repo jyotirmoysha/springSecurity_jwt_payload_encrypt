@@ -1,0 +1,28 @@
+package com.livespread.util;
+
+import java.io.InputStream;
+
+import org.apache.log4j.Logger;
+
+
+public class ReadPropertiesFile {
+	
+/**
+ * Here Load properties File Based on File Name
+ */
+	private Logger LOGGER = Logger.getLogger(ReadPropertiesFile.class);
+
+	public String f_getFilePathByName(String propFileKey,String propFileName){
+		String propKeyVal="";
+	try{
+	CustomProperties applicationProperties=new CustomProperties();
+	InputStream userProperties = BuildGenericExcel.class.getClassLoader().getResourceAsStream(propFileName);
+	applicationProperties.load(userProperties);
+	propKeyVal=applicationProperties.getProperty(propFileKey);
+	}catch(Exception e){
+	 e.printStackTrace();
+	 LOGGER.error("Error:",e);
+	}
+	return propKeyVal;
+	}
+}

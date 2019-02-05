@@ -1,0 +1,1001 @@
+package com.livespread.service;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import com.livespread.command.CheckIdPopUpDataCommand;
+import com.livespread.command.POCordHighlightDetailsCommand;
+import com.livespread.command.QACheckListData;
+import com.livespread.dao.NormalizationViewDAO;
+import com.livespread.domain.AsRepStatement;
+import com.livespread.domain.MasterCheckList;
+import com.livespread.domain.NIValues;
+import com.livespread.domain.NamedNativeQueryName;
+import com.livespread.domain.NamedQueryName;
+import com.livespread.domain.NormQaChecksAggregates;
+import com.livespread.domain.NormQaChecksMeta;
+import com.livespread.domain.POCordHighlightDetails;
+import com.livespread.domain.ParserOutput;
+import com.livespread.domain.QAMessageChecklist;
+import com.livespread.util.CipherUtils;
+import com.livespread.util.LiveSpreadUtil;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Service("qaMessageChecklistService")
+public class QAMessageChecklistServiceImpl implements QAMessageChecklistService {
+
+	private Logger LOGGER = Logger
+			.getLogger(QAMessageChecklistServiceImpl.class);
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+	@Autowired
+	private NormalizationViewDAO normalizationViewDAO;
+	@Autowired
+	private POCordHighlightDetailsService poCordHighlightDetailsService;
+	
+	@Autowired
+	private WorkQueueService workQueueService;
+
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<QAMessageChecklist> findAllQAMessagesBasedOnFilingId(
+			Integer filingId) {
+
+		LOGGER.info("getQaCheckMessageChecklist started");
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("filingId", filingId);
+		
+		
+		List<QAMessageChecklist> qaMessageCheckList = (ArrayList<QAMessageChecklist>) (Object) genericDaoImpl
+				.findByNamedQuery(NamedQueryName.findQACheckListByFilingId,
+						QAMessageChecklist.class, parameterMap);
+		LOGGER.info("getQaCheckMessageChecklist completed with result size"
+				+ qaMessageCheckList.size());
+		return qaMessageCheckList;
+	}
+
+	
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public int updateQACheckListComment(QACheckListData qaCheckListData) {
+		LOGGER.info("updateQaCheckMessageCommentsChecklist started");
+	    int updatedRows=0;
+		Map<String, Object> parameterMap = null;
+		String checkId = qaCheckListData.getCheckIdVal();
+		String qaMessageId = qaCheckListData.getQaMessageIdVal();
+		String comments = qaCheckListData.getComments();
+		List<Integer> checkIdList = null;
+		List<Integer> qaMessageIdList = null;
+		List<String> commentList = null;
+		if(qaMessageId!=null && !qaMessageId.isEmpty()){
+			checkIdList=new ArrayList<Integer>();
+			qaMessageIdList=new ArrayList<Integer>();
+			commentList=new ArrayList<String>();
+			for (String cId : checkId.split(",")){
+				checkIdList.add(Integer.valueOf(cId.trim()));
+		    }
+			for (String qmId : qaMessageId.split(",")){
+				qaMessageIdList.add(Integer.valueOf(qmId.trim()));
+		    }
+			for (String cmnt : comments.split(",")){
+				commentList.add(cmnt.trim());
+		    }
+			Integer filingId = Integer.parseInt(CipherUtils.decrypt(qaCheckListData
+					.getFilingId()));
+			if(commentList!=null){
+				for(int i=0; i<commentList.size();i++){
+					parameterMap = new HashMap<String, Object>();
+					parameterMap.put("filingId", filingId);
+					parameterMap.put("checkId", checkIdList.get(i));
+					parameterMap.put("qaMessageId", qaMessageIdList.get(i));
+					parameterMap.put("comments", commentList.get(i));
+					updatedRows = genericDaoImpl.updateByNamedQuery(
+							NamedQueryName.updateQACheckListCommentsByFilingIdAndCheckId,
+						    QAMessageChecklist.class, parameterMap);	
+					updatedRows=i;
+				}
+			}
+			
+		}
+
+		return updatedRows;
+	}
+
+	@Override
+	public List<Object> getSubTotalsByArsId(Integer checkId,
+			Integer qaMessageId, Integer filingId, Integer year) {
+		LOGGER.info("** Start-inside getSubTotalsByArsId values");
+		List<Object> resultList = new ArrayList<Object>();
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("checkId", checkId);
+		parameterMap.put("filingId", filingId);
+		parameterMap.put("year", year);
+		resultList = genericDaoImpl.findByNativeNamedQuery(
+				NamedNativeQueryName.getSubTotalsByArsId,
+				QAMessageChecklist.class, parameterMap);
+		return (!resultList.isEmpty() ? resultList : new ArrayList<Object>());
+
+	}
+
+	@Override
+	public ParserOutput getRecordUsingPOID(Integer poId) {
+		LOGGER.info("inside getRecordUsingPOID function");
+		ParserOutput parserOutput = new ParserOutput();
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("poId", poId);
+		List<Object> resultList = genericDaoImpl.findByNativeNamedQuery(
+				NamedNativeQueryName.getRecordUsingPOID, ParserOutput.class,
+				parameterMap);
+		if (!resultList.isEmpty()) {
+			parserOutput = (ParserOutput) resultList.get(0);
+		}
+		return parserOutput;
+	}
+
+	@Override
+	public AsRepStatement getAsRepStmtByArsId(Integer arsId, Integer filingId) {
+		LOGGER.info("** Start-getAsRepStmtByArsId methode");
+		AsRepStatement asRepStatement = new AsRepStatement();
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("arsId", arsId);
+		parameterMap.put("filingId", filingId);
+		List<Object> resultList = genericDaoImpl.findByNamedQuery(
+				NamedQueryName.getAsRepStmtByArsId, AsRepStatement.class,
+				parameterMap);
+		if (!resultList.isEmpty()) {
+			asRepStatement = (AsRepStatement) resultList.get(0);
+		}
+		LOGGER.info("** End-getAsRepStmtByArsId methode");
+		return asRepStatement;
+	}
+
+	@Override
+	public String getArsValueFromAsRepValue(Integer arsId, Integer norm_item,Integer filingId) {
+		LOGGER.info("** Start-getArsValueFromAsRepValue methode");
+		String ars_value = "0";
+
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("arsId", arsId);
+		parameterMap.put("norm_item", norm_item);
+		parameterMap.put("filingId", filingId);
+		List<Object> resultList = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getArvValueByNormItem,NormQaChecksMeta.class, parameterMap);
+		if (!resultList.isEmpty()) {
+			ars_value = (String) resultList.get(0).toString();
+		}
+		LOGGER.info("** End-getArsValueFromAsRepValue methode");
+		return ars_value;
+	}
+
+	@Override
+	public NormQaChecksMeta f_getNormQaChecksRecord(Integer checkId) {
+		LOGGER.info("** Start-f_getNormQaChecksRecord methode");
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("checkId", checkId);
+		List<Object> resultList = genericDaoImpl.findByNamedQuery(
+				NamedQueryName.getNormQAchecksDataByCheckId,
+				NormQaChecksMeta.class, parameterMap);
+		NormQaChecksMeta checksMeta = new NormQaChecksMeta();
+		if (!resultList.isEmpty()) {
+			checksMeta = (NormQaChecksMeta) resultList.get(0);
+		}
+		LOGGER.info("** End-f_getNormQaChecksRecord methode");
+		return checksMeta;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String,List<CheckIdPopUpDataCommand>> f_getQACheckListDataPopUpHeader(Integer checkId,Integer filingId)
+	{
+		LOGGER.info("** Start-f_getQACheckListDataPopUp methode");
+		NormQaChecksMeta  normQaChecksMeta=f_getNormQaChecksRecord(checkId);
+		String section=normQaChecksMeta.getSection();
+		Integer ni_item=normQaChecksMeta.getNiItem();
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("filingId", filingId);
+		
+		List<AsRepStatement> asRepList=(List<AsRepStatement>) (Object)genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getArsRepStmtByFilingId, AsRepStatement.class,parameters);
+		List<Integer> stagingAsRepIds = new ArrayList<>();
+		List<Integer> asRepIds = new ArrayList<>();
+		Map<String,List<CheckIdPopUpDataCommand>> valuesMap=new LinkedHashMap<>();
+	
+		for(Object asRepStatement2:asRepList)
+		{
+		 AsRepStatement asRepStatement=new AsRepStatement();
+		 Object[] obj = (Object[]) asRepStatement2;
+		 asRepStatement.setArsId((Integer) (obj[2] == null ? "" : Integer.parseInt(obj[2].toString())));
+		 asRepStatement.setArsStmtYear((Integer) (obj[14] == null ? "" : Integer.parseInt(obj[14].toString()))); 
+		
+			String arsValue="0";
+			Map<String, Object> parametersOne = new HashMap<String, Object>();
+			parametersOne.put("filingId", filingId);
+			parametersOne.put("arsId", asRepStatement.getArsId());
+			parametersOne.put("section", section);
+			
+
+			List<Number> arsIdListinBigDecimal=(List<Number>) (Object) genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getStagingAsRepStmnt, AsRepStatement.class,parametersOne);
+			List<Integer> arsIdList= new ArrayList<>();
+			for (Number id : arsIdListinBigDecimal) 
+			{
+		 		arsIdList.add(id.intValue());
+				
+			} 
+			
+			if(!CollectionUtils.isEmpty(arsIdList))
+			{
+		 	Integer stagingArsId=arsIdList.get(0);	
+		 	stagingAsRepIds.add(stagingArsId);
+		 	asRepIds.add(asRepStatement.getArsId());
+			parametersOne.put("stagingArsId", arsIdList);
+			parametersOne.put("niItem", ni_item);
+			List<Integer> arsValueSum=(List<Integer>) (Object) genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getArvValueByNormItemAndArsId, NormQaChecksMeta.class,parametersOne);
+			if(!CollectionUtils.isEmpty(arsValueSum))
+			{
+				try{
+				 Number arsValueNum= (Number) arsValueSum.get(0);
+				 arsValue=arsValueNum.toString();
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+			}
+			
+			
+			parametersOne.put("checkId", checkId);
+			parametersOne.put("arsId", asRepStatement.getArsId());
+			List<Object> resultList =null;
+			List<Object> tempResultList = null;
+			resultList = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getSubTotalsByArsId,QAMessageChecklist.class, parametersOne);
+			if(CollectionUtils.isEmpty(resultList))
+			{
+				tempResultList = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getNormQAChecksAggregates,NormQaChecksAggregates.class, parametersOne);
+				if(!CollectionUtils.isEmpty(tempResultList))
+				{
+					resultList = new ArrayList<>();
+					for (Object object : tempResultList) 
+					{
+						Object[] objIn = (Object[]) object;
+						objIn[3]="0";
+						objIn[4]=asRepStatement.getArsId();
+						resultList.add(objIn);
+					}
+				}
+			}
+				if(valuesMap.get("STATEMENT YEAR")!=null)
+				{
+				 List<CheckIdPopUpDataCommand> objList=valuesMap.get("STATEMENT YEAR");
+				 CheckIdPopUpDataCommand command=new CheckIdPopUpDataCommand();
+				 command.setArsId(asRepStatement.getArsId());
+				 command.setYear(asRepStatement.getArsStmtYear().toString());
+				 objList.add(command);
+				 valuesMap.put("STATEMENT YEAR", objList);
+				}else{
+				List<CheckIdPopUpDataCommand> objList = new ArrayList<>();
+				CheckIdPopUpDataCommand command = new CheckIdPopUpDataCommand();
+				command.setYear(asRepStatement.getArsStmtYear().toString());
+				command.setArsId(asRepStatement.getArsId());
+				objList.add(command);
+				valuesMap.put("STATEMENT YEAR", objList);
+				}
+				
+				if(valuesMap.get("ARS VALUE")!=null)
+				{
+				 List<CheckIdPopUpDataCommand> objList=valuesMap.get("ARS VALUE");
+				 CheckIdPopUpDataCommand command=new CheckIdPopUpDataCommand();
+				 command.setArsId(asRepStatement.getArsId());
+				 command.setArv_value(arsValue);
+				 objList.add(command);
+				 valuesMap.put("ARS VALUE", objList);
+				}else{
+				List<CheckIdPopUpDataCommand> objList = new ArrayList<>();
+				CheckIdPopUpDataCommand command = new CheckIdPopUpDataCommand();
+				command.setArsId(asRepStatement.getArsId());
+				 command.setArv_value(arsValue);
+				objList.add(command);
+				valuesMap.put("ARS VALUE", objList);
+				}
+				
+				
+				
+				BigDecimal subTotal= new BigDecimal(0);
+				BigDecimal difValues=new BigDecimal(0);
+				for (Object obj1 : resultList)
+				{
+					Object[] objIn = (Object[]) obj1;
+					String niLabel=objIn[0].toString() != null ? objIn[0].toString() : "";
+					if(valuesMap.get(niLabel)!=null)
+					{
+					List<CheckIdPopUpDataCommand> valueList=valuesMap.get(niLabel);
+					CheckIdPopUpDataCommand tempObj=new CheckIdPopUpDataCommand();
+					tempObj.setLabels(niLabel);
+					tempObj.setValues(objIn[2].toString() != null ? objIn[2].toString() : "");
+					tempObj.setAggregate_type(objIn[1].toString() != null ? objIn[1].toString() : "");
+					tempObj.setArsId(Integer.parseInt(objIn[3].toString() != null ? objIn[3].toString() : ""));
+					if(objIn[1].toString() != null && objIn[1].toString().equalsIgnoreCase("Negative"))
+					{
+					subTotal=subTotal.subtract(new BigDecimal(tempObj.getValues()));
+					}else{
+					subTotal=subTotal.add(new BigDecimal(tempObj.getValues()));
+					}
+					valueList.add(tempObj);
+					valuesMap.put(niLabel, valueList);
+					}else{
+					List<CheckIdPopUpDataCommand> valueList=new ArrayList<>();
+					CheckIdPopUpDataCommand tempObj=new CheckIdPopUpDataCommand();
+					tempObj.setLabels(niLabel);
+					tempObj.setValues(objIn[2].toString() != null ? objIn[2].toString() : "");
+					tempObj.setAggregate_type(objIn[1].toString() != null ? objIn[1].toString() : "");
+					tempObj.setArsId(Integer.parseInt(objIn[3].toString() != null ? objIn[3].toString() : ""));
+					if(objIn[1].toString() != null && objIn[1].toString().equalsIgnoreCase("Negative"))
+					{
+					subTotal=subTotal.subtract(new BigDecimal(tempObj.getValues()));
+					}else
+					{
+					subTotal=subTotal.add(new BigDecimal(tempObj.getValues()));
+					}
+					valueList.add(tempObj);
+					valuesMap.put(niLabel, valueList);
+					}
+					
+					}
+				
+				//calculate diffrence values
+				difValues=subTotal.subtract(new BigDecimal(arsValue));
+				
+				if(valuesMap.get("TotalMappedValues")!=null)
+				{
+				 List<CheckIdPopUpDataCommand> objList=valuesMap.get("TotalMappedValues");
+				 CheckIdPopUpDataCommand command=new CheckIdPopUpDataCommand();
+				 command.setArsId(asRepStatement.getArsId());
+				 command.setSubTotal(subTotal.toString());
+				 objList.add(command);
+				 valuesMap.put("TotalMappedValues", objList);
+				}else{
+				List<CheckIdPopUpDataCommand> objList = new ArrayList<>();
+				CheckIdPopUpDataCommand command = new CheckIdPopUpDataCommand();
+				command.setArsId(asRepStatement.getArsId());
+				 command.setSubTotal(subTotal.toString());
+				objList.add(command);
+				valuesMap.put("TotalMappedValues", objList);
+				}
+				
+				if(valuesMap.get("diffrenceValue")!=null)
+				{
+				 List<CheckIdPopUpDataCommand> objList=valuesMap.get("diffrenceValue");
+				 CheckIdPopUpDataCommand command=new CheckIdPopUpDataCommand();
+				 command.setArsId(asRepStatement.getArsId());
+				 command.setDiffValue(difValues.toString());
+				 objList.add(command);
+				 valuesMap.put("diffrenceValue", objList);
+				}else{
+				List<CheckIdPopUpDataCommand> objList = new ArrayList<>();
+				CheckIdPopUpDataCommand command = new CheckIdPopUpDataCommand();
+				command.setArsId(asRepStatement.getArsId());
+				command.setDiffValue(difValues.toString());
+				objList.add(command);
+				valuesMap.put("diffrenceValue", objList);
+				}
+				
+		}//End ars Id list if
+
+		}//end for
+		
+		
+		if(!CollectionUtils.isEmpty(valuesMap))
+		{
+			List<CheckIdPopUpDataCommand> newMappedItemList = null;
+			for (Entry<String, List<CheckIdPopUpDataCommand>> selectedValueMap : valuesMap.entrySet()) 
+			{
+				boolean isExist =false;
+				List<CheckIdPopUpDataCommand> mappedLabelCommand = selectedValueMap.getValue();
+				newMappedItemList = new ArrayList<>();
+				for (Integer selectedArsID : asRepIds) 
+				{
+					isExist =false;
+					for (CheckIdPopUpDataCommand checkIdPopUpDataCommand : mappedLabelCommand) {
+						if(selectedArsID.intValue()==checkIdPopUpDataCommand.getArsId())
+						{
+							newMappedItemList.add(checkIdPopUpDataCommand);
+							isExist=true;
+							break;
+						}
+					}
+					if(isExist==false)
+					{
+						newMappedItemList.add(null);
+					}
+				}
+				selectedValueMap.setValue(newMappedItemList);
+			}
+		}
+		
+		
+		LOGGER.info("** End-f_getQACheckListDataPopUp methode");
+		return valuesMap;
+	}
+	
+	
+	@Override
+	public List<AsRepStatement> getAsRepStmtYearByFilingId(Integer filingId) {
+		LOGGER.info("** Start-inside getAsRepStmtYearByFilingId values");
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("filingId", filingId);
+		List<Object> results= normalizationViewDAO.getAsRepStmtByFilingId(filingId, "");
+		List<AsRepStatement> AsRepStatementYearList = new ArrayList<AsRepStatement>();
+		AsRepStatement asRepStatement=null;
+		if(!CollectionUtils.isEmpty(results)){
+			for (Object object : results) {
+				Object[] objIn = (Object[]) object;
+				
+				if(null!=objIn[0] && null!=objIn[1]){
+					asRepStatement=new AsRepStatement();
+					asRepStatement.setArsId(new Integer(objIn[0].toString()));
+					asRepStatement.setArsStmtYear(new Integer(objIn[1].toString()));
+					AsRepStatementYearList.add(asRepStatement);
+				}
+				
+				
+			}
+		}
+		normalizationViewDAO.getAsRepStmtByFilingId(filingId, "");
+		return AsRepStatementYearList;
+
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<QAMessageChecklist> findAllQAMessagesBasedOnFilingIdCheckStage(Integer filingId,List<String> checkStageList) {
+
+		LOGGER.info("getQaCheckMessageChecklist started");
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("filingId", filingId);
+		parameterMap.put("checkStage", checkStageList);
+		List<QAMessageChecklist> qaMessageCheckList = (ArrayList<QAMessageChecklist>) (Object) genericDaoImpl
+				.findByNamedQuery(NamedQueryName.findQACheckListByFilingIdAndCheckStage,
+						QAMessageChecklist.class, parameterMap);
+		LOGGER.info("getQaCheckMessageChecklist completed with result size"
+				+ qaMessageCheckList.size());
+		return qaMessageCheckList;
+	}
+	
+	@Override
+	public Map<Integer,String> findLineItemsByCheckId(Integer templateId,Set<Integer> checkIdList) {
+
+		LOGGER.info("findLineItemsByCheckId started");
+		try{
+			return normalizationViewDAO.findLineItemsByCheckId(templateId, checkIdList);
+		}catch(Exception e){
+			e.printStackTrace();
+			return null;
+		}
+		
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<QACheckListData> getNormValidationList(Integer decryptedFillingId, String checkName,String templateName) {
+		List<QAMessageChecklist> normValidationList=null;
+		List<QACheckListData> normValidationModifiedList=new ArrayList<QACheckListData>();;
+		List<QACheckListData> finalList = new ArrayList<QACheckListData>();
+		Integer parserId =null;
+		List<String> labelList =null;
+		LOGGER.info("getNormValidationList started");
+		try{
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			List<String> checkSatgeList=null;
+			if(!checkName.trim().isEmpty())
+			{
+			checkSatgeList=Arrays.asList(checkName.split(","));
+			}
+			parameters.put("checkStage", checkSatgeList);
+			parameters.put("filingId", decryptedFillingId);
+			
+			normValidationList =(List<QAMessageChecklist>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getValidationCheckNameListForStatus, QAMessageChecklist.class,parameters);
+			parserId = workQueueService.f_getParserIdFromWorkQueueByFilingId(decryptedFillingId);
+			
+			if(!CollectionUtils.isEmpty(normValidationList))
+			{
+				parameters = new HashMap<String, Object>();
+				parameters.put("parserId", parserId);
+				labelList = (List<String>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getValidationCheckNameListByParserId, MasterCheckList.class,parameters);
+				
+				int count=0;
+				Integer previousCheckId=0;
+				Set<String> checkStatusSet= new HashSet<String>();
+				QACheckListData qaCheckData= null;
+				for (QAMessageChecklist qACheckListData : normValidationList)
+				{
+					if(previousCheckId.intValue()==0){
+						checkStatusSet= new HashSet<String>();
+						previousCheckId=qACheckListData.getCheckId();	
+					}
+					if(previousCheckId.equals(qACheckListData.getCheckId())){
+						checkStatusSet.add(qACheckListData.getCheckStatus()!=null?qACheckListData.getCheckStatus().trim():"");
+					}else{
+						qaCheckData = new QACheckListData();
+						qaCheckData.setCheckIdString(CipherUtils.encrypt(normValidationList.get(count-1).getCheckId().toString()));
+						qaCheckData.setSection(normValidationList.get(count-1).getSection());
+						qaCheckData.setCheckName(normValidationList.get(count-1).getCheckName());
+						qaCheckData.setCheckId(normValidationList.get(count-1).getCheckId());
+						qaCheckData.setCheckStatus(normValidationList.get(count-1).getCheckStatus());
+						if(checkStatusSet.contains("Failure")){
+							qaCheckData.setCheckStatus("Failure");
+						}
+						normValidationModifiedList.add(qaCheckData);
+						checkStatusSet= new HashSet<String>();
+						checkStatusSet.add(qACheckListData.getCheckStatus()!=null?qACheckListData.getCheckStatus().trim():"");
+						previousCheckId=qACheckListData.getCheckId();	
+					}
+					if(count==normValidationList.size()-1){
+						qaCheckData = new QACheckListData();
+						qaCheckData.setCheckIdString(CipherUtils.encrypt(normValidationList.get(count-1).getCheckId().toString()));
+						qaCheckData.setSection(normValidationList.get(count).getSection());
+						qaCheckData.setCheckName(normValidationList.get(count).getCheckName());
+						qaCheckData.setCheckId(normValidationList.get(count).getCheckId());
+						qaCheckData.setCheckStatus(normValidationList.get(count).getCheckStatus());
+						if(checkStatusSet.contains("Failure")){
+							qaCheckData.setCheckStatus("Failure");
+						}
+						normValidationModifiedList.add(qaCheckData);
+					}
+					count++;
+				}
+				
+				
+				for(String label : labelList){
+					for(QACheckListData qACheckListData : normValidationModifiedList){
+						if(label.equalsIgnoreCase(qACheckListData.getCheckName().trim())){
+							qACheckListData.setCheckName(label);
+							finalList.add(qACheckListData);
+						}
+					}
+				}
+				
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			LOGGER.error("Error in getNormValidationList"+e);
+		}
+		return finalList;
+	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String,List<CheckIdPopUpDataCommand>> f_getQACheckListDataPopUpHeaderAsc(Integer checkId,Integer filingId)
+	{
+		LOGGER.info("** Start-f_getQACheckListDataPopUp methode");
+		NormQaChecksMeta  normQaChecksMeta=f_getNormQaChecksRecord(checkId);
+		String section=normQaChecksMeta.getSection();
+		Integer ni_item=normQaChecksMeta.getNiItem();
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("filingId", filingId);
+		
+		List<AsRepStatement> asRepList=(List<AsRepStatement>) (Object)genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getArsRepStmtByFilingIdAsc, AsRepStatement.class,parameters);
+		List<Integer> stagingAsRepIds = new ArrayList<>();
+		List<Integer> asRepIds = new ArrayList<>();
+		Map<String,List<CheckIdPopUpDataCommand>> valuesMap=new LinkedHashMap<>();
+		String[] refPoIdArray=null;
+		String[] refPoIdSubArray=null;
+		String[] coordinateColumnArray=null;
+		String[] cordinateArry=null;
+		
+		String coordinateColumn="";
+		Integer poIdVal=null;
+		String refPoId="";
+		POCordHighlightDetailsCommand coOrdinates=null;
+		List<NIValues> niValuesRecordList=null;
+		for(Object asRepStatement2:asRepList)
+		{
+		 AsRepStatement asRepStatement=new AsRepStatement();
+		 Object[] obj = (Object[]) asRepStatement2;
+		 asRepStatement.setArsId((Integer) (obj[2] == null ? "" : Integer.parseInt(obj[2].toString())));
+		 asRepStatement.setArsStmtYear((Integer) (obj[14] == null ? "" : Integer.parseInt(obj[14].toString()))); 
+		
+			String arsValue="0";
+			Map<String, Object> parametersOne = new HashMap<String, Object>();
+			parametersOne.put("filingId", filingId);
+			parametersOne.put("arsId", asRepStatement.getArsId());
+			parametersOne.put("section", section);
+			
+
+			List<Number> arsIdListinBigDecimal=(List<Number>) (Object) genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getStagingAsRepStmnt, AsRepStatement.class,parametersOne);
+			List<Integer> arsIdList= new ArrayList<>();
+			for (Number id : arsIdListinBigDecimal) 
+			{
+		 		arsIdList.add(id.intValue());
+				
+			} 
+			
+			if(!CollectionUtils.isEmpty(arsIdList))
+			{
+		 	Integer stagingArsId=arsIdList.get(0);	
+		 	stagingAsRepIds.add(stagingArsId);
+		 	asRepIds.add(asRepStatement.getArsId());
+			parametersOne.put("stagingArsId", arsIdList);
+			parametersOne.put("niItem", ni_item);
+			List<Integer> arsValueSum=(List<Integer>) (Object) genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getArvValueByNormItemAndArsId, NormQaChecksMeta.class,parametersOne);
+			if(!CollectionUtils.isEmpty(arsValueSum))
+			{
+				try{
+					Map<String, Object> parametersForNiValues = new HashMap<String, Object>();
+					parametersForNiValues.put("arsId", asRepStatement.getArsId());
+					parametersForNiValues.put("fillingId", filingId);
+					parametersForNiValues.put("niItem", ni_item);
+					
+					niValuesRecordList = (ArrayList<NIValues>) (Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getNiValauesRecordByFILID, NIValues.class,parametersForNiValues);
+				 Number arsValueNum= (Number) arsValueSum.get(0);
+				 arsValue=arsValueNum!=null?arsValueNum.toString():"0";
+				 if(arsValue.equals("0")){
+					 List<Integer> arsValueFromArsPoMapping=(List<Integer>) (Object) genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getArvValueByNormItemAndArsIdFromArsPoMapping, NIValues.class,parametersOne);
+					 arsValueNum= (Number) arsValueFromArsPoMapping.get(0);
+					 arsValue=arsValueNum!=null?arsValueNum.toString():"0";
+				 }
+				}catch(Exception e){
+					LOGGER.error("Error..."+e);
+				    e.printStackTrace();
+				}
+			}
+			
+			
+			parametersOne.put("checkId", checkId);
+			parametersOne.put("arsId", asRepStatement.getArsId());
+			
+			List<Object> resultList = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getSubTotalsByArsIdForClickBack,QAMessageChecklist.class, parametersOne);
+			if (!resultList.isEmpty())
+			{
+				if(valuesMap.get("STATEMENT YEAR")!=null)
+				{
+				 List<CheckIdPopUpDataCommand> objList=valuesMap.get("STATEMENT YEAR");
+				 CheckIdPopUpDataCommand command=new CheckIdPopUpDataCommand();
+				 command.setArsId(asRepStatement.getArsId());
+				 command.setYear(asRepStatement.getArsStmtYear().toString());
+				 objList.add(command);
+				 valuesMap.put("STATEMENT YEAR", objList);
+				}else{
+				List<CheckIdPopUpDataCommand> objList = new ArrayList<>();
+				CheckIdPopUpDataCommand command = new CheckIdPopUpDataCommand();
+				command.setYear(asRepStatement.getArsStmtYear().toString());
+				command.setArsId(asRepStatement.getArsId());
+				objList.add(command);
+				valuesMap.put("STATEMENT YEAR", objList);
+				}
+				
+				if(valuesMap.get("ARS VALUE")!=null)
+				{
+				 List<CheckIdPopUpDataCommand> objList=valuesMap.get("ARS VALUE");
+				 CheckIdPopUpDataCommand command=new CheckIdPopUpDataCommand();
+				 command.setArsId(asRepStatement.getArsId());
+				 command.setArv_value(arsValue);
+				 command.setNiItem(niValuesRecordList.get(0).getNiItem()!= null? niValuesRecordList.get(0).getNiItem().toString() : "0");
+				 if(!CollectionUtils.isEmpty(niValuesRecordList) && niValuesRecordList.size()==1){
+					 refPoId =niValuesRecordList.get(0).getRefPoId()!= null? niValuesRecordList.get(0).getRefPoId() : "";
+					 refPoIdArray=refPoId.split(",");
+					 if(null!=refPoIdArray && refPoIdArray.length==1){
+						 refPoIdSubArray=refPoId.split("-");
+						 if(null!=refPoIdSubArray && refPoIdSubArray.length==2){
+							 coordinateColumnArray=refPoIdSubArray[1].split("_");
+							 if(null!=coordinateColumnArray && coordinateColumnArray.length==2){
+								 coordinateColumn=coordinateColumnArray[1];
+								 poIdVal=new Integer(refPoIdSubArray[0].trim());
+								 coOrdinates = poCordHighlightDetailsService.getCoordinateAndDocumentTypeDetails(poIdVal,coordinateColumn);
+								 if(null!=coOrdinates){
+									 command.setClickbackCoordinates(coOrdinates.getCoordinates());
+									 command.setUploadId(coOrdinates.getUploadId());
+									 cordinateArry = coOrdinates.getCoordinates().split(",");
+									 if(null != cordinateArry && cordinateArry.length == 5){
+										 command.setxCordinate(cordinateArry[0]);
+										 command.setyCordinate(cordinateArry[3]);
+										 command.setX2Cordinate(cordinateArry[2]);
+										 command.setY1Cordinate(cordinateArry[1]);
+										 command.setPageNo(cordinateArry[4]);
+										 command.setIsClickAvailable("Y");
+									 }else{
+										 command.setIsClickAvailable("N");
+									 }
+									 command.setIsClickAvailable("Y");
+								 }else{
+									 command.setIsClickAvailable("N");
+								 }
+							 }else{
+								 command.setIsClickAvailable("N");
+							 }
+						 }else{
+							 command.setIsClickAvailable("N");
+						 }
+					 }else if(null!=refPoIdArray && refPoIdArray.length>1){
+						 command.setNiId(niValuesRecordList.get(0).getNiId()!= null? niValuesRecordList.get(0).getNiId().toString() : "0");
+						 command.setIsParent("Y");
+					 }else{
+						 command.setIsClickAvailable("N");
+					 }
+				 }
+				 objList.add(command);
+				 valuesMap.put("ARS VALUE", objList);
+				}else{
+				List<CheckIdPopUpDataCommand> objList = new ArrayList<>();
+				CheckIdPopUpDataCommand command = new CheckIdPopUpDataCommand();
+				command.setArsId(asRepStatement.getArsId());
+				 command.setArv_value(arsValue);
+				 command.setNiItem(niValuesRecordList.get(0).getNiItem()!= null? niValuesRecordList.get(0).getNiItem().toString() : "0");
+				 if(!CollectionUtils.isEmpty(niValuesRecordList) && niValuesRecordList.size()==1){
+					 refPoId =niValuesRecordList.get(0).getRefPoId()!= null? niValuesRecordList.get(0).getRefPoId() : "";
+					 refPoIdArray=refPoId.split(",");
+					 if(null!=refPoIdArray && refPoIdArray.length==1){
+						 refPoIdSubArray=refPoId.split("-");
+						 if(null!=refPoIdSubArray && refPoIdSubArray.length==2){
+							 coordinateColumnArray=refPoIdSubArray[1].split("_");
+							 if(null!=coordinateColumnArray && coordinateColumnArray.length==2){
+								 coordinateColumn=coordinateColumnArray[1];
+								 poIdVal=new Integer(refPoIdSubArray[0].trim());
+								 coOrdinates = poCordHighlightDetailsService.getCoordinateAndDocumentTypeDetails(poIdVal,coordinateColumn);
+								 if(null!=coOrdinates){
+									 command.setClickbackCoordinates(coOrdinates.getCoordinates());
+									 command.setUploadId(coOrdinates.getUploadId());
+									 cordinateArry = coOrdinates.getCoordinates().split(",");
+									 if(null != cordinateArry && cordinateArry.length == 5){
+										 command.setxCordinate(cordinateArry[0]);
+										 command.setyCordinate(cordinateArry[3]);
+										 command.setX2Cordinate(cordinateArry[2]);
+										 command.setY1Cordinate(cordinateArry[1]);
+										 command.setPageNo(cordinateArry[4]);
+										 command.setIsClickAvailable("Y");
+									 }else{
+										 command.setIsClickAvailable("N");
+									 }
+									 command.setIsClickAvailable("Y");
+								 }else{
+									 command.setIsClickAvailable("N");
+								 }
+							 }else{
+								 command.setIsClickAvailable("N");
+							 }
+						 }else{
+							 command.setIsClickAvailable("N");
+						 }
+					 }else if(null!=refPoIdArray && refPoIdArray.length>1){
+						 command.setNiId(niValuesRecordList.get(0).getNiId()!= null? niValuesRecordList.get(0).getNiId().toString() : "0");
+						 command.setIsParent("Y");
+					 }else{
+						 command.setIsClickAvailable("N");
+					 }
+				 }
+				objList.add(command);
+				valuesMap.put("ARS VALUE", objList);
+				}
+				
+				
+				
+				BigDecimal subTotal= new BigDecimal(0);
+				BigDecimal difValues=new BigDecimal(0);
+				for (Object obj1 : resultList)
+				{
+					Object[] objIn = (Object[]) obj1;
+					String niLabel=objIn[0].toString() != null ? objIn[0].toString() : "";
+					if(valuesMap.get(niLabel)!=null)
+					{
+					List<CheckIdPopUpDataCommand> valueList=valuesMap.get(niLabel);
+					CheckIdPopUpDataCommand tempObj=new CheckIdPopUpDataCommand();
+					tempObj.setLabels(niLabel);
+					tempObj.setValues(objIn[2] != null ? objIn[2].toString() : "");
+					tempObj.setAggregate_type(objIn[1] != null ? objIn[1].toString() : "");
+					tempObj.setArsId(Integer.parseInt(objIn[3]!= null ? objIn[3].toString() : ""));
+					refPoId =objIn[4]!= null ? objIn[4].toString() : "";
+					refPoIdArray=refPoId.split(",");
+					tempObj.setRefPoId(refPoId);
+					tempObj.setNiItem(objIn[6]!= null ? objIn[6].toString() : "0");
+					if(null!=refPoIdArray && refPoIdArray.length==1){
+						refPoIdSubArray=refPoId.split("-");
+						if(null!=refPoIdSubArray && refPoIdSubArray.length==2){
+							coordinateColumnArray=refPoIdSubArray[1].split("_");
+							if(null!=coordinateColumnArray && coordinateColumnArray.length==2){
+								coordinateColumn=coordinateColumnArray[1];
+								poIdVal=new Integer(refPoIdSubArray[0].trim());
+								coOrdinates = poCordHighlightDetailsService.getCoordinateAndDocumentTypeDetails(poIdVal,coordinateColumn);
+								if(null!=coOrdinates){
+									tempObj.setClickbackCoordinates(coOrdinates.getCoordinates());
+									tempObj.setUploadId(coOrdinates.getUploadId());
+									cordinateArry = coOrdinates.getCoordinates().split(",");
+									 if(null != cordinateArry && cordinateArry.length == 5){
+										 tempObj.setxCordinate(cordinateArry[0]);
+										 tempObj.setyCordinate(cordinateArry[3]);
+										 tempObj.setX2Cordinate(cordinateArry[2]);
+										 tempObj.setY1Cordinate(cordinateArry[1]);
+										 tempObj.setPageNo(cordinateArry[4]);
+										 tempObj.setIsClickAvailable("Y");
+									 }else{
+										 tempObj.setIsClickAvailable("N");
+									 }
+								}else{
+									 tempObj.setIsClickAvailable("N");
+								 }
+							}
+						}
+					}else if(null!=refPoIdArray && refPoIdArray.length>1){
+						tempObj.setNiId(objIn[5]!= null ? objIn[5].toString() : "0");
+						tempObj.setIsParent("Y");
+					 }else{
+						 tempObj.setIsClickAvailable("N");
+					}
+					
+					if(objIn[1].toString() != null && objIn[1].toString().equalsIgnoreCase("Negative"))
+					{
+					subTotal=subTotal.subtract(new BigDecimal(tempObj.getValues()));
+					}else{
+					subTotal=subTotal.add(new BigDecimal(tempObj.getValues()));
+					}
+					valueList.add(tempObj);
+					valuesMap.put(niLabel, valueList);
+					}else{
+					List<CheckIdPopUpDataCommand> valueList=new ArrayList<>();
+					CheckIdPopUpDataCommand tempObj=new CheckIdPopUpDataCommand();
+					tempObj.setLabels(niLabel);
+					tempObj.setValues(objIn[2]!= null ? objIn[2].toString() : "");
+					tempObj.setAggregate_type(objIn[1]!= null ? objIn[1].toString() : "");
+					tempObj.setArsId(Integer.parseInt(objIn[3] != null ? objIn[3].toString() : ""));
+					
+					refPoId =objIn[4]!= null ? objIn[4].toString() : "";
+					refPoIdArray=refPoId.split(",");
+					tempObj.setRefPoId(refPoId);
+					tempObj.setNiItem(objIn[6]!= null ? objIn[6].toString() : "0");
+					if(null!=refPoIdArray && refPoIdArray.length==1){
+						refPoIdSubArray=refPoId.split("-");
+						if(null!=refPoIdSubArray && refPoIdSubArray.length==2){
+							coordinateColumnArray=refPoIdSubArray[1].split("_");
+							if(null!=coordinateColumnArray && coordinateColumnArray.length==2){
+								coordinateColumn=coordinateColumnArray[1];
+								poIdVal=new Integer(refPoIdSubArray[0].trim());
+								coOrdinates = poCordHighlightDetailsService.getCoordinateAndDocumentTypeDetails(poIdVal,coordinateColumn);
+								if(null!=coOrdinates){
+									tempObj.setClickbackCoordinates(coOrdinates.getCoordinates());
+									tempObj.setUploadId(coOrdinates.getUploadId());
+									cordinateArry = coOrdinates.getCoordinates().split(",");
+									 if(null != cordinateArry && cordinateArry.length == 5){
+										 tempObj.setxCordinate(cordinateArry[0]);
+										 tempObj.setyCordinate(cordinateArry[3]);
+										 tempObj.setX2Cordinate(cordinateArry[2]);
+										 tempObj.setY1Cordinate(cordinateArry[1]);
+										 tempObj.setPageNo(cordinateArry[4]);
+										 tempObj.setIsClickAvailable("Y");
+									 }else{
+										 tempObj.setIsClickAvailable("N");
+									 }
+								}else{
+									 tempObj.setIsClickAvailable("N");
+								 }
+							}
+						}
+					}else if(null!=refPoIdArray && refPoIdArray.length>1){
+						tempObj.setNiId(objIn[5]!= null ? objIn[5].toString() : "0");
+						tempObj.setIsParent("Y");
+					 }else{
+						 tempObj.setIsClickAvailable("N");
+					 }
+					
+					
+					if(objIn[1].toString() != null && objIn[1].toString().equalsIgnoreCase("Negative"))
+					{
+					subTotal=subTotal.subtract(new BigDecimal(tempObj.getValues()));
+					}else
+					{
+					subTotal=subTotal.add(new BigDecimal(tempObj.getValues()));
+					}
+					valueList.add(tempObj);
+					valuesMap.put(niLabel, valueList);
+					}
+					
+					}
+				
+				//calculate diffrence values
+				difValues=subTotal.subtract(new BigDecimal(arsValue));
+				
+				if(valuesMap.get("TotalMappedValues")!=null)
+				{
+				 List<CheckIdPopUpDataCommand> objList=valuesMap.get("TotalMappedValues");
+				 CheckIdPopUpDataCommand command=new CheckIdPopUpDataCommand();
+				 command.setArsId(asRepStatement.getArsId());
+				 command.setSubTotal(subTotal.toString());
+				 objList.add(command);
+				 valuesMap.put("TotalMappedValues", objList);
+				}else{
+				List<CheckIdPopUpDataCommand> objList = new ArrayList<>();
+				CheckIdPopUpDataCommand command = new CheckIdPopUpDataCommand();
+				command.setArsId(asRepStatement.getArsId());
+				 command.setSubTotal(subTotal.toString());
+				objList.add(command);
+				valuesMap.put("TotalMappedValues", objList);
+				}
+				
+				if(valuesMap.get("diffrenceValue")!=null)
+				{
+				 List<CheckIdPopUpDataCommand> objList=valuesMap.get("diffrenceValue");
+				 CheckIdPopUpDataCommand command=new CheckIdPopUpDataCommand();
+				 command.setArsId(asRepStatement.getArsId());
+				 command.setDiffValue(difValues.toString());
+				 objList.add(command);
+				 valuesMap.put("diffrenceValue", objList);
+				}else{
+				List<CheckIdPopUpDataCommand> objList = new ArrayList<>();
+				CheckIdPopUpDataCommand command = new CheckIdPopUpDataCommand();
+				command.setArsId(asRepStatement.getArsId());
+				command.setDiffValue(difValues.toString());
+				objList.add(command);
+				valuesMap.put("diffrenceValue", objList);
+				}
+				
+				}//end if
+		}//End ars Id list if
+
+		}//end for
+		
+		
+		if(!CollectionUtils.isEmpty(valuesMap))
+		{
+			List<CheckIdPopUpDataCommand> newMappedItemList = null;
+			for (Entry<String, List<CheckIdPopUpDataCommand>> selectedValueMap : valuesMap.entrySet()) 
+			{
+				boolean isExist =false;
+				List<CheckIdPopUpDataCommand> mappedLabelCommand = selectedValueMap.getValue();
+				newMappedItemList = new ArrayList<>();
+				for (Integer selectedArsID : asRepIds) 
+				{
+					isExist =false;
+					for (CheckIdPopUpDataCommand checkIdPopUpDataCommand : mappedLabelCommand) {
+						if(selectedArsID.intValue()==checkIdPopUpDataCommand.getArsId())
+						{
+							newMappedItemList.add(checkIdPopUpDataCommand);
+							isExist=true;
+							break;
+						}
+					}
+					if(isExist==false)
+					{
+						newMappedItemList.add(null);
+					}
+				}
+				selectedValueMap.setValue(newMappedItemList);
+			}
+		}
+		
+		
+		LOGGER.info("** End-f_getQACheckListDataPopUp methode");
+		return valuesMap;
+	}
+
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<QACheckListData> f_stmtAttrValidationList(Integer filingId, String checkName)
+	{
+		List<QACheckListData> normValidationList=null;
+		try{
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			List<String> checkSatgeList=null;
+			if(!checkName.trim().isEmpty())
+			{
+			checkSatgeList=Arrays.asList(checkName.split(","));
+			}
+			parameters.put("checkStage", checkSatgeList);
+			parameters.put("filingId", filingId);
+			normValidationList = (List<QACheckListData>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getValidationCheckNameListForStatus, QAMessageChecklist.class,parameters);
+
+	}catch (Exception e) {
+		e.printStackTrace();	
+	}
+		return normValidationList;
+	}
+}

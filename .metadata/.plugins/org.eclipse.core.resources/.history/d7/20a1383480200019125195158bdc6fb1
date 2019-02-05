@@ -1,0 +1,850 @@
+package com.livespread.controller;
+
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.livespread.command.ClientFeatureMappingCmd;
+import com.livespread.command.ParserSectionMappingCommand;
+import com.livespread.command.UserGroupCommand;
+import com.livespread.command.UserTemplateCommand;
+import com.livespread.domain.ApplicationScreenComponents;
+import com.livespread.domain.ParserSectionMapping;
+import com.livespread.domain.User;
+import com.livespread.domain.UserGroupsAttributeMapping;
+import com.livespread.service.ComponentAssignService;
+import com.livespread.service.EmailServiceImpl;
+import com.livespread.service.UserGroupService;
+import com.livespread.util.HTMLTagValidator;
+
+@Controller
+public class AdminUserGroupController {
+
+	private Logger LOGGER = Logger.getLogger(AdminUserGroupController.class);
+
+	@Autowired
+	UserGroupService userGroupService;
+
+
+	@Autowired ComponentAssignService componentAssignService;
+	
+	@RequestMapping(value = "/showUserGroup.htm", method = { RequestMethod.GET,RequestMethod.POST })
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public String userAdminbGroup(HttpServletRequest request,HttpServletResponse response, Model map)
+	{
+		LOGGER.info("**Start-- userAdminbGroup()");
+		Map<String, UserGroupCommand> listOfGroup = null;
+		try {
+			User loginUserDeatials = (User) request.getSession().getAttribute("user");
+			
+			listOfGroup = userGroupService.getUserGroupNames(loginUserDeatials.getUserGroupId(),loginUserDeatials.getUserAccess());
+			Map<Integer, String> paserList = new HashMap<Integer, String>();
+			paserList = userGroupService.getParsersList();
+			map.addAttribute("listOfGroup", listOfGroup);
+			map.addAttribute("ParserNames", paserList);
+		} catch (Exception ex) {
+			LOGGER.error(
+					"Exception in >>>.class AdminUserGroupController >method::userAdminbGroup ::",
+					ex);
+			ex.printStackTrace();
+		}
+		return "adminUserGroup";
+	}
+
+	@RequestMapping(value = "/updatingORAddGroupName.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody String updatingORAddGroupName(HttpServletRequest request,HttpServletResponse response, Model map) {
+
+		String updating = "";
+		String gName = "";
+		String removedPids = "";
+		String newAdded = "";
+		int removeParserId = 0;
+		boolean transaction = false;
+		int groupNameofDb = 0;
+		int addParserId = 0;
+		int num = 0;
+		String finalPid = request.getParameter("finalPid");
+		String groupId = request.getParameter("groupId");
+		String userId = request.getParameter("userId");
+		String groupName = request.getParameter("groupName");
+		String beforeGname = request.getParameter("beforeGname");
+		String flag= request.getParameter("flag");
+		List<String> dBParsersIds = null;
+		List<String> listOfGroup = null;
+		List<String> finallistPid = null;
+		Map<String, String> finalGrouplistByGid = null;
+		String newGroup = "";
+		String message = "";
+		StringBuilder Parsers = new StringBuilder();
+		StringBuilder Parsers1 = new StringBuilder();
+		Map<Integer, String> paserList = new HashMap<Integer, String>();
+		String[] emailUpdated = { "", "", "", "", "" };
+		String gNameAlert = "";
+		String removedPidsAlert = "";
+		String newAddedAlert = "";
+		User loginUserDeatials = (User) request.getSession().getAttribute("user");
+		ObjectMapper objectMapper = new ObjectMapper();
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			LOGGER.info("start>>>.class AdminUserGroupController >method::updatingORAddGroupName");
+
+			if (groupName.isEmpty()) {
+				resultMap.put("userGrpMsg", "User Group Name Should not be Blank");
+				updating = objectMapper.writeValueAsString(resultMap);
+				return updating;
+			}
+			if (groupId.isEmpty()) {
+				resultMap.put("userGrpMsg", "User Group Name Should not be Blank");
+				updating = objectMapper.writeValueAsString(resultMap);
+				return updating;
+			}
+			if (userId.isEmpty()) {
+			resultMap.put("userGrpMsg", "User Name Should not be Blank");
+			updating = objectMapper.writeValueAsString(resultMap);
+			return updating;
+			}
+			List<String> allFormInputs=new ArrayList<>();
+			allFormInputs.add(groupName);
+			allFormInputs.add(groupId);
+			allFormInputs.add(userId);
+			allFormInputs.add(finalPid);
+
+			HTMLTagValidator htmlTagValidator=new HTMLTagValidator();
+			boolean isHtmlTagExist=htmlTagValidator.validate(allFormInputs);
+			if(isHtmlTagExist){
+				resultMap.put("userGrpMsg", "HTML character(<(\"[^\"]*\"|'[^']*'|[^'\">])*>) data is not allowed here");
+				updating = objectMapper.writeValueAsString(resultMap);
+				return updating;
+			}
+			String regex = "^[a-zA-Z0-9 _-]*$";
+
+			Pattern pattern = Pattern.compile(regex);
+			Matcher matcher = pattern.matcher(groupName);
+			if(groupName==null || !matcher.matches())
+			{
+				resultMap.put("userGrpMsg", "GroupName allows only alphanumaric,-,_ and space only");
+				updating = objectMapper.writeValueAsString(resultMap);
+				return updating;
+			}
+			if (finalPid.equalsIgnoreCase("null")) {
+				finallistPid = new ArrayList<String>();
+			} else {
+				finallistPid = new LinkedList<String>(Arrays.asList(finalPid
+						.split("\\,")));
+			}
+	/**
+	* Here we set User Group is active or Inactive and also set child users are active or inactive
+	*/
+		if(userGroupService.f_getUserGroupsCountByFlag(Long.parseLong(groupId),flag)<=0){
+		userGroupService.removingGroupId(userId,groupId,flag);
+	
+		if(flag.equalsIgnoreCase("D")){
+		//String userGrpMsg = groupName+ "User Group is InActive with Respective Users";	
+		resultMap.put("userGrpMsg", "User Group updated successfully");
+		updating = objectMapper.writeValueAsString(resultMap);
+		}else{
+		//String userGrpMsg = groupName+ "User Group is Active with Respective Users";	
+		resultMap.put("userGrpMsg", "User Group updated successfully");
+		updating = objectMapper.writeValueAsString(resultMap);
+		}
+	  }
+			
+			 
+			if (!groupName.isEmpty() && groupId.equals("0")
+					&& beforeGname.isEmpty()) {
+				LOGGER.info("add new Group");
+				listOfGroup = userGroupService.getOnlyUserGroupNames();
+				if (listOfGroup.contains(groupName)) {
+					transaction = false;
+					resultMap.put("userGrpMsg", "User Group Name is already exist");
+					updating = objectMapper.writeValueAsString(resultMap);
+					return updating;
+				} else {
+					
+					newGroup = userGroupService.addNewGroupWithParsers(
+							groupName, userId, finallistPid,loginUserDeatials.getUserGroupId());
+					if (newGroup.isEmpty()) {
+						transaction = false;
+						return updating;
+					} else {
+						paserList = userGroupService.getParsersList();
+						message = "Newadd";
+						//updating = groupName + " User Group added successfully";
+						resultMap.put("userGrpMsg", "'"+groupName+" ' User Group added successfully.");
+						updating = objectMapper.writeValueAsString(resultMap);
+						for (int i = 0; i < finallistPid.size(); i++) {
+							if (i == 0) {
+								Parsers1.append(paserList.get(new Integer(
+										finallistPid.get(i))));
+							} else {
+								Parsers1.append("<br />"
+										+ paserList.get(new Integer(
+												finallistPid.get(i))));
+							}
+						}
+						transaction = true;
+						emailUpdated[0] = groupName;
+						emailUpdated[1] = Parsers1.toString();
+						addRemoveEditGroup(emailUpdated, message, groupName);
+						return updating;
+					}
+				}
+
+			} else {
+				/* updating */
+				LOGGER.info("srart logic");
+				dBParsersIds = userGroupService
+						.getParserNamesByGroupId(groupId);
+				List<String> copyDb = new ArrayList<String>();
+				copyDb.addAll(dBParsersIds);
+				dBParsersIds.removeAll(finallistPid);
+				finallistPid.removeAll(copyDb);
+				LOGGER.info("removed" + dBParsersIds);
+				LOGGER.info("addeddddddd" + finallistPid);
+				// test any fields are modified or not
+				if (dBParsersIds.size() == 0 && finallistPid.size() == 0
+						&& beforeGname.equals(groupName)) {
+					//updating = "User Group updated successfully.";
+					resultMap.put("userGrpMsg", "User Group updated successfully.");
+					updating = objectMapper.writeValueAsString(resultMap);
+					return updating;
+					
+				} else {
+
+					paserList = userGroupService.getParsersList();
+					// update Name of user_group
+					if (!beforeGname.equals(groupName)) {
+						listOfGroup = userGroupService.getOnlyUserGroupNames();
+						if (listOfGroup.contains(groupName)) {
+							transaction = false;
+							resultMap.put("userGrpMsg", "User Group Name is already exist.");
+							updating = objectMapper.writeValueAsString(resultMap);
+							return updating;
+						} else {
+							groupNameofDb = userGroupService.updateGroupName(
+									groupName, groupId, userId,flag);
+							if (groupNameofDb == 0) {
+								transaction = false;
+								resultMap.put("userGrpMsg", "User Group modification failed.");
+								updating = objectMapper.writeValueAsString(resultMap);
+								return updating;
+							} else {
+								transaction = true;
+								gName = ++num + ")" + beforeGname
+										+ " User Group updated to "
+										+ groupName;
+								gNameAlert = beforeGname
+										+ " User Group updated to "
+										+ groupName;
+								emailUpdated[0] = gName;
+							}
+						}
+					}
+					// remove parserId code
+
+					if (dBParsersIds != null && dBParsersIds.size() != 0) {
+						removeParserId = userGroupService.removeParserIds(
+								groupId, userId, dBParsersIds);
+						if (removeParserId == 0) {
+							transaction = false;
+							resultMap.put("userGrpMsg", "removing fail!.");
+							updating = objectMapper.writeValueAsString(resultMap);
+							return updating;
+							
+						} else {
+
+							for (int i = 0; i < dBParsersIds.size(); i++) {
+								if (i == 0) {
+									Parsers.append(paserList.get(new Integer(
+											dBParsersIds.get(i))));
+								} else {
+									Parsers.append("<br />"
+											+ paserList.get(new Integer(
+													dBParsersIds.get(i))));
+								}
+							}
+							if (dBParsersIds.size() == 1) {
+								removedPids = ++num
+										+ ")  Document Processing Type removed."
+										+ Parsers;
+								removedPidsAlert = "Document Processing Type removed."
+										+ Parsers;
+							} else {
+								removedPids = ++num
+										+ ")  Document Processing Types removed."
+										+ Parsers;
+								removedPidsAlert = "Document Processing Types removed."
+										+ Parsers;
+							}
+							transaction = true;
+							emailUpdated[1] = removedPids;
+						}
+					}
+
+					// added new parserId code and groupId
+					if (finallistPid != null && finallistPid.size() != 0) {
+						LOGGER.info("add new parseId.");
+						List<String> copy = new ArrayList<String>();
+						copy.addAll(finallistPid);
+						addParserId = userGroupService.addedParserIds(groupId,
+								userId, finallistPid);
+						if (addParserId == 0) {
+							transaction = false;
+							resultMap.put("userGrpMsg", "add parserId fail.");
+							updating = objectMapper.writeValueAsString(resultMap);
+							return updating;
+						} else {
+							transaction = true;
+							for (int i = 0; i < copy.size(); i++) {
+								if (i == 0) {
+									Parsers1.append(paserList.get(new Integer(
+											copy.get(i))));
+								} else {
+									Parsers1.append(" "
+											+ paserList.get(new Integer(copy
+													.get(i))));
+								}
+							}
+
+							if (copy.size() == 1) {
+								newAdded = ++num
+										+ ")  New Document Processing Type added."
+										+ Parsers1;
+								newAddedAlert = " New Document Processing Type added."
+										+ Parsers1;
+							} else {
+								newAdded = ++num
+										+ ")  New Document Processing Types added:"
+										+ Parsers1;
+								newAddedAlert = " New Document Processing Types added:"
+										+ Parsers1;
+							}
+							emailUpdated[2] = newAdded;
+							transaction = true;
+						}
+					}
+					// sending mail
+
+					if (transaction) {
+						LOGGER.info("email sending");
+						message = "update";
+						updating = gNameAlert + " " + removedPidsAlert
+								+ " " + newAddedAlert + ".";
+						resultMap.put("userGrpMsg", updating);
+						updating = objectMapper.writeValueAsString(resultMap);
+						finalGrouplistByGid = userGroupService
+								.getUserGroupParserListByGid(groupId);
+						for (Object key : finalGrouplistByGid.keySet()) {
+							emailUpdated[3] = key.toString();
+							emailUpdated[4] = finalGrouplistByGid.get(key);
+						}
+						addRemoveEditGroup(emailUpdated, message, beforeGname);
+
+					} else {
+						updating = "error";
+						resultMap.put("userGrpMsg", "error.");
+						updating = objectMapper.writeValueAsString(resultMap);
+						return updating;
+						
+					}
+
+				}
+
+			}
+		} catch (Exception ex) {
+
+			LOGGER.error(
+					"Exception in >>>.class AdminUserGroupController >method::updatingORAddGroupName ::",
+					ex);
+			ex.printStackTrace();
+		}
+		return updating;
+	}
+
+	@RequestMapping(value = "/removingGroupId.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody String removingGroupId(HttpServletRequest request,HttpServletResponse response, Model map) {
+		LOGGER.info("start>>>.class AdminUserGroupController >method::removingGroupId");
+		String removeId = "";
+		int removingGId = 0;
+		String message = "";
+		String[] emailUpdated = { "" };
+		String removegroupId = request.getParameter("removegroupId");
+		String userId = request.getParameter("userId");
+		String NameofGroup = request.getParameter("NameofGroup");
+		String flag="D";
+		try {
+			if (removegroupId.equals("null") || removegroupId.equals("0")) {
+				removeId = "groupId value not empty";
+				return removeId;
+			}
+			if (userId.isEmpty() || userId.equals("0")) {
+				removeId = "userId value not empty";
+				return removeId;
+			} else {
+				removingGId = userGroupService.removingGroupId(userId,
+						removegroupId,flag);
+				if (removingGId == 0) {
+					removeId = "groupId removed not successfully";
+					return removeId;
+				} else if (NameofGroup != null && !NameofGroup.isEmpty()) {
+					message = "remove";
+					removeId = NameofGroup + " Group Name removed  successfully";
+					emailUpdated[0] = "'" + NameofGroup + "' successfully ";
+					addRemoveEditGroup(emailUpdated, message, NameofGroup);
+
+				}
+
+			}
+		} catch (Exception ex) {
+
+			LOGGER.error(
+					"Exception in >>>.class AdminUserGroupController >method::removingGroupId ::",
+					ex);
+		}
+
+		return removeId;
+
+	}
+
+	private void addRemoveEditGroup(String[] updatedData, String message,
+			String groupName) {
+		LOGGER.info("start>>>.class AdminUserGroupController >method::sending email");
+		ResourceBundle emailProperties = ResourceBundle.getBundle("email");
+		User userObject = null;
+		String messageText = null;
+		if (SecurityContextHolder.getContext().getAuthentication()
+				.getPrincipal() instanceof User)
+			userObject = (User) SecurityContextHolder.getContext()
+					.getAuthentication().getPrincipal();
+		String emailAddress=emailProperties.getString("mail.smtp.from");
+		if( userObject.getEmail()!=null){
+			 emailAddress = userObject.getEmail();	
+		}
+		
+		try {
+			// dynamic output to mail
+			if (updatedData.length > 0 && updatedData != null) {
+				if (message.equalsIgnoreCase("remove")) {
+					messageText = MessageFormat.format(emailProperties
+							.getString("mail.bodycontentRemoveGroup"),
+							userObject.getFirstName(), updatedData[0]);
+					EmailServiceImpl emailServiceImpl=new EmailServiceImpl(emailAddress, emailProperties, emailProperties.getString("mail.removeSubject"), messageText, emailProperties.getString("mail.smtp.cc"));
+					emailServiceImpl.start();
+
+				} else if (message.equalsIgnoreCase("Newadd")) {
+					messageText = MessageFormat.format(emailProperties
+							.getString("mail.bodycontentAddGroup"), userObject
+							.getFirstName(), updatedData[0], updatedData[1]);
+					EmailServiceImpl emailServiceImpl=new EmailServiceImpl(emailAddress, emailProperties, emailProperties.getString("mail.addSubject"), messageText, emailProperties.getString("mail.smtp.cc"));
+					emailServiceImpl.start();
+					
+				} else if (message.equalsIgnoreCase("update")) {
+
+					messageText = MessageFormat.format(emailProperties
+							.getString("mail.bodycontentUpdatedGroup"),
+							userObject.getFirstName(), "'" + groupName + "",
+							updatedData[0] + "" + updatedData[1] + ""
+									+ updatedData[2], updatedData[3],
+							updatedData[4]);
+					EmailServiceImpl emailServiceImpl=new EmailServiceImpl(emailAddress, emailProperties, emailProperties.getString("mail.updateSubject"), messageText, emailProperties.getString("mail.smtp.cc"));
+					emailServiceImpl.start();
+				}
+			}
+
+		} catch (Exception ex) {
+			LOGGER.error(
+					"Exception in >>>.class AdminUserGroupController >method::addRemoveEditGroup ::",
+					ex);
+		}
+
+	}
+	
+	
+	
+	
+
+	@RequestMapping(value = "/adminTemplate.htm", method = { RequestMethod.GET,RequestMethod.POST })
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public String templateAmin(HttpServletRequest request,HttpServletResponse response, Model map,HttpSession httpSession) {
+		LOGGER.info("**Start-- adminTemplate()");
+		Map<String, UserTemplateCommand> listOfTemplatebyGroupIds = null;
+		try {
+
+			User user = (User) request.getSession().getAttribute("user");
+			Map<Integer, String> templateList = new HashMap<Integer, String>();
+			if(user!=null){
+			listOfTemplatebyGroupIds = userGroupService.getTemplatebyGroupId(user.getUserGroupId(),user.getUserAccess());
+			if(listOfTemplatebyGroupIds.size()<=0){
+				int isGrpActive=userGroupService.f_getUserGroupsCountByFlag((long)user.getUserGroupId(),"A");
+				if(isGrpActive>0){
+				UserTemplateCommand userTemplateCommand=new UserTemplateCommand();
+				userTemplateCommand.setUser_Group_Id(Long.parseLong(user.getUserGroupId().toString()));
+				userTemplateCommand.setUser_Group_Name(user.getUsersGroupName());
+				listOfTemplatebyGroupIds.put(user.getUserGroupId().toString(), userTemplateCommand);
+				}
+				
+			}
+			templateList = userGroupService.getTemplateList(user.getUserGroupId(),user.getUserAccess());
+			}
+			map.addAttribute("listOfTemplatebyGroupIds", listOfTemplatebyGroupIds);
+			map.addAttribute("templateNames", templateList);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			LOGGER.error("Exception in >>>.class AdminUserGroupController >method::adminTemplate ::",ex);
+		}
+		return "templateAmin";
+	}
+	
+	
+	@RequestMapping(value = "/updatingORremovingTemplates.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String updatingORremovingTemplates(HttpServletRequest request,
+			HttpServletResponse response, Model map) {
+		    String updating = "Templates are not updated!";
+			String finalTids = request.getParameter("finalTid");
+			String groupId = request.getParameter("groupId");
+			String userId = request.getParameter("userId");
+			String groupName = request.getParameter("groupName");
+			List<String> finallistTids = null;
+			List<String> existingTempleIds = null;
+			
+			LOGGER.info("start>>>.class AdminUserGroupController >method::updatingORremovingTemplates");
+
+			if (groupName.isEmpty()) {
+				updating = "groupName not empty";
+				return updating;
+			}
+			if (groupId.isEmpty()) {
+				updating = "groupId not empty";
+				return updating;
+			}
+			if (userId.isEmpty()) {
+				updating = "userId not empty";
+				return updating;
+			}
+
+			if (finalTids.equalsIgnoreCase("null")) {
+				finallistTids = new ArrayList<String>();
+			} else {
+				finallistTids = new LinkedList<String>(Arrays.asList(finalTids
+						.split("\\,")));
+			}
+		
+			
+			// remove TemplateIds
+			if (groupName!=null && !groupName.isEmpty() && groupId!=null && !groupId.isEmpty()){
+				existingTempleIds = userGroupService.templeteIdsByGroupId(Integer.parseInt(groupId));
+				boolean	Updatefalg=false;
+				List<String> listRemoved = new ArrayList<String>();
+				listRemoved.addAll(existingTempleIds);
+				List<String> listAdded = new ArrayList<String>();
+				listAdded.addAll(existingTempleIds);		
+					listRemoved.removeAll(finallistTids);
+					System.out.println("removed"+listRemoved);
+					finallistTids.removeAll(listAdded);
+					System.out.println("Added  "+finallistTids);
+			if(listRemoved.size()==0 && finallistTids.size()==0){
+				updating = "templates are not modified!";
+			}else{
+			    Updatefalg=userGroupService.updateTemplates(listRemoved,finallistTids,Integer.parseInt(userId),Integer.parseInt(groupId));
+			    if(Updatefalg){
+			    	updating = "Template updated  successfully!";	
+			    }
+			}
+			}	
+		return updating;
+	}
+
+	@RequestMapping(value = "/adminComponentAssocation.htm", method = { RequestMethod.GET,RequestMethod.POST })
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public String adminComponentAssocation(HttpServletRequest request,HttpServletResponse response, Model map,String type,HttpSession httpSession) {
+		LOGGER.info("**Start-- adminTemplate()");
+		
+		try {
+		User user = (User) request.getSession().getAttribute("user");
+		Map<String, Integer> userGroupDetailsMap=null;
+		List<UserGroupsAttributeMapping> mappingList=new LinkedList<>();
+		if(user!=null){
+			userGroupDetailsMap=new LinkedHashMap<String, Integer>();
+			if(user.getUserAccess()!=null){
+			Integer userGroupId=Integer.parseInt(user.getUserGroupId().toString());
+			if(user.getUserAccess()==1){
+			userGroupDetailsMap=userGroupService.getGroupNamesforReportAdmin(userGroupId);
+			mappingList=componentAssignService.f_findAllMappingRecordsGrpAdmin(userGroupId);
+			}else{
+			int isGrpActive=userGroupService.f_getUserGroupsCountByFlag((long)user.getUserGroupId(),"A");
+			if(isGrpActive>0){
+			userGroupDetailsMap.put(user.getUsersGroupName(),userGroupId);
+			}
+			mappingList=componentAssignService.f_findAllMappingRecordsGrpAdmin(userGroupId);
+		  }
+			}
+		}
+		
+		
+    	 List<ApplicationScreenComponents> screenListWithComponent=componentAssignService.f_findScreenAllComponent();
+    	 List<String> screenList=componentAssignService.f_findDistinctScreenName();
+    	 
+    	 Map<String,List<ApplicationScreenComponents>> screenDataMap=new LinkedHashMap<String,List<ApplicationScreenComponents>>();
+    	
+    	 for(String screenName:screenList){
+    		 List<ApplicationScreenComponents> componentList=new ArrayList<ApplicationScreenComponents>();
+    		 for(ApplicationScreenComponents components:screenListWithComponent){
+    			 if(screenName.equalsIgnoreCase(components.getScreenName())){
+    				 componentList.add(components);
+    			 }
+    			 screenDataMap.put(screenName, componentList);
+    		 }
+    	 }
+    	 map.addAttribute("screenDataMap", screenDataMap);
+    	 map.addAttribute("userGroupDetails", userGroupDetailsMap);
+    	 map.addAttribute("screenListDetails", screenListWithComponent);
+    	 map.addAttribute("mappingDetails", mappingList);
+    	 
+    	 /**Here we fetch distinct template name from norm_item_lable tables**/
+     	
+			Map<Integer, String> templateList = new HashMap<Integer, String>();
+			if(user!=null){
+			if(user.getUserAccess()==1){
+			templateList = userGroupService.getTemplateList(user.getUserGroupId(),user.getUserAccess());
+			}else{
+			templateList = userGroupService.getTemplateListByUserGroup(user.getUserGroupId());		
+			}
+			
+			}
+    	
+    	 map.addAttribute("templateList", templateList);
+    	 
+    	 /**This map used for to decide group type g:USERGROUP or TEMPLATE**/
+    	 List<String> templateCompList=new ArrayList<String>();
+    	 List<String> userGrpCompList=new ArrayList<String>();
+    	 for(ApplicationScreenComponents components:screenListWithComponent){
+			 if("USERGROUP".equalsIgnoreCase(components.getGroupType())){
+				 userGrpCompList.add(components.getScreenName());
+		    }else if("TEMPLATE".equalsIgnoreCase(components.getGroupType())){
+		    	templateCompList.add(components.getScreenName());
+		    }
+    	 }//end for
+    	 map.addAttribute("userGrpCompList", userGrpCompList);
+    	 map.addAttribute("templateCompList", templateCompList);
+    	 /**
+    	  * This value used for check radio buttion
+    	  */
+    	 map.addAttribute("type", type);
+    	 
+    	} catch (Exception ex) {
+			ex.printStackTrace();
+			LOGGER.error("Exception in >>>.class adminComponentAssocation >method::adminTemplate ::",ex);
+		}
+		return "adminComponentAssocation";
+	} 
+	
+	@RequestMapping(value = "/updateTemplateScreenComponent.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody boolean updateTemplateScreenComponent(@RequestParam("id") String idInString,@RequestParam("selectedValues") String selectedValues,String groupType,HttpServletRequest request,HttpServletResponse response, Model map) {
+		LOGGER.info("**start--updateTemplateScreenComponent methode");
+		int id=0;
+		boolean flag=false;
+		
+		if(idInString!=null){
+		try{
+		id=Integer.parseInt(idInString);
+		}catch(NumberFormatException nfe){
+		nfe.printStackTrace();
+		LOGGER.info(nfe);	
+		}
+	 }
+	
+	List<Integer> newIdsList=null;
+	String[] selectedValuesArray=null;
+	if(selectedValues!=null && !selectedValues.equalsIgnoreCase("") && !selectedValues.equalsIgnoreCase("null")){
+	 selectedValuesArray=selectedValues.split(",");
+	 newIdsList=new ArrayList<Integer>();
+	 for(int i = 0; i < selectedValuesArray.length; i++) {
+	  newIdsList.add((selectedValuesArray[i]!=null && !selectedValuesArray[i].equalsIgnoreCase(""))? Integer.parseInt(selectedValuesArray[i]) : 0);
+	}
+	} 
+	 flag=componentAssignService.f_updateScreenComponentByGroupId(id, newIdsList,groupType);
+	
+	LOGGER.info("**End--updateScreenComponent methode");
+	return flag;
+	}
+	
+	
+
+	@RequestMapping(value = "/adminRageFeatures.htm", method = { RequestMethod.GET,RequestMethod.POST })
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public String adminRageFeatures(HttpServletRequest request,HttpServletResponse response,
+			@RequestParam("userGroupId") Integer userGroupId,
+			Model map) {
+		LOGGER.info("**Start-- adminRageFeatures()");
+		Map<String, ClientFeatureMappingCmd> listOfFeaturesbyGroupIds = null;
+		Map<Integer, String> featureList=null;
+		try {
+			if(userGroupId!=null){
+		    listOfFeaturesbyGroupIds = userGroupService.getStatusByGroup(userGroupId);
+		    featureList= new HashMap<Integer, String>();
+			featureList = userGroupService.getFeatureList();
+			}
+			map.addAttribute("listOfFeaturesbyGroupIds", listOfFeaturesbyGroupIds);
+			map.addAttribute("featureList", featureList);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			LOGGER.error("Exception in >>>.class AdminUserGroupController >method::adminRageFeatures ::",ex);
+		}
+		return "rageFeaturesAdmin";
+	}	
+	
+	
+	@RequestMapping(value = "/updatingORremovingFeatures.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String updatingORremovingFeatures(HttpServletRequest request,
+			HttpServletResponse response, Model map) {
+		    String updating = "LsFeatures are not updated!";
+			String finalFids = request.getParameter("finalFid");
+			String groupId = request.getParameter("groupId");
+			String userId = request.getParameter("userId");
+			String groupName = request.getParameter("groupName");
+			List<String> finallistTids = null;
+			List<String> existingFeaturesId = null;
+			boolean flag=false;
+			LOGGER.info("start>>>.class AdminUserGroupController >method::updatingORremovingFeatures");
+			if (groupName.isEmpty()) {
+				updating = "groupName not empty";
+				return updating;
+			}
+			if (groupId.isEmpty()) {
+				updating = "groupId not empty";
+				return updating;
+			}
+			if (userId.isEmpty()) {
+				updating = "userId not empty";
+				return updating;
+			}
+
+			if (!StringUtils.isEmpty(finalFids)) {
+				finallistTids = new LinkedList<String>(Arrays.asList(finalFids
+						.split("\\,")));
+			} 
+			// remove Features
+		if (groupName != null && !groupName.isEmpty() && groupId != null && !groupId.isEmpty()) {
+			existingFeaturesId = userGroupService.featuresByGroupId(Integer.parseInt(groupId));
+			List<String> listRemoved = new ArrayList<String>();
+			listRemoved.addAll(existingFeaturesId);
+			List<String> listAdded = new ArrayList<String>();
+			listAdded.addAll(existingFeaturesId);
+			listRemoved.removeAll(finallistTids);
+			LOGGER.info("removed" + listRemoved);
+			finallistTids.removeAll(listAdded);
+			LOGGER.info("Added  " + finallistTids);
+			// removed and added functionality
+			if (!listRemoved.isEmpty() || !finallistTids.isEmpty()) {
+				LOGGER.info("listRemoved:: >>>>>> " + listRemoved + "added::>> " + finallistTids + "  >>>> not emptyyy");
+				flag = userGroupService.updateLsFeatures(listRemoved, finallistTids, groupName,Integer.parseInt(groupId));
+			if(flag){
+				updating = "Rage Features successfully updated!";
+			}else{
+				updating = "Failure Rage Features updates";
+			}
+			
+			} else {
+				LOGGER.info("listRemoved:: >>>>>> " + listRemoved + "added::>> " + finallistTids + "  >>>>emptyyy");
+				updating = "No fields are modified";
+			}
+		}	
+		
+		return updating;
+	}
+	
+	@RequestMapping(value = "/showPaprserSectionMapping.htm", method = {RequestMethod.GET,RequestMethod.POST})
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public String showPaprserSectionMapping(HttpServletRequest request,HttpServletResponse response,Model map)
+	{
+		LOGGER.info("**Start-- userAdminbGroup()");
+		Map<String, ParserSectionMappingCommand> parserSectionMapping = null;
+		try {
+		parserSectionMapping = userGroupService.getParserSectionMapping();
+		Map<Integer, String> sectionList = new HashMap<Integer, String>();
+		sectionList = userGroupService.getSectionList();
+		map.addAttribute("parserSectionMapping", parserSectionMapping);
+		map.addAttribute("sectionList", sectionList);
+		} catch (Exception ex) {
+		LOGGER.error("Exception in >>>.class AdminUserGroupController >method::userAdminbGroup ::",ex);
+		ex.printStackTrace();
+		}
+		return "adminSectionMapping";
+	}	
+	
+	@RequestMapping(value = "/editParserSectionMapping.htm", method = {RequestMethod.GET,RequestMethod.POST})
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public @ResponseBody boolean editParserSectionMapping(HttpServletRequest request,HttpServletResponse response,Model map)
+	{
+		boolean flag=false;
+		LOGGER.info("**Start-- editParserSectionMapping ");
+		try {
+		String finalSectionId=null;
+		List<String> sectionIdList=null;
+		if(request.getParameter("finalSectionId")!=null && request.getParameter("finalSectionId")!="" && !request.getParameter("finalSectionId").isEmpty())
+		{
+		finalSectionId=request.getParameter("finalSectionId");
+		sectionIdList = new ArrayList<String>(Arrays.asList(finalSectionId.split(",")));
+		}
+		String parserId=request.getParameter("parserId");
+		User user = (User) request.getSession().getAttribute("user");
+		List<ParserSectionMapping> parserSectionMappingsList=new ArrayList<>();
+		if(parserId!=null && sectionIdList==null)
+		{
+		ParserSectionMapping parserSectionMapping=new ParserSectionMapping();
+		parserSectionMapping.setPsmParserId(Integer.parseInt(parserId));
+		parserSectionMappingsList.add(parserSectionMapping);
+		}else if(parserId!=null && sectionIdList!=null && !sectionIdList.isEmpty())
+		{
+			Integer parserIdNumeric=Integer.parseInt(parserId);
+			Date date=new Date();
+		for(String sectionId:sectionIdList)
+		{
+		ParserSectionMapping parserSectionMapping=new ParserSectionMapping();
+		parserSectionMapping.setPsmParserId(parserIdNumeric);
+		parserSectionMapping.setPsmSectionId(Integer.parseInt(sectionId));
+		parserSectionMapping.setIsActiveFlag("Y");
+		parserSectionMapping.setCreatedBy(user.getUserId().intValue());
+		parserSectionMapping.setCreatedDate(date);
+		parserSectionMappingsList.add(parserSectionMapping);
+		}//end for
+		}
+		 flag=userGroupService.f_updateParserSectionMapping(parserSectionMappingsList);
+		
+		LOGGER.info("**E-- editParserSectionMapping ");
+		}catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return flag;
+	}	
+}

@@ -1,0 +1,76 @@
+package com.livespread.command;
+
+import java.util.List;
+import java.util.Map;
+
+public class NormalizeViewForDebitACHCommand {
+
+	public Double beginingBalance;
+
+	public String stmtMonth;
+
+	public List<String> stmtDate;
+
+	public Map<String, Double> deposits;
+
+	public Map<String, Double> withdrwals;
+
+	public Map<String, Double> dailyCashBalance;
+
+	public Double getBeginingBalance() {
+		return beginingBalance;
+	}
+
+	public void setBeginingBalance(Double beginingBalance) {
+		this.beginingBalance = beginingBalance;
+	}
+
+	public String getStmtMonth() {
+		return stmtMonth;
+	}
+
+	public void setStmtMonth(String stmtMonth) {
+		this.stmtMonth = stmtMonth;
+	}
+
+	public List<String> getStmtDate() {
+		return stmtDate;
+	}
+
+	public void setStmtDate(List<String> stmtDate) {
+		this.stmtDate = stmtDate;
+	}
+
+	public Map<String, Double> getDeposits() {
+		return deposits;
+	}
+
+	public void setDeposits(Map<String, Double> deposits) {
+		this.deposits = deposits;
+	}
+
+	public Map<String, Double> getWithdrwals() {
+		return withdrwals;
+	}
+
+	public void setWithdrwals(Map<String, Double> withdrwals) {
+		this.withdrwals = withdrwals;
+	}
+
+	public Map<String, Double> getDailyCashBalance() {
+		return dailyCashBalance;
+	}
+
+	public void setDailyCashBalance(Map<String, Double> dailyCashBalance) {
+		this.dailyCashBalance = dailyCashBalance;
+	}
+
+	@Override
+	public String toString() {
+		return "NormalizeViewForDebitACHCommand [beginingBalance="
+				+ beginingBalance + ", stmtMonth=" + stmtMonth + ", stmtDate="
+				+ stmtDate + ", deposits=" + deposits + ", withdrwals="
+				+ withdrwals + ", dailyCashBalance=" + dailyCashBalance + "]";
+	}
+
+}

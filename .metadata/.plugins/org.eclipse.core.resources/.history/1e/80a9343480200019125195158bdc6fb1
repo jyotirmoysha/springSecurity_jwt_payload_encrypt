@@ -1,0 +1,479 @@
+package com.livespread.controller;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.livespread.command.ExtractionRuleRowDataCommand;
+import com.livespread.command.FinancialItemsCommand;
+import com.livespread.command.NormalisedLabelAndValues;
+import com.livespread.command.PdfExtractionMetadatCommand;
+import com.livespread.common.ParserOutputSUPPLObjectComparator;
+import com.livespread.domain.ExportExcelMetadata;
+import com.livespread.domain.User;
+import com.livespread.domain.WorkQueue;
+import com.livespread.service.AuditReportService;
+import com.livespread.service.ExcelExportService;
+import com.livespread.service.ExtractionDataRulesService;
+import com.livespread.service.NormalizationService;
+import com.livespread.service.UploadTempletService;
+import com.livespread.util.BuildGenericExcel;
+import com.livespread.util.CipherUtils;
+
+@Controller
+public class GenericExcelController {
+	private Logger LOGGER = Logger.getLogger(GenericExcelController.class);
+	@Autowired
+	private NormalizationService normalizationService;
+	
+	@Autowired
+	private AuditReportService auditReportService;
+	@Autowired
+	private ExcelExportService excelExportService;
+	
+	@Autowired
+	private UploadTempletService uploadTempletService;
+	@Autowired
+	ExtractionDataRulesService extractionDataRulesService;
+
+	/**
+     * Allocates a new function {@code GenericExcelController} so that it represents the download of
+     * excel for Normlization page currently contained in the Integer FilingId argument. The
+     * @param  filingId
+     *         The filingId passed by UI
+     */
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/normalizationExportTemplate.htm",method = {RequestMethod.GET, RequestMethod.POST })
+	public String downloadNormalizationExportTemplate(String encryptedFillingId,String encryCustomerName,HttpSession session,RedirectAttributes redirectAttributes ){
+		try{
+		LOGGER.info("**start-- downloadNormalizationExportTemplate function");
+		BuildGenericExcel buildGenericExcel=new BuildGenericExcel();
+		Integer filingId = Integer.parseInt(CipherUtils.decrypt(encryptedFillingId));
+		String customerName = CipherUtils.decrypt(encryCustomerName);
+/**
+ * Here we get excel details from excel_metadata table
+ */
+		String exportFunctName="NormalizationExport";
+		ExportExcelMetadata exportExcelMetadata=excelExportService.f_ExcelDetailsByName(exportFunctName);
+		
+		/**
+		 * In This case Only Template Exist with sample sheet.
+		 * We need to prepare sheets based on section and pass it to GenericExcel Code
+		 * In Generic Excel only write data in based on section
+		 */
+		Map<String,String> sectionMappingMap=(Map<String,String>)session.getAttribute("sessionSectionList");
+		/**
+		 * Here we create sheet based on sectionList
+		 */
+	
+	String tepmplateName=exportExcelMetadata.getExportTemplateName();
+	String downloadedFileName =filingId+"_"+customerName + "_Output.xlsx";
+	
+	List<Object> parserOutputList =normalizationService.getNormalizedDataForExcel(filingId,sectionMappingMap.keySet());
+
+	/**
+	 * Table Map Contains tableName as key and ObjectList as value
+	 */
+	Map<String,Map<String,List<? extends Object>>> dataValMap=new LinkedHashMap<>();
+	Map<String,List<? extends Object>> tableMap=null;
+	List<Object> objectList=null;
+	Object[] objIn = null;
+	for(Entry<String, String> sectionMap:sectionMappingMap.entrySet()){
+		tableMap=new LinkedHashMap<>();
+		objectList=new ArrayList<>();
+	 	for(Object parserOutputObj:parserOutputList){
+			objIn = (Object[]) parserOutputObj;
+			if(sectionMap.getKey().equalsIgnoreCase(objIn[3]== null ? "" : objIn[3].toString()))
+			{
+				objectList.add(objIn);
+			}
+			
+		}
+	 	if(sectionMap.getValue().equalsIgnoreCase("Supplementary Information"))
+	 	{
+	 		Collections.sort(objectList,new ParserOutputSUPPLObjectComparator());
+	 	}
+		tableMap.put("Table1", objectList);
+	 	String sheetName="";
+		 
+	 	if(sectionMap.getValue()!=null){
+			sheetName=sectionMap.getValue();
+			sheetName=sheetName.replaceAll("[/\\?*:]+", " ");
+		}
+		dataValMap.put(sheetName,tableMap);
+	}
+	int startRowNumber=exportExcelMetadata.getStartRowNumber();
+	int startcolumnNumber=exportExcelMetadata.getStartColumnNumber();
+	String sheetHeaderType="RowHeader";
+
+	 //Here we get replica of template
+		String outputExcelPath=buildGenericExcel.createCloneExcelTemplate(tepmplateName,downloadedFileName);
+		//Now we create sheets based on sectionList
+		buildGenericExcel.f_createSheeetsClone(sectionMappingMap, outputExcelPath);
+		
+    	buildGenericExcel.f_prepareExcelReport(downloadedFileName,dataValMap,startRowNumber,startcolumnNumber,sheetHeaderType);
+
+	LOGGER.info("**end-- downloadNormalizationExportTemplate function");
+	//return new ModelAndView("excelView", "excelViewDataMap",excelViewDataMap);
+	redirectAttributes.addAttribute("fileNameWithPath", outputExcelPath);
+		}catch(Exception e){
+			LOGGER.error("Error:"+e);
+			e.printStackTrace();
+		}
+	 return "redirect:/downloadFileByPath.htm";
+
+}
+
+	@RequestMapping(value = "/normalizedViewExportTemplate.htm",method = {RequestMethod.GET, RequestMethod.POST })
+	public ModelAndView downloadNormalizedViewExportTemplate(String encryptedFillingId,String encryCustomerName,HttpSession session){
+		LOGGER.info("**Start-- downloadNormalizedViewExportTemplate function");
+		String downloadedFileName="";
+		
+		
+		LOGGER.info("**End-- downloadNormalizedViewExportTemplate function");
+		ModelAndView mv = new ModelAndView("fileDownload.htm", "fileNameWithPath",downloadedFileName);
+		return mv;
+	}
+	
+	@RequestMapping(value = "/download_audit_report.htm",method = {RequestMethod.GET, RequestMethod.POST })
+	public String downloadAuditReportExportTemplate(RedirectAttributes redirectAttributes,HttpServletRequest request){
+		LOGGER.info("**Start-- downloadNormalizedViewExportTemplate function");
+		String outputExcelPath=null;
+	 	try{
+	 	SimpleDateFormat format1 = new SimpleDateFormat("MM/dd/yyyy");
+	 	Date startDate1=null;
+		Date endDate1=null;
+		Integer filingId = null;
+		if(request.getParameter("filingId")!=null && !request.getParameter("filingId").isEmpty()){
+		 filingId=Integer.valueOf(request.getParameter("filingId"));
+		 if(filingId.intValue()==0)
+		 {
+			 filingId=null;
+		 }
+		}
+	 	String startDate=(String) request.getParameter("startDate");
+	 	String endDate=(String) request.getParameter("endDate");
+	 	
+	 	/**
+	 	 * Here we convert string to Date
+	 	 */
+	 	if(startDate!=null && endDate!=null){
+	 if(!startDate.equalsIgnoreCase("") || !endDate.equalsIgnoreCase("")){
+	 	startDate1 = format1.parse(startDate.trim());
+        endDate1 = format1.parse(endDate.trim());
+	 	}
+	  }
+	 	
+		String exportFunctName="AuditTrailExport";
+		ExportExcelMetadata exportExcelMetadata=excelExportService.f_ExcelDetailsByName(exportFunctName);
+
+	 String downloadedFileName="AuditReportDownloadFile.xlsx";
+	 String tepmplateName=exportExcelMetadata.getExportTemplateName();
+	 BuildGenericExcel buildGenericExcel=new BuildGenericExcel();
+	
+	//Here create clone excelsheet based on existing tamplate
+	 
+	outputExcelPath=buildGenericExcel.createCloneExcelTemplate(tepmplateName,downloadedFileName);
+
+	
+	Map<String,List<Object>> sheetDataMap=new LinkedHashMap<>();
+	 //Here We fetch data for Normalization sheet
+	
+	List<Object> reportList=auditReportService.f_fetchAuditRecordsByFilingId(filingId,startDate1,endDate1);
+	List<Object> reprocessAuditList=auditReportService.f_fetchReporcessAuditRecordsByFilingId(filingId,startDate1,endDate1);
+	List<Object> arsPoMappingRecordList =auditReportService.f_findArsPoMappingDataByFilingIdList(filingId,startDate1,endDate1);
+	Map<String, List<? extends Object>> f_statementAndRoleSummarymap=auditReportService.f_findStatementSummaryRoleSummaryForAudit(filingId,startDate1,endDate1);
+	List<? extends Object> statementSummaryList=f_statementAndRoleSummarymap.get("AUDIT_TRAIL_STATEMENT_SUMMARY");
+	List<? extends Object> roleSummaryListList=f_statementAndRoleSummarymap.get("AUDIT_TRAIL_ROLE_SUMMARY");
+			
+	 List<Object> processingReportTrackerList=auditReportService.f_findProcessingReportTrackerForAudit(filingId,startDate1,endDate1);
+	 List<Object> accuracyReportList=auditReportService.f_findAccuracyReportForAudit(filingId,startDate1,endDate1);
+	 List<Object> mappingStatsReportList=auditReportService.f_findMappingStatsReportForAudit(filingId,startDate1,endDate1);
+	 
+	//Here Sheets are static
+	//Here create datavalMap like Map<"SheetName",Map<"TableName",List<Object>>> dataValMap;
+	sheetDataMap.put("Normalization", reportList);
+	sheetDataMap.put("RulesManagement", reprocessAuditList);
+	sheetDataMap.put("ArsMapping", arsPoMappingRecordList);
+	sheetDataMap.put("TimeStatsTemplate", processingReportTrackerList);
+	sheetDataMap.put("AccuracyOutput", accuracyReportList);
+	sheetDataMap.put("mapping_stats", mappingStatsReportList);
+
+	
+	Map<String,Map<String,List<? extends Object>>> dataValMap=auditReportService.f_createDataValMapForExcel(sheetDataMap);	
+	Map<String,List<? extends Object>> tableMap=new LinkedHashMap<>();
+	tableMap.put("AUDIT_TRAIL_STATEMENT_SUMMARY", statementSummaryList);
+	tableMap.put("AUDIT_TRAIL_ROLE_SUMMARY", roleSummaryListList);
+	dataValMap.put("StatementAndRoleSummary",tableMap);
+	
+	int startRowNumber=exportExcelMetadata.getStartRowNumber();
+	int startcolumnNumber=exportExcelMetadata.getStartColumnNumber();
+	String sheetHeaderType="RowHeader";
+	buildGenericExcel.f_prepareExcelReport(downloadedFileName,dataValMap,startRowNumber,startcolumnNumber,sheetHeaderType);
+
+	 }catch(Exception e){
+		 e.printStackTrace();
+		LOGGER.error("Error:",e); 
+	 }
+		LOGGER.info("**End-- downloadNormalizedViewExportTemplate function");
+		redirectAttributes.addAttribute("fileNameWithPath", outputExcelPath);
+		return "redirect:/downloadFileByPath.htm";
+	
+}//end function
+	
+
+	@RequestMapping(value = "/exportFinancialItemExcel.htm",method = {RequestMethod.GET, RequestMethod.POST })
+	public String downloadFinancialItemExcel(RedirectAttributes redirectAttributes,HttpServletRequest request,String companyId){
+		LOGGER.info("**Start-- downloadNormalizedViewExportTemplate function");
+		String outputExcelPath=null;
+	 	try{
+	 	Integer companyIdNumber=null;
+	 	if(companyId!=null && companyId!=""){
+	 		try{
+	 		companyIdNumber=Integer.parseInt(companyId);	
+	 		}catch(NumberFormatException nfe){
+	 			nfe.printStackTrace();
+	 			LOGGER.error("NumberFormatException=",nfe);
+	 		}
+	 	}
+	  String exportFunctName="FinancialItemExport";
+	  ExportExcelMetadata exportExcelMetadata=excelExportService.f_ExcelDetailsByName(exportFunctName);
+
+	 String downloadedFileName="FinancialItem_"+companyId+".xlsx";
+	 String tepmplateName=exportExcelMetadata.getExportTemplateName();
+	 BuildGenericExcel buildGenericExcel=new BuildGenericExcel();
+	
+	//Here create clone excelsheet based on existing tamplate
+	 
+	outputExcelPath=buildGenericExcel.createCloneExcelTemplate(tepmplateName,downloadedFileName);
+
+	
+	List<? extends Object> financialItemList=uploadTempletService.f_getFinancialItemByEid(companyIdNumber);
+	
+	//Here Sheets are static
+	//Here create datavalMap like Map<"SheetName",Map<"TableName",List<Object>>> dataValMap;
+
+	Map<String,List<? extends Object>> tableMap=new LinkedHashMap<>();
+	tableMap.put("Table1", financialItemList);
+	Map<String,Map<String,List<? extends Object>>> dataValMap=new LinkedHashMap<>();
+	dataValMap.put("FinancialItem", tableMap);
+	
+	int startRowNumber=exportExcelMetadata.getStartRowNumber();
+	int startcolumnNumber=exportExcelMetadata.getStartColumnNumber();
+	String sheetHeaderType="RowHeader";
+	buildGenericExcel.f_prepareExcelReport(downloadedFileName,dataValMap,startRowNumber,startcolumnNumber,sheetHeaderType);
+
+	 }catch(Exception e){
+		 e.printStackTrace();
+		LOGGER.error("Error:",e); 
+	 }
+		LOGGER.info("**End-- downloadNormalizedViewExportTemplate function");
+		redirectAttributes.addAttribute("fileNameWithPath", outputExcelPath);
+		return "redirect:/downloadFileByPath.htm";
+	
+}//end function
+	
+	
+	@RequestMapping(value = "/exportFinancialItemExcelByFilter.htm",method = {RequestMethod.GET, RequestMethod.POST })
+	public String exportFinancialItemExcelByFilter(RedirectAttributes redirectAttributes,HttpServletRequest request,HttpSession session,
+			@RequestParam("companyNameToExport") String companyNameToExport,@RequestParam("companyIdToExport") String companyIdToExport,
+			@RequestParam("startDate") String startDateStr,@RequestParam("endDate") String endDateStr,@RequestParam("eIdToExport") String eIdToExport){
+		LOGGER.info("**Start-- exportFinancialItemExcelByFilter function");
+		String outputExcelPath=null;
+	 	try{
+	 		
+	 		SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+		 	Date startDate=null;
+			Date endDate=null;
+			FinancialItemsCommand financialItemsCommand = new FinancialItemsCommand();
+			Calendar c = Calendar.getInstance(); 
+			if(!startDateStr.equalsIgnoreCase("") && !endDateStr.equalsIgnoreCase("")){
+				startDate = dateFormat.parse(startDateStr.trim());
+				endDate = dateFormat.parse(endDateStr.trim());
+				c.setTime(endDate);
+				c.add(Calendar.DATE, 1);
+				endDate =c.getTime();
+				financialItemsCommand.setStardDate(startDate);
+				financialItemsCommand.setEndDate(endDate);
+			}
+			if(null!=eIdToExport && !"".equalsIgnoreCase(eIdToExport)){
+				financialItemsCommand.seteId(new Integer(eIdToExport));
+			}
+			
+	  String exportFunctName="FinancialItemExportByFilter";
+	  ExportExcelMetadata exportExcelMetadata=excelExportService.f_ExcelDetailsByName(exportFunctName);
+
+	 String downloadedFileName="FinancialItemsForApprovals.xlsx";
+	 String tepmplateName=exportExcelMetadata.getExportTemplateName();
+	 BuildGenericExcel buildGenericExcel=new BuildGenericExcel();
+	
+	//Here create clone excelsheet based on existing tamplate
+	 
+	outputExcelPath=buildGenericExcel.createCloneExcelTemplate(tepmplateName,downloadedFileName);
+	User user = (User) session.getAttribute("user");
+	financialItemsCommand.setUser(user);
+	List<? extends Object> financialItemList=normalizationService.getFinancialItemsByFilter(financialItemsCommand);
+	
+	
+	Map<String,List<? extends Object>> tableMap=new LinkedHashMap<>();
+	tableMap.put("Table1", financialItemList);
+	Map<String,Map<String,List<? extends Object>>> dataValMap=new LinkedHashMap<>();
+	dataValMap.put("FinancialItems", tableMap);
+	
+	int startRowNumber=exportExcelMetadata.getStartRowNumber();
+	int startcolumnNumber=exportExcelMetadata.getStartColumnNumber();
+	String sheetHeaderType="RowHeader";
+	buildGenericExcel.f_prepareExcelReport(downloadedFileName,dataValMap,startRowNumber,startcolumnNumber,sheetHeaderType);
+
+	 }catch(Exception e){
+		 e.printStackTrace();
+		LOGGER.error("Error:",e); 
+	 }
+		LOGGER.info("**End-- exportFinancialItemExcelByFilter function");
+		redirectAttributes.addAttribute("fileNameWithPath", outputExcelPath);
+		return "redirect:/downloadFileByPath.htm";
+	
+}
+	
+	@RequestMapping(value = "/exportPdfExtractionMetaDataFilter.htm",method = {RequestMethod.GET, RequestMethod.POST })
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public String exportPdfExtractionMetaDataFilter(RedirectAttributes redirectAttributes,HttpServletRequest request,HttpSession session,
+			@RequestParam("companyNameToExport") String companyNameToExport,@RequestParam("companyIdToExport") String companyIdToExport,
+			@RequestParam("startDate") String startDateStr,@RequestParam("endDate") String endDateStr,@RequestParam("eIdToExport") String eIdToExport){
+		LOGGER.info("**Start-- exportPdfExtractionMetaDataFilter function");
+		String outputExcelPath=null;
+	 	try{
+	 		
+	 		SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+		 	Date startDate=null;
+			Date endDate=null;
+			Calendar c = Calendar.getInstance(); 
+			
+			PdfExtractionMetadatCommand pdfExtractionMetadatCommand = new PdfExtractionMetadatCommand();
+			
+			if(!startDateStr.equalsIgnoreCase("") && !endDateStr.equalsIgnoreCase("")){
+				startDate = dateFormat.parse(startDateStr.trim());
+				endDate = dateFormat.parse(endDateStr.trim());
+				c.setTime(endDate);
+				c.add(Calendar.DATE, 1);
+				endDate =c.getTime();
+				
+				pdfExtractionMetadatCommand.setStardDate(startDate);
+				pdfExtractionMetadatCommand.setEndDate(endDate);
+			}
+			if(null!=eIdToExport && !"".equalsIgnoreCase(eIdToExport)){
+				pdfExtractionMetadatCommand.seteId(new Integer(eIdToExport));
+			}
+			
+	  String exportFunctName="PdfExtractionMetaExportByFilter";
+	  ExportExcelMetadata exportExcelMetadata=excelExportService.f_ExcelDetailsByName(exportFunctName);
+
+	 String downloadedFileName="PdfExtractionMetaForApprovals.xlsx";
+	 String tepmplateName=exportExcelMetadata.getExportTemplateName();
+	 BuildGenericExcel buildGenericExcel=new BuildGenericExcel();
+	
+	//Here create clone excelsheet based on existing tamplate
+	 
+	outputExcelPath=buildGenericExcel.createCloneExcelTemplate(tepmplateName,downloadedFileName);
+	User user = (User) session.getAttribute("user");
+	pdfExtractionMetadatCommand.setUser(user);
+	List<? extends Object> pdfExtractionMetadataList=normalizationService.getPdfExtractionMetaDataListByByFilter(pdfExtractionMetadatCommand);
+	
+	
+	Map<String,List<? extends Object>> tableMap=new LinkedHashMap<>();
+	tableMap.put("Table1", pdfExtractionMetadataList);
+	Map<String,Map<String,List<? extends Object>>> dataValMap=new LinkedHashMap<>();
+	dataValMap.put("ExtractionRules", tableMap);
+	
+	int startRowNumber=exportExcelMetadata.getStartRowNumber();
+	int startcolumnNumber=exportExcelMetadata.getStartColumnNumber();
+	String sheetHeaderType="RowHeader";
+	buildGenericExcel.f_prepareExcelReport(downloadedFileName,dataValMap,startRowNumber,startcolumnNumber,sheetHeaderType);
+
+	 }catch(Exception e){
+		 e.printStackTrace();
+		LOGGER.error("Error:",e); 
+	 }
+		LOGGER.info("**End-- exportPdfExtractionMetaDataFilter function");
+		redirectAttributes.addAttribute("fileNameWithPath", outputExcelPath);
+		return "redirect:/downloadFileByPath.htm";
+	
+}
+	
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/exportFinancialFileMetaData.htm")
+	public String getnormalizedViewDataToExportInExcel(@RequestParam("tagId") String tagId,RedirectAttributes redirectAttributes,HttpSession session)
+	{
+		try {
+			String FileName =  "FinancialFileMetaDataView.xlsx";
+			Long tagIdLong=null;
+			if(tagId!=null){
+				try{
+				tagIdLong=Long.parseLong(tagId);
+				}catch(NumberFormatException nfe)
+				{
+					LOGGER.info("Tag id should be in Number Format..");
+				}
+				 
+			}
+			
+     	    List<ExtractionRuleRowDataCommand> metaRowInfoList =extractionDataRulesService.getExtractionRulesDataForExcel(tagIdLong);
+     	   int colCount=0;
+     	    if(!CollectionUtils.isEmpty(metaRowInfoList)){
+     	    	if(metaRowInfoList.get(0).getColumnCounter()!=null){
+     	    	colCount=metaRowInfoList.get(0).getColumnCounter();
+     	    	}
+     	    }
+     	    
+			Map<String, Map<String, List<? extends Object>>> dataValMap = extractionDataRulesService.f_createFinancialFileExportData(metaRowInfoList,colCount);
+
+			//** Generic code **//*
+
+			String tepmplateName = "FinancialFileMetaData.xlsx";
+			
+			BuildGenericExcel buildGenericExcel = new BuildGenericExcel();
+			int startRowNumber = 1;
+			int startcolumnNumber = 1;
+			String sheetHeaderType = "RowHeader";
+			// Here we get replica of template
+			String downloadedFileName = FileName;
+			String outputExcelPath = buildGenericExcel.createCloneExcelTemplate(tepmplateName, downloadedFileName);
+			// Now we create sheets based on sectionList
+			Map<String, String> sectionMappingMap = new LinkedHashMap<>();
+			sectionMappingMap.put("Financial Data", "Financial Data");
+
+			buildGenericExcel.f_createSheeetsClone(sectionMappingMap, outputExcelPath);
+			buildGenericExcel.f_prepareExcelReport(downloadedFileName, dataValMap, startRowNumber, startcolumnNumber,sheetHeaderType);
+			LOGGER.info("**end-- downloadNormalizationExportTemplate function");
+			redirectAttributes.addAttribute("fileNameWithPath", outputExcelPath);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:", e);
+		}
+		return "redirect:/downloadFileByPath.htm";
+	}
+
+}

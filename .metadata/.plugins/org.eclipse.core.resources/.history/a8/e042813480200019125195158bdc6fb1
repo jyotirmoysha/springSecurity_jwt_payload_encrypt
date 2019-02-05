@@ -1,0 +1,64 @@
+package com.livespread.command;
+
+public class SectionIdentificationCommand {
+
+private Integer sid;	
+	
+private String sectionName;
+
+private String Language;
+
+private String keyword;
+
+private Integer startPageNo;
+
+private Integer endPageNo;
+
+public String getSectionName() {
+	return sectionName;
+}
+
+public void setSectionName(String sectionName) {
+	this.sectionName = sectionName;
+}
+
+public String getLanguage() {
+	return Language;
+}
+
+public void setLanguage(String language) {
+	Language = language;
+}
+
+public String getKeyword() {
+	return keyword;
+}
+
+public void setKeyword(String keyword) {
+	this.keyword = keyword;
+}
+public Integer getSid() {
+	return sid;
+}
+
+public void setSid(Integer sid) {
+	this.sid = sid;
+}
+
+public Integer getStartPageNo() {
+	return startPageNo;
+}
+
+public void setStartPageNo(Integer startPageNo) {
+	this.startPageNo = startPageNo;
+}
+
+public Integer getEndPageNo() {
+	return endPageNo;
+}
+
+public void setEndPageNo(Integer endPageNo) {
+	this.endPageNo = endPageNo;
+}
+	
+}

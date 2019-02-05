@@ -1,0 +1,96 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author KP0e1301
+ *
+ */
+
+@Entity
+@Table(name = "SECTOR")
+@NamedQueries({
+	@NamedQuery(name = "getSectorList", query = "select sector from Sector sector where sectorName is not null"),
+	@NamedQuery(name = "getSectorBySectorId", query = "select sector from Sector sector where sector.sectorId=:sectorId "),
+	@NamedQuery(name = "getSectorByName", query = "select sector from Sector sector where sectorName is not null and Upper(sectorName) =Upper(:sectorName)")
+})
+public class Sector  implements Serializable, BaseEntity{
+
+	
+	
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	
+	@Id
+	/*@GeneratedValue(generator = "sequence")
+	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_ARS_PO_MAPPING_ID") })*/
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "SECTOR_ID")
+	private Integer sectorId;
+	
+	@Column(name = "SECTOR_NAME")
+	private String sectorName;
+	
+	@Column(name = "SUBSECTION_TEMPLATE")
+	private String subsectionTemplate;
+
+	public String getSubsectionTemplate() {
+		return subsectionTemplate;
+	}
+
+
+
+	public void setSubsectionTemplate(String subsectionTemplate) {
+		this.subsectionTemplate = subsectionTemplate;
+	}
+
+
+	public Integer getSectorId() {
+		return sectorId;
+	}
+
+
+
+	public void setSectorId(Integer sectorId) {
+		this.sectorId = sectorId;
+	}
+
+
+
+	public String getSectorName() {
+		return sectorName;
+	}
+
+
+
+	public void setSectorName(String sectorName) {
+		this.sectorName = sectorName;
+	}
+
+
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

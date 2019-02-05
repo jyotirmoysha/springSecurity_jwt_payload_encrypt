@@ -1,0 +1,355 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "FINANCIAL_ITEMS")
+@NamedNativeQueries(value = {
+@NamedNativeQuery(name = "findFinancialItemList", query = "select FI.FI_SECTION,FI.FI_SUB_SECTION,FI.FI_INDUSTRY,FI.FI_LABEL,FI.FI_LANGUAGE,NIL.NIL_LABEL from FINANCIAL_ITEMS FI LEFT JOIN NORM_ITEM_LABELS NIL on FI.NI_ITEM=NIL.NI_ITEM and fi.TEMPLET_ID=nil.TEMPLATE_ID where FI.E_ID=:companyId")
+
+})
+
+@NamedQueries({
+	@NamedQuery(name = "updateFinancialItemsRecordbyFiId", query = "update FinancialItems set niItem =:niItem where fiId =:fiId "),
+	@NamedQuery(name = "deleteFinancialItems", query = "delete from FinancialItems FI WHERE FI.fiId in :FI_ID_LIST"),
+	@NamedQuery(name = "countFinancialItemByEntityId", query = "select count(*) from FinancialItems where (eId is not null and eId != 0) and eId=:eId"),
+	@NamedQuery(name = "countFinancialItemByTemplateId", query = "select count(*) from FinancialItems where (eId is null and eId = 0) and templateId=:templateId"),
+	@NamedQuery(name = "getfiLabelListByEntityId", query = "select fiLabel from FinancialItems where Upper(fiLabel) like Upper(CONCAT('%',:fiLabel,'%')) and (eId is not null and eId != 0) AND (industryId=0 or industryId IS NULL) and eId=:eId"),
+	@NamedQuery(name = "getfiLabelListByTemplateId", query = "select fiLabel from FinancialItems where Upper(fiLabel) like Upper(CONCAT('%',:fiLabel,'%')) and (eId is null or eId = 0) AND (industryId=0 or industryId IS NULL) and templateId=:templateId"),
+	@NamedQuery(name = "getfiLabelListByIndustryId", query = "select fiLabel from FinancialItems where Upper(fiLabel) like Upper(CONCAT('%',:fiLabel,'%')) and (eId is null or eId = 0) and industryId = :industryId and templateId=:templateId"),
+	@NamedQuery(name = "getFinancialItemsbyFiIdlist", query = "select fi from FinancialItems fi WHERE fi.fiId in :fiIdList"),
+	@NamedQuery(name = "updateFinancialItemsStatusbyFiId", query = "update FinancialItems set fiStatus=:fiStatus,industryId=:industryId where fiId =:fiId "),
+	@NamedQuery(name = "findFinancialItemListForCompanyLevel", query = "SELECT fiId FROM FinancialItems WHERE templateId=:templateId AND UPPER(LTRIM(RTRIM(fiLabel)))=UPPER(:fiLabel) AND UPPER(LTRIM(RTRIM(fiSection)))=UPPER(:fiSection) AND UPPER(LTRIM(RTRIM(fiSubSection)))=UPPER(:fiSubSection) AND (eId is not null and eId > 0) AND (industryId=0 or industryId IS NULL) AND UPPER(fiStatus) ='PENDING'"),
+	@NamedQuery(name = "findFinancialItemListForGlobalLevel", query = "SELECT new com.livespread.domain.FinancialItems(fiId,fiStatus) FROM FinancialItems WHERE templateId=:templateId AND (eId is null or eId = 0) AND (industryId=0 or industryId IS NULL) AND UPPER(LTRIM(RTRIM(fiLabel)))=UPPER(:fiLabel) AND UPPER(LTRIM(RTRIM(fiSection)))=UPPER(:fiSection) AND UPPER(LTRIM(RTRIM(fiSubSection)))=UPPER(:fiSubSection) "),
+	@NamedQuery(name = "findFinancialItemListByParserOutPut", query = "SELECT fi FROM FinancialItems fi WHERE fi.templateId=:templateId AND fi.fiLabel =:asRepLabel AND fi.fiSection =:fiSection AND fi.fiSubSection =:fiSubSection AND fi.niItem =:niItem")
+})
+public class FinancialItems implements Serializable, BaseEntity {
+
+	private static final long serialVersionUID = 1L;
+
+	@Id
+//	@GeneratedValue(generator = "sequence")
+//	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_FI_ID") })
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "FI_ID")
+	private Integer fiId;
+
+	@Column(name = "FI_SUB_SECTION")
+	private String fiSubSection;
+
+	@Column(name = "FI_SECTION")
+	private String fiSection;
+
+	@Column(name = "FI_LABEL")
+	private String fiLabel;
+
+	@Column(name = "FI_INDEX_ORDER")
+	private Integer fiIndexOrder;
+
+	@Column(name = "NI_ITEM")
+	private Integer niItem;
+
+	@Column(name = "TEMPLET_ID")
+	private Integer templateId;
+
+	@Column(name = "FI_INDUSTRY")
+	private String fiIndustry;
+
+	@Column(name = "FI_LANGUAGE")
+	private String fiLanguage;
+
+	@Column(name = "E_ID")
+	private Integer eId;
+	
+	@Column(name = "CREATED_BY")
+	private String createdBy;
+
+	@Column(name = "CREATE_DATE")
+	private Date createdDate;
+
+	@Column(name = "ANALYST_ID")
+	private Integer analystId;
+
+	@Column(name = "FI_SEARCHTYPE")
+	private String fiSearchType;
+	
+	@Column(name = "HEADER_LABEL")
+	private String headerLabel;
+	
+	@Column(name = "TABLE_LABEL")
+	private String tableLabel;
+	
+	@Column(name = "FI_STATUS")
+	private String fiStatus;
+
+	@Column(name = "IS_PARSER_SPECIFIC")
+	private String isParserSpecific;
+	
+	@Column(name = "PARSER_DESCRIPTION")
+	private String parserDescription;
+	
+	@Column(name = "INDUSTRY_ID")
+	private Integer industryId;
+
+	@Transient
+	private Integer Id;
+
+	@Transient
+	private String Nil_Lable;
+
+	@Transient
+	private String comment;
+
+	@Transient
+	private String matchType;
+
+	
+	public FinancialItems() {
+		super();
+	}
+
+	public FinancialItems(Integer fiId, String fiStatus) {
+		super();
+		this.fiId = fiId;
+		this.fiStatus = fiStatus;
+	}
+
+	/**
+	 * @return the matchType
+	 */
+	public String getMatchType() {
+		return matchType;
+	}
+
+	/**
+	 * @param matchType the matchType to set
+	 */
+	public void setMatchType(String matchType) {
+		this.matchType = matchType;
+	}
+
+	public Integer getIndustryId() {
+		return industryId;
+	}
+
+	public void setIndustryId(Integer industryId) {
+		this.industryId = industryId;
+	}
+
+	public Integer geteId() {
+		return eId;
+	}
+
+	public void seteId(Integer eId) {
+		this.eId = eId;
+	}
+
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+
+	public String getNil_Lable() {
+		return Nil_Lable;
+	}
+
+	public void setNil_Lable(String nil_Lable) {
+		Nil_Lable = nil_Lable;
+	}
+
+	public Integer getId() {
+		return Id;
+	}
+
+	public void setId(Integer id) {
+		Id = id;
+	}
+
+	public String getFiSearchType() {
+		return fiSearchType;
+	}
+
+	public void setFiSearchType(String fiSearchType) {
+		this.fiSearchType = fiSearchType;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public Integer getAnalystId() {
+		return analystId;
+	}
+
+	public void setAnalystId(Integer analystId) {
+		this.analystId = analystId;
+	}
+
+	public String getFiIndustry() {
+		return fiIndustry;
+	}
+
+	public void setFiIndustry(String fiIndustry) {
+		this.fiIndustry = fiIndustry;
+	}
+
+	public String getFiLanguage() {
+		return fiLanguage;
+	}
+
+	public void setFiLanguage(String fiLanguage) {
+		this.fiLanguage = fiLanguage;
+	}
+
+	public Integer getTemplateId() {
+		return templateId;
+	}
+
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+
+	public Integer getFiId() {
+		return fiId;
+	}
+
+	public void setFiId(Integer fiId) {
+		this.fiId = fiId;
+	}
+
+	public String getFiSubSection() {
+		return fiSubSection;
+	}
+
+	public void setFiSubSection(String fiSubSection) {
+		this.fiSubSection = fiSubSection;
+	}
+
+	public String getFiSection() {
+		return fiSection;
+	}
+
+	public void setFiSection(String fiSection) {
+		this.fiSection = fiSection;
+	}
+
+	public String getFiLabel() {
+		return fiLabel;
+	}
+
+	public void setFiLabel(String fiLabel) {
+		this.fiLabel = fiLabel;
+	}
+
+	public Integer getFiIndexOrder() {
+		return fiIndexOrder;
+	}
+
+	public void setFiIndexOrder(Integer fiIndexOrder) {
+		this.fiIndexOrder = fiIndexOrder;
+	}
+
+	public Integer getNiItem() {
+		return niItem;
+	}
+
+	public void setNiItem(Integer niItem) {
+		this.niItem = niItem;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+	/**
+	 * @return the headerLabel
+	 */
+	public String getHeaderLabel() {
+		return headerLabel;
+	}
+
+	/**
+	 * @param headerLabel the headerLabel to set
+	 */
+	public void setHeaderLabel(String headerLabel) {
+		this.headerLabel = headerLabel;
+	}
+
+	/**
+	 * @return the tableLabel
+	 */
+	public String getTableLabel() {
+		return tableLabel;
+	}
+
+	/**
+	 * @param tableLabel the tableLabel to set
+	 */
+	public void setTableLabel(String tableLabel) {
+		this.tableLabel = tableLabel;
+	}
+
+	
+	public String getFiStatus() {
+		return fiStatus;
+	}
+
+	public void setFiStatus(String fiStatus) {
+		this.fiStatus = fiStatus;
+	}
+
+	public String getIsParserSpecific() {
+		return isParserSpecific;
+	}
+
+	public void setIsParserSpecific(String isParserSpecific) {
+		this.isParserSpecific = isParserSpecific;
+	}
+
+	public String getParserDescription() {
+		return parserDescription;
+	}
+
+	public void setParserDescription(String parserDescription) {
+		this.parserDescription = parserDescription;
+	}
+
+	
+	
+}

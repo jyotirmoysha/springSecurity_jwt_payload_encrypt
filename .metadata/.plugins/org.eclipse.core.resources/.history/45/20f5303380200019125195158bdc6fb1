@@ -1,0 +1,118 @@
+package com.livespread.util;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
+import org.apache.commons.lang3.time.DateUtils;
+import org.apache.log4j.Logger;
+
+public class DateHelper {
+	protected final static Logger logger = Logger.getLogger(DateHelper.class);
+	private static final String FETCH_FROM_CURRENT_TABLE = "fetchFromCurrentTable";
+	private static final String FETCH_FROM_PREVIOUS_TABLE = "fetchFromPreviousTable";
+	private static final String FETCH_FROM_HISTORY_TABLE = "fetchFromHistoryTable";
+
+	/**
+	 * Returns String representing from which table data needs to be fetched
+	 * based on the searchDate
+	 * 
+	 * @param searchDate
+	 * @return
+	 */
+	public static String getFetchDetailBySearchDate(Date searchDate) {
+		logger.info("Begin::: DateHelper:::: getFetchDetailBySearchDate");
+		// Get the month and year from the searchDate calendar
+		Calendar searchYearCalendar = Calendar.getInstance();
+		searchYearCalendar.setTime(searchDate);
+		int searchMonth = searchYearCalendar.get(Calendar.MONTH);
+		int searchYear = searchYearCalendar.get(Calendar.YEAR);
+
+		// Get the month and year from the current year range calendar
+		Calendar currentYearRangeCalendar = Calendar.getInstance();
+		currentYearRangeCalendar.add(Calendar.YEAR, -1);
+		int currentYearMonthRange = currentYearRangeCalendar
+				.get(Calendar.MONTH);
+		int currentYearRange = currentYearRangeCalendar.get(Calendar.YEAR);
+
+		// Get the month and year from the previous year range calendar
+		Calendar previousYearRangeCalendar = Calendar.getInstance();
+		previousYearRangeCalendar.add(Calendar.YEAR, -2);
+		int previousYearMonthRange = previousYearRangeCalendar
+				.get(Calendar.MONTH);
+		int previousYearRange = previousYearRangeCalendar.get(Calendar.YEAR);
+
+		// Get current year calendar
+		Calendar currentCal = Calendar.getInstance();
+		int currentYear = currentCal.get(Calendar.YEAR);
+
+		boolean isfromCurrentTable = (currentYear == searchYear)
+				|| ((currentYearMonthRange < searchMonth) && (currentYearRange >= searchYear && previousYearRange < searchYear));
+		boolean isfromPreviousTable = ((currentYearMonthRange >= searchMonth) && (currentYearRange == searchYear))
+				|| ((previousYearMonthRange < searchMonth) && (previousYearRange == searchYear));
+
+		if (isfromCurrentTable) {
+			logger.info("Info::: DateHelper:::: fetchFromCurrentTable");
+			return FETCH_FROM_CURRENT_TABLE;
+		} else if (isfromPreviousTable) {
+			logger.info("Info::: DateHelper:::: fetchFromPreviousTable");
+			return FETCH_FROM_PREVIOUS_TABLE;
+		} else {
+			logger.info("Info::: DateHelper:::: fetchFromHistoryTable");
+			return FETCH_FROM_HISTORY_TABLE;
+		}
+	}
+
+	public static Date addDays(Date date, int days) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.add(Calendar.DATE, days); // minus number would decrement the days
+		return cal.getTime();
+	}
+
+	/**
+	 * Get the monthEndDate
+	 * 
+	 * @param searchDate
+	 * @return Date
+	 */
+	public static Date getMonthAndYearDate(Date searchDate) {
+		Date formattedMonthDate = new Date();
+		SimpleDateFormat date_format = new SimpleDateFormat("MM/dd/yyyy");
+		String formattedDate = date_format.format(searchDate);
+		try {
+			formattedMonthDate = DateUtils.parseDate(formattedDate,
+					"MM/dd/yyyy");
+		} catch (ParseException e) {
+			logger.error("Error :: ", e);
+		}
+		return formattedMonthDate;
+	}
+	/**
+	 * This function used for convert String to Date in following format
+	 * @param date(String,eg:2014-JUNE-29)
+	 * @return date(Date eg:2014-JUNE-29)
+	 * @throws ParseException 
+	 */
+public static Date convertStringtoDate(String date) throws ParseException{
+	SimpleDateFormat  formatter = new SimpleDateFormat("yyyy-MMMM-dd");
+	 Date testDate = null;
+	 testDate = formatter.parse(date);
+	return testDate;
+ }
+
+public static String converDateToString(Date date){
+	DateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
+	
+	Date today = Calendar.getInstance().getTime();        
+	
+	String reportDate = df.format(today);
+
+	
+	return reportDate;
+	
+}
+
+}

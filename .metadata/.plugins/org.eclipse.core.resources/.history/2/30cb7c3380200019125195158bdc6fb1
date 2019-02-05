@@ -1,0 +1,14 @@
+package com.livespread.service;
+
+import java.sql.Connection;
+
+import com.rage.reusable.dao.EntityType;
+
+public interface JDBCConnectionService {
+	/*
+	 * This methode used for get JDBC connection from Hibernatesession.
+	 */
+	Connection getJDBCConnection(EntityType entityType);
+	 
+	
+}

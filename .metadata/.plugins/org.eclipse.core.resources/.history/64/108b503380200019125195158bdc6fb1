@@ -1,0 +1,15 @@
+package com.livespread.util;
+import java.util.Comparator;
+
+import com.livespread.domain.LsFinancialMetaRowData;
+
+public class DataSortingCompare implements  Comparator<LsFinancialMetaRowData>{
+	
+	public int compare(LsFinancialMetaRowData rowDataObj1, LsFinancialMetaRowData rowDataObj2) 
+    { 
+        if (rowDataObj1.getLsFinancialMetaRowDataCompositKey().getColumnNumber() < rowDataObj2.getLsFinancialMetaRowDataCompositKey().getColumnNumber()) return -1; 
+        if (rowDataObj1.getLsFinancialMetaRowDataCompositKey().getColumnNumber() > rowDataObj2.getLsFinancialMetaRowDataCompositKey().getColumnNumber()) return 1; 
+        else return 0; 
+    } 
+
+}

@@ -1,0 +1,466 @@
+/**
+ * 
+ */
+package com.livespread.controller;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.livespread.command.GoldenCaseWorkQueueCommand;
+import com.livespread.command.GoldenFeatureCaseMappingData;
+import com.livespread.command.GoldenFtrCaseMapSrchCriteriaCommand;
+import com.livespread.command.ParserSectionMappingCommand;
+import com.livespread.command.SectionIdentificationCommand;
+import com.livespread.domain.GoldenSetBatchTracker;
+import com.livespread.domain.GoldenSetMetadata;
+import com.livespread.domain.GoldenSetReports;
+import com.livespread.domain.User;
+import com.livespread.domain.UsersGroup;
+import com.livespread.domain.WorkQueue;
+import com.livespread.rage.domain.SectionIdentification;
+import com.livespread.service.BulkUploadService;
+import com.livespread.service.GoldenFeatureCaseMappingService;
+import com.livespread.service.NormalizationService;
+import com.livespread.service.QAMessageChecklistService;
+import com.livespread.service.StatusMasterService;
+import com.livespread.service.WorkQueueService;
+import com.livespread.service.WorkQueueServiceImpl;
+import com.livespread.util.CipherUtils;
+import com.livespread.util.ConvertStringListToInteger;
+import com.livespread.util.LiveSpreadUtil;
+import com.rage.reusable.constants.ReusableConstant;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+
+/**
+ * @author js0e1608
+ *
+ */
+@Controller
+public class GoldenCaseFeatureMappingController {
+
+	private Logger LOGGER = Logger.getLogger(GoldenCaseFeatureMappingController.class);
+
+	@Autowired
+	private GoldenFeatureCaseMappingService goldenFeatureCaseMappingService;
+	@Autowired
+	private WorkQueueServiceImpl workQueueServiceImpl;
+
+	private static final int BUFFER_SIZE = 20971520;
+
+
+	
+	@RequestMapping(value = "/feature_case_mapping.htm", method = { RequestMethod.GET, RequestMethod.POST })
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public String getGoldeFeatureCaseMappings(HttpServletRequest request, HttpServletResponse response, Model map) {
+		List<Object> featureCaseMappingList = new ArrayList<Object>();
+		List<GoldenSetMetadata> goldenFeatureList = null;
+
+		Long totalRecords = 0l;
+
+		try {
+			// User user = (User) session.getAttribute("user");
+			User user = (User) request.getSession().getAttribute("user");
+			// featureCaseMappingList =
+			// goldenFeatureCaseMappingService.getFeatureCaseMappings(Integer.parseInt(decryptedFillingId));
+			if (null != user && null != user.getUserId())
+				featureCaseMappingList = goldenFeatureCaseMappingService
+						.getFeatureCaseMappings(user.getUserId().intValue());
+
+		} catch (Exception e) {
+			LOGGER.error("Exception occured in FeatureCaseMappingController", e);
+			e.printStackTrace();
+		}
+		if(!CollectionUtils.isEmpty(featureCaseMappingList))
+		{
+			totalRecords = new Long(featureCaseMappingList.size());
+			goldenFeatureList = goldenFeatureCaseMappingService.f_getGoldenCaseFeatures();
+
+			map.addAttribute("featureList", LiveSpreadUtil.populateFeatureListMetaData(goldenFeatureList));
+			map.addAttribute("featureCaseMappingList",
+					LiveSpreadUtil.prepareHorizontalFeatureCaseMappingData(featureCaseMappingList));
+			map.addAttribute("totalRecords", totalRecords);
+
+		}
+
+		return "golden_feature_case_mapping";
+
+	}
+
+	@RequestMapping(value = "/jsonfeature_case_mapping.htm", method = { RequestMethod.GET, RequestMethod.POST })
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public @ResponseBody JSONObject getGoldeFeatureCaseMappingsCount(HttpServletRequest request,
+			HttpServletResponse response, Model map) {
+
+		LOGGER.info("** Start-showGlobalPageNation method");
+		List<Object> featureCaseMappingList = new ArrayList<Object>();
+		int page = Integer.parseInt(request.getParameter("page"));
+		int displayRecords = Integer.parseInt(request.getParameter("displayRecords"));
+		Long totalRecords = Long.valueOf(request.getParameter("totalRecords"));
+		
+		int keywordWQ = Integer.parseInt((!request.getParameter("keywordWQ").isEmpty()) ? request.getParameter("keywordWQ") : "0" );
+		String compName = (String)request.getParameter("keywordCN");
+		int featureID = Integer.parseInt(request.getParameter("featureListID"));
+		
+		GoldenFtrCaseMapSrchCriteriaCommand searchCriteriaCmd = null;
+		
+		List<GoldenSetMetadata> goldenFeatureList = null;
+		Integer startNum = 0;
+		Integer endNum = 0;
+		Long totalPages = 0l;
+
+		JSONObject jsonResponse = new JSONObject();
+
+		try {
+			// User user = (User) session.getAttribute("user");
+			User user = (User) request.getSession().getAttribute("user");
+			searchCriteriaCmd =new GoldenFtrCaseMapSrchCriteriaCommand();
+			searchCriteriaCmd.setKeywordWQ(keywordWQ);
+			searchCriteriaCmd.setCompName(compName);
+			searchCriteriaCmd.setFeatureID(featureID);
+			
+		if(null!=user.getUserId()){
+			searchCriteriaCmd.setUserID(user.getUserId().intValue());	
+			
+			if (totalRecords == null || totalRecords == 0) {
+				totalRecords = 0l;
+				page = 1;
+				totalRecords = goldenFeatureCaseMappingService
+						.getFeatureCaseMappingsCount(searchCriteriaCmd);
+				
+
+				}
+			}
+
+			if (page != 0 && displayRecords != 0 && totalRecords != 0) {
+				// totalPages Logic
+				if (totalRecords != null && totalRecords != 0) {
+					totalPages = (long) Math.round(totalRecords / displayRecords);
+					long remainder = (totalRecords % displayRecords);
+					if (totalPages != 0 && remainder != 0) {
+						++totalPages;
+					}
+				}
+				Integer x = page;
+				Integer y = displayRecords;
+				Integer z = y - 1;
+				startNum = (x * y) - z;
+				endNum = (x * y);
+
+				searchCriteriaCmd.setUserID(user.getUserId().intValue());
+				searchCriteriaCmd.setStartPageNo(startNum);
+				searchCriteriaCmd.setEndPageNo(endNum);
+				/*List<Object> globalFeatureCaseMappingList = goldenFeatureCaseMappingService
+						.getFeatureCaseMappingsJSON(user.getUserId().intValue(), startNum, endNum);*/
+				List<Object> globalFeatureCaseMappingList = goldenFeatureCaseMappingService
+						.getFeatureCaseMappingsJSON(searchCriteriaCmd);
+
+				if (!globalFeatureCaseMappingList.isEmpty()) {
+					
+					goldenFeatureList = LiveSpreadUtil.populateFeatureListMetaData(goldenFeatureCaseMappingService.f_getGoldenCaseFeatures());
+					List<GoldenFeatureCaseMappingData> mapData = LiveSpreadUtil
+							.prepareHorizontalFeatureCaseMappingDataForPage(globalFeatureCaseMappingList);
+
+					jsonResponse.put("featureMapList", mapData);
+					jsonResponse.put("featureList", goldenFeatureList);
+					jsonResponse.put("page", page);
+					jsonResponse.put("startNum", startNum);
+					jsonResponse.put("endNum", endNum);
+					jsonResponse.put("totalPages", totalPages);
+					jsonResponse.put("totalRecords", totalRecords);
+
+				}
+
+			}
+		
+		} catch (Exception e) {
+			LOGGER.error("Exception occured in FeatureCaseMappingController", e);
+			e.printStackTrace();
+		}
+	
+		return jsonResponse;
+
+	}
+
+	/**
+	 * update work queue based on case id selected
+	 * 
+	 * @param caseID
+	 * @param wqId
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/updateWorkQueueForCaseId.htm", method = { RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody String updateWorkQueueForCaseId(@RequestParam("caseID") Integer caseID,
+			@RequestParam("wqId") Integer wqId, HttpServletRequest request) {
+		LOGGER.info("** updateWorkQueueForCaseId method");
+		int updatedRows = 0;
+		String updateMsg = "";
+		List<Integer> updTimePeriodAyyar = null;
+		// String[] caseIdsArray = request.getParameterValues("caseIds[]");
+		try {
+			if (caseID != 0 && wqId != 0) {
+				updatedRows = goldenFeatureCaseMappingService.updateWorkQueueByCaseId(caseID, wqId);
+			}
+			if (updatedRows == 0) {
+				updateMsg = "Case ID not updated  successfully.";
+			} else {
+				updateMsg = "Case ID updated  successfully.";
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("updateWorkQueueForCaseId", e);
+		}
+		return updateMsg;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/autoCompleteToKeywordWQ.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody  JSONObject autoCompleteToGlobalKeywordListWQ(@RequestParam("keywordVal") String keyword, HttpServletRequest request,Model map) {
+	
+		 JSONObject globalJSON = new JSONObject();
+		 List<String> keywordList=null;
+		 User user = (User) request.getSession().getAttribute("user");
+		try{
+		if (null!= user && null!=user.getUserId() && !StringUtils.isEmpty(keyword) && !StringUtils.isEmpty(keyword)) {
+			keywordList = goldenFeatureCaseMappingService.getKeywordListWQ(keyword.trim(),user.getUserId().intValue());
+			globalJSON.put("jsonArry", keywordList);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			LOGGER.error("Error fetching work queue list", e);
+		}
+		
+	return globalJSON;
+}
+	
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/autoCompleteToKeywordCN.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody  JSONObject autoCompleteToGlobalKeywordListCN(@RequestParam("keywordVal") String keyword, HttpServletRequest request,Model map) {
+	
+		 JSONObject globalJSON = new JSONObject();
+		 List<String> keywordList=null;
+		 User user = (User) request.getSession().getAttribute("user");
+		try{
+		if (null!= user && null!=user.getUserId() && !StringUtils.isEmpty(keyword) && !StringUtils.isEmpty(keyword)) {
+			keywordList = goldenFeatureCaseMappingService.getKeywordListCN(keyword.trim(),user.getUserId().intValue());
+			globalJSON.put("jsonArry", keywordList);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			LOGGER.error("Error fetching company names", e);
+		}
+		
+	return globalJSON;
+}
+
+	@RequestMapping(value = "/showGoldenCaseFeatures.htm", method = { RequestMethod.GET, RequestMethod.POST })
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public String showGoldeCaseFeatures(HttpServletRequest request, HttpServletResponse response, Model map) {
+		return "goldencasefeature";
+	}
+
+	@RequestMapping(value = "/showCaseAssociationPage.htm", method = { RequestMethod.GET, RequestMethod.POST })
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public String showGoldeCaseAssociation(HttpServletRequest request, HttpServletResponse response, Model map) {
+		User user = (User) request.getSession().getAttribute("user");
+		Integer userGroupId=user.getUserGroupId();
+		Map<String,List<GoldenCaseWorkQueueCommand>> dataValMap=goldenFeatureCaseMappingService.f_getFeatureFilingIdAssociation(userGroupId);
+		map.addAttribute("dataValMap",dataValMap);
+		return "goldencase_association";
+
+	}
+
+
+	@RequestMapping(value = "/submitGoldenCaseFeatureMapping.htm", method = { RequestMethod.GET, RequestMethod.POST })
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public @ResponseBody boolean submitGoldenCaseFeatureMapping(HttpServletRequest request, HttpServletResponse response, Model map) {
+		LOGGER.info("**start submitGoldenCaseFeatureMapping methode");
+		boolean flag=false;
+		String selectedFilingIds=request.getParameter("selectedFilingIds");
+		String[] selectedFilingIdsArray=selectedFilingIds.split(",");
+		List<Integer> filingIdList=ConvertStringListToInteger.getIntegerList(Arrays.asList(selectedFilingIdsArray));
+		
+		int status=workQueueServiceImpl.f_updateGoldenCaseDataByFilingIds(filingIdList);
+		if(status==1)
+		flag=true;
+		LOGGER.info("**end submitGoldenCaseFeatureMapping methode");
+		return flag;
+	}
+
+	/**
+	 * In below controller top order details on the other hand 
+	 * 
+	 */
+	@RequestMapping(value = "/showGoldenCaseSummary.htm", method = { RequestMethod.GET, RequestMethod.POST })
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public String showGoldenCaseSummary(HttpServletRequest request, HttpServletResponse response, Model map) {
+		LOGGER.info("**start--showGoldenCaseSummary methode");
+	//Map<batchId,List<Tracker>
+		List<GoldenSetBatchTracker> batchTrackersList=goldenFeatureCaseMappingService.f_getCaseSummaryData();
+		map.addAttribute("batchTrackersList", batchTrackersList);
+		
+		LOGGER.info("**end--showGoldenCaseSummary methode");
+		return "goldencase_summary";
+	}
+
+	@RequestMapping(value = "/showFeaturePopupData.htm", method = { RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody JSONObject showFeaturePopupData(HttpServletRequest request) {
+		LOGGER.info("**start-- showFeaturePopupData method");
+		List<GoldenSetReports> goldenSetReportsList=null;
+		JSONObject jsonResponse = new JSONObject();
+		Integer batchId=null;
+		Integer featureId=null;
+		if(request.getParameter("batchId")!=null){
+		 batchId=Integer.parseInt(request.getParameter("batchId"));
+		}
+		if(request.getParameter("feautreId")!=null){
+		featureId=Integer.parseInt(request.getParameter("feautreId"));
+		}
+		
+		try {
+		goldenSetReportsList=goldenFeatureCaseMappingService.f_getFeatureDataReportByBatchIdAndCaseId(batchId, featureId);
+		jsonResponse.put("goldenSetReportsList", goldenSetReportsList);
+		} catch (Exception e) {
+		e.printStackTrace();
+		LOGGER.error("showFeaturePopupData", e);
+		}
+		LOGGER.info("**End showFeaturePopupData method");
+		return jsonResponse;
+	}
+	
+    @RequestMapping(value ="/goldenCaseDownloadFileByPath.htm",method={RequestMethod.GET, RequestMethod.POST})
+    public void  doDownloadGoldenCaseFile(HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
+		LOGGER.info("**start goldenCaseDownloadFileByPath method");
+
+        // get absolute path of the application
+    	 File downloadFile=null;
+    	 String msg="File is downloaded successfuly.";
+    	try{
+    	Integer batchId=null;
+    	if(request.getParameter("batchId")!=null){
+    	 batchId=Integer.parseInt(request.getParameter("batchId"));
+    	}
+    	GoldenSetBatchTracker batchTracker=goldenFeatureCaseMappingService.f_goldenSetTrackeryBatchId(batchId);
+    	String filePath=batchTracker.getDownloadPath();
+        System.out.println("filePath = " + filePath);
+        downloadFile = new File(filePath).getCanonicalFile();
+        if(downloadFile.exists())
+        {
+        ServletContext context = request.getServletContext();
+        FileInputStream inputStream = new FileInputStream(downloadFile);
+         
+        // get MIME type of the file
+        String mimeType = context.getMimeType(filePath);
+        if (mimeType == null) {
+            // set to binary type if MIME mapping not found
+            mimeType = "application/octet-stream";
+        }
+        System.out.println("MIME type: " + mimeType);
+ 
+        // set content attributes for the response
+        response.setContentType(mimeType);
+        response.setContentLength((int) downloadFile.length());
+ 
+        // set headers for the response
+        String headerKey = "Content-Disposition";
+        String headerValue = String.format("attachment; filename=\"%s\"",
+                downloadFile.getName());
+        response.setHeader(headerKey, headerValue);
+ 
+        // get output stream of the response
+        OutputStream outStream = response.getOutputStream();
+ 
+        byte[] buffer = new byte[BUFFER_SIZE];
+        int bytesRead = -1;
+ 
+        // write bytes read from the input stream into the output stream
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            outStream.write(buffer, 0, bytesRead);
+        }
+ 
+        inputStream.close();
+        outStream.close();
+		LOGGER.info("**End goldenCaseDownloadFileByPath method");
+        }//end file exist flag
+        else{
+        msg="File is not exist.";
+        }
+    	}catch(Exception e){
+    		msg="Downloading failed.";
+    		LOGGER.error("Error:",e);
+    		e.printStackTrace();
+    	}
+    }
+    
+    @RequestMapping(value ="/checkFileValidation.htm",method={RequestMethod.GET, RequestMethod.POST})
+    public @ResponseBody String checkFileValidation(HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
+		LOGGER.info("**start goldenCaseDownloadFileByPath method");
+
+        // get absolute path of the application
+    	 File downloadFile=null;
+    	 String msg="success";
+    	try{
+    	Integer batchId=null;
+    	if(request.getParameter("batchId")!=null){
+    	 batchId=Integer.parseInt(request.getParameter("batchId"));
+    	}
+    	GoldenSetBatchTracker batchTracker=goldenFeatureCaseMappingService.f_goldenSetTrackeryBatchId(batchId);
+    	String filePath=batchTracker.getDownloadPath();
+        System.out.println("filePath = " + filePath);
+        downloadFile = new File(filePath).getCanonicalFile();
+        if(!downloadFile.exists())
+        {
+        msg="File is not exist.";
+        }
+    	}catch(Exception e){
+    		msg="Downloading failed.";
+    		LOGGER.error("Error:",e);
+    		e.printStackTrace();
+    	}
+    	return msg;
+    }
+    
+    
+    
+}
+

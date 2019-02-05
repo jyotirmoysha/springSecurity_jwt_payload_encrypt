@@ -1,0 +1,9 @@
+security:
+    basic:
+      enabled: true
+
+
+spring:
+  resources:
+    chain:
+      enabled: true

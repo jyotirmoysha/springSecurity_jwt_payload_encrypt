@@ -1,0 +1,81 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "SUB_SECTION_MASTER")
+@NamedQueries({ @NamedQuery(name = "getsubSectionListBySection", query = "SELECT subSection FROM SubSection_Master subSection where section = :section and subsectionTemplate in (select subsectionTemplate from Sector where LOWER(sectorName) = LOWER(:templateName)) order by sub_sectionId ASC") })
+public class SubSection_Master implements Serializable, BaseEntity {
+
+	@Id
+	@Column(name = "SUB_SECTION_ID")
+	private Integer sub_sectionId;
+
+	@Column(name = "SUB_SECTION")
+	private String subSection;
+
+	@Column(name = "SUB_SECTION_DESCRIPTION")
+	private String subSection_description;
+
+	@Column(name = "SECTION")
+	private String section;
+	
+	@Column(name = "SUBSECTION_TEMPLATE")
+	private String subsectionTemplate;
+	
+	public String getSubsectionTemplate() {
+		return subsectionTemplate;
+	}
+
+	public void setSubsectionTemplate(String subsectionTemplate) {
+		this.subsectionTemplate = subsectionTemplate;
+	}
+
+	public Integer getSub_sectionId() {
+		return sub_sectionId;
+	}
+
+	public void setSub_sectionId(Integer sub_sectionId) {
+		this.sub_sectionId = sub_sectionId;
+	}
+
+	public String getSubSection() {
+		return subSection;
+	}
+
+	public void setSubSection(String subSection) {
+		this.subSection = subSection;
+	}
+
+	public String getSubSection_description() {
+		return subSection_description;
+	}
+
+	public void setSubSection_description(String subSection_description) {
+		this.subSection_description = subSection_description;
+	}
+
+	public String getSection() {
+		return section;
+	}
+
+	public void setSection(String section) {
+		this.section = section;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

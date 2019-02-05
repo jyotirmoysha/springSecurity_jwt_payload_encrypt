@@ -1,0 +1,117 @@
+package com.livespread.controller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import com.livespread.common.service.DatabaseAuthenticationProvider;
+import com.livespread.domain.User;
+import com.livespread.domain.WorkQueue;
+import com.livespread.service.WorkQueueService;
+import com.livespread.util.CipherUtils;
+
+@Controller
+public class AddLoginController {
+	
+	private Logger LOGGER = Logger.getLogger(AddLoginController.class);
+	
+	@Autowired
+	WorkQueueService workQueueService;
+	
+	@Autowired
+	MessageDigestPasswordEncoder messageDigestPasswordEncoder;
+	
+	@Autowired
+	UserDetailsService userDetailsService;
+	
+	@Autowired
+	DatabaseAuthenticationProvider databaseAuthenticationProvider;
+	
+
+	@RequestMapping(value = "/addLogin.htm")
+	public void addLogin(Model model, HttpServletRequest request,
+			HttpServletResponse response) {
+		LOGGER.info("**start---addLogin methode");
+	  	try{
+		String strUserName = request.getParameter("loginId");
+		if( strUserName != null )
+		{
+			String strUserPassword = request.getParameter("password");
+			String strFillingId = request.getParameter("fillingId");	
+			strUserPassword = messageDigestPasswordEncoder.encodePassword(strUserPassword, null);
+			UserDetails userDetails = isAuthenticated(strUserName,strUserPassword);
+			if( userDetails != null )
+			{
+				WorkQueue  wq = workQueueService.getCompanyId(Integer.parseInt(strFillingId));
+				String strToken = ""+System.currentTimeMillis();
+				String strURL =  ""+request.getContextPath()+"/rules_management_normalization.htm?fillingId="+CipherUtils.encrypt(strFillingId)+"&WqId="+CipherUtils.encrypt(""+wq.getWqId())+"&statementFormat=IS&customerName="+CipherUtils.encrypt(wq.getWqCustomerName())+"&businessName="+CipherUtils.encrypt(wq.getWqCompanyName())+"&customerId="+CipherUtils.encrypt(""+wq.getCustomerId())+"&fileName="+CipherUtils.encrypt(wq.getWqFilename())+"&compIdOrCik="+CipherUtils.encrypt(""+wq.getCompanyId())+"&rand="+strToken;				
+				LOGGER.info("**URL=---addLogin methode"+strURL);				
+				HttpSession session = request.getSession(true);
+				User user = (User) userDetails; 
+				if (userDetails != null) {
+				    UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(strUserName, strUserPassword);		    // Authenticate the user
+				    Authentication authentication = databaseAuthenticationProvider.authenticate(authRequest);
+				    SecurityContext securityContext = SecurityContextHolder.getContext();
+				    securityContext.setAuthentication(authentication);
+				    // Create a new session and add the security context.
+				    /**
+				     * login.htm request session attributes
+				     */
+					request.getSession().setAttribute("user", user);
+					request.getSession().setAttribute("userID",user.getUserId());
+					request.getSession().setAttribute("userGroupId",user.getUserGroupId());					
+					request.getSession().setAttribute("user",user);
+					/**
+				     * welcome.htm request session attributes
+				     */
+					request.getSession().setAttribute("lastTime",user.getLastLoginTime());	
+					request.getSession().setAttribute("userIDWQ",CipherUtils.encrypt(user.getUserId() + ""));
+					request.getSession().setAttribute("USERID",user.getUserId());
+					request.getSession().setAttribute("USERACCESS",user.getUserAccess());
+					request.getSession().setAttribute("userGroupIdWQ",CipherUtils.encrypt(user.getUserGroupId() + ""));
+					request.getSession().setAttribute("tableName", "workQueue");
+					/**
+					 * validate.htm request session attribute
+					 */
+					Integer parserId= workQueueService.getParserIdFromWorkQueue(wq.getWqId());
+					request.getSession().setAttribute("sessionParserId", parserId);
+					request.getSession().setAttribute("sessionfillingId", Integer.parseInt(strFillingId));
+				    session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);				    
+				    response.sendRedirect(strURL);
+				}
+			}	
+	}
+	}catch (Exception e) {
+     e.printStackTrace();
+		LOGGER.info("**Error:"+e);
+	}
+}	
+	
+	public UserDetails isAuthenticated(String strUserName, String strPassword)
+	{
+		UserDetails userDetails = null;
+		String dbPassword=null;
+		userDetails = userDetailsService.loadUserByUsername(strUserName);
+		if(userDetails!=null){
+			dbPassword = userDetails.getPassword();
+		}
+		if( strPassword.equals(dbPassword) )
+		{
+			return userDetails;
+		}
+		return null;
+	}
+
+}

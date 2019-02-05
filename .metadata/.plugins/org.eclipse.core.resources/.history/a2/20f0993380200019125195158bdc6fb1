@@ -1,0 +1,26 @@
+package com.livespread.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.livespread.domain.ItrExtractionRules;
+import com.livespread.domain.ItrTemplateFormMetadata;
+import com.livespread.domain.ItrTemplateSectionMapping;
+
+public interface ExtractionServiceITR {
+
+	boolean saveUpadateRulesInExtractor_Table(List<ItrExtractionRules> dataList, Integer filingId, Integer templateId) throws Exception;
+
+	Map<Integer, Map<String, List<ItrExtractionRules>>> getITRExtractionRulesSectionwiseByFilingIdAndTemplateID(Integer filingId, Integer templateId, List<String> sectionList)throws Exception;
+
+	List<ItrTemplateFormMetadata> getTemplateFormMetadataList()throws Exception;
+
+	boolean deleteExtractionRules(List<Integer> idList) throws Exception;
+
+	List<ItrTemplateSectionMapping> getITRTemplateSectionMappingsByTemplateFormId(Integer templateId)throws Exception;
+
+	Integer getselectedTemplateFormId(Integer filingId)throws Exception;
+
+	Integer getFileUploadIdByFilingId(Integer filingId)throws Exception;
+   
+}

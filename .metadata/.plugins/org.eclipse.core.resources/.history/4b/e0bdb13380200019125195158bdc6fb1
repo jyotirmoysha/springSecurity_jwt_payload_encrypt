@@ -1,0 +1,219 @@
+package com.livespread.rage.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "LS_EXTRACTOR_TABLEID_BY_ENTITY")
+@NamedQueries({ @NamedQuery(name = "findExtractionRules", query = " FROM ExtractorTableidRouteByCik ETRBC where etrbc_filingId=:filingId  order by etrbc_tableType, etrbc_valueOrder,etrbc_Id ASC ") })
+@NamedNativeQueries({
+		@NamedNativeQuery(name = "deleteRecordByFillingId", query = "DELETE FROM LS_EXTRACTOR_TABLEID_BY_ENTITY WHERE ETRBC_FILING_ID=:filingId")
+})
+public class ExtractorTableidRouteByCik  implements BaseEntity,Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+//	@GeneratedValue(generator = "sequence")
+	
+//	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_EXTRACTOR_TABLEID_ROUTE_BY") })
+	/*@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ID")
+	private Integer id;*/
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ETRBC_ID")
+	private Integer etrbc_Id;
+
+	@Column(name = "ETRBC_FILING_ID")
+	private Integer etrbc_filingId;
+
+	@Column(name = "ETRBC_TABLE_TYPE")
+	private String etrbc_tableType;
+
+	@Column(name = "ETRBC_TAG")
+	private String etrbc_tag;
+
+	@Column(name = "ETRBC_VALUE")
+	private String etrbc_value;
+
+	@Column(name = "ETRBC_ACTION")
+	private String etrbc_action;
+
+	@Column(name = "ETRBC_SRCHTYPE")
+	private String etrbc_searchType;
+
+	@Column(name = "ETRBC_FORMTYPE")
+	private String etrbc_formType;
+
+	@Column(name = "ETRBC_CID")
+	private Integer etrbc_cID;
+
+	@Column(name = "ETRBC_CIK")
+	private Integer etrbc_cIK;
+
+	@Column(name = "ETRBC_INCLUSIVE")
+	private String etrbc_inclusive;
+
+	@Column(name = "ETRBC_VALUE_ORDER")
+	private Integer etrbc_valueOrder;
+
+	@Column(name = "ETRBC_WQ_ID")
+	private Integer etrbc_wdId;
+
+	@Column(name = "ETRBC_INDUSTRY")
+	private String etrbc_industry;
+
+	@Column(name = "ETRBC_LANGUAGE")
+	private String etrbc_language;
+
+	
+	public String getEtrbc_inclusive() {
+		return etrbc_inclusive;
+	}
+
+	public void setEtrbc_inclusive(String etrbc_inclusive) {
+		this.etrbc_inclusive = etrbc_inclusive;
+	}
+
+	public Integer getEtrbc_Id() {
+		return etrbc_Id;
+	}
+
+	public void setEtrbc_Id(Integer etrbc_Id) {
+		this.etrbc_Id = etrbc_Id;
+	}
+
+	public Integer getEtrbc_filingId() {
+		return etrbc_filingId;
+	}
+
+	public void setEtrbc_filingId(Integer etrbc_filingId) {
+		this.etrbc_filingId = etrbc_filingId;
+	}
+
+	public String getEtrbc_tableType() {
+		return etrbc_tableType;
+	}
+
+	public void setEtrbc_tableType(String etrbc_tableType) {
+		this.etrbc_tableType = etrbc_tableType;
+	}
+
+	public String getEtrbc_tag() {
+		return etrbc_tag;
+	}
+
+	public void setEtrbc_tag(String etrbc_tag) {
+		this.etrbc_tag = etrbc_tag;
+	}
+
+	public String getEtrbc_value() {
+		return etrbc_value;
+	}
+
+	public void setEtrbc_value(String etrbc_value) {
+		this.etrbc_value = etrbc_value;
+	}
+
+	public String getEtrbc_action() {
+		return etrbc_action;
+	}
+
+	public void setEtrbc_action(String etrbc_action) {
+		this.etrbc_action = etrbc_action;
+	}
+
+	public String getEtrbc_searchType() {
+		return etrbc_searchType;
+	}
+
+	public void setEtrbc_searchType(String etrbc_searchType) {
+		this.etrbc_searchType = etrbc_searchType;
+	}
+
+	public String getEtrbc_formType() {
+		return etrbc_formType;
+	}
+
+	public void setEtrbc_formType(String etrbc_formType) {
+		this.etrbc_formType = etrbc_formType;
+	}
+
+	public Integer getEtrbc_cID() {
+		return etrbc_cID;
+	}
+
+	public void setEtrbc_cID(Integer etrbc_cID) {
+		this.etrbc_cID = etrbc_cID;
+	}
+
+	public Integer getEtrbc_cIK() {
+		return etrbc_cIK;
+	}
+
+	public void setEtrbc_cIK(Integer etrbc_cIK) {
+		this.etrbc_cIK = etrbc_cIK;
+	}
+
+	public Integer getEtrbc_valueOrder() {
+		return etrbc_valueOrder;
+	}
+
+	public void setEtrbc_valueOrder(Integer etrbc_valueOrder) {
+		this.etrbc_valueOrder = etrbc_valueOrder;
+	}
+
+	public Integer getEtrbc_wdId() {
+		return etrbc_wdId;
+	}
+
+	public void setEtrbc_wdId(Integer etrbc_wdId) {
+		this.etrbc_wdId = etrbc_wdId;
+	}
+
+	public String getEtrbc_industry() {
+		return etrbc_industry;
+	}
+
+	public void setEtrbc_industry(String etrbc_industry) {
+		this.etrbc_industry = etrbc_industry;
+	}
+
+	public String getEtrbc_language() {
+		return etrbc_language;
+	}
+
+	public void setEtrbc_language(String etrbc_language) {
+		this.etrbc_language = etrbc_language;
+	}
+
+	@Override
+	public String toString() {
+		return "ExtractorTableidRouteByCik [etrbc_Id=" + etrbc_Id
+				+ ", etrbc_filingId=" + etrbc_filingId + ", etrbc_tableType="
+				+ etrbc_tableType + ", etrbc_tag=" + etrbc_tag
+				+ ", etrbc_value=" + etrbc_value + ", etrbc_action="
+				+ etrbc_action + ", etrbc_searchType=" + etrbc_searchType
+				+ ", etrbc_formType=" + etrbc_formType + ", etrbc_cID="
+				+ etrbc_cID + ", etrbc_cIK=" + etrbc_cIK + "]";
+	}
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.RAGE;
+	}
+}

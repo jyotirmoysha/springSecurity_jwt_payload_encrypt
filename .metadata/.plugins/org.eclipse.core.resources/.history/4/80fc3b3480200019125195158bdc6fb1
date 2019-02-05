@@ -1,0 +1,324 @@
+package com.livespread.controller;
+
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+
+import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.livespread.command.ChangePasswordCommand;
+import com.livespread.command.PasswordValidator;
+import com.livespread.common.PurgedSessionVariable;
+import com.livespread.domain.User;
+import com.livespread.service.ChangePasswordService;
+import com.livespread.service.EmailServiceImpl;
+import com.livespread.service.ValidationService;
+
+@Controller
+public class ChangePasswordController {
+
+	private Logger LOGGER = Logger.getLogger(ChangePasswordController.class);
+
+	@Autowired
+	private ChangePasswordService changePasswordService;
+
+	@Autowired
+	MessageDigestPasswordEncoder messageDigestPasswordEncoder;
+
+	@Autowired
+	UserDetailsService userDetailsService;
+
+	@Autowired
+	private ValidationService validationService;
+
+
+	@RequestMapping(value = "changePasswordPage.htm", method = { RequestMethod.POST })
+	public String changePassword(HttpServletRequest request,
+			HttpServletResponse response, Model map) {
+
+		PurgedSessionVariable.removeVariableForNormalization(request
+				.getSession());
+
+		return "changePasswordPage";
+	}
+
+	@RequestMapping(value = "/changePassword.htm")
+	public @ResponseBody
+	String updatePassword(
+			@ModelAttribute ChangePasswordCommand changePasswordCommand) {
+		LOGGER.info("--- change Passwordrequest Mapping started--------");
+		LOGGER.info("--- change Passwordrequest >>>class  ChangePasswordController in updatePassword method --------");
+
+		UserDetails userDetails = null;
+		String password = null;
+		String chngPassword = null;
+		String dbPassword = null;
+
+		boolean changePwdresult = false;
+		String result = "Passwod not updated";
+
+		try {
+			if (changePasswordCommand.getUserId() != null) {
+				if (changePasswordCommand.getUserName().trim().length() == 0) {
+					result = "UserName should not empty !";
+					return result;
+				}
+				if (changePasswordCommand.getOldPassword().trim().length() == 0) {
+					result = "old password should not empty !";
+					return result;
+				}
+				if (changePasswordCommand.getNewPassword().trim().length() == 0) {
+					result = "new password should not empty !";
+					return result;
+				}
+				if (changePasswordCommand.getConfirmPassword().trim().length() == 0) {
+					result = "conform password should not empty !";
+					return result;
+				}
+				if (!changePasswordCommand.getConfirmPassword().trim()
+						.equals(changePasswordCommand.getNewPassword())) {
+					result = "New Password and Confirm password entered do not match!";
+					return result;
+				}
+				if (changePasswordCommand.getNewPassword().trim().length() < 8
+						|| changePasswordCommand.getNewPassword().trim()
+								.length() > 15) {
+					result = "new password length Minimum 8 - max-15";
+					return result;
+				}
+				if (changePasswordCommand.getNewPassword().trim().length() < 8
+						|| changePasswordCommand.getNewPassword().trim()
+								.length() > 15) {
+					result = "new password length Minimum 8 - max-15";
+					return result;
+				}
+				String[] splited = changePasswordCommand.getNewPassword()
+						.trim().split(" ");
+				if (splited.length > 1) {
+					result = "Password should not have any spaces in between!";
+					return result;
+				}
+				
+				
+				if (changePasswordCommand.getNewPassword().contains(changePasswordCommand.getUserName())) {
+					result = "Password must not contain username.";
+					return result;
+				}
+				
+				
+				if (changePasswordCommand.getNewPassword().trim() != null
+						&& changePasswordCommand.getConfirmPassword().trim() != null
+						&& changePasswordCommand
+								.getNewPassword()
+								.trim()
+								.equals(changePasswordCommand
+										.getConfirmPassword().trim())) {
+					PasswordValidator validate = new PasswordValidator();
+					boolean validatePassword = validate
+							.validate(changePasswordCommand.getNewPassword());
+
+					if (validatePassword) {
+						password = messageDigestPasswordEncoder.encodePassword(
+								changePasswordCommand.getOldPassword().trim(),
+								null);
+						userDetails = userDetailsService
+								.loadUserByUsername(changePasswordCommand
+										.getUserName());
+						if (userDetails != null) {
+							dbPassword = userDetails.getPassword();
+						}
+
+						if (userDetails != null
+								&& userDetails.isAccountNonLocked()) {
+
+							if (password != null && dbPassword != null
+									&& password.equals(dbPassword)) {
+								chngPassword = messageDigestPasswordEncoder
+										.encodePassword(changePasswordCommand
+												.getNewPassword().trim(), null);
+								changePasswordCommand
+										.setChangePassword(chngPassword);
+								changePwdresult = changePasswordService
+										.changePassword(changePasswordCommand);
+								if (changePwdresult) {
+									result = "Password has been successfully updated";
+									return result;
+								} else {
+									result = "Change password attempt failed";
+									return result;
+								}
+							} else {
+								result = "The Old Password  does not match";
+								return result;
+							}
+						}
+					} else {
+						result = "Please enter valid new Password";
+						return result;
+					}
+				}
+
+			} else {
+				result = "userId should not empty";
+				return result;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error(
+					"Exception Occured class:ChangePasswordController; method: updatePassword :",
+					e);
+		}
+
+		return result;
+
+	}
+
+	/*
+	 * This function call when user come from url without session
+	 */
+
+	@RequestMapping(value = "changePasswordByMail.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public String changePasswordPage(
+			@ModelAttribute ChangePasswordCommand changePasswordCommand,
+			HttpServletRequest httpRequest, HttpServletResponse httpResponse,
+			ModelMap modelMap) {
+		LOGGER.info("**Start :::UserManagementController:::changepassworduser");
+		String returnValue = "";
+		try {
+
+			String emailId = httpRequest.getParameter("keynode1");
+			String activationId = httpRequest.getParameter("keynode2");
+			String keynode3 = httpRequest.getParameter("keynode3");
+			String status = changePasswordService
+					.getUserActivationStatusDetails(emailId, activationId,
+							messageDigestPasswordEncoder);
+
+			modelMap.addAttribute("status", status);
+
+			if (status.contains("valid_")) {
+				String userinfo = status.replace("valid_", "");
+				String[] userInfoArr = userinfo.split("@@");
+				changePasswordCommand = new ChangePasswordCommand();
+				changePasswordCommand.setUserName(userInfoArr[0]);
+				changePasswordCommand.setUserId(Long.parseLong(userInfoArr[1]));
+				changePasswordCommand.setActivationId(userInfoArr[2]);
+				changePasswordCommand.setKeynode3(keynode3);
+				modelMap.addAttribute("logingId", userInfoArr[0]);
+				modelMap.addAttribute("userId", userInfoArr[1]);
+				modelMap.addAttribute("activationId", userInfoArr[2]);
+				modelMap.addAttribute("usermgntForm", changePasswordCommand);
+				returnValue = "changepasswordmail";
+
+			} else
+				returnValue = "invalidRequest";
+		} catch (Exception ex) {
+			LOGGER.error("Exception ::", ex);
+		}
+		LOGGER.info("END :::UserManagementController:::changePasswordPage");
+		return returnValue;
+	}
+
+	@RequestMapping(value = "/updatePassword.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String savePassword(
+			@ModelAttribute ChangePasswordCommand changePasswordCommand,
+			HttpServletRequest httpRequest, HttpServletResponse httpResponse,
+			ModelMap modelMap) {
+		LOGGER.info("BEGIN :::UserManagementController:::savePassword");
+		String result1 = "";
+		User user = null;
+
+		ResourceBundle emailProperties = ResourceBundle.getBundle("email");
+
+		ObjectMapper objectMapper = new ObjectMapper();
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			/*
+			 * change password validation
+			 */
+			ArrayList<String> errorList = new ArrayList<String>();
+			errorList = validationService
+					.validateChangePasswordDetails(changePasswordCommand);
+			if (!errorList.isEmpty()) {
+				resultMap.put("errorList", errorList);
+				result1 = objectMapper.writeValueAsString(resultMap);
+
+			} else {
+
+				boolean status = changePasswordService.updateUserPassword(
+						changePasswordCommand, messageDigestPasswordEncoder);
+
+				if (!status) {
+					errorList.add("Fail to update password.");
+					resultMap.put("errorList", errorList);
+					result1 = objectMapper.writeValueAsString(resultMap);
+
+				} else {
+					/*
+					 * If password updated successfully the send email LSsupport
+					 * to inform them that user is activated.
+					 */
+					if (changePasswordCommand.getKeynode3().equalsIgnoreCase("fpwd")) {
+						user = changePasswordService
+								.getUserByUserId(changePasswordCommand
+										.getUserId());
+						if (user != null) {
+							String activateuserMessageBody = MessageFormat
+									.format(emailProperties
+											.getString("mail.bodycontentForgetPasswordSuccess"),
+											changePasswordCommand.getUserName());
+							String messageSubject = MessageFormat
+									.format(emailProperties
+											.getString("mail.forgotPasswordSuccess"),
+											user.getFirstName());
+	
+							EmailServiceImpl emailServiceImpl=new EmailServiceImpl(user.getEmail(), emailProperties, messageSubject, activateuserMessageBody, null);
+							emailServiceImpl.start();
+						
+						}
+					} else {
+						String activateuserMessageBody = MessageFormat
+								.format(emailProperties
+										.getString("mail.activateUserNotificationbody"),
+										changePasswordCommand.getUserName());
+						EmailServiceImpl emailServiceImpl=new EmailServiceImpl(emailProperties.getString("mail.smtp.cc"), emailProperties, emailProperties.getString("mail.activateUserNotificationSubject"), activateuserMessageBody, null);
+						emailServiceImpl.start();
+						
+					}
+
+					resultMap.put("flag", true);
+					result1 = objectMapper.writeValueAsString(resultMap);
+
+				}
+			}
+		} catch (Exception ex) {
+			LOGGER.error("Exception ::", ex);
+		}
+
+		LOGGER.info("END :::UserManagementController:::savePassword");
+
+		return result1;
+	}
+
+}

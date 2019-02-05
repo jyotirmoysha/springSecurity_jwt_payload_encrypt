@@ -1,0 +1,1069 @@
+package com.livespread.domain;
+
+import com.rage.reusable.dao.ApplicationEntity;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+
+@Entity
+@Table(name = "WORK_QUEUE")
+@NamedQueries(value = {
+		@NamedQuery(name = "findAllWorkQueueRecords", query = "SELECT wq.wqMasterCaseId,wq.filingId, wq.createDate, wq.portfolioName, wq.industryName, wq.wqCustomerName, wq.wqPeriod, wq.wqMonthYear, wq.wqParserDescription, wq.companyType,wq.wqCompanyName, wq.companyId,wq.wqStatus, wq.customerId,wq.lockedBy,  wq.filingId,wq.wqId,wq.wqCustomerName, wq.wqCompanyName, wq.customerId, wq.wqFilename, wq.userId, wq.userGroupId,wq.companyId, caseStatus,searcherName,maker,checker,makerCompleted,checkerCompleted FROM WorkQueue wq where wq.userGroupId = :userGroupId order by wq.wqId desc"),
+		@NamedQuery(name = "findAllWorkQueueRecordsByUserId", query = "SELECT wq.wqMasterCaseId,wq.filingId, wq.createDate,wq.wqCustomerName, wq.wqPeriod, wq.wqMonthYear, wq.wqParserDescription, wq.industrySegment,wq.companyType,wq.wqCompanyName, wq.companyId,wq.wqStatus, wq.customerId,wq.lockedBy,  wq.filingId,wq.wqId,wq.wqCustomerName, wq.wqCompanyName, wq.customerId, wq.wqFilename, wq.userId, wq.userGroupId,wq.companyId FROM WorkQueue wq where wq.userGroupId = :userGroupId and wq.userId=:userId order by wq.wqId desc"),
+		@NamedQuery(name = "findAllWorkQueueCountByUserId", query = "SELECT count(wq) FROM WorkQueue wq where wq.userGroupId = :userGroupId and wq.userId=:userId"),
+		@NamedQuery(name = "findAllWorkQueueRecordsForSec", query = "SELECT wq.wqMasterCaseId,wq.createDate, wq.filingId,wq.wqParserDescription, wq.wqCompanyName, wq.wqStatus, wq.wqCik, wq.wqFormType, wq.wqDateFiled, wq.lockedBy,  wq.filingId, wq.wqId, wq.wqCustomerName, wq.wqCompanyName, wq.customerId, wq.wqFilename, wq.userId, wq.userGroupId, wq.wqCik FROM WorkQueue wq where wq.userGroupId = :userGroupId order by wq.wqId desc "),
+		@NamedQuery(name = "findAllWorkQueueCount", query = "SELECT count(wq) FROM WorkQueue wq where wq.userGroupId = :userGroupId"),
+		@NamedQuery(name = "findAllWorkQueueCountForSec", query = "SELECT count(wq) FROM WorkQueue wq where wq.userGroupId = :userGroupId"),
+		@NamedQuery(name = "findWorkQueueStatusByFilingID", query = "SELECT wq.wqStatus FROM WorkQueue wq where wq.filingId=:filingId "),
+		@NamedQuery(name = "updateWorkQueueById", query = "UPDATE WorkQueue SET lockedBy = :lockedBy,lockedSince=:lockedSince WHERE wqId = :wqId "),
+		@NamedQuery(name = "updateAllLockedCaseesForUser", query = "UPDATE WorkQueue SET lockedBy = null WHERE lockedBy = :userLogin "),
+		@NamedQuery(name = "updateWorkQueueByNullId", query = "UPDATE WorkQueue SET lockedBy = null WHERE wqId = :wqId"),
+		@NamedQuery(name = "getWorkQueueByWqId", query = "SELECT workQueue FROM WorkQueue workQueue WHERE workQueue.wqId = :wqId "),
+		@NamedQuery(name = "getWorkQueueByFilingId", query = "SELECT workQueue FROM WorkQueue workQueue WHERE workQueue.filingId = :filingId"),
+		@NamedQuery(name = "setlockedByNull", query = "UPDATE WorkQueue SET lockedBy = null where lockedBy is not null"),
+		@NamedQuery(name = "findDocumentStatus", query = "SELECT distinct workQueue.wqStatus,workQueue.wqStatus FROM WorkQueue workQueue order by workQueue.wqStatus asc"),
+		@NamedQuery(name = "getCompanyId", query = "SELECT workQueue FROM WorkQueue workQueue WHERE filingId = :filingId "),
+		@NamedQuery(name = "findSegmentIndustry", query = "SELECT distinct workQueue.industrySegment, workQueue.industrySegment FROM WorkQueue workQueue where workQueue.industrySegment is not null order by workQueue.industrySegment asc"),
+		@NamedQuery(name = "findCompanyType", query = "SELECT distinct workQueue.companyType, workQueue.companyType FROM WorkQueue workQueue where workQueue.companyType is not null order by workQueue.companyType asc"),
+		@NamedQuery(name = "findFillingId", query = "select filingId from WorkQueue where filingId like CONCAT(:searchVal, '%') and userGroupId=:user_group_id order by filingId asc"),
+		@NamedQuery(name = "findCustomerName", query = "select wqCustomerName from WorkQueue where Upper(wqCustomerName) like Upper(CONCAT(:searchVal, '%')) and userGroupId=:user_group_id order by wqCustomerName asc"),
+		@NamedQuery(name = "updateMonthYear_period", query = "update WorkQueue set wqMonthYear=:monthYear,wqPeriod=:Period  where filingId=:filingId"),
+		@NamedQuery(name = "findAllWorkQueueStatus", query = "SELECT wq.filingId,wq.wqStatus,wq.wqId FROM WorkQueue wq where wq.userGroupId = :userGroupId and wq.userId=:userId order by wq.wqId desc"),
+		@NamedQuery(name = "findCompanyId", query = "select companyId from WorkQueue where companyId like CONCAT(:searchVal, '%') and userGroupId=:user_group_id order by companyId asc"),
+		@NamedQuery(name = "getWorkQueueByLockedCases", query = "from WorkQueue where lockedBy is not null and userGroupId in (select usersGroupId from UsersGroup where parentUserGroup=:userGroupId) order by filingId desc"),
+		@NamedQuery(name = "getWorkQueueByLockedCasesByGroupId", query = "from WorkQueue where userGroupId=:userGroupId and lockedBy is not null order by filingId desc"),
+		@NamedQuery(name = "getLanguageByFilingId", query = "SELECT language FROM WorkQueue workQueue WHERE filingId = :filingId"),
+		@NamedQuery(name = "updateLockedByColFromWorkQueueByFilingId", query = "UPDATE WorkQueue SET lockedBy = :lockedBy,lockedSince=:lockedSince WHERE filingId = :filingId"),
+		@NamedQuery(name = "updateisXMLGenerateCol", query = "update WorkQueue set isXMLGenerate=:flag where filingId=:filingId"),
+		@NamedQuery(name = "getisXMLGenerateCol", query = "select isXMLGenerate,industryName from  WorkQueue where filingId=:filingId"),
+		@NamedQuery(name = "updateCaseStatusMakerById", query = "UPDATE WorkQueue SET makerCompleted=:makerCompleted,caseStatus=:caseStatus WHERE wqId = :wqId "),
+		@NamedQuery(name = "updateCaseStatusCheckerById", query = "UPDATE WorkQueue SET checkerCompleted=:checkerCompleted,caseStatus=:caseStatus WHERE wqId = :wqId "),
+		@NamedQuery(name = "updateCaseStatusChecker2ById", query = "UPDATE WorkQueue SET checker2Completed=:checker2Completed,caseStatus=:caseStatus WHERE wqId = :wqId "),
+		@NamedQuery(name = "assignMakerByFillingId", query = "UPDATE WorkQueue SET maker=:maker,caseStatus=:caseStatus,makerAssignedOn=:makerAssignedOn WHERE filingId = :filingId"),
+		@NamedQuery(name = "assignCheckerByFillingId", query = "UPDATE WorkQueue SET checker=:checker,checkerAssignedOn=:checkerAssignedOn,caseStatus=:caseStatus WHERE filingId = :filingId"),
+		@NamedQuery(name = "assignChecker2ByFillingId", query = "UPDATE WorkQueue SET checker2=:checker2,checker2AssignedOn=:checker2AssignedOn WHERE filingId = :filingId"),
+		@NamedQuery(name = "updateMakerStartedOn", query = "UPDATE WorkQueue SET makerStartedOn=:makerStartedOn WHERE wqId=:wqId"),
+		@NamedQuery(name = "updateCheckerStartedOn", query = "UPDATE WorkQueue SET checkerStartedOn=:checkerStartedOn WHERE wqId=:wqId"),
+		@NamedQuery(name = "updateChecker2StartedOn", query = "UPDATE WorkQueue SET checker2StartedOn=:checker2StartedOn WHERE wqId=:wqId"),
+		@NamedQuery(name = "updateWqStatusByWqId", query = "UPDATE WorkQueue SET wqStatus=:wqStatus,rerunStatus=:rerunStatus WHERE wqId = :wqId"),
+		@NamedQuery(name = "updateWqStatusByFilingId", query = "UPDATE WorkQueue SET wqStatus=:wqStatus WHERE filingId = :filingId"),
+		@NamedQuery(name = "getRolesworkQueue", query = "SELECT  filingId ,caseStatus FROM WorkQueue where filingId in :filingId"),
+		@NamedQuery(name = "getParserMasterIdByWqID", query = "SELECT  wq.parserMasterId FROM WorkQueue wq where wq.wqId = :wqId"),
+		@NamedQuery(name = "findAllFilingIdForAuditTrail", query = "SELECT  wq.filingId FROM WorkQueue wq where wq.caseStatus !='Unassigned' and wq.filingId is not null and wq.userGroupId in (select usersGroupId from UsersGroup where parentUserGroup=:userGroupId)"),
+		@NamedQuery(name = "findWorkQueueByTransactionId", query = "select workQueue FROM WorkQueue workQueue where workQueue.transactionId is not null and workQueue.userGroupId =:userGroupId order by workQueue.transactionId desc,workQueue.filingId desc"),
+		@NamedQuery(name = "findWorkQueueByTransactionIdAndStatus", query = "select workQueue FROM WorkQueue workQueue where workQueue.transactionId =:transactionId and workQueue.wqStatus =:wqStatus order by workQueue.transactionId desc,workQueue.filingId desc"),
+		@NamedQuery(name = "findAllTransIds", query = "select distinct workQueue.transactionId FROM WorkQueue workQueue where workQueue.transactionId is not null and workQueue.userGroupId=:userGroupId order by transactionId desc"),
+		@NamedQuery(name = "findAllFilingIdForAuditTrailForGroupAdmin", query = "SELECT  wq.filingId FROM WorkQueue wq where wq.caseStatus !='Unassigned' and wq.userGroupId=:userGroupId and wq.filingId is not null"),
+		@NamedQuery(name = "findEIDByFilingId", query = "SELECT wq.eId FROM WorkQueue wq where wq.filingId=:filingId"),
+		@NamedQuery(name = "findParserByFilingId", query = "SELECT wq.parserMasterId FROM WorkQueue wq where wq.filingId=:filingId"),
+		@NamedQuery(name = "getTransactionIdsList", query = "select distinct transactionId from WorkQueue where  CONVERT(varchar,transactionId)  like :transactionId"),
+		@NamedQuery(name = "updateWorkQueueByTransactionId", query = "UPDATE WorkQueue SET transactionId = :transactionId   where  filingId in :caseIds"),
+		@NamedQuery(name = "getFeatureCaseMappings", query = "SELECT wq.wqId, wq.caseID, wq.companyId, wq.wqCustomerName, wq.wqStatus, wq.createDate, wq.createdBy FROM WorkQueue wq where wq.goldenFlag is null and wq.userId =:userId"),
+		@NamedQuery(name = "updateWorkQueueByCaseId", query = "UPDATE WorkQueue SET caseID=:caseID   where  wqId=:wqId"),
+		@NamedQuery(name = "getIndustryTypeIdByFilingId", query = "SELECT wq.industryType FROM WorkQueue wq where wq.filingId=:filingId"),
+		@NamedQuery(name = "getAutoCompleteKeywordMetaDataListWQ", query = "SELECT wq.wqId FROM WorkQueue wq where wq.goldenFlag is null and wq.userId =:userId and wq.wqId like CONCAT(:wqId, '%')"),
+		@NamedQuery(name = "getAutoCompleteKeywordMetaDataListCN", query = "SELECT wq.wqCustomerName FROM WorkQueue wq where wq.goldenFlag is null and wq.userId =:userId and wq.wqCustomerName like CONCAT(:wqCustomerName, '%')"),
+		@NamedQuery(name = "getGoldenCaseDataByGroupId", query = "SELECT wq.wqId,wq.filingId,wq.caseID,wq.goldenFlag,wq.goldenBatchId,wq.wqCustomerName FROM WorkQueue wq where wq.userGroupId=:userGroupId and wq.goldenFlag=:goldenFlag and caseID=:caseID order by wq.wqId"),
+		@NamedQuery(name = "updateGoldenCaseDataByFilingId", query = "UPDATE WorkQueue SET goldenBatchId=:goldenBatchId,goldenFlag=:goldenFlag  WHERE filingId in (:filingIdList)"),
+		@NamedQuery(name = "getMaxBatchIdWorkQueue", query = "select max(goldenBatchId) from WorkQueue"),
+		@NamedQuery(name = "getisXBRLGenerateCol", query = "select downloadStatus from  WorkQueue where filingId=:filingId"),
+		@NamedQuery(name = "updateWqStatusAndIndustryNameByFilingId", query = "UPDATE WorkQueue SET wqStatus=:wqStatus,industryName=:industryName WHERE filingId = :filingId")
+})
+		
+@NamedNativeQueries(value = {
+		@NamedNativeQuery(name = "findAllWorkQueueRecordsNative", query = "select MCI1,CD1, FD1,PARSDESC1,CN1,industrySegment1,companyType1,COMN1, CMPID1,ST1, CI1,LB1, NEW_FD1, WI1, NEW_CN1, NEW_COMN1, NEW_CI1, WF1, UI1, UGI1, NEW_COMPID1 from ( select wqq1.WQ_MASTER_CASE_ID as MCI1 ,wqq1.CREATE_DATE as CD1, wqq1.FILING_ID as FD1, wqq1.WQ_CUSTOMER_NAME as CN1,wqq1.INDUSTRY_SEGMENT as industrySegment1,wqq1.COMPANY_TYPE as companyType1, wqq1.WQ_COMPANY_NAME as COMN1, wqq1.company_id as CMPID1, wqq1.CHANNEL as CH1, wqq1.WQ_STATUS as ST1, wqq1.customer_id as CI1,wqq1.WQ_PARSER_DESCRIPTION as PARSDESC1,wqq1.LOCKED_BY as LB1, wqq1.FILING_ID as NEW_FD1, wqq1.WQ_ID as WI1, wqq1.WQ_CUSTOMER_NAME as NEW_CN1, wqq1.WQ_COMPANY_NAME as NEW_COMN1, wqq1.customer_id as NEW_CI1, wqq1.WQ_FILENAME as WF1, wqq1.USER_ID as UI1, wqq1.USER_GROUP_ID as UGI1,wqq1.company_id as NEW_COMPID1 from work_queue wqq1 where wqq1.USER_ID = :userId and wqq1.USER_GROUP_ID = :userGroupId order by wqq1.wq_id desc  ) subWQQ1 where subWQQ1.UI1 = :userId and subWQQ1.UGI1 = :userGroupId union all  select MCI,CD, FD,PARSDESC, CN,industrySegment,companyType, COMN, CMPID, ST, CI,LB, NEW_FD, WI,NEW_CN, NEW_COMN, NEW_CI, WF, UI, UGI,NEW_COMPID from ( select wqq.WQ_MASTER_CASE_ID as MCI,wqq.CREATE_DATE as CD, wqq.FILING_ID as FD, wqq.WQ_CUSTOMER_NAME as CN,wqq.INDUSTRY_SEGMENT as industrySegment,wqq.COMPANY_TYPE as companyType, wqq.WQ_COMPANY_NAME as COMN, wqq.company_id as CMPID, wqq.CHANNEL as CH, wqq.WQ_STATUS as ST, wqq.customer_id as CI,wqq.WQ_PARSER_DESCRIPTION as PARSDESC, wqq.LOCKED_BY as LB, wqq.FILING_ID as NEW_FD, wqq.WQ_ID as WI,  wqq.WQ_CUSTOMER_NAME as NEW_CN, wqq.WQ_COMPANY_NAME as NEW_COMN, wqq.customer_id as NEW_CI, wqq.WQ_FILENAME as WF, wqq.USER_ID as UI, wqq.USER_GROUP_ID as UGI, wqq.company_id as NEW_COMPID from work_queue wqq where wqq.USER_ID <> :userId and wqq.USER_GROUP_ID = :userGroupId order by wqq.wq_id desc  ) subWQQ where subWQQ.UI <> :userId and subWQQ.UGI = :userGroupId"),
+		@NamedNativeQuery(name = "findAllWorkQueueRecordsNativeForSec", query = "select MCI1,CD1, FD1,PARSDESC1, COMN1, ST1, CIK1, FT1, DF1, LB1, NEW_FD1, WI1, NEW_CN1, NEW_COMN1, NEW_CI1, WF1, UI1, UGI1, NEW_CIK1 from ( select wqq1.WQ_MASTER_CASE_ID as MCI1,wqq1.CREATE_DATE as CD1, wqq1.FILING_ID as FD1, wqq1.WQ_COMPANY_NAME as COMN1, wqq1.WQ_STATUS as ST1, wqq1.wq_cik as CIK1, wqq1.wq_form_type as FT1, wqq1.wq_date_filed as DF1,wqq1.WQ_PARSER_DESCRIPTION as PARSDESC1, wqq1.LOCKED_BY as LB1, wqq1.FILING_ID as NEW_FD1, wqq1.WQ_ID as WI1, wqq1.WQ_CUSTOMER_NAME as NEW_CN1, wqq1.WQ_COMPANY_NAME as NEW_COMN1, wqq1.customer_id as NEW_CI1, wqq1.WQ_FILENAME as WF1, wqq1.USER_ID as UI1, wqq1.USER_GROUP_ID as UGI1, wqq1.wq_cik as NEW_CIK1 from work_queue wqq1 order by wqq1.wq_id desc ) subWQQ1 where subWQQ1.UI1 =:userId and subWQQ1.UGI1 = :userGroupId union all  select MCI,CD, FD,PARSDESC,COMN, ST, CIK,FT,DF, LB, NEW_FD, WI,NEW_CN, NEW_COMN, NEW_CI, WF, UI, UGI,NEW_CIK from ( select wqq.WQ_MASTER_CASE_ID as MCI,wqq.CREATE_DATE as CD, wqq.FILING_ID as FD, wqq.WQ_COMPANY_NAME as COMN, wqq.WQ_STATUS as ST,  wqq.wq_cik as CIK, wqq.wq_form_type as FT, wqq.wq_date_filed as DF,wqq.WQ_PARSER_DESCRIPTION as PARSDESC, wqq.LOCKED_BY as LB, wqq.FILING_ID as NEW_FD, wqq.WQ_ID as WI,  wqq.WQ_CUSTOMER_NAME as NEW_CN, wqq.WQ_COMPANY_NAME as NEW_COMN, wqq.customer_id as NEW_CI, wqq.WQ_FILENAME as WF, wqq.USER_ID as UI, wqq.USER_GROUP_ID as UGI, wqq.wq_cik as NEW_CIK from work_queue wqq order by wqq.wq_id desc ) subWQQ where subWQQ.UI <> :userId and subWQQ.UGI = :userGroupId"),
+		@NamedNativeQuery(name = "getEachStatusCountReportDefault", query = "with t1 as (select wq_status, count(wq_status) Count_Status from work_queue  w join status_master s on wq_status = status_name and  user_group_id  = :groupId  group by wq_status) select distinct s.status_name, 0 as count from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union  select * from t1"),
+		@NamedNativeQuery(name = "getEachStatusCountReportDefaultWithDates", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and user_group_id  = :groupId and  create_Date  BETWEEN  :startDate1 AND :endDate1 group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getEachStatusCountReportforUserId", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and user_group_id  = :groupId and   USER_ID=:user_Id group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getEachStatusCountReportbyDateRange", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and user_group_id  = :groupId and USER_ID=:user_Id  and create_Date  BETWEEN :startDate1 AND :endDate1 group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getEachStatusCountReportforUserIdParserIdAdmin", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and  user_group_id=:groupId and USER_ID=:user_Id and WQ_PARSER_MASTER_ID=:parserMasterId group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getEachStatusCountReportDefaultforParserIdAdmin", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and  user_group_id=:groupId and WQ_PARSER_MASTER_ID=:parserMasterId group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getEachStatusCountReportDefaultWithDatesParserIdAdmin", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and  user_group_id=:groupId and  create_Date  BETWEEN  :startDate1 AND :endDate1 AND WQ_PARSER_MASTER_ID=:parserMasterId group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getEachStatusCountReportbyDateRangeParserAdmin", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and  user_group_id=:groupId  and USER_ID=:user_Id and create_Date  BETWEEN  :startDate1 AND :endDate1 AND WQ_PARSER_MASTER_ID=:parserMasterId group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getDataByStartDateEndDate_Group_Portfolio_Indusrty_Parser_Analyst", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and user_group_id=:groupId and  create_Date  BETWEEN  :startDate1 AND :endDate1 AND PORTFOLIO_NAME=:portfolio AND INDUSTRY_NAME=:industryType AND WQ_PARSER_MASTER_ID=:parserMasterId AND USER_ID=:user_Id  group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getDataByStartDateEndDate_Group_Portfolio_Indusrty_Parser", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and user_group_id=:groupId and  create_Date  BETWEEN  :startDate1 AND :endDate1 AND PORTFOLIO_NAME=:portfolio AND INDUSTRY_NAME=:industryType AND WQ_PARSER_MASTER_ID=:parserMasterId group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getDataByStartDateEndDate_Group_Portfolio_Indusrty", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and user_group_id=:groupId and  create_Date  BETWEEN  :startDate1 AND :endDate1 AND PORTFOLIO_NAME=:portfolio AND INDUSTRY_NAME=:industryType group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getDataByGroup_Portfolio_Indusrty", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and user_group_id=:groupId AND PORTFOLIO_NAME=:portfolio AND INDUSTRY_NAME=:industryType group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getDataByGroup_Portfolio_Indusrty_Parser", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and user_group_id=:groupId AND PORTFOLIO_NAME=:portfolio AND INDUSTRY_NAME=:industryType AND WQ_PARSER_MASTER_ID=:parserMasterId group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getDataByGroup_Portfolio_Indusrty_Analyst", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and user_group_id=:groupId AND PORTFOLIO_NAME=:portfolio AND INDUSTRY_NAME=:industryType AND USER_ID=:user_Id group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getDataByGroup_Portfolio_Indusrty_Parser_Analyst", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and user_group_id=:groupId AND PORTFOLIO_NAME=:portfolio AND INDUSTRY_NAME=:industryType AND WQ_PARSER_MASTER_ID=:parserMasterId AND USER_ID=:user_Id group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getDataByStartDateEndDate_Group_Portfolio_Parser_Analyst", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and user_group_id=:groupId and  create_Date  BETWEEN  :startDate1 AND :endDate1 AND PORTFOLIO_NAME=:portfolio AND WQ_PARSER_MASTER_ID=:parserMasterId AND USER_ID=:user_Id  group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getDataByStartDateEndDate_Group_Portfolio_Parser", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and user_group_id=:groupId and  create_Date  BETWEEN  :startDate1 AND :endDate1 AND PORTFOLIO_NAME=:portfolio AND WQ_PARSER_MASTER_ID=:parserMasterId group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getDataByStartDateEndDate_Group_Portfolio", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and user_group_id=:groupId and  create_Date  BETWEEN  :startDate1 AND :endDate1 AND PORTFOLIO_NAME=:portfolio group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getDataByStartDateEndDate_Group_Portfolio_Analyst", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and user_group_id=:groupId and  create_Date  BETWEEN  :startDate1 AND :endDate1 AND PORTFOLIO_NAME=:portfolio AND USER_ID=:user_Id group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getDataByGroup_Portfolio_Parser_Analyst", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and user_group_id=:groupId AND PORTFOLIO_NAME=:portfolio AND WQ_PARSER_MASTER_ID=:parserMasterId AND USER_ID=:user_Id group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getDataByGroup_Portfolio_Parser", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and user_group_id=:groupId AND PORTFOLIO_NAME=:portfolio AND WQ_PARSER_MASTER_ID=:parserMasterId group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getDataByGroup_Portfolio_Analyst", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and user_group_id=:groupId AND PORTFOLIO_NAME=:portfolio AND USER_ID=:user_Id group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "getDataByGroup_Portfolio", query = "with t1 as (select wq_status, count(*) Count_Status from work_queue  w join status_master s on wq_status = status_name and user_group_id=:groupId AND PORTFOLIO_NAME=:portfolio group by wq_status) select distinct s.status_name, 0  from status_master s join t1 on s.status_name not in (select t1.wq_status from t1) union select * from t1"),
+		@NamedNativeQuery(name = "findPortfolioName", query = "select PORTFOLIO_NAME from WORK_QUEUE where lower(PORTFOLIO_NAME) like lower(:searchVal) and user_group_id=:user_group_id"),
+		@NamedNativeQuery(name = "findIndustryName", query = "select INDUSTRY_NAME from WORK_QUEUE where lower(INDUSTRY_NAME) like lower(:searchVal) and user_group_id=:user_group_id"),
+		@NamedNativeQuery(name = "findTemplateIdByFilingId", query = "select distinct(nil.template_id) from norm_item_labels nil inner join FILINGS FI on nil.NIL_INDUSTRY=FI.TEMPLATE_INDUSTRY where FI.FILING_ID=:filingId")
+		})
+
+public class WorkQueue extends ApplicationEntity implements Serializable {
+	private static final long serialVersionUID = 1;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "WQ_ID")
+	private Integer wqId;
+	@Column(name = "CHANNEL")
+	private String channel;
+	@Column(name = "COUNTRY_ID")
+	private String countryId;
+	@Column(name = "CURRENT_COUNT")
+	private Integer currentCount;
+	@Column(name = "FILING_ID")
+	private Integer filingId;
+	@Column(name = "ICN")
+	private String icn;
+	@Column(name = "PRIMARY_FLAG")
+	private String primaryFlag;
+	@Column(name = "Q_ID")
+	private Integer qId;
+	@Column(name = "TOTAL_COUNT")
+	private Integer totalCount;
+	@Column(name = "USER_SEQ_ID")
+	private Integer userSeqId;
+	@Column(name = "WQ_ACCESSION_NUMBER")
+	private String wqAccessionNumber;
+	@Column(name = "WQ_CARD_MEMBER_NAME")
+	private String wqCardMemberName;
+	@Column(name = "WQ_CIK")
+	private Integer wqCik;
+	@Column(name = "WQ_COMPANY_NAME")
+	private String wqCompanyName;
+	@Column(name = "WQ_CRUSE_ID")
+	private String wqCruseId;
+	@Column(name = "WQ_CUSTOMER_NAME")
+	private String wqCustomerName;
+	@Column(name = "WQ_CUSTOMER_NUMBER")
+	private String wqCustomerNumber;
+	@Temporal(value = TemporalType.DATE)
+	@Column(name = "WQ_DATE_FILED")
+	private Date wqDateFiled;
+	@Column(name = "WQ_DOCUMENT_ID")
+	private String wqDocumentId;
+	@Column(name = "WQ_FILENAME")
+	private String wqFilename;
+	@Column(name = "WQ_FILENAME1")
+	private String wqFilename1;
+	@Column(name = "WQ_PARSER_DESCRIPTION")
+	private String wqParserDescription;
+	@Column(name = "WQ_FORM_TYPE")
+	private String wqFormType;
+	@Column(name = "WQ_LOCALE")
+	private String wqLocale;
+	@Column(name = "WQ_NOTES")
+	private String wqNotes;
+	@Column(name = "WQ_PRIORITY")
+	private Integer wqPriority;
+	@Column(name = "WQ_PROD_USER")
+	private Integer wqProdUser;
+	@Column(name = "WQ_SIC")
+	private String wqSic;
+	@Column(name = "WQ_SIMPLE")
+	private String wqSimple;
+	@Column(name = "WQ_SOURCE")
+	private String wqSource;
+	@Column(name = "WQ_STATUS")
+	private String wqStatus;
+	@Column(name = "WQ_SUPPL_COMPLETE")
+	private String wqSupplComplete;
+	@Column(name = "WQ_MASTER_CASE_ID")
+	private Integer wqMasterCaseId;
+	@Column(name = "WQ_PARSER_MASTER_ID")
+	private Integer parserMasterId;
+	@Column(name = "WQ_TICKER")
+	private String wqTicker;
+	@Column(name = "USER_ID")
+	private Integer userId;
+	@Column(name = "USER_GROUP_ID")
+	private Integer userGroupId;
+	@Column(name = "COMPANY_ID")
+	private String companyId;
+	@Column(name = "LOCKED_BY")
+	private String lockedBy;
+	
+	/*@Column(name = "create_date")
+	private Date create_Date;*/
+	@Column(name = "INDUSTRY_SEGMENT ")
+	private String industrySegment;
+	@Column(name = "COMPANY_TYPE")
+	private String companyType;
+	@Column(name = "customer_id")
+	private Integer customerId;
+
+	@Column(name = "WQ_PERIOD")
+	private String wqPeriod;
+	
+	@Column(name = "WQ_MONTH_YEAR")
+	private String wqMonthYear;
+	
+	@Column(name = "PORTFOLIO_NAME")
+	private String portfolioName;
+	
+	@Column(name = "INDUSTRY_NAME")
+	private String industryName;
+	
+	@Column(name = "INDUSTRY_ID")
+	private String industryId;
+
+	
+	@Column(name = "LOCKED_SINCE")
+	private Date lockedSince;
+	
+	
+	@Column(name = "LANGUAGE")
+	private String language;
+	 
+	@Column(name = "isXMLGenerate")
+	private Boolean isXMLGenerate;
+	
+	//Added By Naveed.Khan
+	@Column(name = "CASE_STATUS")
+	private  String caseStatus;
+	
+	@Column(name = "SEARCHER")
+	private Integer searcher;
+	
+	@Column(name = "MAKER")
+	private Integer maker;
+	
+	@Column(name = "CHECKER")
+	private  Integer checker;
+	
+	@Column(name = "CHECKER2")
+	private  Integer checker2;
+	
+	@Column(name="MAKER_COMPLETED")
+	private Date makerCompleted;
+	
+	@Column(name="CHECKER_COMPLETED")
+	private Date checkerCompleted;
+	
+	@Column(name="CHECKER2_COMPLETED")
+	private Date checker2Completed;
+	
+	@Column(name="MAKER_ASSIGNED_ON")
+	private Date makerAssignedOn;
+	
+	@Column(name="CHECKER_ASSIGNED_ON")
+	private Date checkerAssignedOn;
+	
+	@Column(name="CHECKER2_ASSIGNED_ON")
+	private Date checker2AssignedOn;
+	
+	@Column(name="MAKER_STARTED_ON")
+	private Date makerStartedOn;
+
+	@Column(name="CHECKER_STARTED_ON")
+	private Date checkerStartedOn;
+
+	@Column(name="CHECKER2_STARTED_ON")
+	private Date checker2StartedOn;
+
+	@Column(name = "FYE_MONTH")
+	private String fyeMonth;
+	
+	@Column(name = "FYE_DAY")
+	private Integer fyeDay;
+	
+	@Column(name = "FYE_YEAR")
+	private String fyeYear;
+
+	@Column(name = "EID")
+	private Integer eId;
+	
+	@Column(name = "INDUSTRY_TYPE")
+	private Integer industryType;
+	
+	@Column(name = "TRANSACTION_ID")
+	private Integer transactionId;
+	
+	@Column(name = "DOWNLOAD_STATUS")
+	private String downloadStatus;
+	
+	@Column(name = "DEALER_ID")
+	private  Integer dealerId;
+	
+	
+	@Column(name = "RERUN_STATUS")
+	private String rerunStatus;
+	
+	@Column(name = "CASE_ID")
+	private  Integer caseID;
+	
+	@Column(name = "GOLDEN_FLAG")
+	private String goldenFlag;
+	
+	@Column(name = "GOLDEN_BATCH_ID")
+	private Integer goldenBatchId;
+	
+	
+	public Integer getGoldenBatchId() {
+		return goldenBatchId;
+	}
+
+	public void setGoldenBatchId(Integer goldenBatchId) {
+		this.goldenBatchId = goldenBatchId;
+	}
+	
+	public String getGoldenFlag() {
+		return goldenFlag;
+	}
+
+	public void setGoldenFlag(String goldenFlag) {
+		this.goldenFlag = goldenFlag;
+	}
+
+	public Integer getCaseID() {
+		return caseID;
+	}
+
+	public void setCaseID(Integer caseID) {
+		this.caseID = caseID;
+	}
+
+	public String getRerunStatus() {
+		return rerunStatus;
+	}
+
+	public void setRerunStatus(String rerunStatus) {
+		this.rerunStatus = rerunStatus;
+	}
+
+	public String getDownloadStatus() {
+		return downloadStatus;
+	}
+
+	public void setDownloadStatus(String downloadStatus) {
+		this.downloadStatus = downloadStatus;
+	}
+
+	public String getIndustryId() {
+		return industryId;
+	}
+
+	public void setIndustryId(String industryId) {
+		this.industryId = industryId;
+	}
+
+	public Date getMakerStartedOn() {
+		return makerStartedOn;
+	}
+
+	public void setMakerStartedOn(Date makerStartedOn) {
+		this.makerStartedOn = makerStartedOn;
+	}
+
+	public Date getCheckerStartedOn() {
+		return checkerStartedOn;
+	}
+
+	public void setCheckerStartedOn(Date checkerStartedOn) {
+		this.checkerStartedOn = checkerStartedOn;
+	}
+
+	public Date getChecker2StartedOn() {
+		return checker2StartedOn;
+	}
+
+	public void setChecker2StartedOn(Date checker2StartedOn) {
+		this.checker2StartedOn = checker2StartedOn;
+	}
+
+	public Integer getChecker2() {
+		return checker2;
+	}
+
+	public void setChecker2(Integer checker2) {
+		this.checker2 = checker2;
+	}
+
+	public Date getChecker2Completed() {
+		return checker2Completed;
+	}
+
+	public void setChecker2Completed(Date checker2Completed) {
+		this.checker2Completed = checker2Completed;
+	}
+
+	public Date getChecker2AssignedOn() {
+		return checker2AssignedOn;
+	}
+
+	public void setChecker2AssignedOn(Date checker2AssignedOn) {
+		this.checker2AssignedOn = checker2AssignedOn;
+	}
+
+
+
+
+
+
+	@Column(name="WQ_CREATED_ON")
+	private Date wqCreatedOn;
+	
+	@Column(name="WQ_MODIFIED_ON")
+	private Date wqModifiedOn;
+	
+	@Column(name = "SEARCHER_NAME")
+	private String searcherName;
+	
+	
+	
+	
+	public Date getMakerAssignedOn() {
+		return makerAssignedOn;
+	}
+
+	public void setMakerAssignedOn(Date makerAssignedOn) {
+		this.makerAssignedOn = makerAssignedOn;
+	}
+
+	public Date getCheckerAssignedOn() {
+		return checkerAssignedOn;
+	}
+
+	public void setCheckerAssignedOn(Date checkerAssignedOn) {
+		this.checkerAssignedOn = checkerAssignedOn;
+	}
+	
+	public String getCaseStatus() {
+		return caseStatus;
+	}
+
+	public void setCaseStatus(String caseStatus) {
+		this.caseStatus = caseStatus;
+	}
+
+	public Integer getSearcher() {
+		return searcher;
+	}
+
+	public void setSearcher(Integer searcher) {
+		this.searcher = searcher;
+	}
+
+	public Integer getMaker() {
+		return maker;
+	}
+
+	public void setMaker(Integer maker) {
+		this.maker = maker;
+	}
+
+	public Integer getChecker() {
+		return checker;
+	}
+
+	public void setChecker(Integer checker) {
+		this.checker = checker;
+	}
+
+	public Date getMakerCompleted() {
+		return makerCompleted;
+	}
+
+	public void setMakerCompleted(Date makerCompleted) {
+		this.makerCompleted = makerCompleted;
+	}
+
+	public Date getCheckerCompleted() {
+		return checkerCompleted;
+	}
+
+	public void setCheckerCompleted(Date checkerCompleted) {
+		this.checkerCompleted = checkerCompleted;
+	}
+
+
+	
+	
+	
+	
+	@Transient
+	public String differenceTwoDates;
+	
+	
+	public String getLanguage() {
+		return language;
+	}
+
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+
+	
+	public String getWqPeriod() {
+		return wqPeriod;
+	}
+
+	public void setWqPeriod(String wqPeriod) {
+		this.wqPeriod = wqPeriod;
+	}
+
+	public String getWqMonthYear() {
+		return wqMonthYear;
+	}
+
+	public void setWqMonthYear(String wqMonthYear) {
+		this.wqMonthYear = wqMonthYear;
+	}
+
+	public String getIndustrySegment() {
+		return this.industrySegment;
+	}
+
+	public void setIndustrySegment(String industrySegment) {
+		this.industrySegment = industrySegment;
+	}
+
+	public String getCompanyType() {
+		return this.companyType;
+	}
+
+	public void setCompanyType(String companyType) {
+		this.companyType = companyType;
+	}
+
+/*	public Date getCreate_Date() {
+		return this.create_Date;
+	}
+
+	public void setCreate_Date(Date create_Date) {
+		this.create_Date = create_Date;
+	}*/
+
+	public Integer getParserMasterId() {
+		return this.parserMasterId;
+	}
+
+	public void setParserMasterId(Integer parserMasterId) {
+		this.parserMasterId = parserMasterId;
+	}
+
+	public String getLockedBy() {
+		return this.lockedBy;
+	}
+
+	public void setLockedBy(String lockedBy) {
+		this.lockedBy = lockedBy;
+	}
+
+	public String getCompanyId() {
+		return this.companyId;
+	}
+
+	public void setCompanyId(String companyId) {
+		this.companyId = companyId;
+	}
+
+	public Integer getUserId() {
+		return this.userId;
+	}
+
+	public Integer getUserGroupId() {
+		return this.userGroupId;
+	}
+
+	public void setUserGroupId(Integer userGroupId) {
+		this.userGroupId = userGroupId;
+	}
+
+	public void setUserId(Integer userId) {
+		this.userId = userId;
+	}
+
+	public Integer getWqId() {
+		return this.wqId;
+	}
+
+	public void setWqId(Integer wqId) {
+		this.wqId = wqId;
+	}
+
+	public String getChannel() {
+		return this.channel;
+	}
+
+	public void setChannel(String channel) {
+		this.channel = channel;
+	}
+
+	public String getCountryId() {
+		return this.countryId;
+	}
+
+	public void setCountryId(String countryId) {
+		this.countryId = countryId;
+	}
+
+	public Integer getCurrentCount() {
+		return this.currentCount;
+	}
+
+	public void setCurrentCount(Integer currentCount) {
+		this.currentCount = currentCount;
+	}
+
+	public Integer getFilingId() {
+		return this.filingId;
+	}
+
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public String getIcn() {
+		return this.icn;
+	}
+
+	public void setIcn(String icn) {
+		this.icn = icn;
+	}
+
+	public String getPrimaryFlag() {
+		return this.primaryFlag;
+	}
+
+	public void setPrimaryFlag(String primaryFlag) {
+		this.primaryFlag = primaryFlag;
+	}
+
+	public Integer getqId() {
+		return this.qId;
+	}
+
+	public void setqId(Integer qId) {
+		this.qId = qId;
+	}
+
+	public Integer getTotalCount() {
+		return this.totalCount;
+	}
+
+	public void setTotalCount(Integer totalCount) {
+		this.totalCount = totalCount;
+	}
+
+	public Integer getUserSeqId() {
+		return this.userSeqId;
+	}
+
+	public void setUserSeqId(Integer userSeqId) {
+		this.userSeqId = userSeqId;
+	}
+
+	public String getWqAccessionNumber() {
+		return this.wqAccessionNumber;
+	}
+
+	public void setWqAccessionNumber(String wqAccessionNumber) {
+		this.wqAccessionNumber = wqAccessionNumber;
+	}
+
+	public String getWqCardMemberName() {
+		return this.wqCardMemberName;
+	}
+
+	public void setWqCardMemberName(String wqCardMemberName) {
+		this.wqCardMemberName = wqCardMemberName;
+	}
+
+	public Integer getWqCik() {
+		return this.wqCik;
+	}
+
+	public void setWqCik(Integer wqCik) {
+		this.wqCik = wqCik;
+	}
+
+	public String getWqCompanyName() {
+		return this.wqCompanyName;
+	}
+
+	public void setWqCompanyName(String wqCompanyName) {
+		this.wqCompanyName = wqCompanyName;
+	}
+
+	public String getWqCruseId() {
+		return this.wqCruseId;
+	}
+
+	public void setWqCruseId(String wqCruseId) {
+		this.wqCruseId = wqCruseId;
+	}
+
+	public String getWqCustomerName() {
+		return this.wqCustomerName;
+	}
+
+	public void setWqCustomerName(String wqCustomerName) {
+		this.wqCustomerName = wqCustomerName;
+	}
+
+	public String getWqCustomerNumber() {
+		return this.wqCustomerNumber;
+	}
+
+	public void setWqCustomerNumber(String wqCustomerNumber) {
+		this.wqCustomerNumber = wqCustomerNumber;
+	}
+
+	public Date getWqDateFiled() {
+		return this.wqDateFiled;
+	}
+
+	public void setWqDateFiled(Date wqDateFiled) {
+		this.wqDateFiled = wqDateFiled;
+	}
+
+	public String getWqDocumentId() {
+		return this.wqDocumentId;
+	}
+
+	public void setWqDocumentId(String wqDocumentId) {
+		this.wqDocumentId = wqDocumentId;
+	}
+
+	public String getWqFilename() {
+		return this.wqFilename;
+	}
+
+	public void setWqFilename(String wqFilename) {
+		this.wqFilename = wqFilename;
+	}
+
+	public String getWqFilename1() {
+		return this.wqFilename1;
+	}
+
+	public void setWqFilename1(String wqFilename1) {
+		this.wqFilename1 = wqFilename1;
+	}
+
+	public String getWqParserDescription() {
+		return this.wqParserDescription;
+	}
+
+	public void setWqParserDescription(String wqParserDescription) {
+		this.wqParserDescription = wqParserDescription;
+	}
+
+	public Integer getWqMasterCaseId() {
+		return this.wqMasterCaseId;
+	}
+
+	public void setWqMasterCaseId(Integer wqMasterCaseId) {
+		this.wqMasterCaseId = wqMasterCaseId;
+	}
+
+	public String getWqFormType() {
+		return this.wqFormType;
+	}
+
+	public void setWqFormType(String wqFormType) {
+		this.wqFormType = wqFormType;
+	}
+
+	public String getWqLocale() {
+		return this.wqLocale;
+	}
+
+	public void setWqLocale(String wqLocale) {
+		this.wqLocale = wqLocale;
+	}
+
+	public String getWqNotes() {
+		return this.wqNotes;
+	}
+
+	public void setWqNotes(String wqNotes) {
+		this.wqNotes = wqNotes;
+	}
+
+	public Integer getWqPriority() {
+		return this.wqPriority;
+	}
+
+	public void setWqPriority(Integer wqPriority) {
+		this.wqPriority = wqPriority;
+	}
+
+	public Integer getWqProdUser() {
+		return this.wqProdUser;
+	}
+
+	public void setWqProdUser(Integer wqProdUser) {
+		this.wqProdUser = wqProdUser;
+	}
+
+	public String getWqSic() {
+		return this.wqSic;
+	}
+
+	public void setWqSic(String wqSic) {
+		this.wqSic = wqSic;
+	}
+
+	public String getWqSimple() {
+		return this.wqSimple;
+	}
+
+	public void setWqSimple(String wqSimple) {
+		this.wqSimple = wqSimple;
+	}
+
+	public String getWqSource() {
+		return this.wqSource;
+	}
+
+	public void setWqSource(String wqSource) {
+		this.wqSource = wqSource;
+	}
+
+	public String getWqStatus() {
+		return this.wqStatus;
+	}
+
+	public void setWqStatus(String wqStatus) {
+		this.wqStatus = wqStatus;
+	}
+
+	public String getWqSupplComplete() {
+		return this.wqSupplComplete;
+	}
+
+	public void setWqSupplComplete(String wqSupplComplete) {
+		this.wqSupplComplete = wqSupplComplete;
+	}
+
+	public String getWqTicker() {
+		return this.wqTicker;
+	}
+
+	public void setWqTicker(String wqTicker) {
+		this.wqTicker = wqTicker;
+	}
+
+	public static long getSerialversionuid() {
+		return 1;
+	}
+
+	public Integer getCustomerId() {
+		return this.customerId;
+	}
+
+	public void setCustomerId(Integer customerId) {
+		this.customerId = customerId;
+	}
+
+	public String getPortfolioName() {
+		return portfolioName;
+	}
+
+	public void setPortfolioName(String portfolioName) {
+		this.portfolioName = portfolioName;
+	}
+
+	public String getIndustryName() {
+		return industryName;
+	}
+
+	public void setIndustryName(String industryName) {
+		this.industryName = industryName;
+	}
+
+	public Date getLockedSince() {
+		return lockedSince;
+	}
+
+	public void setLockedSince(Date lockedSince) {
+		this.lockedSince = lockedSince;
+	}
+
+	
+	public String getDifferenceTwoDates() {
+		return differenceTwoDates;
+	}
+
+	public void setDifferenceTwoDates(String differenceTwoDates) {
+		this.differenceTwoDates = differenceTwoDates;
+	}
+	
+	
+
+	public Boolean isXMLGenerate() {
+		return isXMLGenerate;
+	}
+
+	public void setXMLGenerate(Boolean isXMLGenerate) {
+		this.isXMLGenerate = isXMLGenerate;
+	}
+	
+	
+
+	public Date getWqCreatedOn() {
+		return wqCreatedOn;
+	}
+
+	public void setWqCreatedOn(Date wqCreatedOn) {
+		this.wqCreatedOn = wqCreatedOn;
+	}
+
+	public Date getWqModifiedOn() {
+		return wqModifiedOn;
+	}
+
+	public void setWqModifiedOn(Date wqModifiedOn) {
+		this.wqModifiedOn = wqModifiedOn;
+	}
+
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("WorkQueue [wqId=").append(this.wqId)
+				.append(", channel=").append(this.channel)
+				.append(", countryId=").append(this.countryId)
+				.append(", currentCount=").append(this.currentCount)
+				.append(", filingId=").append(this.filingId).append(", icn=")
+				.append(this.icn).append(", primaryFlag=")
+				.append(this.primaryFlag).append(", qId=").append(this.qId)
+				.append(", totalCount=").append(this.totalCount)
+				.append(", userSeqId=").append(this.userSeqId)
+				.append(", wqAccessionNumber=").append(this.wqAccessionNumber)
+				.append(", wqCardMemberName=").append(this.wqCardMemberName)
+				.append(", wqCik=").append(this.wqCik)
+				.append(", wqCompanyName=").append(this.wqCompanyName)
+				.append(", wqCruseId=").append(this.wqCruseId)
+				.append(", wqCustomerName=").append(this.wqCustomerName)
+				.append(", wqCustomerNumber=").append(this.wqCustomerNumber)
+				.append(", wqDateFiled=").append(this.wqDateFiled)
+				.append(", wqDocumentId=").append(this.wqDocumentId)
+				.append(", wqFilename=").append(this.wqFilename)
+				.append(", wqFilename1=").append(this.wqFilename1)
+				.append(", wqFormType=").append(this.wqFormType)
+				.append(", wqLocale=").append(this.wqLocale)
+				.append(", wqNotes=").append(this.wqNotes)
+				.append(", wqPriority=").append(this.wqPriority)
+				.append(", wqProdUser=").append(this.wqProdUser)
+				.append(", wqSic=").append(this.wqSic).append(", wqSimple=")
+				.append(this.wqSimple).append(", wqSource=")
+				.append(this.wqSource).append(", wqStatus=")
+				.append(this.wqStatus).append(", wqSupplComplete=")
+				.append(this.wqSupplComplete).append(", wqSupplUser=")
+				.append(", customerId=").append(this.customerId).append("]");
+		return builder.toString();
+	}
+
+	/**
+	 * @return the searcherName
+	 */
+	public String getSearcherName() {
+		return searcherName;
+	}
+
+	/**
+	 * @param searcherName the searcherName to set
+	 */
+	public void setSearcherName(String searcherName) {
+		this.searcherName = searcherName;
+	}
+
+	public String getFyeMonth() {
+		return fyeMonth;
+	}
+
+	public void setFyeMonth(String fyeMonth) {
+		this.fyeMonth = fyeMonth;
+	}
+
+	public Integer getFyeDay() {
+		return fyeDay;
+	}
+
+	public void setFyeDay(Integer fyeDay) {
+		this.fyeDay = fyeDay;
+	}
+
+	public String getFyeYear() {
+		return fyeYear;
+	}
+
+	public void setFyeYear(String fyeYear) {
+		this.fyeYear = fyeYear;
+	}
+
+	/**
+	 * @return the eId
+	 */
+	public Integer geteId() {
+		return eId;
+	}
+
+	/**
+	 * @param eId the eId to set
+	 */
+	public void seteId(Integer eId) {
+		this.eId = eId;
+	}
+
+	/**
+	 * @return the isXMLGenerate
+	 */
+	public Boolean getIsXMLGenerate() {
+		return isXMLGenerate;
+	}
+
+	/**
+	 * @param isXMLGenerate the isXMLGenerate to set
+	 */
+	public void setIsXMLGenerate(Boolean isXMLGenerate) {
+		this.isXMLGenerate = isXMLGenerate;
+	}
+
+	/**
+	 * @return the transactionId
+	 */
+	public Integer getTransactionId() {
+		return transactionId;
+	}
+
+	/**
+	 * @param transactionId the transactionId to set
+	 */
+	public void setTransactionId(Integer transactionId) {
+		this.transactionId = transactionId;
+	}
+
+	public Integer getDealerId() {
+		return dealerId;
+	}
+
+	public void setDealerId(Integer dealerId) {
+		this.dealerId = dealerId;
+	}
+
+	public Integer getIndustryType() {
+		return industryType;
+	}
+
+	public void setIndustryType(Integer industryType) {
+		this.industryType = industryType;
+	}
+}

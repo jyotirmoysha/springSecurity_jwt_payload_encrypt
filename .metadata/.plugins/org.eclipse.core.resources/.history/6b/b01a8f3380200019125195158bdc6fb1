@@ -1,0 +1,561 @@
+package com.livespread.service;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import com.livespread.command.ExtractionRuleRowDataCommand;
+import com.livespread.command.ExtractionRulesTagInfoCommand;
+import com.livespread.command.ValueCommand;
+import com.livespread.dao.LSExtendedGenericDao;
+import com.livespread.domain.LsFinancialFileInfo;
+import com.livespread.domain.LsFinancialMetaRowData;
+import com.livespread.domain.LsFinancialMetaRowDataCompositKey;
+import com.livespread.domain.LsFinancialMetaRowDataLogs;
+import com.livespread.domain.LsFinancialMetaRowInfo;
+import com.livespread.domain.LsFinancialMetaRowInfoLogs;
+import com.livespread.domain.NamedQueryName;
+import com.livespread.excel.StyleBuilder;
+import com.livespread.util.DataSortingCompare;
+import com.livespread.util.JsonData;
+import com.livespread.util.MetaRowInfo;
+import com.livespread.util.RecordsData;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Service("ExtractionDataRulesService")
+public class ExtractionDataRulesServiceImpl implements  ExtractionDataRulesService{
+
+	private Logger LOGGER = Logger.getLogger(ExtractionDataRulesServiceImpl.class);
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+	
+	@Autowired
+	private LSExtendedGenericDao extendedExtendedGenericDao;
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<String> getFilesListByLanguage(String language) {
+		
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("language",language);
+		List<String> filesList = null;
+		filesList = (List<String>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getFileslistByLanguage,LsFinancialFileInfo.class,parameters);
+		return filesList;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<ExtractionRuleRowDataCommand> getExtractionRulesData(Long tagId,String searchText,Integer pageNumber,Integer pageSize) {
+
+			List<Object> extractionRulesList=null;
+			List<ExtractionRuleRowDataCommand> extractionRuleRowDataList=null;
+				try{
+				Map<String, Object> parameters = new HashMap<String, Object>();
+				parameters.put("tagId",tagId);
+				if(searchText!=null && !searchText.isEmpty() ){
+					parameters.put("columnValue",searchText);	
+				extractionRulesList = extendedExtendedGenericDao.findRecordsByNamedQuery(NamedQueryName.getRulesDataByTagIdValues,LsFinancialMetaRowInfo.class, parameters,pageNumber,pageSize);
+	            }else{
+			    extractionRulesList = extendedExtendedGenericDao.findRecordsByNamedQuery(NamedQueryName.getRulesDataByTagId,LsFinancialMetaRowInfo.class, parameters,pageNumber,pageSize);
+			    }
+				if(!CollectionUtils.isEmpty(extractionRulesList))
+				{
+					extractionRuleRowDataList= new ArrayList<>();
+					ExtractionRuleRowDataCommand command=null;
+					List<LsFinancialMetaRowData> financialMetaRowDataList =null;
+					List<String> dataValue = null;
+					DataSortingCompare dataSortingCompare =null;
+					LsFinancialMetaRowInfo lsFinancialMetaRowInfo=null;
+					for(Object selectedObject :extractionRulesList){
+						Object[] lsFinancialMetaRowInfoArrayObject = (Object[]) selectedObject;
+						lsFinancialMetaRowInfo=(LsFinancialMetaRowInfo) lsFinancialMetaRowInfoArrayObject[1];
+						command = new ExtractionRuleRowDataCommand();
+						command.setMetaDataId(lsFinancialMetaRowInfo.getMetadataId());
+						financialMetaRowDataList = lsFinancialMetaRowInfo.getLsFinancialMetaRowDataList();
+						if(!CollectionUtils.isEmpty(financialMetaRowDataList))
+						{
+							dataValue = new ArrayList<>();
+							dataSortingCompare = new DataSortingCompare(); 
+						    Collections.sort(financialMetaRowDataList, dataSortingCompare); 
+							for (LsFinancialMetaRowData selectedRowData : financialMetaRowDataList) 
+							{
+								String columnValStr=selectedRowData.getColumnValue();								
+								dataValue.add(columnValStr);
+							}
+							command.setValues(dataValue);
+						}
+						extractionRuleRowDataList.add(command);
+					}	
+				}
+			}catch(Exception ex){
+				ex.printStackTrace();
+		}
+		
+		return extractionRuleRowDataList;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<ExtractionRulesTagInfoCommand> getTagDetailsListByFileNameAndLanguage(String fileName,String language) {
+		List<LsFinancialFileInfo> tagsDetailsList = null;
+		List<ExtractionRulesTagInfoCommand> tagsDetailsCommandList = null;
+		Map<String, Object> parameters =null;
+		try{	
+		if(fileName!=null && !fileName.isEmpty()){
+			parameters=new HashMap<String, Object>();
+			parameters.put("fileName",fileName);
+			parameters.put("language",language);
+			tagsDetailsList  = (List<LsFinancialFileInfo>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getTagsDetailsByFileName,LsFinancialFileInfo.class,parameters);
+		
+			if(!CollectionUtils.isEmpty(tagsDetailsList))
+			{
+				tagsDetailsCommandList = new ArrayList<>();
+				ExtractionRulesTagInfoCommand command=null;
+				for (LsFinancialFileInfo lsFinancialFileInfo : tagsDetailsList) 
+				{
+					command = new ExtractionRulesTagInfoCommand();
+					command.setTagId(lsFinancialFileInfo.getTagId());
+					command.setTagName(lsFinancialFileInfo.getTagName());
+					command.setColumnCount(lsFinancialFileInfo.getColumnCount());
+					tagsDetailsCommandList.add(command);
+				}
+			}
+		}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return tagsDetailsCommandList;
+	}
+
+	@Override
+	public Integer getExtractionRulesTotalRecords(Long tagId, String searchText) {
+	Integer countExtractionData=0;
+			try{
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("tagId",tagId);
+            if(searchText!=null && !searchText.isEmpty() ){
+				parameters.put("columnValue",searchText);	
+				countExtractionData=extendedExtendedGenericDao.findRecordsCountByNamedQuery(NamedQueryName.getRulesDataByTagIdValuesCount,LsFinancialMetaRowInfo.class, parameters);
+		    }else{
+		    	countExtractionData=extendedExtendedGenericDao.findRecordsCountByNamedQuery(NamedQueryName.getRulesDataByTagIdCount,LsFinancialMetaRowInfo.class, parameters);
+		    }
+			}
+			catch(Exception e){
+				e.printStackTrace();
+			}
+		return countExtractionData;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.livespread.service.ExtractionDataRulesService#getLanguageDetails()
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<String> getLanguageDetails() {
+		return (List<String>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getLanguagelist,LsFinancialFileInfo.class);
+	}
+
+	@SuppressWarnings({ "unchecked", "unused" })
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public int deletaMetadataIds(List<Long> delMetadataIds,Long userId) {
+		int deleteCount1=0;
+		int deleteCount2=0;
+		int delCount=0;
+		Map<String, Object> parameters = null;
+		try{
+			if(delMetadataIds.size()>0){
+				delCount=deleteCount1;	
+				
+				if(delMetadataIds.size()>0){
+					List<LsFinancialMetaRowData> rowDataList =null;	
+					for (Long metaIds : delMetadataIds) {
+						System.out.println(metaIds);
+						parameters = new HashMap<String, Object>();
+						parameters.put("metadataId",metaIds);
+						rowDataList = (List<LsFinancialMetaRowData>) (Object) genericDaoImpl
+								.findByNamedQuery(NamedQueryName.getMetaDataValuesByMetaDataId, LsFinancialMetaRowData.class,
+										parameters);
+					if(!CollectionUtils.isEmpty(rowDataList)){	
+						LsFinancialMetaRowData rowDataCmd =null;	
+						List<LsFinancialMetaRowDataLogs> rowDataLogList=new  ArrayList<LsFinancialMetaRowDataLogs>();
+						LsFinancialMetaRowInfoLogs rowInfoLogs=null;
+						LsFinancialMetaRowDataLogs rowDataLog=null;
+						for(int i=0;i<rowDataList.size();i++){
+							rowDataCmd=rowDataList.get(i);
+							if(i==0){
+							rowInfoLogs=new LsFinancialMetaRowInfoLogs();
+						    rowInfoLogs.setMetaDataId(metaIds.intValue());
+						    rowInfoLogs.setStatus("D");
+						    List<String> countlist =new ArrayList<String>();
+							for(int k=0;k<rowDataList.size();k++){
+								countlist.add(k+"");
+								}
+							String columnChnageList = String.join(",", countlist);
+							rowInfoLogs.setColumnChnage(columnChnageList);
+							rowInfoLogs.setUpdatedby(userId);
+							rowInfoLogs.setUpdatedOn(new Date());
+							genericDaoImpl.persist(rowInfoLogs);
+							}
+							rowDataLog=new LsFinancialMetaRowDataLogs();
+							rowDataLog.setColumnNumber(rowDataCmd.getLsFinancialMetaRowDataCompositKey().getColumnNumber());
+							rowDataLog.setColumnValue(rowDataCmd.getColumnValue());
+							rowDataLog.setRiSeqId(rowInfoLogs.getRiSeqId());
+							rowDataLog.setStatus("D");
+							rowDataLogList.add(rowDataLog);
+						}
+						genericDaoImpl.persist(rowDataLogList);
+						++delCount;
+					}
+					}
+						
+				}
+				parameters=new HashMap<String, Object>();
+				parameters.put("deleteMetadataIds",delMetadataIds);
+				deleteCount1=genericDaoImpl.updateByNamedQuery(NamedQueryName.deleteMetaRowValuesByMetaDataId, LsFinancialMetaRowData.class, parameters);
+				deleteCount1=genericDaoImpl.updateByNamedQuery(NamedQueryName.deleteMetaRowInfoByMetaDataId, LsFinancialMetaRowInfo.class, parameters);		
+			
+			}
+			}
+			catch(Exception e){
+				e.printStackTrace();
+			}
+
+		return delCount;
+	}
+
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public List<RecordsData> updateExtractionRules(JsonData jsonData, Long userId) {
+			//updating Records
+			List<RecordsData> jData = jsonData.getUpdateRecordsData();
+			Map<String, Object> parameters = null;
+			if (jData != null && !jData.isEmpty()) {
+				RecordsData recordsData = null;
+				List<LsFinancialMetaRowData> rowDataList=null;
+				LsFinancialMetaRowData cmdRowData=null;
+				for (int i = 0; i < jData.size(); i++) {
+					recordsData = jData.get(i);
+					parameters = new HashMap<String, Object>();
+					parameters.put("metadataId", recordsData.getMetaDataId());
+					rowDataList= (List<LsFinancialMetaRowData>) (Object) genericDaoImpl
+					.findByNamedQuery(NamedQueryName.getMetaDataValuesByMetaDataId, LsFinancialMetaRowData.class,parameters);
+				//new updated
+					List<String> values = recordsData.getValues();
+					List<LsFinancialMetaRowData> updRowDataList=new ArrayList<LsFinancialMetaRowData>();
+					LsFinancialMetaRowInfoLogs updateInfoLog=null;
+					LsFinancialMetaRowDataLogs oldUpdateRowDataLog=null;
+					LsFinancialMetaRowDataLogs updatedRowDataLog=null;
+					List<LsFinancialMetaRowDataLogs> updateRowDataLogList=new ArrayList<LsFinancialMetaRowDataLogs>();
+					for(int j=0;j<values.size();j++){
+						cmdRowData = rowDataList.get(j);
+						   if(j==0){
+		 					updateInfoLog=new  LsFinancialMetaRowInfoLogs();
+		 					updateInfoLog=new LsFinancialMetaRowInfoLogs();
+		 					updateInfoLog.setMetaDataId(recordsData.getMetaDataId());
+		 					updateInfoLog.setStatus("U");
+		 					String columnChnageList =columnNumbers(values.size());
+		 				    updateInfoLog.setColumnChnage(columnChnageList);
+		 					updateInfoLog.setUpdatedby(userId);
+		 					updateInfoLog.setUpdatedOn(new Date());
+		 					genericDaoImpl.persist(updateInfoLog);
+		 					}
+						
+						   oldUpdateRowDataLog=new LsFinancialMetaRowDataLogs();
+						   oldUpdateRowDataLog.setColumnNumber(cmdRowData.getLsFinancialMetaRowDataCompositKey().getColumnNumber());
+						   oldUpdateRowDataLog.setColumnValue(cmdRowData.getColumnValue());
+						   oldUpdateRowDataLog.setRiSeqId(updateInfoLog.getRiSeqId());
+						   oldUpdateRowDataLog.setStatus("O");
+
+		 					updateRowDataLogList.add(oldUpdateRowDataLog);
+		 					
+		 					//newRecord
+		 					updatedRowDataLog = new LsFinancialMetaRowDataLogs();
+		 					updatedRowDataLog.setColumnNumber(cmdRowData.getLsFinancialMetaRowDataCompositKey().getColumnNumber());
+		 					updatedRowDataLog.setColumnValue(values.get(j));
+		 					updatedRowDataLog.setRiSeqId(updateInfoLog.getRiSeqId());
+		 					updatedRowDataLog.setStatus("U");
+			 			  
+		 					updateRowDataLogList.add(updatedRowDataLog);
+		 					
+
+	 					cmdRowData.setColumnValue(values.get(j));
+						updRowDataList.add(cmdRowData);	
+					}
+					genericDaoImpl.merge(updRowDataList);
+					genericDaoImpl.persist(updateRowDataLogList);
+				
+							
+				}
+			}
+		return jData;
+	}
+
+	private String columnNumbers(int countSize) {
+		List<String> countlist =new ArrayList<String>();  
+		    for(int k=1;k<=countSize;k++){
+			countlist.add(k+"");
+			}
+		String columnChnageList = String.join(",", countlist);
+		return columnChnageList;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public List<RecordsData> insertExtractionRules(JsonData jsonData, Long userId) {
+		//updating file_index_order  Records	
+		List<RecordsData> jDataNew = jsonData.getNewRecordData();
+		Map<String, Object> parameters = null;
+		if(!CollectionUtils.isEmpty(jDataNew)){
+		MetaRowInfo rowInfoData = jsonData.getMetaRowInfo();
+		Integer tagId = rowInfoData.getTagId();
+		parameters = new HashMap<String, Object>();
+		parameters.put("tagId", tagId.longValue());
+		LsFinancialFileInfo fileInfoObj = genericDaoImpl.findByColumn(NamedQueryName.getMetaRowInfoByTagId,
+				LsFinancialFileInfo.class, parameters);
+		// Insert Records
+			RecordsData recordsDataNew = null;
+			LsFinancialMetaRowInfo fileInfo =null;
+		
+			for (int i = 0; i < jDataNew.size(); i++) {
+				recordsDataNew = jDataNew.get(i);
+				Integer orderCount = fileInfoObj.getFileIndexOrderCount() != null ? fileInfoObj.getFileIndexOrderCount() : 0;
+				fileInfoObj.setFileIndexOrderCount(orderCount + 1);
+				genericDaoImpl.merge(fileInfoObj);
+				
+				fileInfo= new LsFinancialMetaRowInfo();
+				fileInfo.setFinancialFileInfo(fileInfoObj);
+				fileInfo.setFileIndexOrder(fileInfoObj.getFileIndexOrderCount());
+				fileInfo.setCreateDate(new Date());
+				fileInfo.setCreatedBy(userId);
+				genericDaoImpl.persist(fileInfo);
+				
+				recordsDataNew.setMetaDataId((int)fileInfo.getMetadataId());
+		
+				List<String> values = recordsDataNew.getValues();
+				List<LsFinancialMetaRowData> addRowData = new ArrayList<LsFinancialMetaRowData>();
+				LsFinancialMetaRowData rowDataCmd = null;
+				LsFinancialMetaRowDataCompositKey compositKey = null;
+				
+				LsFinancialMetaRowInfoLogs addInfoLog=null;
+				LsFinancialMetaRowDataLogs addedRowDataLog=null;
+				List<LsFinancialMetaRowDataLogs> addedRowDataLogList=new ArrayList<LsFinancialMetaRowDataLogs>();
+				
+				for (int j = 0; j < values.size(); j++) {
+				int cn=j+1;
+					//insert og Metainfo table 
+					if(j==0){
+					addInfoLog=new  LsFinancialMetaRowInfoLogs();
+					addInfoLog=new LsFinancialMetaRowInfoLogs();
+					addInfoLog.setMetaDataId((int)fileInfo.getMetadataId());
+					addInfoLog.setStatus("N");
+					String columnChnageList =columnNumbers(values.size());
+					addInfoLog.setColumnChnage(columnChnageList);
+					addInfoLog.setUpdatedby(userId);
+					addInfoLog.setUpdatedOn(new Date());
+					genericDaoImpl.persist(addInfoLog);
+					}
+					
+					//newRecord
+					addedRowDataLog = new LsFinancialMetaRowDataLogs();
+					addedRowDataLog.setColumnNumber(cn);
+					addedRowDataLog.setColumnValue(values.get(j));
+					addedRowDataLog.setRiSeqId(addInfoLog.getRiSeqId());
+					addedRowDataLog.setStatus("N");
+					addedRowDataLogList.add(addedRowDataLog);
+					
+					
+					//new record in RowData table
+					compositKey = new LsFinancialMetaRowDataCompositKey();
+					compositKey.setColumnNumber(cn);
+					compositKey.setMetadataId(fileInfo.getMetadataId());
+					rowDataCmd = new LsFinancialMetaRowData();
+					rowDataCmd.setColumnValue(values.get(j));
+					rowDataCmd.setLsFinancialMetaRowDataCompositKey(compositKey);
+					addRowData.add(rowDataCmd);
+					
+				}
+				genericDaoImpl.persist(addRowData);
+				genericDaoImpl.persist(addedRowDataLogList);
+			
+			}
+			
+			
+		}
+		
+		return jDataNew;
+	}
+
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<ExtractionRuleRowDataCommand> getExtractionRulesDataForExcel(Long tagId) {
+
+			List<LsFinancialMetaRowInfo> extractionRulesList=null;
+			List<ExtractionRuleRowDataCommand> extractionRuleRowDataList=null;
+			try{
+				//Long id=1l;
+				Map<String, Object> parameters = new HashMap<String, Object>();
+				
+				extractionRulesList = (List<LsFinancialMetaRowInfo>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getRulesDataByTagId,LsFinancialMetaRowInfo.class,parameters);
+
+				if(!CollectionUtils.isEmpty(extractionRulesList))
+				{
+					extractionRuleRowDataList= new ArrayList<>();
+					ExtractionRuleRowDataCommand command=null;
+					List<LsFinancialMetaRowData> financialMetaRowDataList =null;
+					List<String> dataValue = null;
+					DataSortingCompare dataSortingCompare =null;
+					for(LsFinancialMetaRowInfo lsFinancialMetaRowInfo :extractionRulesList){
+						command = new ExtractionRuleRowDataCommand();
+						
+						command.setMetaDataId(lsFinancialMetaRowInfo.getMetadataId());
+						command.setTagId(tagId);
+						command.setCreatedBy(lsFinancialMetaRowInfo.getCreatedBy());
+						command.setCreatedOn(lsFinancialMetaRowInfo.getCreateDate());
+						command.setUpdatedBy(lsFinancialMetaRowInfo.getUpdatedby());
+						command.setUpdatedOn(lsFinancialMetaRowInfo.getUpdateDate());
+						command.setIndexOrder(lsFinancialMetaRowInfo.getFileIndexOrder());
+						command.setColumnCounter(lsFinancialMetaRowInfo.getFinancialFileInfo().getColumnCount());
+						
+/*						command.setDisplayCount(displayCount);
+						command.setPageNumber(pageNumber);
+						command.setTotalCountRecords(totalCountRecords);*/
+						command.setFileName(lsFinancialMetaRowInfo.getFinancialFileInfo().getFileName());
+						command.setTagName(lsFinancialMetaRowInfo.getFinancialFileInfo().getTagName());
+						command.setLanguage(lsFinancialMetaRowInfo.getFinancialFileInfo().getLanguage());
+						financialMetaRowDataList = lsFinancialMetaRowInfo.getLsFinancialMetaRowDataList();
+						if(!CollectionUtils.isEmpty(financialMetaRowDataList))
+						{
+							dataValue = new ArrayList<>();
+							dataSortingCompare = new DataSortingCompare(); 
+						    Collections.sort(financialMetaRowDataList, dataSortingCompare); 
+							for (LsFinancialMetaRowData selectedRowData : financialMetaRowDataList) 
+							{
+								dataValue.add(selectedRowData.getColumnValue());
+							}
+							command.setValues(dataValue);
+						}
+						extractionRuleRowDataList.add(command);
+					}	
+				}
+			}catch(Exception ex){
+				ex.printStackTrace();
+		}
+		
+		return extractionRuleRowDataList;
+	}
+	@Override
+	public Map<String, Map<String, List<? extends Object>>> f_createFinancialFileExportData(List<ExtractionRuleRowDataCommand> metaRowInfoList,Integer valuesColCount)
+	{
+		
+		LOGGER.info("**start- f_createFinancialFileExportData started");
+
+		Map<String, Map<String, List<? extends Object>>>  dataValMap=new LinkedHashMap<>();
+		/**
+		 * Here we check Account Number,As Rep Label column exist in excel based on listofHideClmns
+		 */
+		int columnCounter=8;
+		List<String> columnNameList=new ArrayList<>();
+		columnNameList.add("File Name");
+		columnNameList.add("Tag Name");
+		columnNameList.add("Language");
+		columnNameList.add("File Index Order");
+		for(int i=1;i<=valuesColCount;i++){
+		  columnNameList.add("value"+i);
+		  columnCounter++;
+		}
+		columnNameList.add("Created By");
+		columnNameList.add("Created Date");
+		columnNameList.add("Modified By");
+		columnNameList.add("Modified Date");
+		
+	   List<Object> objectList=new ArrayList<>();
+	  //writting header
+	   if(!columnNameList.isEmpty() && columnNameList!=null)
+	   {
+	    List<ValueCommand> objectSubListMapSub=new LinkedList<>();
+		ValueCommand valueCommand = null;
+		if(!CollectionUtils.isEmpty(columnNameList))
+		{
+			StyleBuilder styleBuilder=new StyleBuilder();
+			styleBuilder.setBackgroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+			styleBuilder.setFillPattern(XSSFCellStyle.LEAST_DOTS);
+			for (String headerName : columnNameList) 
+			{
+				valueCommand = new ValueCommand();
+				valueCommand.setValue(headerName);
+				if(headerName!=null && !headerName.isEmpty())
+				{
+					valueCommand.setStyleBuilder(styleBuilder);
+				}
+				objectSubListMapSub.add(valueCommand);
+			}
+		}	   
+	  objectList.add(objectSubListMapSub);//add header row in excel
+	  }//end columnList if
+	   if(!CollectionUtils.isEmpty(metaRowInfoList)){
+	   for(ExtractionRuleRowDataCommand labelAndValues:metaRowInfoList){
+			Object[] onjInSubRow = new Object[columnCounter];
+			int subRowCounter=0;
+			onjInSubRow[subRowCounter]=labelAndValues.getFileName();	
+			subRowCounter++;
+			onjInSubRow[subRowCounter]=labelAndValues.getTagName();	
+			subRowCounter++;
+			onjInSubRow[subRowCounter]=labelAndValues.getLanguage();	
+			subRowCounter++;
+			onjInSubRow[subRowCounter]=labelAndValues.getIndexOrder();	
+			subRowCounter++;
+			
+				if(valuesColCount>0)
+				{
+			   if(!CollectionUtils.isEmpty(labelAndValues.getValues()))
+				{
+				  for(String values:labelAndValues.getValues())
+				  {
+				  onjInSubRow[subRowCounter]=values;
+				  subRowCounter++;
+				  }
+				}
+				}
+			onjInSubRow[subRowCounter]=labelAndValues.getCreatedBy();	
+			subRowCounter++;
+			onjInSubRow[subRowCounter]=labelAndValues.getCreatedOn();	
+			subRowCounter++;
+			onjInSubRow[subRowCounter]=labelAndValues.getUpdatedBy();	
+			subRowCounter++;
+			onjInSubRow[subRowCounter]=labelAndValues.getUpdatedOn();	
+			subRowCounter++;
+			
+			objectList.add(onjInSubRow);
+		}
+	   }
+	 	Map<String, List<? extends Object>> tableValMap=new LinkedHashMap<>();
+		tableValMap.put("Table1",objectList);
+		dataValMap.put("Financial Data", tableValMap);
+		
+		return dataValMap;
+	}	
+
+
+
+	
+}

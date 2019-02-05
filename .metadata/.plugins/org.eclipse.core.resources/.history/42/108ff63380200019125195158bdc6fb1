@@ -1,0 +1,81 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "PARSER_MASTER")
+@NamedQueries({
+		@NamedQuery(name = "getParserNameListByParserId", query = "from ParserMaster where parserId in (:parserIdList)"),
+		@NamedQuery(name = "getParsersList", query = "select parserId, parserName from ParserMaster")
+
+})
+@NamedNativeQueries({@NamedNativeQuery(name="getParserNameListByUserGroupId" ,query = "SELECT PM.PARSER_MASTER_ID,PM.PARSER_NAME,PM.PARSER_DESCRIPTION,PM.PARSER_VALUE FROM PARSER_MASTER PM INNER JOIN UGROUP_PARSER_MAPPING UPM ON PM.PARSER_MASTER_ID=UPM.PARSER_ID WHERE UPM.USER_GROUP_ID = :userGroupId AND  FLAG='A'"),
+					@NamedNativeQuery(name="getParserNameByFilingId" ,query = "select pm.parser_name from parser_master pm left outer join work_queue wq on pm.PARSER_MASTER_ID=wq.WQ_PARSER_MASTER_ID where wq.filing_id=:filingId"),
+					@NamedNativeQuery(name = "findAllParsersWithSection", query = "with t1 as (select * from PARSER_MASTER) SELECT ug.PARSER_MASTER_ID, ug.PARSER_NAME, ugp.PSM_SECTION_ID, pm.SECTION_NAME FROM t1 ug LEFT OUTER JOIN PARSER_SECTION_MAPPING ugp ON ug.PARSER_MASTER_ID = ugp.PSM_PARSER_ID AND ugp.IS_ACTIVE_FLAG  ='Y' LEFT JOIN SECTION_MAPPING pm ON ugp.PSM_SECTION_ID = pm.SM_ID ORDER BY ug.PARSER_MASTER_ID, pm.SM_ID asc"),
+					})
+public class ParserMaster implements Serializable, BaseEntity {
+
+	private static final long serialVersionUID = 1L;
+	@Id
+	@Column(name = "PARSER_MASTER_ID")
+	private long parserId;
+
+	@Column(name = "PARSER_NAME")
+	private String parserName;
+
+	@Column(name = "PARSER_VALUE")
+	private String parserValue;
+
+	@Column(name = "PARSER_DESCRIPTION")
+	private String parserDescription;
+
+	public void setId(long parserId) {
+		this.parserId = parserId;
+	}
+
+	public long getId() {
+		return parserId;
+	}
+
+	public String getParserName() {
+		return parserName;
+	}
+
+	public void setParserName(String parserName) {
+		this.parserName = parserName;
+	}
+
+	public String getParserDescription() {
+		return parserDescription;
+	}
+
+	public void setParserDescription(String parserDescription) {
+		this.parserDescription = parserDescription;
+	}
+
+	public String getParserValue() {
+		return parserValue;
+	}
+
+	public void setParserValue(String parserValue) {
+		this.parserValue = parserValue;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

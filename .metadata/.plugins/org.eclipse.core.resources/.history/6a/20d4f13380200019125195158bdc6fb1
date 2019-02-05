@@ -1,0 +1,258 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.PrePersist;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+import javax.servlet.ServletContext;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name="DEALER_TEMPLATE_AUDIT")
+
+@NamedQueries({
+@NamedQuery(name = "getDistinctDealerName", query = "SELECT DISTINCT(dealerName) FROM DealerTemplateAudit"),
+@NamedQuery(name = "getDealerTemplateAuditByDealerName", query = "select dta,u.login from DealerTemplateAudit dta,User u where dta.createdBy=u.userId and dta.dealerName=:dealerName order by dta.createdDate desc,dta.dtId desc"),
+@NamedQuery(name = "getDealerTemplateAuditById", query = "select dta from DealerTemplateAudit dta where dta.id IN (:idList) "),
+@NamedQuery(name = "updateDealerTemplateAuditByDtId", query = "update DealerTemplateAudit set isApproved=:isApproved,crudStatus=:crudStatus where id=:id and isApproved='N' "),
+@NamedQuery(name = "getDealerTemplateAuditByActive_DTID", query = "from DealerTemplateAudit where dtId=:dtId  and isApproved='N' and crudStatus='N'")
+ })
+
+public class DealerTemplateAudit implements Serializable, BaseEntity{
+
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "ID")
+	private Integer id;
+
+/**
+ *DT_ID is the DealerTemplateAudit primary key 
+ */
+	@Column(name = "DT_ID")
+	private Integer dtId;
+
+	@Column(name = "NORM_LABEL")
+	private String normLabel;
+	
+	@Column(name = "NORM_ITEM")
+	private Integer normItem;
+	
+	@Column(name = "NEW_NORM_LABEL")
+	private String newNormLabel;
+	
+	@Column(name = "NEW_NORM_ITEM")
+	private Integer newNormItem;
+	
+	@Column(name = "AS_REP_LABEL")
+	private String asRepLabel;
+
+	@Column(name = "DEALER_NAME")
+	private String dealerName;
+	
+	
+	@Column(name="IS_APRROVED",insertable=false, updatable = false, nullable = false, columnDefinition = "CHAR(1) default 'N'")
+	private String isApproved;
+
+	@Column(name="CRUD_STATUS")
+	private String crudStatus;
+
+	
+	@Column(name = "CREATED_BY", updatable = false)
+	private Integer createdBy;
+
+	@Column(name = "CREATED_DATE", updatable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date createdDate;
+	
+	@Transient
+	private String userName;
+	
+	
+	@PrePersist
+	public void onCreate() {
+		this.createdDate = new java.util.Date();
+		User userObject = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		this.createdBy=userObject.getUserId().intValue();
+		
+	}
+	
+	
+	
+	public String getUserName() {
+		return userName;
+	}
+
+
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+
+
+	public String getDealerName() {
+		return dealerName;
+	}
+
+
+
+	public void setDealerName(String dealerName) {
+		this.dealerName = dealerName;
+	}
+
+
+
+
+	public Integer getId() {
+		return id;
+	}
+
+
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+
+
+	public Integer getDtId() {
+		return dtId;
+	}
+
+
+
+	public void setDtId(Integer dtId) {
+		this.dtId = dtId;
+	}
+
+	
+
+	public String getNormLabel() {
+		return normLabel;
+	}
+
+
+	public void setNormLabel(String normLabel) {
+		this.normLabel = normLabel;
+	}
+
+
+	public String getNewNormLabel() {
+		return newNormLabel;
+	}
+
+
+	public void setNewNormLabel(String newNormLabel) {
+		this.newNormLabel = newNormLabel;
+	}
+
+ 
+	public String getIsApproved() {
+		return isApproved;
+	}
+
+
+
+	public void setIsApproved(String isApproved) {
+		this.isApproved = isApproved;
+	}
+
+
+
+	public String getCrudStatus() {
+		return crudStatus;
+	}
+
+
+
+	public void setCrudStatus(String crudStatus) {
+		this.crudStatus = crudStatus;
+	}
+
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+
+	public Integer getNormItem() {
+		return normItem;
+	}
+
+
+	public void setNormItem(Integer normItem) {
+		this.normItem = normItem;
+	}
+
+
+	public Integer getNewNormItem() {
+		return newNormItem;
+	}
+
+
+	public void setNewNormItem(Integer newNormItem) {
+		this.newNormItem = newNormItem;
+	}
+
+
+	public String getAsRepLabel() {
+		return asRepLabel;
+	}
+
+
+	public void setAsRepLabel(String asRepLabel) {
+		this.asRepLabel = asRepLabel;
+	}
+
+
+	@Override
+	public EntityType getEntityType() {
+		// TODO Auto-generated method stub
+		return EntityType.APPLICATION;
+	}
+	
+	
+}

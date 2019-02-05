@@ -1,0 +1,54 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "STATUS_MASTER")
+@NamedQueries({ @NamedQuery(name = "findAllStatusList", query = "SELECT statusmaster.statusId, statusmaster.statusName FROM StatusMaster statusmaster order by statusId ASC") })
+public class StatusMaster implements Serializable, BaseEntity {
+
+	@Id
+	@Column(name = "STATUS_ID")
+	private Integer statusId;
+
+	@Column(name = "STATUS_NAME")
+	private String statusName;
+
+	public Integer getStatusId() {
+		return statusId;
+	}
+
+	public void setStatusId(Integer statusId) {
+		this.statusId = statusId;
+	}
+
+	public String getStatusName() {
+		return statusName;
+	}
+
+	public void setStatusName(String statusName) {
+		this.statusName = statusName;
+	}
+
+	@Override
+	public String toString() {
+		return "StatusMaster [statusId=" + statusId + ", statusName="
+				+ statusName + "]";
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

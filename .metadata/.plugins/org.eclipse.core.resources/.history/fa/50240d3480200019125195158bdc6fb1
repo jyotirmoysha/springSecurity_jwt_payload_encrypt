@@ -1,0 +1,131 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author Sainath
+ *
+ */
+@Entity
+@Table(name = "ITR_TEMPLATE_SECTION_MAPPING")
+@NamedQueries({
+	@NamedQuery(name = "getItrTemplateSectionMappingListByTemplateId", query = "from ItrTemplateSectionMapping where  templateId = :templateId")
+})
+public class ItrTemplateSectionMapping implements Serializable, BaseEntity{
+	
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	/*@GeneratedValue(generator = "sequence")
+	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_ITR_TEM_SEC_MAP") })*/
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "TEMPLATE_SECTION_MAPPING_ID")
+	private Integer templateSectionMappingId;
+	
+	@Column(name = "TEMPLATE_ID")
+	private Integer templateId;
+	
+	@Column(name = "SECTION_ID")
+	private Integer sectionId;
+	
+	@Column(name = "SECTION_NAME")
+	private String sectionName;
+
+	@Column(name = "SECTION_DESCRIPION")
+	private String sectionDescription;
+
+	/**
+	 * @return the templateSectionMappingId
+	 */
+	public Integer getTemplateSectionMappingId() {
+		return templateSectionMappingId;
+	}
+
+	/**
+	 * @param templateSectionMappingId the templateSectionMappingId to set
+	 */
+	public void setTemplateSectionMappingId(Integer templateSectionMappingId) {
+		this.templateSectionMappingId = templateSectionMappingId;
+	}
+
+	/**
+	 * @return the templateId
+	 */
+	public Integer getTemplateId() {
+		return templateId;
+	}
+
+	/**
+	 * @param templateId the templateId to set
+	 */
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+
+	/**
+	 * @return the sectionId
+	 */
+	public Integer getSectionId() {
+		return sectionId;
+	}
+
+	/**
+	 * @param sectionId the sectionId to set
+	 */
+	public void setSectionId(Integer sectionId) {
+		this.sectionId = sectionId;
+	}
+
+	/**
+	 * @return the sectionName
+	 */
+	public String getSectionName() {
+		return sectionName;
+	}
+
+	/**
+	 * @param sectionName the sectionName to set
+	 */
+	public void setSectionName(String sectionName) {
+		this.sectionName = sectionName;
+	}
+
+	/**
+	 * @return the sectionDescription
+	 */
+	public String getSectionDescription() {
+		return sectionDescription;
+	}
+
+	/**
+	 * @param sectionDescription the sectionDescription to set
+	 */
+	public void setSectionDescription(String sectionDescription) {
+		this.sectionDescription = sectionDescription;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

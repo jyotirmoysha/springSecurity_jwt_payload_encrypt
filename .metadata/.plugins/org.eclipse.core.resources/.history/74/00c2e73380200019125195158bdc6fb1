@@ -1,0 +1,232 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "PARSER_OUTPUT_AUDIT")
+public class ParserOutputAudit implements Serializable, BaseEntity,Cloneable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "POA_ID")
+	private Integer poaId;
+
+	@Column(name = "POA_PO_ID")
+	private Integer poaPoId;
+
+	@Column(name = "POA_FILING_ID")
+	private Integer poaFilingId;
+
+	@Column(name = "POA_TRANSACTION_ID")
+	private Integer poaTransactionId;
+
+	@Column(name = "POA_CRUD_STATUS")
+	private String poaCrudStatus;
+	
+	@Column(name = "IS_EXTRACTION") 
+	private String isExtraction;
+	
+	@Column(name = "POA_DOCUMENT_STATUS_OLD")
+	private String poaDocumentStatusOld;
+
+	@Column(name = "POA_DOCUMENT_STATUS_NEW")
+	private String poa_DocumentStatusNew;
+
+	
+	@Column(name = "POA_PROCESSED_STATUS", insertable=false, updatable = false, nullable = false, columnDefinition = "CHAR(1) default 'N'")
+	private String poaProcessedStatus;
+
+	@Column(name = "CREATED_BY", updatable = false)
+	private Integer createdBy;
+
+	@Column(name = "MODIFIED_BY")
+	private Integer modifiedBy;
+
+	@Column(name = "CREATED_DATE", updatable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date createdDate;
+
+	@Column(name = "MODIFIED_DATE")
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date modifiedDate;
+	
+	//userRoll for maker and checker
+	@Column(name = "USER_ROLE")
+	private String userRole;
+
+	public String getUserRole() {
+		return userRole;
+	}
+	public void setUserRole(String userRole) {
+		this.userRole = userRole;
+	}
+
+
+	public Object clone() {
+        
+        ParserOutputAudit obj = new ParserOutputAudit();
+        obj.setCreatedBy(this.createdBy);
+        obj.setCreatedDate(this.createdDate);
+        obj.setIsExtraction(this.isExtraction);
+        obj.setModifiedBy(this.modifiedBy);
+        obj.setModifiedDate(this.modifiedDate);
+        obj.setPoa_DocumentStatusNew(this.poa_DocumentStatusNew);
+        obj.setPoaCrudStatus(this.poaCrudStatus);
+        obj.setPoaDocumentStatusOld(this.poaDocumentStatusOld);
+        obj.setPoaFilingId(this.poaFilingId);
+        obj.setPoaPoId(this.poaPoId);
+        obj.setPoaProcessedStatus(this.poaProcessedStatus);
+        obj.setPoaTransactionId(this.poaTransactionId);
+        return obj;
+    }
+	
+	
+	public String getIsExtraction() {
+		return isExtraction;
+	}
+
+	public void setIsExtraction(String isExtraction) {
+		this.isExtraction = isExtraction;
+	}
+
+	public Integer getPoaId() {
+		return poaId;
+	}
+
+	public void setPoaId(Integer poaId) {
+		this.poaId = poaId;
+	}
+
+	public Integer getPoaPoId() {
+		return poaPoId;
+	}
+
+	public void setPoaPoId(Integer poaPoId) {
+		this.poaPoId = poaPoId;
+	}
+
+	public Integer getPoaFilingId() {
+		return poaFilingId;
+	}
+
+	public void setPoaFilingId(Integer poaFilingId) {
+		this.poaFilingId = poaFilingId;
+	}
+
+	public Integer getPoaTransactionId() {
+		return poaTransactionId;
+	}
+
+	public void setPoaTransactionId(Integer poaTransactionId) {
+		this.poaTransactionId = poaTransactionId;
+	}
+
+	public String getPoaCrudStatus() {
+		return poaCrudStatus;
+	}
+
+	public void setPoaCrudStatus(String poaCrudStatus) {
+		this.poaCrudStatus = poaCrudStatus;
+	}
+
+	public String getPoaDocumentStatusOld() {
+		return poaDocumentStatusOld;
+	}
+
+	public void setPoaDocumentStatusOld(String poaDocumentStatusOld) {
+		this.poaDocumentStatusOld = poaDocumentStatusOld;
+	}
+
+	public String getPoa_DocumentStatusNew() {
+		return poa_DocumentStatusNew;
+	}
+
+	public void setPoa_DocumentStatusNew(String poa_DocumentStatusNew) {
+		this.poa_DocumentStatusNew = poa_DocumentStatusNew;
+	}
+
+	public String getPoaProcessedStatus() {
+		return poaProcessedStatus;
+	}
+
+	public void setPoaProcessedStatus(String poaProcessedStatus) {
+		this.poaProcessedStatus = poaProcessedStatus;
+	}
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Integer getModifiedBy() {
+		return modifiedBy;
+	}
+
+	public void setModifiedBy(Integer modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public Date getModifiedDate() {
+		return modifiedDate;
+	}
+
+	public void setModifiedDate(Date modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+	@PrePersist
+	public void onCreate() {
+		this.createdDate = new java.util.Date();
+		this.createdBy = createdBy;
+	}
+
+	@PreUpdate
+	public void onUpdate() {
+		this.modifiedDate = new java.util.Date();
+		this.modifiedBy = modifiedBy;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+}

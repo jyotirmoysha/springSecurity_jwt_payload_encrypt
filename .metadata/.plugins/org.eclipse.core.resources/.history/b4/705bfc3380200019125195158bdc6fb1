@@ -1,0 +1,272 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author Sainath
+ *
+ */
+@Entity
+@Table(name = "ITR_EXTRACTION_RULES")
+@NamedQueries({
+	@NamedQuery(name = "getItrExtractionRuleByExtractionRuleId", query = "from ItrExtractionRules where extractionRuleId = :extractionRuleId"),
+	@NamedQuery(name = "getItrTemplateFormIdByFilingId", query = "select distinct(itr.templateId) from ItrExtractionRules itr where itr.filingId = :filingId"),
+	@NamedQuery(name = "deleteItrExtractionRulesByFilingIdAndTemplateId", query = "delete  from ItrExtractionRules where filingId = :filingId and templateId != :templateId"),
+	@NamedQuery(name = "deleteItrExtractionRulesByExtractionRuleId", query = "delete  from ItrExtractionRules where extractionRuleId in :extractionRuleId")
+})
+@NamedNativeQueries({
+@NamedNativeQuery(name="getItrExtractionRulesByFilingIdSectionIdAndTemplateId",query="select ITR.EXTRACTION_RULE_ID,ITS.TEMPLATE_SECTION_MAPPING_ID,ITR.SECTION_ID,ITR.SECTION_NAME,ITR.BEGIN_PAGE_NUMBER,ITR.BEGIN_CONCEPT"
+		+ " from ITR_EXTRACTION_RULES ITR left outer join ITR_TEMPLATE_SECTION_MAPPING ITS on ITR.section_id=ITS.TEMPLATE_SECTION_MAPPING_ID and ITR.template_id=ITS.template_id"
+		+ " where ITR.FILING_ID=:filingId and ITR.TEMPLATE_ID=:templateId and ITR.SECTION_NAME= :sectionName ")
+})
+public class ItrExtractionRules implements Serializable, BaseEntity{
+	
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	/*@GeneratedValue(generator = "sequence")
+	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_ITR_EXTRACTION_RULES") })*/
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "EXTRACTION_RULE_ID")
+	private Integer extractionRuleId;
+	
+	@Column(name = "FILING_ID")
+	private Integer filingId;
+	
+	@Column(name = "TEMPLATE_ID")
+	private Integer templateId;
+	
+	@Column(name = "SECTION_ID")
+	private Integer sectionId;
+	
+	@Column(name = "SECTION_NAME")
+	private String sectionName;
+	
+	@Column(name = "BEGIN_PAGE_NUMBER")
+	private Integer pageNumber;
+	
+	@Column(name = "BEGIN_CONCEPT")
+	private String concept;
+
+	@Column(name = "CREATED_BY")
+	private Long createdBy;
+	
+	@Column(name = "CREATED_ON")
+	private Date createdOn;
+	
+	@Column(name = "MODIFIED_BY")
+	private Long modifiedBy;
+	
+	@Column(name = "MODIFIED_ON")
+	private Date modifiedOn;
+
+	@Column(name = "DocID")
+	private Integer docId;
+	
+	/**
+	 * This column is ITR_TEMPLATE_SECTION_MAPPING table primary key
+	 */
+	@Transient
+	@Column(name = "TEMPLATE_SECTION_MAPPING_ID")
+	private Integer templateSectionMappingId;
+	
+	
+	public Integer getTemplateSectionMappingId() {
+		return templateSectionMappingId;
+	}
+
+	public void setTemplateSectionMappingId(Integer templateSectionMappingId) {
+		this.templateSectionMappingId = templateSectionMappingId;
+	}
+
+	/**
+	 * @return the extractionRuleId
+	 */
+	public Integer getExtractionRuleId() {
+		return extractionRuleId;
+	}
+
+	/**
+	 * @param extractionRuleId the extractionRuleId to set
+	 */
+	public void setExtractionRuleId(Integer extractionRuleId) {
+		this.extractionRuleId = extractionRuleId;
+	}
+
+	/**
+	 * @return the filingId
+	 */
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	/**
+	 * @param filingId the filingId to set
+	 */
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	/**
+	 * @return the sectionId
+	 */
+	public Integer getSectionId() {
+		return sectionId;
+	}
+
+	/**
+	 * @param sectionId the sectionId to set
+	 */
+	public void setSectionId(Integer sectionId) {
+		this.sectionId = sectionId;
+	}
+
+	/**
+	 * @return the sectionName
+	 */
+	public String getSectionName() {
+		return sectionName;
+	}
+
+	/**
+	 * @param sectionName the sectionName to set
+	 */
+	public void setSectionName(String sectionName) {
+		this.sectionName = sectionName;
+	}
+
+	/**
+	 * @return the pageNumber
+	 */
+	public Integer getPageNumber() {
+		return pageNumber;
+	}
+
+	/**
+	 * @param pageNumber the pageNumber to set
+	 */
+	public void setPageNumber(Integer pageNumber) {
+		this.pageNumber = pageNumber;
+	}
+
+	/**
+	 * @return the concept
+	 */
+	public String getConcept() {
+		return concept;
+	}
+
+	/**
+	 * @param concept the concept to set
+	 */
+	public void setConcept(String concept) {
+		this.concept = concept;
+	}
+
+	/**
+	 * @return the createdBy
+	 */
+	public Long getCreatedBy() {
+		return createdBy;
+	}
+
+	/**
+	 * @param createdBy the createdBy to set
+	 */
+	public void setCreatedBy(Long createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	/**
+	 * @return the createdOn
+	 */
+	public Date getCreatedOn() {
+		return createdOn;
+	}
+
+	/**
+	 * @param createdOn the createdOn to set
+	 */
+	public void setCreatedOn(Date createdOn) {
+		this.createdOn = createdOn;
+	}
+
+	/**
+	 * @return the modifiedBy
+	 */
+	public Long getModifiedBy() {
+		return modifiedBy;
+	}
+
+	/**
+	 * @param modifiedBy the modifiedBy to set
+	 */
+	public void setModifiedBy(Long modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
+	/**
+	 * @return the modifiedOn
+	 */
+	public Date getModifiedOn() {
+		return modifiedOn;
+	}
+
+	/**
+	 * @param modifiedOn the modifiedOn to set
+	 */
+	public void setModifiedOn(Date modifiedOn) {
+		this.modifiedOn = modifiedOn;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+	/**
+	 * @return the templateId
+	 */
+	public Integer getTemplateId() {
+		return templateId;
+	}
+
+	/**
+	 * @param templateId the templateId to set
+	 */
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+
+	public Integer getDocId() {
+		return docId;
+	}
+
+	public void setDocId(Integer docId) {
+		this.docId = docId;
+	}
+
+}

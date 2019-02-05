@@ -1,0 +1,91 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "APPLICATION_SCREEN_COMPONENTS")
+@NamedQueries({
+@NamedQuery(name = "getAllInputField", query = "from ApplicationScreenComponents where isActive='Y' order by screenName"),
+@NamedQuery(name = "getAllDistinctScreenName", query = "select DISTINCT(screenName) from ApplicationScreenComponents where isActive='Y' order by screenName"),
+
+})		
+public class ApplicationScreenComponents implements Serializable, BaseEntity{
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "SCREEN_ID", unique = true, nullable = false)
+	private Integer screenId;
+	
+	@Column(name = "SCREEN_NAME")
+	private String screenName;
+	
+	@Column(name = "COMPONENT_NAME")
+	private String componentName;
+	
+	@Column(name = "IS_ACTIVE")
+	private String isActive;
+
+	@Column(name = "GROUP_TYPE")
+	private String groupType;
+
+	
+	public String getGroupType() {
+		return groupType;
+	}
+
+
+	public void setGroupType(String groupType) {
+		this.groupType = groupType;
+	}
+
+
+	public Integer getScreenId() {
+		return screenId;
+	}
+
+	
+	public void setScreenId(Integer screenId) {
+		this.screenId = screenId;
+	}
+
+	public String getComponentName() {
+		return componentName;
+	}
+
+	public void setComponentName(String componentName) {
+		this.componentName = componentName;
+	}
+
+	public String getScreenName() {
+		return screenName;
+	}
+
+	public void setScreenName(String screenName) {
+		this.screenName = screenName;
+	}
+
+	public String getIsActive() {
+		return isActive;
+	}
+
+	public void setIsActive(String isActive) {
+		this.isActive = isActive;
+	}
+	
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+}

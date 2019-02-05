@@ -1,0 +1,164 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "DOCUMENT")
+@NamedQueries({ @NamedQuery(name = "findDocumentByFilingId", query = "SELECT document FROM DocumentModel document where filingId=:filingId order by pageNo"),
+@NamedQuery(name="deleteExtractorITRRuleById",query="DELETE from DocumentModel where dcId in (:dcIdIdList)"),
+
+})
+public class DocumentModel implements Serializable, BaseEntity {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "DC_ID")
+	private Integer dcId;
+
+	@Column(name = "FILING_ID")
+	private Integer filingId;
+
+	@Column(name = "SUBDOC_ID")
+	private Integer subDocId;
+
+	@Column(name = "TYPE")
+	private String type;
+
+	@Column(name = "PAGE_NO")
+	private Integer pageNo;
+
+	@Column(name = "TEMPLATE_ID")
+	private String templateID;
+
+	@Column(name = "TEMPLATE_PAGE_NO")
+	private Integer template_PageNo;
+
+	@Column(name = "YEAR")
+	private String year;
+
+	@Column(name = "PROCESS_FLAG")
+	private String processFlag;
+
+	@Column(name = "DOC_NAME")
+	private String docName;
+
+	@Column(name = "ID_LINE_NO")
+	private Integer idLineNo;
+
+	@Column(name = "COMPANY_NAME")
+	private String companyName;
+
+	public Integer getDcId() {
+		return dcId;
+	}
+
+	public void setDcId(Integer dcId) {
+		this.dcId = dcId;
+	}
+
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public Integer getSubDocId() {
+		return subDocId;
+	}
+
+	public void setSubDocId(Integer subDocId) {
+		this.subDocId = subDocId;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public Integer getPageNo() {
+		return pageNo;
+	}
+
+	public void setPageNo(Integer pageNo) {
+		this.pageNo = pageNo;
+	}
+
+	public String getTemplateID() {
+		return templateID;
+	}
+
+	public void setTemplateID(String templateID) {
+		this.templateID = templateID;
+	}
+
+	public Integer getTemplate_PageNo() {
+		return template_PageNo;
+	}
+
+	public void setTemplate_PageNo(Integer template_PageNo) {
+		this.template_PageNo = template_PageNo;
+	}
+
+	public String getYear() {
+		return year;
+	}
+
+	public void setYear(String year) {
+		this.year = year;
+	}
+
+	public String getProcessFlag() {
+		return processFlag;
+	}
+
+	public void setProcessFlag(String processFlag) {
+		this.processFlag = processFlag;
+	}
+
+	public String getDocName() {
+		return docName;
+	}
+
+	public void setDocName(String docName) {
+		this.docName = docName;
+	}
+
+	public Integer getIdLineNo() {
+		return idLineNo;
+	}
+
+	public void setIdLineNo(Integer idLineNo) {
+		this.idLineNo = idLineNo;
+	}
+
+	public String getCompanyName() {
+		return companyName;
+	}
+
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

@@ -1,0 +1,213 @@
+/**
+ * 
+ */
+package com.livespread.command;
+
+import java.util.Date;
+
+import com.livespread.domain.User;
+
+
+/**
+ * @author KP0e1301
+ *
+ */
+public class ScaleChangeSignPoMappingCommand {
+	
+	private Integer scaleChangeSignPoMappingId =0;
+	
+	private Integer filingId =0;
+	
+	private Integer poId =0;;
+	
+	private String poColumnName ="";
+	
+	private String scaleChange ="";
+	
+	private String scaleVal ="0";
+	
+	private String signChange ="";
+
+	private String signVal ="";
+	private String changedColumnVal ="";
+	
+	private Integer arsId =0;
+	private Integer niItem =0;
+	private String nilLabel ="";
+	private String normItemSection ="";
+	
+	private User user;
+	
+	private String caseStatus;
+	private String documentStatus;
+	
+	private Integer createdBy;
+	
+	private Date createdDate;
+	
+	private String userRole;
+	
+	private String isArsPoMapping;
+	
+	public Integer getScaleChangeSignPoMappingId() {
+		return scaleChangeSignPoMappingId;
+	}
+
+	public void setScaleChangeSignPoMappingId(Integer scaleChangeSignPoMappingId) {
+		this.scaleChangeSignPoMappingId = scaleChangeSignPoMappingId;
+	}
+
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public Integer getPoId() {
+		return poId;
+	}
+
+	public void setPoId(Integer poId) {
+		this.poId = poId;
+	}
+
+	public String getPoColumnName() {
+		return poColumnName;
+	}
+
+	public void setPoColumnName(String poColumnName) {
+		this.poColumnName = poColumnName;
+	}
+
+	public String getScaleChange() {
+		return scaleChange;
+	}
+
+	public void setScaleChange(String scaleChange) {
+		this.scaleChange = scaleChange;
+	}
+
+	
+
+	public String getScaleVal() {
+		return scaleVal;
+	}
+
+	public void setScaleVal(String scaleVal) {
+		this.scaleVal = scaleVal;
+	}
+
+	public String getSignChange() {
+		return signChange;
+	}
+
+	public void setSignChange(String signChange) {
+		this.signChange = signChange;
+	}
+
+	public String getSignVal() {
+		return signVal;
+	}
+
+	public void setSignVal(String signVal) {
+		this.signVal = signVal;
+	}
+
+	public String getChangedColumnVal() {
+		return changedColumnVal;
+	}
+
+	public void setChangedColumnVal(String changedColumnVal) {
+		this.changedColumnVal = changedColumnVal;
+	}
+
+	public Integer getArsId() {
+		return arsId;
+	}
+
+	public void setArsId(Integer arsId) {
+		this.arsId = arsId;
+	}
+
+	public Integer getNiItem() {
+		return niItem;
+	}
+
+	public void setNiItem(Integer niItem) {
+		this.niItem = niItem;
+	}
+
+	public String getNilLabel() {
+		return nilLabel;
+	}
+
+	public void setNilLabel(String nilLabel) {
+		this.nilLabel = nilLabel;
+	}
+
+	public String getNormItemSection() {
+		return normItemSection;
+	}
+
+	public void setNormItemSection(String normItemSection) {
+		this.normItemSection = normItemSection;
+	}
+
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public String getCaseStatus() {
+		return caseStatus;
+	}
+
+	public void setCaseStatus(String caseStatus) {
+		this.caseStatus = caseStatus;
+	}
+
+	public String getDocumentStatus() {
+		return documentStatus;
+	}
+
+	public void setDocumentStatus(String documentStatus) {
+		this.documentStatus = documentStatus;
+	}
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public String getUserRole() {
+		return userRole;
+	}
+
+	public void setUserRole(String userRole) {
+		this.userRole = userRole;
+	}
+
+	public String getIsArsPoMapping() {
+		return isArsPoMapping;
+	}
+
+	public void setIsArsPoMapping(String isArsPoMapping) {
+		this.isArsPoMapping = isArsPoMapping;
+	}
+}

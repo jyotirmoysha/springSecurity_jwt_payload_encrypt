@@ -1,0 +1,54 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.NamedQueries;
+import org.hibernate.annotations.NamedQuery;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "GOLDEN_SET_METADATA")
+@NamedQueries({ 
+	@NamedQuery(name = "getAllGoldenSetFeatures", query = "select caseId,caseName FROM GoldenSetMetadata order by caseId"),
+})
+public class GoldenSetMetadata implements Serializable, BaseEntity{
+
+	@Id
+	@Column(name = "CASE_ID")
+	private Integer caseId;
+
+	@Column(name = "CASE_NAME")
+	private String caseName;
+
+	public Integer getCaseId() {
+		return caseId;
+	}
+
+	public void setCaseId(Integer caseId) {
+		this.caseId = caseId;
+	}
+
+	public String getCaseName() {
+		return caseName;
+	}
+
+	public void setCaseName(String caseName) {
+		this.caseName = caseName;
+	}
+	
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+
+	
+	 
+}

@@ -1,0 +1,171 @@
+package com.livespread.util;
+
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+
+import com.livespread.domain.User;
+import com.livespread.exception.UserNotLoginException;
+
+public class LoginInterceptor extends HandlerInterceptorAdapter {
+
+	private static Logger logger = Logger.getLogger(LoginInterceptor.class);
+
+	private static final List<String> unRestrictedURLs = new ArrayList<String>();
+	String whitelist = LiveSpreadUtil.getPropertyFromBundle("whitelist");
+
+	static {
+
+		String url;
+		url = "/login.htm";
+		unRestrictedURLs.add(url);
+
+		url = "/welcome.htm";
+		unRestrictedURLs.add(url);
+
+		url = "/updatePassword.htm";
+		unRestrictedURLs.add(url);
+
+		url = "/changePasswordByMail.htm";
+		unRestrictedURLs.add(url);
+
+		url = "/forgotPwd.htm";
+		unRestrictedURLs.add(url);
+
+		url = "/forgotPwdTest.htm";
+		unRestrictedURLs.add(url);
+		
+		url = "/addLogin.htm";
+		unRestrictedURLs.add(url);
+
+		url = "/uploadBatchFile.htm";
+		unRestrictedURLs.add(url);
+		
+		url = "/callBatchFileProcess.htm";
+		unRestrictedURLs.add(url);
+		
+		url = "/getpdf.htm";
+		unRestrictedURLs.add(url);		
+		
+		unRestrictedURLs.add("j_spring_security_check");
+
+	}
+
+	@Override
+	public boolean preHandle(HttpServletRequest request,
+			HttpServletResponse response, Object handler) throws Exception {
+		
+		
+		if (request.getMethod().equalsIgnoreCase("POST") || request.getMethod().equalsIgnoreCase("GET")) {
+		User userObject = null;
+		String servletPath;
+
+		servletPath = request.getServletPath();
+
+		logger.info("Request ServletPath : " + servletPath);
+
+		if (servletPath.contains(".htm")
+				&& !unRestrictedURLs.contains(servletPath)) {
+
+			try {
+				userObject = LiveSpreadUtil.getUser();
+			} catch (UserNotLoginException e) {
+				response.sendRedirect(request.getContextPath()
+						+ "/login.htm?error=1&sessiontimeout=true");
+
+				return false;
+			}
+
+			if (request.getRequestedSessionId() == null || userObject == null) {
+
+				logger.info("USER NOT LOGIN EXCEPTION");
+
+				if (request.getHeader("X-Requested-With") != null
+						&& request.getHeader("X-Requested-With").trim()
+								.toString().equalsIgnoreCase("XMLHttpRequest")) {
+
+					logger.info("Inside AuthenticationIntercepter identified ajax request");
+
+					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+				} else {
+					response.sendRedirect(request.getContextPath()
+							+ "/login.htm?error=1&sessiontimeout=true");
+				}
+				return false;
+			}
+		} else {
+
+			if (isValidRequest(request)) {
+
+				return true;
+			} else {
+
+				response.sendRedirect(request.getContextPath() + "/logout.htm");
+				return false;
+			}
+		}
+	}else{
+	    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Unauthorized Request");
+        return false;
+	}
+		return true;
+	}
+
+	@Override
+	public void postHandle(HttpServletRequest request,
+			HttpServletResponse response, Object handler,
+			ModelAndView modelAndView) throws Exception {
+	}
+
+	@Override
+	public void afterCompletion(HttpServletRequest request,
+			HttpServletResponse response, Object handler, Exception ex)
+			throws Exception {
+	}
+
+	private boolean isValidRequest(HttpServletRequest request) {
+
+		Enumeration<String> params = request.getParameterNames();
+		String paramName = null;
+		String value = null;
+		if (params != null) {
+			while (params.hasMoreElements()) {
+				paramName = params.nextElement();
+				value = request.getParameter(paramName);
+				if (value != null && !value.equals("")
+						&& !cleanXSS(value, whitelist)) {
+
+					logger.info("Fail Value: " + value);
+					logger.info("Fail Value: " + value);
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	private boolean cleanXSS(String value, String whitelist) {
+		String patternVal = whitelist;
+
+		Pattern p = Pattern.compile(patternVal);
+		Matcher m = p.matcher(value);
+
+		if (m.matches()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+}

@@ -1,0 +1,171 @@
+package com.livespread.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.livespread.command.NormalizeViewForDebitACHCommand;
+import com.livespread.service.NormalizationService;
+import com.livespread.service.WorkQueueService;
+import com.livespread.util.CipherUtils;
+
+@Controller
+public class BankNormalizationController {
+
+	private Logger LOGGER = Logger.getLogger(BankNormalizationController.class);
+
+	@Autowired
+	private NormalizationService normalizationService;
+	@Autowired
+	private WorkQueueService workQueueService;
+
+	@RequestMapping(value = "/bank_normalization_view.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public String banknormalizationView(HttpServletRequest request,
+			HttpServletResponse response, @RequestParam("accId") String accId,
+			@RequestParam("customerId") String customerId,
+			@RequestParam("fillingId") String fillingId,
+			@RequestParam("WqId") String wqId,
+			@RequestParam("customerName") String customerName,
+			@RequestParam("businessName") String businessName, String fileName,
+			@RequestParam("compIdOrCik") String compIdOrCik, Model map,
+			HttpSession session) {
+
+		LOGGER.info("------------------ normalization_view request Mapping starts --------------------wqId"
+				+ wqId);
+		String decryptedCustomerName = CipherUtils.decrypt(customerName);
+		Integer decryptedFillingId = Integer.parseInt(CipherUtils
+				.decrypt(fillingId));
+
+		String decryptedCompIdOrCik = CipherUtils.decrypt(compIdOrCik);
+
+		map.addAttribute("customerName", customerName);
+		map.addAttribute("businessName", businessName);
+		map.addAttribute("fileName", fileName);
+		map.addAttribute("fillingId", fillingId);
+		map.addAttribute("customerId", customerId);
+		map.addAttribute("wqId", wqId);
+		map.addAttribute("compIdOrCik", compIdOrCik);
+
+		map.addAttribute("decryptedCustomerName", decryptedCustomerName);
+		map.addAttribute("decryptedFillingId", decryptedFillingId);
+		map.addAttribute("decryptedCompIdOrCik", decryptedCompIdOrCik);
+
+		try {
+			String statusName = workQueueService
+					.findStatusByFilingId(decryptedFillingId);
+			map.addAttribute("currentStatus", statusName);
+				String nil_section = "Debit ACH";
+				List<String> accList = normalizationService
+						.getAccountIDByFillingId(decryptedFillingId);
+				if (accList.size() > 0) {
+					Map<String, Map<String, Object>> normalizedBankValueDetails = normalizationService
+							.getBankHeaderDetails(accList, decryptedFillingId);
+					map.addAttribute("accList", accList);
+					map.addAttribute("ShowAccList", "true");
+					map.addAttribute("NormalizedBankValueDetails",
+							normalizedBankValueDetails);
+					/*
+					 * ** Start Normalized view for Bank parser and Debit ACH
+					 * section based on account number
+					 */
+					Map<String, Map<String, NormalizeViewForDebitACHCommand>> normalizedBankValueDetailsForDebitACH = normalizationService
+							.getBankHeaderDetailsForDebitACH(accList,
+									decryptedFillingId, nil_section);
+					map.addAttribute("normalizedBankValueDetailsForDebitACH",
+							normalizedBankValueDetailsForDebitACH);
+				} else {
+					map.addAttribute("ShowAccList", "false");
+				}
+				LOGGER.info("------------------ normalization_view request Mapping starts --------------------wqId"
+						+ wqId);
+			
+
+			
+				return "bank_normalization_view";
+			
+
+		} catch (Exception e) {
+			LOGGER.error(e.getStackTrace());
+			LOGGER.error("Error:", e);
+			map.addAttribute("errorMessage", "No data found");
+			e.printStackTrace();
+		}
+
+		return "bank_normalization_view";
+	}
+
+	@RequestMapping(value = "/bankNormalizedViewExportToExcel.htm")
+	public ModelAndView getbankNormalizedViewDataToExportInExcel(
+			@RequestParam("customerId") String customerId,
+			@RequestParam("fillingId") String fillingId,
+			@RequestParam("WqId") String wqId,
+			@RequestParam("customerName") String customerName,
+			@RequestParam("businessName") String businessName, String fileName,
+			@RequestParam("compIdOrCik") String compIdOrCik, Model map,
+			HttpSession session) {
+
+		Integer decryptedFillingId = Integer.parseInt(CipherUtils
+				.decrypt(fillingId));
+		Map<String, Object> excelViewDataMap = new HashMap<String, Object>();
+		String decryptedCustomerName = CipherUtils.decrypt(customerName);
+		String FileName = decryptedCustomerName + "_Bank_Normalized_Output.xls";
+
+		excelViewDataMap.put("fileName", FileName);
+
+		try {
+
+			String nil_section = "Debit ACH";
+			List<String> accList = normalizationService
+					.getAccountIDByFillingId(decryptedFillingId);
+			if (accList.size() > 0) {
+				Map<String, Map<String, Object>> normalizedBankValueDetails = normalizationService
+						.getBankHeaderDetails(accList, decryptedFillingId);
+				excelViewDataMap.put("ShowAccList", true);
+				excelViewDataMap.put("accList", accList);
+				excelViewDataMap.put("NormalizedBankValueDetails",
+						normalizedBankValueDetails);
+
+				/*
+				 * ** Start Normalized view for Bank parser and Debit ACH
+				 * section based on account number
+				 */
+				Map<String, Map<String, NormalizeViewForDebitACHCommand>> normalizedBankValueDetailsForDebitACH = normalizationService
+						.getBankHeaderDetailsForDebitACH(accList,
+								decryptedFillingId, nil_section);
+
+				excelViewDataMap.put("normalizedBankValueDetailsForDebitACH",
+						normalizedBankValueDetailsForDebitACH);
+
+			} else {
+
+				excelViewDataMap.put("ShowAccList", false);
+			}
+
+			LOGGER.info("------------------ normalization_view request Mapping starts --------------------wqId"+ wqId);
+
+		} catch (Exception e) {
+			LOGGER.error(e.getStackTrace());
+			LOGGER.error("Error:", e);
+			map.addAttribute("errorMessage", "No data found");
+			e.printStackTrace();
+		}
+
+		return new ModelAndView("bankNormalizedViewExcelBuilder",
+				"excelViewDataMap", excelViewDataMap);
+
+	}
+}

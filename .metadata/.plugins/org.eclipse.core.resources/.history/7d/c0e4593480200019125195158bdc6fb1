@@ -1,0 +1,149 @@
+package com.livespread.common.service;
+
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
+import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import com.livespread.domain.User;
+
+
+ 
+public class DatabaseAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
+
+	Logger log = Logger.getLogger(DatabaseAuthenticationProvider.class);
+	
+	@Autowired
+	UserDetailsService userDetailsService;
+
+	@Autowired
+	MessageDigestPasswordEncoder messageDigestPasswordEncoder;
+
+	@Override
+	protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {}
+
+	@Override
+	protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
+		UserDetails userDetails = null;
+		User userObject=null;
+		boolean userLocked=false;
+		String password=null;
+		String dbPassword=null;
+		Long currentTimeStamp =null;
+		try {
+			password = (String) authentication.getCredentials();
+			if(null!=password)
+			{
+				String[] passwords = password.split("~");
+				if(passwords.length>1){
+				String[] randNums = passwords[1].split("R");
+				Integer rand1 = Integer.parseInt(randNums[0]);
+				Integer rand2 = Integer.parseInt(randNums[1]);
+				Integer rand3 = Integer.parseInt(randNums[2]);
+				currentTimeStamp = Long.parseLong(randNums[3]);
+				password = passwords[0];
+				password = decrypt(password, rand1, rand2, rand3);
+				password = messageDigestPasswordEncoder.encodePassword(password, null);
+				}
+			}
+			userDetails =  userDetailsService.loadUserByUsername(username);
+			if(userDetails!=null){
+				dbPassword = userDetails.getPassword();
+				}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			throw new UsernameNotFoundException("Bad Input");
+		}
+		try{
+			if(userDetails!=null && userDetails.isAccountNonLocked()){
+				userObject = (User) userDetails; 
+				userObject.setCurrentTimeStamp(currentTimeStamp);
+				if(password!=null && dbPassword!=null && password.equals(dbPassword)){
+					return userDetails;
+				  } 
+				else{
+					if(userDetails!=null){
+						userObject = (User) userDetails;
+						userObject.setErrorMessage(3);
+						return userObject;
+					}
+				}
+			}else { 
+				if(userDetails!=null){
+				    userLocked=true;
+				 }
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+	
+		}
+	
+		if(userLocked){
+			if(userDetails!=null && !userDetails.isAccountNonLocked()){
+				userObject = (User) userDetails; 
+					return userDetails;
+		   }
+			return userDetails;
+		}else {
+			throw new UsernameNotFoundException("Bad Input");
+		}
+	}
+	
+	
+	protected String decrypt(String text,int ranInt1,int ranInt2,int ranInt3)
+	{
+		String decodedMessage = "";
+		String tempL = "";
+		int msgLengthCounter;
+		int i = text.length();
+		for(int j = 0; j < i; j++)
+		{
+			char c = text.charAt(j);
+			if(Character.isWhitespace(c))
+			{
+				j++;
+			}
+			else
+			{
+				String s = String.valueOf(c);
+				tempL = tempL + s;
+			}
+		}
+		text = tempL;
+		i = text.length();
+		tempL = "";
+		char c1 = text.charAt(0);
+		String s1 = String.valueOf(c1);
+		int k = Integer.parseInt(s1);
+		String s2 = text.substring(1, k + 1);
+		int l = Integer.parseInt(s2);
+		int i1 = ((((l - 1) / 10 + 11) / ranInt3 + 10) / 4 / ranInt2 - 7 - 4) / ranInt1;
+		char c2 = (char)i1;
+		String s3 = String.valueOf(c2);
+		msgLengthCounter = k + 1;
+		decodedMessage = decodedMessage + s3;
+		int j1;
+		for(; msgLengthCounter < i; msgLengthCounter = msgLengthCounter + j1
+				+ 1)
+		{
+			char c3 = text.charAt(msgLengthCounter);
+			String s4 = String.valueOf(c3);
+			j1 = Integer.parseInt(s4);
+			String s5 = text.substring(msgLengthCounter + 1, msgLengthCounter
+					+ j1 + 1);
+			int k1 = Integer.parseInt(s5);
+			int l1 = ((((k1 - 1) / 10 + 11) / ranInt3 + 10) / 4 / ranInt2 - 7 - 4) / ranInt1;
+			char c4 = (char)l1;
+			String s6 = String.valueOf(c4);
+			decodedMessage = decodedMessage + s6;
+		}
+
+		return decodedMessage;
+	}	  
+}

@@ -1,0 +1,166 @@
+package com.livespread.command;
+
+import java.util.List;
+
+public class NormalizationTemplateCommand {
+
+	private String industryType;
+	private List<String> financialSection;
+	private List<Integer> normalizedLabelId;
+	private List<String> normalizedLabel;
+	private List<String> derived;
+	private Integer userGroupId;
+	private List<String> categiry;
+	private List<String> dispalyFormat;
+	private List<String> labelSectionList;
+	
+	/* Export to excel NormalizationTemplate */
+	private Long templateId;
+	private Long niItem;
+	private String nil_label;
+	private String nilSection;
+	private String nilIndustry;
+	
+	private List<String> subTotalChek;
+	private List<String> subSectionList;
+	
+	
+	public List<String> getDispalyFormat() {
+		return dispalyFormat;
+	}
+
+	public void setDispalyFormat(List<String> dispalyFormat) {
+		this.dispalyFormat = dispalyFormat;
+	}
+
+	public List<String> getCategiry() {
+		return categiry;
+	}
+
+	public void setCategiry(List<String> categiry) {
+		this.categiry = categiry;
+	}
+
+	public Long getTemplateId() {
+		return templateId;
+	}
+
+	public void setTemplateId(Long templateId) {
+		this.templateId = templateId;
+	}
+
+	public String getNilIndustry() {
+		return nilIndustry;
+	}
+
+	public void setNilIndustry(String nilIndustry) {
+		this.nilIndustry = nilIndustry;
+	}
+
+	public Long getNiItem() {
+		return niItem;
+	}
+
+	public void setNiItem(Long niItem) {
+		this.niItem = niItem;
+	}
+
+	public String getNil_label() {
+		return nil_label;
+	}
+
+	public void setNil_label(String nil_label) {
+		this.nil_label = nil_label;
+	}
+
+	public String getNilSection() {
+		return nilSection;
+	}
+
+	public void setNilSection(String nilSection) {
+		this.nilSection = nilSection;
+	}
+
+	public Integer getUserGroupId() {
+		return userGroupId;
+	}
+
+	public void setUserGroupId(Integer userGroupId) {
+		this.userGroupId = userGroupId;
+	}
+
+	public List<String> getDerived() {
+		return derived;
+	}
+
+	public void setDerived(List<String> derived) {
+		this.derived = derived;
+	}
+
+	public List<String> getFormula() {
+		return formula;
+	}
+
+	public void setFormula(List<String> formula) {
+		this.formula = formula;
+	}
+
+	private List<String> formula;
+
+	public List<Integer> getNormalizedLabelId() {
+		return normalizedLabelId;
+	}
+
+	public void setNormalizedLabelId(List<Integer> normalizedLabelId) {
+		this.normalizedLabelId = normalizedLabelId;
+	}
+
+	public String getIndustryType() {
+		return industryType;
+	}
+
+	public void setIndustryType(String industryType) {
+		this.industryType = industryType;
+	}
+
+	public List<String> getFinancialSection() {
+		return financialSection;
+	}
+
+	public void setFinancialSection(List<String> financialSection) {
+		this.financialSection = financialSection;
+	}
+
+	public List<String> getNormalizedLabel() {
+		return normalizedLabel;
+	}
+
+	public void setNormalizedLabel(List<String> normalizedLabel) {
+		this.normalizedLabel = normalizedLabel;
+	}
+
+	public List<String> getSubTotalChek() {
+		return subTotalChek;
+	}
+
+	public void setSubTotalChek(List<String> subTotalChek) {
+		this.subTotalChek = subTotalChek;
+	}
+
+	public List<String> getLabelSectionList() {
+		return labelSectionList;
+	}
+
+	public void setLabelSectionList(List<String> labelSectionList) {
+		this.labelSectionList = labelSectionList;
+	}
+
+	public List<String> getSubSectionList() {
+		return subSectionList;
+	}
+
+	public void setSubSectionList(List<String> subSectionList) {
+		this.subSectionList = subSectionList;
+	}
+
+}

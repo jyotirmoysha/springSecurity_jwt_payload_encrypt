@@ -1,0 +1,177 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * The persistent class for the ERM_USER_FEATURE_MAPPING database table.
+ * 
+ */
+@Entity
+@Table(name = "USER_FEATURE_MAPPING")
+
+@NamedQueries({ @NamedQuery(name = "getUserFeatureMappingByGroupId", query = "from UserFeatureMapping r left join fetch r.applicationFeature where r.groupId = :groupId ")
+})
+public class UserFeatureMapping implements BaseEntity, Serializable {
+	private static final long serialVersionUID = 1L;
+
+	@Id
+   
+    @Column(name = "USER_FEA_MAP_ID")
+	private long id;
+
+    @Column(name = "GROUP_ID")
+	private Integer groupId;
+
+	//bi-directional many-to-one association to ErmApplicationFeature
+	@OneToOne
+	@JoinColumn(name = "FEATURE_ID")
+	private ApplicationFeatures applicationFeature;
+	
+	@Column(name = "CREATED_DATE")
+	private Date createdDate;
+
+	@Column(name = "MODIFIED_DATE")
+	private Date modifiedDate;
+
+	@Column(name = "CREATED_BY")
+	private String createdBy;
+
+	@Column(name = "MODIFIED_BY")
+	private Integer modifiedBy;
+
+	
+	
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public Date getModifiedDate() {
+		return modifiedDate;
+	}
+
+	public void setModifiedDate(Date modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Integer getModifiedBy() {
+		return modifiedBy;
+	}
+
+	public void setModifiedBy(Integer modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
+	public UserFeatureMapping() {
+		
+	}
+	
+	public UserFeatureMapping(long id) {
+		this.id=id;
+		
+	}
+	
+	
+	public UserFeatureMapping(ApplicationFeatures applicationFeature) {
+		this.applicationFeature = applicationFeature;
+		
+	}
+	
+
+	
+	/**
+	 * @return the id
+	 */
+	public long getId() {
+		return id;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	/**
+	 * @return the groupId
+	 */
+	public Integer getGroupId() {
+		return groupId;
+	}
+
+	/**
+	 * @param groupId the groupId to set
+	 */
+	public void setGroupId(Integer groupId) {
+		this.groupId = groupId;
+	}
+
+	/**
+	 * @return the ermApplicationFeature
+	 */
+	public ApplicationFeatures getErmApplicationFeature() {
+		return applicationFeature;
+	}
+
+	/**
+	 * @param ermApplicationFeature the ermApplicationFeature to set
+	 */
+	public void setErmApplicationFeature(
+			ApplicationFeatures ermApplicationFeature) {
+		this.applicationFeature = ermApplicationFeature;
+	}
+
+	/**
+	 * @return the applicationFeature
+	 */
+	public ApplicationFeatures getApplicationFeature() {
+		return applicationFeature;
+	}
+
+	/**
+	 * @param applicationFeature the applicationFeature to set
+	 */
+	public void setApplicationFeature(ApplicationFeatures applicationFeature) {
+		this.applicationFeature = applicationFeature;
+	}
+
+
+	public UserFeatureMapping(int ermUserFeatureMappingId) {
+		this.id = ermUserFeatureMappingId;
+	} 
+
+
+	@Override
+	public String toString() {
+		return "UserFeatureMapping [applicationFeature=" + applicationFeature + ", userFeatureMappingId=" + id + "]";
+	}
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}	
+}

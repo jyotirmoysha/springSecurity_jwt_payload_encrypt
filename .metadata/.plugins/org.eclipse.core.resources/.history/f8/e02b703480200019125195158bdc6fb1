@@ -1,0 +1,97 @@
+package com.livespread.command;
+
+import java.util.List;
+
+public class DocumentModelCommand {
+
+	private Integer filingId;
+
+	private String encryptedFilingId;
+
+	private List<Integer> dcId;
+
+	private List<Integer> pageNo;
+
+	private List<String> type;
+
+	private List<String> templateID;
+
+	private List<Integer> template_PageNo;
+
+	private List<String> year;
+
+	private List<String> companyName;
+
+	public String getEncryptedFilingId() {
+		return encryptedFilingId;
+	}
+
+	public void setEncryptedFilingId(String encryptedFilingId) {
+		this.encryptedFilingId = encryptedFilingId;
+	}
+
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public List<Integer> getDcId() {
+		return dcId;
+	}
+
+	public void setDcId(List<Integer> dcId) {
+		this.dcId = dcId;
+	}
+
+	public List<Integer> getPageNo() {
+		return pageNo;
+	}
+
+	public void setPageNo(List<Integer> pageNo) {
+		this.pageNo = pageNo;
+	}
+
+	public List<String> getType() {
+		return type;
+	}
+
+	public void setType(List<String> type) {
+		this.type = type;
+	}
+
+	public List<String> getTemplateID() {
+		return templateID;
+	}
+
+	public void setTemplateID(List<String> templateID) {
+		this.templateID = templateID;
+	}
+
+	public List<Integer> getTemplate_PageNo() {
+		return template_PageNo;
+	}
+
+	public void setTemplate_PageNo(List<Integer> template_PageNo) {
+		this.template_PageNo = template_PageNo;
+	}
+
+	public List<String> getYear() {
+		return year;
+	}
+
+	public void setYear(List<String> year) {
+		this.year = year;
+	}
+
+	public List<String> getCompanyName() {
+		return companyName;
+	}
+
+	public void setCompanyName(List<String> companyName) {
+		this.companyName = companyName;
+	}
+
+}

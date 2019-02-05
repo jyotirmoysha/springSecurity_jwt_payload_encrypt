@@ -1,0 +1,103 @@
+package com.livespread.command;
+
+import java.math.BigInteger;
+import java.util.Date;
+
+public class GoldenFeatureCaseMappingData implements Comparable<GoldenFeatureCaseMappingData> {
+
+	private Integer wqId;
+	private BigInteger wqIdb;
+	public BigInteger getWqIdb() {
+		return wqIdb;
+	}
+
+	public void setWqIdb(BigInteger wqIdb) {
+		this.wqIdb = wqIdb;
+	}
+
+	private Integer filingId;
+	private String wqCompanyName;
+	private String wqStatus;
+	private Integer caseID;
+	private String createdBy;
+	private Date createdOn;
+	private Integer createdByI;
+
+	public Integer getCreatedByI() {
+		return createdByI;
+	}
+
+	public void setCreatedByI(Integer createdByI) {
+		this.createdByI = createdByI;
+	}
+
+	public Date getCreatedOn() {
+		return createdOn;
+	}
+
+	public void setCreatedOn(Date createdOn) {
+		this.createdOn = createdOn;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Integer getWqId() {
+		return wqId;
+	}
+
+	public void setWqId(Integer wqId) {
+		this.wqId = wqId;
+	}
+
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public String getWqCompanyName() {
+		return wqCompanyName;
+	}
+
+	public void setWqCompanyName(String wqCompanyName) {
+		this.wqCompanyName = wqCompanyName;
+	}
+
+	public String getWqStatus() {
+		return wqStatus;
+	}
+
+	public void setWqStatus(String wqStatus) {
+		this.wqStatus = wqStatus;
+	}
+
+	public Integer getCaseID() {
+		return caseID;
+	}
+
+	public void setCaseID(Integer caseID) {
+		this.caseID = caseID;
+	}
+
+	public int compareTo(GoldenFeatureCaseMappingData featureCaseMappingData) {
+		if (null != featureCaseMappingData && null != featureCaseMappingData.wqId) {
+			if (this.wqId == featureCaseMappingData.wqId)
+				return 0;
+			else if (this.wqId > featureCaseMappingData.wqId)
+				return 1;
+			else
+				return -1;
+		} else {
+			return -1;
+		}
+
+	}
+}

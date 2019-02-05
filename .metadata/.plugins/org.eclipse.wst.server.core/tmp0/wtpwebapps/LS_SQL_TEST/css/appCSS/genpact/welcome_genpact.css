@@ -1,0 +1,16 @@
+.custom-toggle{color:#fff; font-size:12px !important; font-weight:bold; text-decoration:none;}
+.UicTblCaptionH2 {padding:5px; background:#006995 !important; display:none}
+
+.manageuserTable{background:#fff; border:1px solid #ccc;}
+.manageuserTable th{padding:5px; background:#004870; color:#fff !important; border-right:1px solid #fff}
+
+.title-bg{background:#004870; padding:8px; color:#fff; margin:0 0 10px 0; text-align:center; font-size:13px;}
+.release-tbl{width:100%; border:1px solid #ccc; border-right:none;}
+.release-tbl td{border-right:1px solid #ccc; padding:8px;}
+.release-tbl th{background: #fff; border-bottom: 4px solid #D8D8D8 !important; color:#666; border-right:1px solid #ccc}
+.release-tbl tr:nth-child(even) {background: #ffffff}
+.release-tbl tr:nth-child(odd) {background: #f4f4f4}
+.btn-wrap{margin-top:20px; padding:8px; text-align:center}
+.btn-info-green{background:#006995; border:1px solid #006995; border-radius:2px; color:#fff; padding:5px 9px 6px 6px !important; font-size:12px; z-index:999}
+.btn-info-green:hover{color:#fff !important;}
+.btn-info-green.active{color:#fff !important;}

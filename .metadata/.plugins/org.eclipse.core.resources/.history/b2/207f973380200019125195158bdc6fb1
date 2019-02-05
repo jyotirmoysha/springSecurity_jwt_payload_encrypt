@@ -1,0 +1,110 @@
+package com.livespread.service;
+
+import java.util.Properties;
+import java.util.ResourceBundle;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
+import org.apache.log4j.Logger;
+
+public class EmailServiceImpl extends Thread{
+	private Logger LOGGER = Logger.getLogger(EmailServiceImpl.class);
+
+	private String sendTo;
+	private String emailSubject;
+	private String emailText;
+	private String sendCC;
+	ResourceBundle emailProperties;
+	
+public EmailServiceImpl(String sendTo,ResourceBundle emailProperties,String emailSubject,String emailText,String sendCC) {
+ this.sendTo = sendTo;
+ this.emailProperties = emailProperties;
+ this.emailSubject = emailSubject;
+ this.emailText = emailText;
+ this.sendCC = sendCC;
+
+}
+@Override
+public void run() {
+	sendEmail(sendTo,emailProperties,emailSubject,emailText,sendCC);
+}
+
+	
+	public String sendEmail(String sendTo, ResourceBundle emailProperties,
+			String emailSubject, String emailText, String sendCC) {
+
+		LOGGER.info("**start--send email methode");
+		String result;
+		// Get system properties object
+		Properties properties = System.getProperties();
+		final String sendFrom = emailProperties.getString("mail.smtp.from");
+
+		// Setup mail server
+		properties.setProperty("mail.smtp.host",
+				emailProperties.getString("mail.smtp.host"));
+		properties.setProperty("mail.smtp.port",
+				emailProperties.getString("mail.smtp.port"));
+		properties.setProperty("mail.transport.protocol",
+				emailProperties.getString("mail.transport.protocol"));
+		properties.setProperty("mail.smtp.auth",
+				emailProperties.getString("mail.smtp.auth"));
+		properties.setProperty("mail.smtp.starttls.enable",
+				emailProperties.getString("mail.smtp.starttls.enable"));
+		properties.setProperty("mail.smtp.ssl.trust",
+				emailProperties.getString("mail.smtp.ssl.trust"));
+		properties.setProperty("mail.debug",
+				emailProperties.getString("mail.debug"));
+		properties.setProperty("mail.smtp.from", sendFrom);
+		properties.setProperty("mail.smtp.to", sendTo);
+		if (sendCC != null) {
+			properties.setProperty("mail.smtp.cc", sendCC);
+		}
+		final String password=emailProperties.getString("mail.smtp.password");
+		// Get the default Session object.
+		Session mailSession = Session.getDefaultInstance(properties, 
+			    new javax.mail.Authenticator(){
+			        protected PasswordAuthentication getPasswordAuthentication() {
+			            return new PasswordAuthentication(sendFrom,password);// Specify the Username and the PassWord
+			        }
+			});
+
+		try {
+			// Create a default MimeMessage object.
+			MimeMessage message = new MimeMessage(mailSession);
+			// Set From: header field of the header.
+			message.setFrom(new InternetAddress(sendFrom));
+			// Set To: header field of the header.
+			message.addRecipient(Message.RecipientType.TO, new InternetAddress(
+					sendTo));
+			if (sendCC != null) {
+				message.addRecipient(Message.RecipientType.CC,
+						new InternetAddress(sendCC));
+			}
+			// Set Subject: header field
+			// message.setSubject("This is the Subject Line!");
+			message.setSubject(emailSubject);
+			// Now set the actual message
+			// message.setText("This is actual message");
+			// message.setText(emailText);
+			message.setContent(emailText, "text/html");
+			// Send message
+			Transport.send(message);
+			result = "SUCCESS";
+			LOGGER.info("Sent message successfully.");
+		} catch (MessagingException mex) {
+			mex.printStackTrace();
+			LOGGER.error("Error: unable to send message." + mex);
+			result = "ERROR";
+		}
+		return result;
+	}
+
+	
+
+}

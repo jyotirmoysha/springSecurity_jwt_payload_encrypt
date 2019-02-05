@@ -1,0 +1,242 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "DELETED_FINANCIAL_ITEMS")
+public class DeletedFinancialItems implements Serializable, BaseEntity{
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+/*	@GeneratedValue(generator = "sequence")
+	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_DELETED_FINANCIAL_ITEMS") })*/
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "DEL_FI_ID")
+	private Integer delFiId;
+
+	@Column(name = "FI_ID")
+	private Integer fiId;
+
+
+	@Column(name = "FI_SUB_SECTION")
+	private String fiSubSection;
+
+	@Column(name = "FI_SECTION")
+	private String fiSection;
+
+	@Column(name = "FI_LABEL")
+	private String fiLabel;
+
+	@Column(name = "FI_INDEX_ORDER")
+	private Integer fiIndexOrder;
+
+	@Column(name = "NI_ITEM")
+	private Integer niItem;
+
+	@Column(name = "TEMPLET_ID")
+	private Integer templateId;
+
+	@Column(name = "FI_INDUSTRY")
+	private String fiIndustry;
+
+	@Column(name = "FI_LANGUAGE")
+	private String fiLanguage;
+
+	@Column(name = "E_ID")
+	private Integer eId;
+	
+	@Column(name = "CREATED_BY")
+	private String createdBy;
+
+	@Column(name = "CREATE_DATE")
+	private Date createdDate;
+
+	@Column(name = "ANALYST_ID")
+	private Integer analystId;
+
+	@Column(name = "FI_SEARCHTYPE")
+	private String fiSearchType;
+	
+	@Column(name = "HEADER_LABEL")
+	private String headerLabel;
+	
+	@Column(name = "TABLE_LABEL")
+	private String tableLabel;
+	
+	@Column(name = "DELETED_DATE")
+	private Date deletedDate;
+	
+	@Column(name = "DELETED_BY")
+	private Integer deletedBy;
+
+	public Integer getDelFiId() {
+		return delFiId;
+	}
+
+	public void setDelFiId(Integer delFiId) {
+		this.delFiId = delFiId;
+	}
+
+	public Integer getFiId() {
+		return fiId;
+	}
+
+	public void setFiId(Integer fiId) {
+		this.fiId = fiId;
+	}
+
+	public String getFiSubSection() {
+		return fiSubSection;
+	}
+
+	public void setFiSubSection(String fiSubSection) {
+		this.fiSubSection = fiSubSection;
+	}
+
+	public String getFiSection() {
+		return fiSection;
+	}
+
+	public void setFiSection(String fiSection) {
+		this.fiSection = fiSection;
+	}
+
+	public String getFiLabel() {
+		return fiLabel;
+	}
+
+	public void setFiLabel(String fiLabel) {
+		this.fiLabel = fiLabel;
+	}
+
+	public Integer getFiIndexOrder() {
+		return fiIndexOrder;
+	}
+
+	public void setFiIndexOrder(Integer fiIndexOrder) {
+		this.fiIndexOrder = fiIndexOrder;
+	}
+
+	public Integer getNiItem() {
+		return niItem;
+	}
+
+	public void setNiItem(Integer niItem) {
+		this.niItem = niItem;
+	}
+
+	public Integer getTemplateId() {
+		return templateId;
+	}
+
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+
+	public String getFiIndustry() {
+		return fiIndustry;
+	}
+
+	public void setFiIndustry(String fiIndustry) {
+		this.fiIndustry = fiIndustry;
+	}
+
+	public String getFiLanguage() {
+		return fiLanguage;
+	}
+
+	public void setFiLanguage(String fiLanguage) {
+		this.fiLanguage = fiLanguage;
+	}
+
+	public Integer geteId() {
+		return eId;
+	}
+
+	public void seteId(Integer eId) {
+		this.eId = eId;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public Integer getAnalystId() {
+		return analystId;
+	}
+
+	public void setAnalystId(Integer analystId) {
+		this.analystId = analystId;
+	}
+
+	public String getFiSearchType() {
+		return fiSearchType;
+	}
+
+	public void setFiSearchType(String fiSearchType) {
+		this.fiSearchType = fiSearchType;
+	}
+
+	public String getHeaderLabel() {
+		return headerLabel;
+	}
+
+	public void setHeaderLabel(String headerLabel) {
+		this.headerLabel = headerLabel;
+	}
+
+	public String getTableLabel() {
+		return tableLabel;
+	}
+
+	public void setTableLabel(String tableLabel) {
+		this.tableLabel = tableLabel;
+	}
+
+	public Date getDeletedDate() {
+		return deletedDate;
+	}
+
+	public void setDeletedDate(Date deletedDate) {
+		this.deletedDate = deletedDate;
+	}
+
+	public Integer getDeletedBy() {
+		return deletedBy;
+	}
+
+	public void setDeletedBy(Integer deletedBy) {
+		this.deletedBy = deletedBy;
+	}
+	
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+}

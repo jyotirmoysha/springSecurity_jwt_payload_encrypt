@@ -1,0 +1,33 @@
+/**
+ * 
+ */
+package com.livespread.command;
+
+
+/**
+ * @author KP0e1301
+ *
+ */
+public class CountryCommand {
+	
+	private Integer countryId;
+	
+	private String countryName;
+	
+	public Integer getCountryId() {
+		return countryId;
+	}
+
+	public void setCountryId(Integer countryId) {
+		this.countryId = countryId;
+	}
+
+	public String getCountryName() {
+		return countryName;
+	}
+
+	public void setCountryName(String countryName) {
+		this.countryName = countryName;
+	}
+
+}

@@ -1,0 +1,59 @@
+package com.livespread.common;
+
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.TreeMap;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+
+/**
+ * Wraps an HttpServletRequest so that parameters can be modified by a filter.
+ * 
+ * @author John I. Moore, Jr.
+ */
+public class FilterableRequestOld extends HttpServletRequestWrapper {
+	private Map<String, String[]> parameters = null;
+
+	/**
+	 * Construct a wrapper for the original request.
+	 * 
+	 * @param request
+	 *            the original HttpServletRequest
+	 */
+	public FilterableRequestOld(HttpServletRequest request) {
+		super(request);
+		parameters = new TreeMap<String, String[]>();
+		parameters.putAll(super.getParameterMap());
+	}
+
+	@Override
+	public String getParameter(final String name) {
+		String[] values = parameters.get(name);
+		return values != null ? values[0] : null;
+	}
+
+	@Override
+	public Map<String, String[]> getParameterMap() {
+		return Collections.unmodifiableMap(parameters);
+	}
+
+	/**
+	 * Returns a ParameterMap that can be modified.
+	 */
+	public Map<String, String[]> getModifiableParameterMap() {
+		return parameters;
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public Enumeration getParameterNames() {
+		return Collections.enumeration(parameters.keySet());
+	}
+
+	@Override
+	public String[] getParameterValues(final String name) {
+		return parameters.get(name);
+	}
+}

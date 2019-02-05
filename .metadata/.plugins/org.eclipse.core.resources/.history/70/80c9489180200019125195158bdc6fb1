@@ -1,0 +1,67 @@
+/*---------------------customised CSS -------------------*/
+@import url(https://fonts.googleapis.com/css?family=Open+Sans);
+
+body {
+	font-family: 'Open Sans', sans-serif;
+	font-weight: 100;
+	font-size: 14px;
+}
+
+.comn {
+	width: 180px !important;
+}
+
+.tt {
+	font-family: Open Sans Condensed;
+	font-size: 32px;
+	border-bottom: 1px solid #ddd;
+}
+
+.aln {
+	width: 915px !important;
+	margin-left: auto;
+	margin-right: auto;
+	background: #fff !important;
+	height: auto;
+	clear: both;
+	padding: 15px;
+}
+
+.nal {
+	width: 915px !important;
+	background: #fff !important;
+	height: auto;
+	padding: 15px;
+}
+
+.same { /*border: 1px solid #eee;*/
+	width: 300px;
+	display: inline-block;
+}
+
+.diff {
+	display: inline;
+	width: 30%;
+}
+
+.text-input,.dpd {
+	width: 290px;
+	/*overflow: hidden;*/
+	height: 32px;
+	margin: 5px 0;
+	border-radius: 5px;
+	border: 1px solid #999;
+	outline: none;
+}
+
+.bt {
+	background: #d5d5da;
+	border: none;
+	cursor: pointer;
+	outline: none;
+}
+
+.dpd {
+	background: #969696;
+	height: 37px;
+}

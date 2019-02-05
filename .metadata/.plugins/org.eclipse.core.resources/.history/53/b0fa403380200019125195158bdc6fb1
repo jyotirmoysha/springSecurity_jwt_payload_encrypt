@@ -1,0 +1,28 @@
+package com.livespread.util;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
+public class GetMonthNumberUsingName {
+
+	
+	public static int getMonthNumber(String monthName){
+
+		int monthNumber = 0;
+	try{
+		
+	        Date date = new SimpleDateFormat("MMM").parse(monthName);
+	        Calendar cal = Calendar.getInstance();
+	        cal.setTime(date);
+	         monthNumber = cal.get(Calendar.MONTH);
+	         monthNumber=monthNumber+1;
+	 }
+	catch(Exception e)
+	{
+	 e.printStackTrace();
+	}
+	return monthNumber;
+	}
+		
+}

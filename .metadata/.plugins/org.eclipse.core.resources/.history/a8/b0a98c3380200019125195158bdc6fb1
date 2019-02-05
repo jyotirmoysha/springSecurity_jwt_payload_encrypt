@@ -1,0 +1,68 @@
+package com.livespread.service;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+import com.livespread.domain.DealerTemplate;
+import com.livespread.domain.DealerTemplateAudit;
+import com.livespread.domain.NormItemLabels;
+import com.livespread.domain.User;
+
+public interface DealerTemplateService {
+
+/**
+* This method used for get dealer name from dealer_metadata table based on filing id   
+*/
+String f_getDealerName(int filingId);
+
+/**
+ * This method used for fetch data from dealer_template table based in template name
+ */
+
+Collection<DealerTemplate> f_getExtractRulesByDealerName(String dealerName);
+
+
+
+/**
+ * This function used for get label list based on  template id 
+ */
+Collection<NormItemLabels> f_normItemLabelsListByTemplateId(int templateId); 
+
+/**
+ * This method used for get dealer_template details by id
+ */
+
+List<DealerTemplate> f_getDealerTemplateDetailsById(List<Integer> dtId);
+
+/**
+ * This method used for get norm_lable based on ni_item,section and nil_industry
+ * @param ni_item
+ * @param section
+ * @param nil_industry
+ * @return
+ */
+public Map<Integer,String> f_getnormItemLableList(List<Integer> ni_item,String section,String nil_industry);
+
+/**
+ * This method used for get distinct dealers name dealer_template_audit table
+ */
+List<String> f_getDistinctDealerName();
+
+/**
+ * This methode get Audit records from dealer template Audit table
+ */
+List <DealerTemplateAudit> f_getDealerTemplateAudit(String dealerName);
+
+boolean f_RulesAuthenticationProcess(List<Integer> idList);
+
+/**
+ * This methode used for Dealer level mapping process called from UI side
+ * In this methode first below actions occured
+ * 1:Fetch data from parser_output based on POID
+ * 2:Insert into dealer_template_audit table
+ */
+boolean f_UpdateDealerLevelMappingProcess(List<DealerTemplateAudit> templateAudits,User user);
+
+
+}

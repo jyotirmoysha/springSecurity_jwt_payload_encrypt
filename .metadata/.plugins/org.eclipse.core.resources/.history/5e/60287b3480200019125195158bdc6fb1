@@ -1,0 +1,36 @@
+package com.livespread.command;
+
+import java.util.Date;
+
+public class DatePeriodCommand {
+
+	private Date stmtdate;
+	private Integer period;
+	public Date getStmtdate() {
+		return stmtdate;
+	}
+	public void setStmtdate(Date stmtdate) {
+		this.stmtdate = stmtdate;
+	}
+	public Integer getPeriod() {
+		return period;
+	}
+	public void setPeriod(Integer period) {
+		this.period = period;
+	}
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((period == null) ? 0 : period.hashCode());
+		result = prime * result
+				+ ((stmtdate == null) ? 0 : stmtdate.hashCode());
+		return result;
+	}
+	@Override
+	public String toString() {
+		return "DatePeriodCommand [stmtdate=" + stmtdate + ", period=" + period
+				+ "]";
+	}
+	
+}

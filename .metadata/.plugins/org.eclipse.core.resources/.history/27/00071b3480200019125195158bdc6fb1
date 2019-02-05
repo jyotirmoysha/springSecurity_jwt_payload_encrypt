@@ -1,0 +1,137 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.sql.Timestamp;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "UGROUP_PARSER_MAPPING")
+@NamedNativeQueries({ @NamedNativeQuery(name = "getParserListByGroupIdforReportAdmin", query = "select  pm.parser_master_id, pm.parser_name  from parser_master pm, ugroup_parser_mapping ugp where   pm.parser_master_id= ugp.parser_id and ugp.user_group_id=:userGroupId") })
+@NamedQueries({
+		@NamedQuery(name = "getParserIdListByUserGroupId", query = "select parserId from UserGroupParserMapping where userGroupId = :userGroupId and  flag='A'"),
+		@NamedQuery(name = "getDeteltedParserIds", query = "  select parserId from UserGroupParserMapping where  flag=:flag and userGroupId=:userGroupId"),
+		@NamedQuery(name = "updateParserIdFlag", query = "update UserGroupParserMapping set flag=:flag, modifiedDate=:modifiedDate, modifiedBy=:modifiedBy  where parserId in (:parserId) and userGroupId=:userGroupId"),
+		@NamedQuery(name = "updateNewParserIdFlag", query = "update UserGroupParserMapping set flag=:flag, createdDate=:createdDate, createdBy=:createdBy  where parserId in (:parserId) and userGroupId=:userGroupId")
+
+})
+public class UserGroupParserMapping implements Serializable, BaseEntity {
+	private static final long serialVersionUID = 1L;
+
+	@Id
+//	@GeneratedValue(generator = "sequence")
+//	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_UGROUP_PARSER_MAPPING") })
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "UP_MAP_ID")
+	private long id;
+
+	@Column(name = "USER_GROUP_ID")
+	private String userGroupId;
+
+	@Column(name = "PARSER_ID")
+	private String parserId;
+
+	@Column(name = "FLAG")
+	private String flag;
+
+	@Column(name = "CREATED_BY")
+	private String createdBy;
+
+	@Column(name = "CREATED_DATE")
+	private Timestamp createdDate;
+
+	@Column(name = "MODIFIED_BY")
+	private String modifiedBy;
+
+	@Column(name = "MODIFIED_DATE")
+	private Timestamp modifiedDate;
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Timestamp getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Timestamp createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public String getModifiedBy() {
+		return modifiedBy;
+	}
+
+	public void setModifiedBy(String modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
+	public Timestamp getModifiedDate() {
+		return modifiedDate;
+	}
+
+	public void setModifiedDate(Timestamp modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public String getFlag() {
+		return flag;
+	}
+
+	public void setFlag(String flag) {
+		this.flag = flag;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public String getUserGroupId() {
+		return userGroupId;
+	}
+
+	public void setUserGroupId(String userGroupId) {
+		this.userGroupId = userGroupId;
+	}
+
+	public String getParserId() {
+		return parserId;
+	}
+
+	public void setParserId(String parserId) {
+		this.parserId = parserId;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

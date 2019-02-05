@@ -1,0 +1,21 @@
+package com.livespread.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.livespread.command.POCordHighlightDetailsCommand;
+import com.livespread.domain.POCordHighlightDetails;
+
+
+public interface POCordHighlightDetailsService 
+{
+	String getCoordinateDetails(int poId,String coordinateColumn);
+
+	List<Object> getCoordinateDetailsNew(List<Integer> poIdList);
+
+	String getCoordinateDetailsNew(String coordinateColumn,POCordHighlightDetails poCordHighlightDetails);
+
+	Map<Integer, POCordHighlightDetails> getCoordinateDetailsMap(List<Integer> selectedPoIdList) throws Exception;
+
+	POCordHighlightDetailsCommand getCoordinateAndDocumentTypeDetails(Integer poIdVal, String coordinateColumn);
+}

@@ -1,0 +1,2714 @@
+package com.livespread.controller;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.json.stream.JsonGenerationException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.util.HtmlUtils;
+
+import com.google.common.collect.Lists;
+import com.livespread.command.CustomMappingCommand;
+import com.livespread.command.NormInputParamers;
+import com.livespread.command.NormalisedParserOutput;
+import com.livespread.command.NormalizationBreakupData;
+import com.livespread.command.NormalizeFormData;
+import com.livespread.command.ParserOutputCommand;
+import com.livespread.command.ParserOutputDisplayCommand;
+import com.livespread.command.PdfExtractionMetadatCommand;
+import com.livespread.command.ScaleChangeSignPoMappingCommand;
+import com.livespread.command.ScaleCommand;
+import com.livespread.common.AsPerLableNameComparator;
+import com.livespread.common.Constant;
+import com.livespread.common.ParserOutputDisplayComparator;
+import com.livespread.common.PurgedSessionVariable;
+import com.livespread.domain.ArsPoMapping;
+import com.livespread.domain.AsRepStatement;
+import com.livespread.domain.NIValues;
+import com.livespread.domain.NormItemLabels;
+import com.livespread.domain.POAnchors;
+import com.livespread.domain.POCordHighlightDetails;
+import com.livespread.domain.ParserOutput;
+import com.livespread.domain.StatusMaster;
+import com.livespread.domain.User;
+import com.livespread.domain.WorkQueue;
+import com.livespread.service.ExcelExportService;
+import com.livespread.service.ExtractionService;
+import com.livespread.service.FileUploadService;
+import com.livespread.service.JDBCConnectionService;
+import com.livespread.service.NormalizationService;
+import com.livespread.service.POCordHighlightDetailsService;
+import com.livespread.service.StatusMasterService;
+import com.livespread.service.UserGroupService;
+import com.livespread.service.WorkQueueService;
+import com.livespread.service.WorkQueueServiceImpl;
+import com.livespread.util.CipherUtils;
+import com.livespread.util.LiveSpreadUtil;
+import com.livespread.util.ReleaseLockedUser;
+import com.livespread.util.ReplaceSpace;
+import com.rage.reusable.dao.EntityType;
+import com.rage.siapp.sec.api.AnchorLinkCreater;
+
+@Controller
+public class NormalizationController {
+
+	private Logger LOGGER = Logger.getLogger(NormalizationController.class);
+
+	@Autowired
+	private NormalizationService normalizationService;
+
+	@Autowired
+	private FileUploadService fileUploadService;
+
+	@Autowired
+	private StatusMasterService statusMasterService;
+
+	@Autowired
+	private WorkQueueService workQueueService;
+
+	@Autowired
+	private ReleaseLockedUser releaseLockedUser;
+
+	@Autowired
+	private JDBCConnectionService jdbcConnectionService;
+	@Autowired
+	private UserGroupService userGroupService;
+	@Autowired
+	private ExcelExportService excelExportService;
+	
+	@Autowired
+	private POCordHighlightDetailsService poCordHighlightDetailsService;  
+	
+	@Autowired
+	private ExtractionService extractionServ;
+	
+	@Value("${anchorFileInitial}")
+	private String AnchorFileInitial;
+
+	@Value("${anchorFileExt}")
+	private String AnchorFileExt;
+
+	@Value("${anchorFileNtFound}")
+	private String fileNotFound;
+
+	@Value("${globalExcptionMsg}")
+	private String expMessage;
+	
+	@Value("${generateXMLDocument}")
+	private String generateXMLDocument;
+
+	@Value("${xbrlProcess}")
+	private String xbrlProcess;
+	
+	@Value("${JSStart}")
+	private String jsStart;
+	@Value("${JSEnd}")
+	private String jsEnd;
+	@Value("${CSStart}")
+	private String csStart;
+	@Value("${CSEnd}")
+	private String csEnd;
+	
+	@Value("${norm_DispalyRecords}")
+	private Integer norm_DispalyRecords;
+	
+	
+	@Value("${mappingNormalizationMaster}")
+	private String mappingNormalizationMaster;
+	
+	
+
+	@RequestMapping(value = "/rules_management_normalization.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public String showISNormalization(HttpServletRequest request,
+			HttpServletResponse response,
+			@RequestParam("customerId") String customerId,
+			@RequestParam("fillingId") String fillingId,
+			@RequestParam("WqId") String wqId,
+			@RequestParam("statementFormat") String stmtFormat,
+			@RequestParam("customerName") String customerName,
+			@RequestParam("businessName") String businessName, String fileName,
+			@RequestParam("compIdOrCik") String compIdOrCik, Model map,
+			HttpSession session) {
+		LOGGER.info("------------------ showISNormalization request Mapping starts --------------------wqId"+ wqId);
+		try {
+
+			String decryptedCustomerName = CipherUtils.decrypt(customerName);
+			String decryptedBusinessName = CipherUtils.decrypt(businessName);
+			String decryptedFileName = CipherUtils.decrypt(fileName);
+			Integer decryptedFillingId = Integer.parseInt(CipherUtils.decrypt(fillingId));
+			Integer decryptedCustomerId = Integer.parseInt(CipherUtils.decrypt(customerId));
+			Integer decryptedWqId = Integer.parseInt(CipherUtils.decrypt(wqId));
+			String decryptedCompIdOrCik = CipherUtils.decrypt(compIdOrCik);
+			User user = (User) session.getAttribute("user");
+			String usersGroupName = user.getUsersGroupName();
+			map.addAttribute("usersGroupName", usersGroupName);
+			map.addAttribute("statementFormat", stmtFormat);
+			map.addAttribute("customerName", customerName);
+			map.addAttribute("businessName", businessName);
+			map.addAttribute("fileName", fileName);
+			map.addAttribute("caseId", fillingId);
+			map.addAttribute("fillingId", fillingId);
+			map.addAttribute("customerId", customerId);
+			map.addAttribute("wqId", wqId);
+			map.addAttribute("compIdOrCik", compIdOrCik);
+			map.addAttribute("decryptedCustomerName", decryptedCustomerName);
+			map.addAttribute("decryptedBusinessName", decryptedBusinessName);
+			map.addAttribute("decryptedFileName", decryptedFileName);
+			map.addAttribute("decryptedFillingId", decryptedFillingId);
+			map.addAttribute("decryptedCustomerId", decryptedCustomerId);
+			map.addAttribute("decryptedWqId", decryptedWqId);
+			map.addAttribute("decryptedCompIdOrCik", decryptedCompIdOrCik);
+		
+			
+			/**
+			 * Added code to implement locked by.
+			 */
+
+			/** Code ends here */
+			/*
+			 * This function used for get all status list from status master
+			 */
+			List<StatusMaster> statusList = statusMasterService.getAllStatusList();
+			map.addAttribute("statusList", statusList);
+			/*
+			 * This function used for fetch status(WQ_STATUS) using filingId
+			 * from WORK_QUEUE table
+			 */
+			String statusName = workQueueService.findStatusByFilingId(decryptedFillingId);
+			map.addAttribute("currentStatus", statusName);
+
+			/************
+			 * This function used for get Template Id and Template Name based on
+			 * group id
+			 ******************/
+			Integer userGroupId = user.getUserGroupId();
+			Map<Integer,String> templateIdNameList=userGroupService.f_getTemplateIdAndNameByGroupId(userGroupId);
+			map.addAttribute("templateIdNameList",templateIdNameList);
+
+				/**
+				 * from This function we get final result map
+				 */
+				Map<String, List<PdfExtractionMetadatCommand>> resultMap = normalizationService
+						.f_getPDFExtMetadata(decryptedFillingId);
+
+				map.addAttribute("pdfExtractionMetadata", resultMap);
+
+			/**Here update sectionList in session**/ 
+			  Map<String,String> sectionMappingList=normalizationService.f_fetchSectionListByFilingId(decryptedFillingId,(Integer) session.getAttribute("sessionParserId"));
+			 if(sectionMappingList!=null && !sectionMappingList.isEmpty()){
+			 request.getSession().setAttribute("sessionSectionList", sectionMappingList);
+			 
+			 if(!sectionMappingList.containsKey(stmtFormat))
+			 {
+				 Map.Entry<String,String> entry = sectionMappingList.entrySet().iterator().next();
+				 String key= entry.getKey();
+				 map.addAttribute("statementFormat", key);
+			 }
+			 
+			 
+			 }else{
+			 sectionMappingList.put("Exceptional Parsing", "Exceptional Parsing");
+			 request.getSession().setAttribute("sessionSectionList", sectionMappingList); 
+			}
+			//hide and show for Normalized Directory 
+			String normDirectry="N";
+			WorkQueue  workQueue = workQueueService.getCompanyId(decryptedFillingId);
+			Integer userAccess= user.getUserAccess();
+			String  userRole=caseStatus(workQueue,user);
+			if(( userAccess!=null && (userAccess==1 || userAccess==2)) || (userRole!=null && !userRole.equalsIgnoreCase("MAKER"))){
+				normDirectry="Y";
+			}
+			String industryLevelAccess= "block";
+			if(workQueue.getIndustryType()!=null && workQueue.getIndustryType().intValue()!=0 )
+			{
+				industryLevelAccess="allow";
+			}
+			map.addAttribute("userAccess", userAccess);
+			map.addAttribute("normDirectry", normDirectry);
+			map.addAttribute("industryLevelAccess",industryLevelAccess);
+			
+		
+		} catch (Exception e) {
+			LOGGER.error("Error:", e);
+			e.printStackTrace();
+		}
+		return "rules_management_normalization";
+	}
+
+	@RequestMapping(value = "/rules_management_statement.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public String showNormalizationStatement(
+			@RequestParam("customerId") String customerId,
+			@RequestParam("fillingId") String fillingId,
+			@RequestParam("WqId") String wqId,
+			@RequestParam("statementFormat") String stmtFormat, Model map,
+			HttpSession session) {
+		LOGGER.info("------------------ rules_management_statement request Mapping starts --------------------wqId"+ wqId);
+
+		map.addAttribute("caseId", fillingId);
+		map.addAttribute("customerId", customerId);
+		map.addAttribute("statementFormat", stmtFormat);
+		map.addAttribute("wqId", wqId);
+		map.addAttribute("decryptedFillingId", CipherUtils.decrypt(fillingId));
+		map.addAttribute("decryptedCustomerId", CipherUtils.decrypt(customerId));
+		map.addAttribute("decrypteddWqId", CipherUtils.decrypt(wqId));
+		Integer decryptedFillingId = Integer.parseInt(CipherUtils.decrypt(fillingId));
+		
+		 //End of commented for performance
+		session.setAttribute("decryptedFillingId",decryptedFillingId.toString());
+		try {
+			/**Dynamic val1,val2...val30 functionality
+			 * Here we find out how many column exist in table based on section and filing id*/
+			int colCountValue=normalizationService.f_findOutValuesColumnCount(decryptedFillingId, stmtFormat);
+			PurgedSessionVariable.removeVariableForNormalization(session);
+			Integer parserId = (Integer) session.getAttribute("sessionParserId");
+			 //End of commented for performance
+			String templateName="";
+			Integer templateId =null;
+			List<NormItemLabels> listOfNormItemLabels = normalizationService.getListOfNormItemLabels(stmtFormat,Integer.parseInt(CipherUtils.decrypt(fillingId)));
+
+			if (!CollectionUtils.isEmpty(listOfNormItemLabels)) {
+				templateId = listOfNormItemLabels.get(0).getTemplateId();
+				templateName = listOfNormItemLabels.get(0).getNilIndustry();
+				map.addAttribute("templateId", templateId);
+				map.addAttribute("templateIdIndustryName",templateName);
+				map.addAttribute("templateName", templateName);
+			}
+
+				List<String> subSectionList = normalizationService.getListOfSection(stmtFormat,templateId);
+				if(!CollectionUtils.isEmpty(subSectionList))
+				{
+					subSectionList.add("ATTR");
+					subSectionList.add("HEADER");
+				}
+				map.addAttribute("parserId", parserId);
+				map.addAttribute("subSectionList", subSectionList);
+				map.addAttribute("listOfNormItemLabels", listOfNormItemLabels);
+
+				/*
+				 * If parser id '6' ie Bank Parser then fetch distinct Account
+				 * Number,Time Period and Custodian Name column from parser output
+				 */
+				List<String> accountNumbers = null;
+				List<String> timePeriod = null;
+				List<String> custodianName = null;
+
+				if (parserId == 6 || parserId == 7) {
+					accountNumbers = normalizationService.getAccountNoFromParserOutput(decryptedFillingId,stmtFormat);
+					timePeriod = normalizationService.getTimePeriodFromParserOutput(decryptedFillingId,stmtFormat);
+					custodianName = normalizationService.getcustodianNameFromParserOutput(decryptedFillingId,stmtFormat);
+				}
+				map.addAttribute("accountNumbers", accountNumbers);
+				map.addAttribute("timePeriod", timePeriod);
+				map.addAttribute("custodianName", custodianName);
+				map.addAttribute("parserId", parserId);
+				
+				
+				//End of commented for performance
+				
+				/*
+				 * This function used for fetch status(WQ_STATUS) using filingId
+				 * from WORK_QUEUE table
+				 */
+				 WorkQueue  workQueue = workQueueService.getWorkQueueDetails(Integer.parseInt(CipherUtils.decrypt(wqId)));
+				 String nonEnglishLabelFlag="N";
+				 String statusName="";
+				 if(workQueue!=null){
+					 if(workQueue.getLanguage()!=null && !workQueue.getLanguage().equalsIgnoreCase("") && !workQueue.getLanguage().equalsIgnoreCase("English")){
+						 nonEnglishLabelFlag = "Y";
+					 }
+					 if(workQueue.getWqStatus()!=null){
+						 statusName =workQueue.getWqStatus();
+					 }
+				 }
+				 map.addAttribute("nonEnglishLabelFlag",nonEnglishLabelFlag); 
+				map.addAttribute("currentStatus", statusName);
+				List<AsRepStatement> asRepStatementList = null;
+				List<ParserOutput> listOfAsRepLabelContextTxt =normalizationService.getAsRepLabelContextTxtValues(Integer.parseInt(CipherUtils.decrypt(fillingId)));
+				List<ScaleCommand> scaleCommandList = new ArrayList<ScaleCommand>();
+				if(statusName.equals("Normalization Failure") || statusName.equals("Normalization Success")){
+					asRepStatementList = normalizationService.getAsRepStmtByFilingId(decryptedFillingId,stmtFormat);
+					scaleCommandList=normalizationService.getScaleList();
+				}
+				StringBuilder jsonAsRepLabelContextTxt=new StringBuilder("");
+				Map<String, String> jsonMap = new LinkedHashMap<String, String>();
+				int jsonCount=1;
+				if(!CollectionUtils.isEmpty(listOfAsRepLabelContextTxt))
+				{
+					for (ParserOutput jsonParserOutput : listOfAsRepLabelContextTxt) {
+						jsonMap.put("asRepLabelContextTxtPoid", Integer.toString(jsonParserOutput.getPoId()));
+						jsonMap.put("asRepLabelContextTxtAsRepLabelVal", jsonParserOutput.getPoAsRepLabel());
+						jsonMap.put("asRepLabelContextTxtSection", jsonParserOutput.getPoSection());
+						jsonAsRepLabelContextTxt.append(JSONValue.toJSONString(jsonMap));
+						if (jsonCount < listOfAsRepLabelContextTxt.size()) {
+							jsonAsRepLabelContextTxt.append(",");
+						}
+						jsonCount++;
+					}
+				}
+				map.addAttribute("listOfAsRepLabelContextTxt", listOfAsRepLabelContextTxt);
+				map.addAttribute("jsonAsRepLabelContextTxt", jsonAsRepLabelContextTxt.toString());
+				map.addAttribute("asRepStatementList", asRepStatementList);
+				map.addAttribute("listOfNormItemLabelsbyTemplate", listOfNormItemLabels);
+				map.addAttribute("scaleCommandList", scaleCommandList);
+				List<Integer> colCountList=new ArrayList<Integer>();
+				for(int i=1;i<=colCountValue;i++){
+					colCountList.add(i);
+				}
+				map.addAttribute("colCountValue", colCountList);
+				map.addAttribute("colCountLength", colCountValue);
+				/**this count required for supplementry section**/
+				int childColCountValue=normalizationService.f_findOutValuesColumnCount(decryptedFillingId, "SUPPL");
+				map.addAttribute("childColCount", childColCountValue);
+				
+			
+		} catch (Exception e) {
+			LOGGER.error("Exception Occured", e);
+			e.printStackTrace();
+		}
+		return "rules_management_statement";
+	}
+
+	
+
+	/*************** Read Text File Data *****************************************************************/
+	@RequestMapping(value = "/readAnchorFile.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String showAnchorFileData(@RequestParam("customerId") String customerId,
+			@RequestParam("wqId") String wqId,
+			@RequestParam("fillingId") String fillingId, HttpSession session,
+			Model map) throws FileNotFoundException {
+		LOGGER.info("------------------ readAnchorFile request Mapping starts --------------------");
+		String data = "No Information Available";
+		try {
+			/*
+			 * If parser is Enhanced Sec Parser(12) then bring file name
+			 */
+			String fileName = AnchorFileInitial + fillingId + AnchorFileExt;
+			LOGGER.info(fileName);
+			int flag = 1;// set flag 1 for folder path processed doc file
+			String dbPath = fileUploadService.getFileUpload(customerId, wqId,flag).replaceAll("/", "\\/");
+			LOGGER.info("------------------ DbPath --------------------"+ dbPath);
+			LOGGER.info("------------------ showAnchorFile  FileName --------------------"+ fileName);
+
+		} catch (Exception e) {
+			LOGGER.error("Error:", e);
+			data = "No Information Available";
+		}
+		return data;
+	}
+
+	/*
+	 * This function called when click on search button for bank parser
+	 */
+
+	@RequestMapping(value = "/showAnchorFile.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public void viewAnchorFile(HttpServletRequest request,
+			HttpServletResponse response,
+			@RequestParam("customerId") String customerId,
+			@RequestParam("wqId") String wqId,
+			@RequestParam("fillingId") String fillingId,
+			@RequestParam("Anchor") String anchor, HttpSession session) {
+		LOGGER.info("------------------ showAnchorFile  --------------------");
+		
+		Connection connection = null;
+		if (customerId != null)
+			customerId = CipherUtils.decrypt(customerId);
+		if (fillingId != null)
+			fillingId = CipherUtils.decrypt(fillingId);
+
+		if (wqId != null)
+			wqId = CipherUtils.decrypt(wqId);
+
+		response.setContentType("text/html");
+		String fileName = AnchorFileInitial + fillingId + AnchorFileExt;
+		PrintWriter writer = null;
+		StringBuffer sbf = new StringBuffer();
+
+		LOGGER.info(fileName);
+		int flag = 1;// set flag 1 for folder path processed doc file
+
+		User user = (User) session.getAttribute("user");
+		Integer parserId = (Integer) session.getAttribute("sessionParserId");
+		String usersGroupName = user.getUsersGroupName();
+		try {
+			String dbPath;
+
+			if (usersGroupName.equals("CP_SEC")) {
+				dbPath = fileUploadService.getFileUploadByFilingId(fillingId,
+						flag);
+			} else {
+				dbPath = fileUploadService
+						.getFileUpload(customerId, wqId, 6);
+			}
+			if (dbPath != null) {
+				dbPath = dbPath.replaceAll("/", "\\/");
+			}
+
+
+			/*
+			 * Here if parserId=12 means parser is Enhanced Public Parser then
+			 * get db path from file upload details with file name
+			 */
+			String filePath;
+			if (parserId != 12) {
+				filePath = dbPath + fileName;
+
+				LOGGER.info("------------------ filePath --------------------"+ filePath);
+				
+			} else {
+				/**
+				 * Here we first check zip file is exist or not  on given location.if not then get txt file from the same location location
+				 */
+				if(new File(dbPath+fillingId+".zip").getCanonicalFile().exists()){
+					filePath=dbPath+fillingId+".zip";
+				}else{
+					filePath=dbPath+fillingId+".txt";				}
+			   }
+			LOGGER.info("------------------ Enahanced sec parser file path="+ filePath);
+			File downloadFile = new File(filePath).getCanonicalFile();
+			writer = response.getWriter();
+
+			if (downloadFile.exists()) {
+
+				session.setAttribute("fileContent", null);
+				session.setAttribute("oldFilingId", null);
+				String text = jsStart + csStart;
+				sbf.append(text);
+				FileInputStream inputStream = null;
+				InputStreamReader inputStreamReader = null;
+
+				/*
+				 * Here if parserId=12 means parser is Enhanced Public Parser
+				 * then dont get file from server RAGE function is used for
+				 * create input stream file
+				 */
+				if (parserId != 12) {
+					inputStream = new FileInputStream(downloadFile);
+					inputStreamReader = new InputStreamReader(inputStream);
+				} else {
+					 connection = jdbcConnectionService.getJDBCConnection(EntityType.APPLICATION);
+					DatabaseMetaData dmd = connection.getMetaData();
+					String dburl = dmd.getURL();
+
+					LOGGER.info("Database url=" + dburl);
+				
+					AnchorLinkCreater anchorLinkCreater = new AnchorLinkCreater(connection, Integer.parseInt(fillingId), filePath);
+					inputStreamReader = new InputStreamReader(anchorLinkCreater.getInputStream());
+				}
+
+				if (inputStreamReader != null) {
+					BufferedReader reader = new BufferedReader(inputStreamReader);
+					writer = response.getWriter();
+					writer.print(HtmlUtils.htmlEscape(text));
+					while ((text = reader.readLine()) != null) {
+						writer.println(HtmlUtils.htmlEscape(text));
+					}
+					text = csEnd;
+					sbf.append(csEnd);
+					text = jsEnd;
+					sbf.append(jsEnd);
+					writer.println(HtmlUtils.htmlEscape(sbf.toString()));
+					writer.close();
+					inputStream.close();
+					inputStreamReader.close();
+		 	}
+
+			} else {
+				writer.print(HtmlUtils.htmlEscape(fileNotFound));
+			}
+		} catch (IOException e) {
+			writer.print(HtmlUtils.htmlEscape(expMessage));
+			LOGGER.error("Error:", e);
+			e.printStackTrace();
+		} catch (Exception e) {
+			writer.print(HtmlUtils.htmlEscape(expMessage));
+			e.printStackTrace();
+			LOGGER.error("Error:", e);
+
+		}
+		finally
+		{
+			releaseResource(connection,null,null);
+		}
+		
+
+	}
+	
+	@RequestMapping(value = "/update_normalization.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	NormalizeFormData updateNormalization(NormalizeFormData data,			
+			HttpServletRequest request) {
+		LOGGER.info("------------------ updateNormalization  starts --------------------");
+		String result = "";
+		boolean deletedCount =false;
+		try {
+
+			HttpSession session = request.getSession(true);
+			User user = (User) session.getAttribute("user");
+			WorkQueue  wq = workQueueService.getCompanyId(Integer.parseInt(CipherUtils.decrypt(data.getEncryptedFillingId())));
+			data.setLanguage(wq.getLanguage()!=null?wq.getLanguage():"");
+		    String caseStatus=caseStatus(wq,user);
+		    data.setParserId(wq.getParserMasterId());
+			data.setCaseStatus(caseStatus);
+			data.setWqId(Integer.parseInt(CipherUtils.decrypt(data.getEncryptedWqId())));
+			data.setFillingId(Integer.parseInt(CipherUtils.decrypt(data.getEncryptedFillingId())));
+			String[] normLableArray = request.getParameterValues("updNormLable");
+			/*
+			 * eg:"Selling, General & Admin Expenses" comma split string so we
+			 * use request.getParameterValues convert array into list
+			 */
+			if (normLableArray != null) {
+				List<String> upnormLableList = Arrays.asList(normLableArray);
+				data.setUpdNormLable(upnormLableList);
+			}
+
+			String[] updTimePeriodArray = request.getParameterValues("updTimePeriod");
+			if (updTimePeriodArray != null) {
+				List<String> updTimePeriodAyyar = Arrays.asList(updTimePeriodArray);
+				data.setUpdTimePeriod(updTimePeriodAyyar);
+			}
+
+			String[] repLabelArray = request.getParameterValues("updPoLable");
+			if (repLabelArray != null) {
+				List<String> repLableList = Arrays.asList(repLabelArray);
+				data.setUpdPoLable(repLableList);
+			}
+			
+			String[] addPoLabelArray= request.getParameterValues("addPoLable");
+			if (addPoLabelArray != null) {
+				List<String> addPoLabelList = Arrays.asList(addPoLabelArray);
+				data.setAddPoLable(addPoLabelList);
+			}
+
+			/*Start dynamic values functionality*/
+			if(request.getParameter("valuesColumnCount")!=null){
+		   int valuesColumnClount=Integer.parseInt(request.getParameter("valuesColumnCount"));
+		   
+			Map<String,List<String>> updVal=new LinkedHashMap<>();
+			Map<String,List<String>> addVal=new LinkedHashMap<>();
+			
+		   for(int counter=1;counter<=valuesColumnClount;counter++){
+			String[] updValArray = request.getParameterValues("updVal"+counter);
+			if (updValArray != null) {
+				List<String> updValList = Arrays.asList(updValArray);
+				updVal.put("updVal"+counter, updValList);
+				data.setUpdVal(updVal);
+			}
+
+			String[] addValArray = request.getParameterValues("addVal"+counter);
+			if (addValArray != null) {
+				List<String> addValList = Arrays.asList(addValArray);
+				addVal.put("addVal"+counter, addValList);
+				data.setAddVal(addVal);
+			}
+			//end for
+		 }//end for loop for "valuesColumnClount
+			
+		}//end if Start dynamic values functionality
+		   
+			String[] addValArray = request.getParameterValues("isDublicate");
+			if (addValArray != null) {
+				List<String> addValArrayList = Arrays.asList(addValArray);
+				data.setIsDublicate(addValArrayList);
+			}
+			String[] addedNewArray = request.getParameterValues("isNewAdded");
+			if (addedNewArray != null) {
+				List<String> addedNewArrayList = Arrays.asList(addedNewArray);
+				data.setIsNewAdded(addedNewArrayList);
+			}
+
+			String[] noteArray = request.getParameterValues("updNote");
+			if (noteArray != null) {
+				List<String> noteList = Arrays.asList(noteArray);
+				data.setUpdNote(noteList);
+			}
+			
+			data.setUpdatedAllPoId(data.getUpdPoId());
+			/**
+			 * This List used message list
+			 */
+			List<String> msgList=new ArrayList<String>();
+			
+			
+			/**
+			 * we are set document status and created by for Audit table
+			 */
+			data.setCreatedBy(user.getUserId().intValue());
+			
+			/**
+			 * Here we get Max transaction Id from PARSER_OUTPUT_AUDIT based on 
+			 * if we table is empty then set 1 
+			 */
+			Integer transactionId=normalizationService.f_getMaxTransactionId();
+			data.setTransactionId(transactionId);
+			data = normalizationService.deleteNormalizeData(data);
+			
+			if(data.getDeletedrowCount()!=null){
+			result += data.getDeletedrowCount() > 0 ? data.getDeletedrowCount() + " Row Deleted "+Constant.CR+Constant.LF : "";
+			deletedCount=false;
+			}
+			
+			data = normalizationService.updateNormalizedData(data,"N");
+			if(data.getUpdatedrowCount()!=null){
+			result += data.getUpdatedrowCount() > 0 ? data.getUpdatedrowCount() + " Row Updated "+Constant.CR+Constant.LF : "";
+			deletedCount=true;
+			}
+
+			data = normalizationService.addNormalizedData(data);
+			if(data.getAddedrowCount()!=null){
+			result += data.getAddedrowCount() > 0 ? data.getAddedrowCount() + " Row Added "+Constant.CR+Constant.LF : "";
+			deletedCount=true;
+			}
+			if(deletedCount){
+				data.setDeletedFlag(1);
+			}else{
+				data.setDeletedFlag(0);
+			}
+			msgList.add(result);
+			data.setMsg(msgList);
+			LOGGER.info(result);
+			/********** call service to insert object *************/
+			
+		} catch (Exception e) {
+			LOGGER.error(expMessage, e);
+			e.printStackTrace();
+
+		}
+
+		LOGGER.info("------------------ updateNormalization request Completed --------------------");
+		if (result.isEmpty()) {
+			if (data.getAddSequence() != null) {
+				if (data.getAddPoLable().size() > 0) {
+					result = "No Information Updated";
+				} else {
+					result = "As Reported Label should not be blank";
+				}
+			} else {
+				result = "No Information Updated";
+			}
+		}
+		return data;
+
+	}
+
+
+	@RequestMapping(value = "/normalizeTemplate.htm", method = RequestMethod.POST)
+	public @ResponseBody
+	boolean normalizeTemplate(@RequestParam("filingId") String filingId,
+			@RequestParam("type") String type,
+			@RequestParam("templateId") Integer templateId,HttpSession session) {
+
+		LOGGER.info("** Start normalizeTemplate method");
+		boolean flag = false;
+		
+		try {
+			User user=(User) session.getAttribute("user");
+			Long userId = user.getUserId();
+			Integer decryptFilingId =Integer.parseInt(CipherUtils.decrypt(filingId));
+			normalizationService.updateFilings(decryptFilingId, type,templateId);
+			Integer requestId =normalizationService.saveToRequestQueueForNormalizeTemplate(decryptFilingId, type,mappingNormalizationMaster);
+			normalizationService.saveInvokeProcessTracker(requestId,decryptFilingId,"N",mappingNormalizationMaster,userId);
+			String templateName = normalizationService.getTemplateNameByTemplateId(templateId);
+			normalizationService.updateWqStatusAndTemplateNameByFilingId(decryptFilingId, "Processing",templateName);
+			WorkQueue  wq = workQueueService.getCompanyId(decryptFilingId);
+			String userRole= ReleaseLockedUser.caseStatus(wq, user);
+			extractionServ.saveMOdifyStaus(decryptFilingId+"", userRole, "Template_" + templateId, userId,"Mapping_Normalization_Master");	
+			flag=true;
+		} catch (Exception e) {
+			LOGGER.error("Error:", e);
+			e.printStackTrace();
+		}
+		LOGGER.info("** End normalizeTemplate method ");
+		return flag;
+	}
+
+
+	@SuppressWarnings("rawtypes")
+	@RequestMapping(value = "/validateWqId.htm", method = RequestMethod.POST)
+	public @ResponseBody
+	String validateWqId(@RequestParam String wqId,@RequestParam String fillingId,
+			HttpServletResponse response, HttpSession sessionObj,HttpServletRequest request)
+			throws IOException {
+
+		boolean validateWqId = false;
+		Integer parserId;
+		String result = "";
+		WorkQueue workQueue = null;
+		boolean allowAccess = false;
+		try {
+
+			LOGGER.info("validateWqId starts");
+
+			Integer decrytedWqId = Integer.parseInt(CipherUtils.decrypt(wqId));
+			Integer sessionfillingId = Integer.parseInt(CipherUtils.decrypt(fillingId));
+			User user = (User) sessionObj.getAttribute("user");
+			String userLoginId = user.getLogin();
+			workQueue = workQueueService.getWorkQueueDetails(decrytedWqId);
+			String wqEid =null;
+		
+			Map returnParam = (HashMap) workQueueService.validateIfWorkQueueIsLockedByUser(workQueue,userLoginId);
+
+			boolean islockedbySameUser = (Boolean) returnParam.get("islockedbySameUser");
+			boolean lockedBy = (Boolean) returnParam.get("lockedBy");
+			/*
+			 * Here validateWqId is true that means this case used by another
+			 * user if validateWqId is false then fetch parser id for that case
+			 */
+
+			Map<String, Object> resultMap = new HashMap<String, Object>();
+			ObjectMapper objectMapper = new ObjectMapper();
+
+			if (islockedbySameUser == true) {
+				if (decrytedWqId.equals(sessionObj.getAttribute("LockedSession"))) {
+					parserId = workQueue.getParserMasterId();
+					sessionObj.setAttribute("sessionParserId", parserId);
+					resultMap.put("validateWqIdFlag", validateWqId);
+					resultMap.put("parserId", parserId);
+				} else {
+					validateWqId = true;
+					resultMap.put("validateWqIdFlag", validateWqId);
+					resultMap.put("parserId", "");
+				}
+
+			} else {
+				validateWqId = false;
+				parserId = workQueue.getParserMasterId();
+				sessionObj.setAttribute("sessionParserId", parserId);
+				sessionObj.setAttribute("sessionfillingId", sessionfillingId);
+				
+				if (!lockedBy) {
+					workQueueService.updateLockCaseForUser(decrytedWqId, user);
+					parserId = workQueue.getParserMasterId();
+					sessionObj.setAttribute("LockedSession", decrytedWqId);
+					sessionObj.setAttribute("LockedSessionId", decrytedWqId);
+					sessionObj.setAttribute("releaseLockedUser",releaseLockedUser);
+					sessionObj.setAttribute("sessionParserId", parserId);
+					
+					/**
+					 * Here we are fetching data from section_mapping and parser_output table based on section 
+   				     */
+					Map<String,String> sectionMappingList=normalizationService.f_fetchSectionListByFilingId(sessionfillingId,parserId);
+					if(sectionMappingList!=null && !sectionMappingList.isEmpty()){
+					sessionObj.setAttribute("sessionSectionList",sectionMappingList);
+					}else{
+					sectionMappingList.put("Exceptional Parsing", "Exceptional Parsing");
+					sessionObj.setAttribute("sessionSectionList",sectionMappingList);
+					}
+					/**
+					 * 1:Here we store section mapping values in session based on filing id
+					 * 2:we set "sessionSectionList" to null in welcome.htm request
+					 */
+					sessionObj.setAttribute("sessionSectionList",sectionMappingList);
+					resultMap.put("validateWqIdFlag", validateWqId);
+					resultMap.put("parserId", parserId);
+				} else {
+					validateWqId = true;
+					resultMap.put("validateWqIdFlag", validateWqId);
+					resultMap.put("parserId", "");
+				}
+
+			}
+			
+			if(!validateWqId)
+			{
+				allowAccess=allowAccessWorkQueue(workQueue,sessionObj,user);
+				resultMap.put("allowAccess", allowAccess);
+				// company_notes wqEid in session
+				if (workQueue.geteId() != null) {
+					String eID = workQueue.geteId().toString();
+						wqEid = CipherUtils.encrypt(eID);
+						request.getSession().setAttribute("encriptedWqEId", wqEid);	
+					}else{
+						request.getSession().setAttribute("encriptedWqEId", "");	
+					}	
+			}
+			result = objectMapper.writeValueAsString(resultMap);
+		} catch (Exception e) {
+			LOGGER.error(expMessage, e);
+			e.printStackTrace();
+		}
+
+		return result;
+	}
+
+	@RequestMapping(value = "/getTimePeriodAndCustodianName.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String getTimePeriodAndCustodianName(@RequestParam String statementFormat,
+			@RequestParam String fillingId, @RequestParam String accountNumber) {
+
+		List<String> timePeriodList = null;
+		List<String> custodianNameList = null;
+
+		String result1 = "";
+		Integer decrytedWqId = Integer.parseInt(CipherUtils.decrypt(fillingId));
+		try {
+			LOGGER.info("** Start-getTimePeriodAndCustodianName methode");
+
+			timePeriodList = normalizationService.f_getTimePeriodByAccountNumber(decrytedWqId,statementFormat, accountNumber);
+			custodianNameList = normalizationService.f_getCustodianNameByAccountNumber(decrytedWqId,statementFormat, accountNumber);
+
+			Map<String, Object> resultMap = new HashMap<String, Object>();
+			ObjectMapper objectMapper = new ObjectMapper();
+			resultMap.put("list1", timePeriodList);
+			resultMap.put("list2", custodianNameList);
+			result1 = objectMapper.writeValueAsString(resultMap);
+
+			LOGGER.info("** End-getTimePeriodAndCustodianName methode");
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error(expMessage, e);
+		}
+		return result1;
+
+	}
+
+
+
+	@RequestMapping(value = "/update_NormalizedLabelColumn.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String update_NormalizedLabelColumn(
+			@RequestParam("ni_lable") String ni_lable,
+			@RequestParam("ni_item") Integer ni_item,
+			@RequestParam("section") String section,
+			@RequestParam("filingId") Integer filingId) {
+		String msg = "Transactions mapped successfully";
+		LOGGER.info("** Start-update_NormalizedLabelColumn methode");
+		try {
+			normalizationService.updateNormalizedLabelColumn(filingId, ni_item,
+					ni_lable, section);
+
+		} catch (Exception e) {
+			msg = "Transactions mapping failed";
+			e.printStackTrace();
+			LOGGER.error(expMessage, e);
+		}
+
+		LOGGER.info("** End-update_NormalizedLabelColumn methode");
+
+		return msg;
+
+	}
+
+	@RequestMapping(value = "/update_CustomMapping.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String update_CustomMapping(CustomMappingCommand customMappingCommand) {
+		LOGGER.info("** Start-update_CustomMapping methode");
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		ObjectMapper objectMapper = new ObjectMapper();
+		boolean successflag = false;
+		String result = "";
+		Integer rowCount = 0;
+		Integer charCount = 0;
+		try {
+			Integer filingId = Integer.parseInt(CipherUtils
+					.decrypt(customMappingCommand.getEncryptedFillingId()));
+
+			for (int i = 0; i < customMappingCommand.getCustMapNormItem()
+					.size(); i++) {
+
+				if (!customMappingCommand.getCustMapNormItem().get(i)
+						.equalsIgnoreCase("")) {
+					rowCount++;
+					if (customMappingCommand.getCustMapAsRepLabel().get(i)
+							.length() > 10) {
+						charCount++;
+						String niItemAndLable = customMappingCommand
+								.getCustMapNormItem().get(i);
+
+						String[] parts = niItemAndLable.split("~");
+						Integer niItem = Integer.parseInt(parts[0]);
+						String niLable = parts[1];
+
+						normalizationService.updateCustomMapping(niLable,
+								niItem, filingId, customMappingCommand
+										.getSection(), customMappingCommand
+										.getCustMapAsRepLabel().get(i));
+						successflag = true;
+						resultMap
+								.put("msg", "Transactions mapped successfully");
+						resultMap.put("successflag", successflag);
+						result = objectMapper.writeValueAsString(resultMap);
+
+					}// end char count if
+				}// end empty count if
+			}
+			// rowcount 0 means all rows is null
+			if (rowCount == 0) {
+				resultMap.put("msg",
+						"Please Select As Reported Label and Normalized Label");
+				resultMap.put("successflag", successflag);
+				result = objectMapper.writeValueAsString(resultMap);
+			}
+
+			// Here check Reported Label length
+			if (rowCount != 0) {
+				if (charCount == 0) {
+					resultMap
+							.put("msg",
+									"As Reported Label should be greater than 10 character");
+					resultMap.put("successflag", successflag);
+					result = objectMapper.writeValueAsString(resultMap);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error(expMessage, e);
+			resultMap.put("msg", "Transactions mapping failed");
+			resultMap.put("successflag", successflag);
+			try {
+				result = objectMapper.writeValueAsString(resultMap);
+			} catch (Exception e1) {
+				LOGGER.error(expMessage, e1);
+			}
+		}
+
+		LOGGER.info("** End-update_CustomMapping methode");
+
+		return result;
+
+	}
+
+	/*
+	 * This function used for Supplemental Information controller
+	 */
+	@RequestMapping(value = "/rulesmgnt_supplemental_Info.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public String viewRulesMgmntSupplementalInfo(
+			@RequestParam("customerId") String customerId,
+			@RequestParam("fillingId") String fillingId,
+			@RequestParam("WqId") String wqId,
+			@RequestParam("statementFormat") String stmtFormat, Model map,
+			HttpSession session) {
+
+		LOGGER.info("** start viewRulesMgmntSupplementalInfo controller" + wqId);
+
+		map.addAttribute("caseId", fillingId);
+		map.addAttribute("customerId", customerId);
+		map.addAttribute("statementFormat", stmtFormat);
+		map.addAttribute("wqId", wqId);
+
+		Integer decryptedFillingId = Integer.parseInt(CipherUtils
+				.decrypt(fillingId));
+		List<String> listOfStatements = LiveSpreadUtil.getListOfStatements();
+		boolean addStatementButton = false;
+		try {
+			PurgedSessionVariable.removeVariableForNormalization(session);
+			List<Object> parserOutput = normalizationService
+					.getNormalizedDataForSupplementalInfo(stmtFormat,
+							Integer.parseInt(CipherUtils.decrypt(wqId)),
+							Integer.parseInt(CipherUtils.decrypt(fillingId)));
+
+			List<NormalisedParserOutput> listOfNormalisedParserOutput = new ArrayList<NormalisedParserOutput>();
+			NormalisedParserOutput normalisedParserOutputTemp = new NormalisedParserOutput();
+			NormalisedParserOutput normalisedParserOutput;
+			User user = (User) session.getAttribute("user");
+			String usersGroupName = user.getUsersGroupName();
+			for (Object obj : parserOutput) {
+				Object[] objIn = (Object[]) obj;
+				normalisedParserOutput = new NormalisedParserOutput();
+
+				normalisedParserOutput.setPoId(objIn[0] != null ? Integer
+						.parseInt(objIn[0].toString()) : 0);
+				normalisedParserOutput
+				.setPoAsRepLabel(objIn[1] != null ? ReplaceSpace.replaceSpac(objIn[1].toString())
+						: "");
+				normalisedParserOutput
+						.setPoIndexOrder(objIn[2] != null ? Integer
+								.parseInt(objIn[2].toString()) : 0);
+				normalisedParserOutput
+						.setPoAsRepVal1(objIn[3] != null ? objIn[3].toString()
+								: "");
+				normalisedParserOutput
+						.setPoAsRepVal2(objIn[4] != null ? objIn[4].toString()
+								: "");
+				normalisedParserOutput
+						.setPoAsRepVal3(objIn[5] != null ? objIn[5].toString()
+								: "");
+				normalisedParserOutput
+						.setPoAsRepVal4(objIn[8] != null ? objIn[8].toString()
+								: "");
+				normalisedParserOutput
+						.setNormalizedLabel(objIn[9] != null ? objIn[9]
+								.toString() : "");
+				normalisedParserOutput
+						.setPoSubSection(objIn[10] != null ? objIn[10]
+								.toString() : "");
+				// Account number and Time Period Required for Banks Parser
+				normalisedParserOutput
+						.setPoAccountNumber(objIn[13] != null ? objIn[13]
+								.toString() : "");
+				normalisedParserOutput
+						.setPoTimePeriod(objIn[14] != null ? objIn[14]
+								.toString() : "");
+				normalisedParserOutput
+						.setPoCustodianName(objIn[15] != null ? objIn[15]
+								.toString() : "");
+
+				normalisedParserOutput
+						.setPoAsRepVal5(objIn[16] != null ? objIn[16]
+								.toString() : "");
+				normalisedParserOutput
+						.setPoAsRepVal6(objIn[17] != null ? objIn[17]
+								.toString() : "");
+				normalisedParserOutput
+						.setPoAsRepVal7(objIn[18] != null ? objIn[18]
+								.toString() : "");
+				normalisedParserOutput
+						.setPoAsRepVal8(objIn[19] != null ? objIn[19]
+								.toString() : "");
+				normalisedParserOutput
+				.setPageNo(objIn[20] != null ? objIn[20]
+						.toString() : "");
+				normalisedParserOutput
+				.setUploadId(objIn[21] != null ? objIn[21]
+						.toString() : "");
+				
+				normalisedParserOutput
+				.setNonEnglishLabel(objIn[22] != null ? objIn[22]
+						.toString() : "");
+				
+				normalisedParserOutput
+						.setPoBreakup(objIn[12] != null ? objIn[12].toString()
+								: "");
+				if (usersGroupName.equals("CP_SEC")) {
+					normalisedParserOutput
+							.setPoSubTotal(objIn[11] != null ? objIn[11]
+									.toString() : "");
+				}
+				/*
+				 * Remove leading and trailing spaces from PoAsRepLabel
+				 */
+				normalisedParserOutput.setPoAsRepLabel(normalisedParserOutput
+						.getPoAsRepLabel());
+
+				if (listOfStatements.contains(normalisedParserOutput
+						.getPoAsRepLabel())) {
+					//normalisedParserOutput.setRowClass("stmnt-attr noMapping");
+					addStatementButton = true;
+				} else {
+				}
+				List<POAnchors> listOfAnchors = new ArrayList<POAnchors>();
+				for (Object internalObj : parserOutput) {
+					Object[] internalObjIn = (Object[]) internalObj;
+					if (internalObjIn[0] != null
+							&& Integer.parseInt(internalObjIn[0].toString()) == normalisedParserOutput
+									.getPoId()) {
+						POAnchors poAnchors = new POAnchors();
+						poAnchors
+								.setPaColumn(internalObjIn[7] != null ? Integer
+										.parseInt(internalObjIn[7].toString())
+										: null);
+						if (internalObjIn[6] != null) {
+
+							poAnchors.setPaAnchor(internalObjIn[6].toString());
+						}
+						listOfAnchors.add(poAnchors);
+					}
+				}
+				normalisedParserOutput.setPoanchors(listOfAnchors);
+
+				if (normalisedParserOutputTemp.getPoId() != null) {
+					if (normalisedParserOutputTemp.getPoIndexOrder().intValue() != normalisedParserOutput
+							.getPoIndexOrder().intValue()) {
+						listOfNormalisedParserOutput
+								.add(normalisedParserOutput);
+					}
+				} else {
+					listOfNormalisedParserOutput.add(normalisedParserOutput);
+				}
+
+				normalisedParserOutputTemp = normalisedParserOutput;
+			}
+			String templateName="";
+			Integer templateId =null;
+			List<NormItemLabels> listOfNormItemLabels = normalizationService
+					.getListOfNormItemLabels(stmtFormat,
+							Integer.parseInt(CipherUtils.decrypt(fillingId)));
+			List<NormItemLabels> templateIdIndustryName = null;
+			if (listOfNormItemLabels != null && !listOfNormItemLabels.isEmpty()) {
+				templateId = listOfNormItemLabels.get(0)
+						.getTemplateId();
+				 templateName = listOfNormItemLabels.get(0)
+						.getNilIndustry();
+				map.addAttribute("templateId", templateId);
+				map.addAttribute("templateName", templateName);
+				if (templateId != null) {
+					templateIdIndustryName = normalizationService
+							.getIndustryName(templateId);
+				}
+				map.addAttribute("templateIdIndustryName",
+						templateIdIndustryName);
+			}
+			List<String> subSectionList = normalizationService.getListOfSection(stmtFormat,templateId);
+			
+			if(!CollectionUtils.isEmpty(subSectionList))
+			{
+				subSectionList.add("ATTR");
+				subSectionList.add("HEADER");
+			}
+			
+			/*
+			 * This function used for get parser id from work queue table using
+			 * wqId
+			 */
+			Integer parserId = workQueueService
+					.getParserIdFromWorkQueue(Integer.parseInt(CipherUtils
+							.decrypt(wqId)));
+			map.addAttribute("parserId", parserId);
+			map.addAttribute("subSectionList", subSectionList);
+			map.addAttribute("listOfNormItemLabels", listOfNormItemLabels);
+
+			/*
+			 * if parser is bank then bring all Description(Statement attribute)
+			 */
+			if (parserId == 6 || parserId == 7 || parserId == 16) {
+				List<String> sortOrder = new ArrayList<String>();
+				sortOrder.add("DESCRIPTION");
+				sortOrder.add("Description");
+				Collections.sort(listOfNormalisedParserOutput,
+						new AsPerLableNameComparator(sortOrder));
+			}
+			map.addAttribute("normalizeDataList", listOfNormalisedParserOutput);
+
+			map.addAttribute("addStatementButton", addStatementButton);
+
+			/*
+			 * This function used for fetch status(WQ_STATUS) using filingId
+			 * from WORK_QUEUE table
+			 */
+			String statusName = workQueueService
+					.findStatusByFilingId(decryptedFillingId);
+			map.addAttribute("currentStatus", statusName);
+
+			/*
+			 * This function used for fetch distinct sub section from parser
+			 * output
+			 */
+			List<String> distinctSubSectionList = normalizationService
+					.getDistinctSubSectionByFilingId(decryptedFillingId,
+							stmtFormat);
+			map.addAttribute("distinctSubSectionList", distinctSubSectionList);
+
+		} catch (Exception e) {
+
+			LOGGER.error("Exception Occured", e);
+			e.printStackTrace();
+		}
+		return "rulesmgnt_supplemental_Info";
+	}
+
+	@RequestMapping(value = "/mergePdfBasedParser.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String mergePdfBasedParser(
+			@RequestParam("checkboxArray") String checkboxArray,
+			@RequestParam("filingId") Integer filingId) {
+		String msg = null;
+		LOGGER.info("** Start-mergePdfBasedParser methode");
+		try {
+			/*
+			 * This function used for update po_merge column in parser_output
+			 * table based on filing_id,section and table_id.
+			 */
+			msg = normalizationService.f_mergePdfBasedParser(checkboxArray,
+					filingId);
+
+		} catch (NullPointerException npe) {
+			npe.printStackTrace();
+			LOGGER.error(expMessage, npe);
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error(expMessage, e);
+		}
+
+		LOGGER.info("** End-update_NormalizedLabelColumn methode");
+
+		return msg;
+
+	}
+	
+	
+	@RequestMapping(value = "/deleteStatements.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String deleteStatements(
+			@RequestParam("checkboxArray") String checkboxArray,
+			@RequestParam("filingId") Integer filingId) {
+		String msg = null;
+		LOGGER.info("** Start-deleteStatements methode");
+		try {
+			/**
+			* This method used for delete data from LS_PDF_EXTRACTION_METADATA and parser_output table.
+			*/
+			boolean flag = normalizationService.f_deleteStatementData(checkboxArray,filingId);
+			
+			if(flag)
+			msg="Records deleted successfully";	
+			else
+			msg="Failed to delete records";
+			
+		} catch (NullPointerException npe) {
+			npe.printStackTrace();
+			LOGGER.error(expMessage, npe);
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error(expMessage, e);
+		}
+
+		LOGGER.info("** End-deleteStatements methode");
+
+		return msg;
+
+	}
+/**
+ * This methode used for close connetion.
+ * @param con
+ * @param rs
+ * @param stmt
+ */
+	
+	public void releaseResource(Connection con,ResultSet rs, Statement stmt)
+	{
+		try
+		{
+			 if( rs != null )
+			 {
+				 rs.close();
+			 }
+			 
+			 if( stmt != null  )
+			 {			
+				stmt.close();
+			 }
+			 
+			 if( con != null )
+			 {
+				 con.close();
+			 }
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+	}
+
+	
+	
+
+	
+   
+	
+	
+	@RequestMapping(value = "/update_NormalizedLabelByPOID.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String update_NormalizedLabelByPOID(@RequestParam(value="poIdArray") String[] poIdArray,@RequestParam(value="fillingId") Integer fillingId,
+			@RequestParam(value="documentStatus") String documentStatus,String mappingLabel,HttpSession session) 
+	{
+    	System.out.println(poIdArray);
+        LOGGER.info("**start- update_NormalizedLabelByPOID moethode.");
+        User user = (User) session.getAttribute("user");
+    	Set<Integer> poIdSet = new HashSet<Integer>();
+		String msg = "Transactions mapped successfully";
+		LOGGER.info("** Start-show1_NormalizedLabelByPOID method");
+		try {
+			String tempArray[]=null;
+			for(String val :poIdArray){
+				if(val!=null && !val.equals("")){
+					poIdSet.add(new Integer(val));
+				}
+			}
+			tempArray=null;
+			Integer normLabelId=null;
+			String normLabel=null;
+			if(mappingLabel!=null && !mappingLabel.equals("")){
+				tempArray=mappingLabel.split("~");
+				if(tempArray!=null && tempArray.length==2){
+					normLabelId=new Integer(tempArray[0]);
+					normLabel=tempArray[1];
+				}
+			}
+			
+			/**
+			 * In normalizeFormData object we have set all required parameters
+			 */
+			NormalizeFormData normalizeFormData=new NormalizeFormData();
+			//for using set userRoll column update parser_output_audit
+			WorkQueue  wq = workQueueService.getCompanyId(fillingId);
+		    String caseStatus=caseStatus(wq,user);
+		    normalizeFormData.setCaseStatus(caseStatus);
+			normalizeFormData.setAddPoId(Lists.newArrayList(poIdSet));
+			normalizeFormData.setFillingId(fillingId);
+			normalizeFormData.setDocumentStatus(documentStatus);
+			normalizeFormData.setTransactionId(normalizationService.f_getMaxTransactionId());
+			normalizeFormData.setCreatedBy(user.getUserId().intValue());
+			normalizeFormData.setNormLableId(normLabelId);
+			normalizeFormData.setNormLable(normLabel);
+			normalizeFormData.seteId(wq.geteId());
+			normalizeFormData.setParserId(wq.getParserMasterId());
+			boolean flag=normalizationService.updateNormalizedLabelByPoID(normalizeFormData);
+			if(flag){
+				if(wq.getParserMasterId()!=null && wq.getParserMasterId()!=24){
+				msg = normalizeFormData.getSubSection();
+				}else{
+				msg = "";
+				}
+			}else{
+				msg = "";
+			}
+
+		} catch (Exception e) {
+			msg = "Transactions mapping failed";
+			e.printStackTrace();
+			LOGGER.error(expMessage, e);
+		}
+
+		LOGGER.info("** End-show1_NormalizedLabelByPOID method");
+
+		return msg;
+
+	}
+	
+	@RequestMapping(value = "/update_PoID_AsrsYearVal_Mapping.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String updatePoIDAsrsYearValMapping(
+			@RequestParam(value="selectedPoIDValue") Integer selectedPoIDValue,
+			@RequestParam(value="poAsReportedCellValue") String poAsReportedCellValue,
+			@RequestParam(value="niItemId") Integer niItemId,
+			@RequestParam(value="selectedColumnName") String selectedColumnName,
+			@RequestParam(value="arsID") Integer arsID,
+			@RequestParam(value="tempId") Integer tempId,
+			@RequestParam(value="filingID") String filingID,
+			@RequestParam(value="selectedHeaderLabel") String selectedHeaderLabel,
+			@RequestParam(value="selectedTableLabel") String selectedTableLabel,
+			HttpSession session,HttpServletRequest request) 
+	{
+    	LOGGER.info("** Start-update_PoID_AsrsYearVal_Mapping method");
+    	String msg = "Transactions mapped successfully";
+    	try{
+    	Integer poId=selectedPoIDValue;
+    	String poAsRepVal="0";
+    	String coulmnName=selectedColumnName;
+    	Integer arsId=arsID;
+    	Integer templateId=tempId;
+    	Integer filingId=0;
+    	String headerLabel = null;;
+    	String tableLabel = null;
+    	String temp="0";
+    	User user = (User) session.getAttribute("user");	
+    	
+		temp=poAsReportedCellValue.replaceAll(",", "");
+		poAsRepVal=temp.matches("[-+]?\\d*\\.?\\d+")?temp:"0";
+		if(filingID!=null && filingID!=""){
+			filingId = Integer.parseInt(CipherUtils.decrypt(filingID));
+		}
+		if(selectedHeaderLabel!=null && selectedHeaderLabel.toString().trim()!=""){
+			headerLabel = selectedHeaderLabel.toString().trim();
+		}
+		if(selectedTableLabel!=null && selectedTableLabel.toString().trim()!=""){
+			tableLabel = selectedTableLabel.toString().trim();
+		}
+    	NormItemLabels normItemLabels = normalizationService.getNormItemLabelDetailsByTemplateIdAndNiItem(templateId,niItemId);
+    	ArsPoMapping arsPoMapping= new ArsPoMapping();
+    	arsPoMapping.setPoId(poId);
+    	arsPoMapping.setArsId(arsId);
+    	arsPoMapping.setFillingId(filingId);
+    	arsPoMapping.setNiItem(niItemId);
+    	arsPoMapping.setNilLabel(normItemLabels.getNilLabel());
+    	arsPoMapping.setPoColumnName(coulmnName);
+    	arsPoMapping.setPoColumnVal(poAsRepVal);
+    	arsPoMapping.setMappingType("Manual");
+    	arsPoMapping.setHeaderLabel(headerLabel);
+    	arsPoMapping.setTableLabel(tableLabel);
+    	arsPoMapping.setSection(normItemLabels.getNilSection());
+    	arsPoMapping.setSubSection(normItemLabels.getNilSubSection());
+    	
+    	WorkQueue  wq = workQueueService.getCompanyId(filingId);
+    	arsPoMapping.setUserRole(ReleaseLockedUser.caseStatus(wq, user));
+    	arsPoMapping.setCreatedDate(new Date());
+    	arsPoMapping.setCreatedBy(user.getUserId().intValue());
+    	
+    	NIValues niValues = new NIValues();
+    	niValues.setArsId(arsId);
+    	niValues.setFilingId(filingId);
+    	niValues.setTemplateId(templateId);
+    	niValues.seteId(-1);
+    	niValues.setFiId(-1);
+    	niValues.setNiValue(new BigDecimal(poAsRepVal));
+    	niValues.setNiItem(niItemId);
+    	normalizationService.createArsPoMapping(arsPoMapping,niValues);
+    
+    	}catch(Exception e){
+    		e.printStackTrace();
+    		LOGGER.error("Error:"+e);
+    	}
+    	LOGGER.info("** End-update_PoID_AsrsYearVal_Mapping method");
+
+		return msg;
+    }
+    
+    
+    @RequestMapping(value = "/getArsPoMappingRecord.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	ScaleChangeSignPoMappingCommand getArsPoMappingRecord(
+			@RequestParam(value="paramVal") String paramVal, Model map) {
+    	LOGGER.info("** Start-getArsPoMappingRecord method");
+    	String tempArray[]=null;
+    	tempArray=paramVal.split("#");
+    	
+    	Integer poId=0;
+    	String coulmnName="";
+    	ScaleChangeSignPoMappingCommand scaleChangeSignPoMappingCommand = new ScaleChangeSignPoMappingCommand();
+    	try{
+    	if(tempArray!=null && tempArray.length==2){
+    		poId=new Integer(tempArray[0]);
+    		coulmnName=tempArray[1];
+    		coulmnName = coulmnName.replace("child", "");
+    	}
+    	scaleChangeSignPoMappingCommand=normalizationService.getScaleChangeSignPoMappingListByPoId(poId,coulmnName);
+    	
+    	if(scaleChangeSignPoMappingCommand ==null){
+    		scaleChangeSignPoMappingCommand= new ScaleChangeSignPoMappingCommand();
+    	}
+    	if(scaleChangeSignPoMappingCommand.getSignVal().equals("+")){
+    		scaleChangeSignPoMappingCommand.setSignVal("positive");
+    		
+    	}else if(scaleChangeSignPoMappingCommand.getSignVal().equals("-")){
+    		scaleChangeSignPoMappingCommand.setSignVal("negetive");
+    		
+    	}
+    	ArsPoMapping arsPoMapping=normalizationService.getAsRepPOMappingByFilingId(poId,coulmnName);
+    	
+    	scaleChangeSignPoMappingCommand.setIsArsPoMapping("N");
+    	if(arsPoMapping!=null ){
+    		map.addAttribute("asRepPOMapPOID", arsPoMapping);
+    		scaleChangeSignPoMappingCommand.setArsId(arsPoMapping.getArsId());
+    		scaleChangeSignPoMappingCommand.setNiItem(arsPoMapping.getNiItem()!=null?arsPoMapping.getNiItem():0);
+    		scaleChangeSignPoMappingCommand.setNilLabel(arsPoMapping.getNilLabel());
+    		scaleChangeSignPoMappingCommand.setNormItemSection(arsPoMapping.getNormItemSection());
+    		scaleChangeSignPoMappingCommand.setIsArsPoMapping("Y");
+    	}else{
+    		ParserOutput parserOutput=normalizationService.getParserOutputByPoID(poId);
+    		if(parserOutput!=null){
+    			scaleChangeSignPoMappingCommand.setArsId(-1);
+        		scaleChangeSignPoMappingCommand.setNiItem(parserOutput.getNiItem());
+        		scaleChangeSignPoMappingCommand.setNilLabel(parserOutput.getNilLabel());
+        		scaleChangeSignPoMappingCommand.setNormItemSection(parserOutput.getNiItemSection());
+    		}
+    		
+    	}
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
+    	LOGGER.info("** End-getArsPoMappingRecord method");
+		return scaleChangeSignPoMappingCommand;
+    }
+    
+    
+    @SuppressWarnings("unchecked")
+	@RequestMapping(value = "/getChildPORecords.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	JSONObject getChildPORecords(@RequestParam(value="parentPOId") String parentPOId, Model map) {
+    	JSONObject jsonResponse = new JSONObject();
+    	 try{
+    		 List<ParserOutput> parserOutPutList =normalizationService.getchildNormalizedDataByPoId(new Integer(parentPOId));
+    		 List<ParserOutputCommand> finalParserOutPutList=null;
+    		 if(!CollectionUtils.isEmpty(parserOutPutList)){
+    			 finalParserOutPutList=normalizationService.getArsPoMappingListByFilingId(parserOutPutList);
+    		 }
+    		 jsonResponse.put("poObject", finalParserOutPutList);
+    		 jsonResponse.put("status", "ok");   
+    	 } catch(Exception ex){
+    	        ex.printStackTrace();  
+    	 }
+    	 return jsonResponse;
+    }
+    
+    
+    
+    @RequestMapping(value = "/update_child_normalization.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String updateChildNormalization(NormalizeFormData data,
+			HttpServletRequest request) {
+		LOGGER.info("------------------ updateChildNormalization  starts --------------------");
+		String result = "";
+		try {
+
+			HttpSession session = request.getSession(true);
+			User user = (User) session.getAttribute("user");
+			//for using set userRoll column update parser_output_audit
+			WorkQueue  wq = workQueueService.getCompanyId(Integer.parseInt(CipherUtils.decrypt(data.getEncryptedFillingId())));
+			 String caseStatus=caseStatus(wq,user);
+		    data.setCaseStatus(caseStatus);
+		    data.setLanguage(wq.getLanguage()!=null?wq.getLanguage():"");
+			data.setWqId(Integer.parseInt(CipherUtils.decrypt(data.getEncryptedWqId())));
+			data.setFillingId(Integer.parseInt(CipherUtils.decrypt(data
+					.getEncryptedFillingId())));
+			String[] normLableArray = request
+					.getParameterValues("updNormLable");
+			data.setStatementType("SUPPL");
+			data.setIsChild("Y");
+			data.setParserId(wq.getParserMasterId());
+			/*
+			 * eg:"Selling, General & Admin Expenses" comma split string so we
+			 * use request.getParameterValues convert array into list
+			 */
+			if (normLableArray != null) {
+				List<String> upnormLableList = Arrays.asList(normLableArray);
+				data.setUpdNormLable(upnormLableList);
+			}
+
+			String[] updTimePeriodArray = request
+					.getParameterValues("updTimePeriod");
+			if (updTimePeriodArray != null) {
+				List<String> updTimePeriodAyyar = Arrays
+						.asList(updTimePeriodArray);
+				data.setUpdTimePeriod(updTimePeriodAyyar);
+			}
+
+			String[] repLabelArray = request.getParameterValues("updPoLable");
+			if (repLabelArray != null) {
+				List<String> repLableList = Arrays.asList(repLabelArray);
+				data.setUpdPoLable(repLableList);
+			}
+			String[] addPoLabelArray= request.getParameterValues("addPoLable");
+			if (addPoLabelArray != null) {
+				List<String> addPoLabelList = Arrays.asList(addPoLabelArray);
+				data.setAddPoLable(addPoLabelList);
+			}
+			/*Start dynamic values functionality*/
+			if(request.getParameter("childvaluesColumnCount")!=null){
+		   int valuesColumnClount=Integer.parseInt(request.getParameter("childvaluesColumnCount"));
+		   
+			Map<String,List<String>> updVal=new LinkedHashMap<>();
+			Map<String,List<String>> addVal=new LinkedHashMap<>();
+			
+		   for(int counter=1;counter<=valuesColumnClount;counter++){
+			String[] updValArray = request.getParameterValues("updVal"+counter);
+			if (updValArray != null) {
+				List<String> updValList = Arrays.asList(updValArray);
+				updVal.put("updVal"+counter, updValList);
+				data.setUpdVal(updVal);
+			}
+
+			String[] addValArray = request.getParameterValues("addVal"+counter);
+			if (addValArray != null) {
+				List<String> addValList = Arrays.asList(addValArray);
+				addVal.put("addVal"+counter, addValList);
+				data.setAddVal(addVal);
+			}
+			//end for
+		 }//end for loop for "valuesColumnClount
+			
+		}//end if Start dynamic values functionality
+			
+
+			String[] isDublicateArray = request.getParameterValues("isDublicate");
+			if (isDublicateArray != null) {
+				List<String> isDublicateList = Arrays.asList(isDublicateArray);
+				data.setIsDublicate(isDublicateList);
+			}
+			
+			data.setUpdatedAllPoId(data.getUpdPoId());
+			/**
+			 * This List used message list
+			 */
+			List<String> msgList=new ArrayList<String>();
+			
+			
+			/**
+			 * we are set documentstatus and created by for Audit table
+			 */
+			data.setCreatedBy(user.getUserId().intValue());
+			
+			/**
+			 * Here we get Max transaction Id from PARSER_OUTPUT_AUDIT based on 
+			 * if we table is empty then set 1 
+			 */
+			Integer transactionId=normalizationService.f_getMaxTransactionId();
+			data.setTransactionId(transactionId);
+			data.setDelPoId(data.getChildPoId());
+			data = normalizationService.deleteNormalizeData(data);
+			if(data.getDeletedrowCount()!=null){
+			result += data.getDeletedrowCount() > 0 ? data.getDeletedrowCount() + " Row Deleted "+Constant.CR+Constant.LF : "";
+			}
+			
+			data = normalizationService.updateNormalizedData(data,"Y");
+			if(data.getUpdatedrowCount()!=null){
+			result += data.getUpdatedrowCount() > 0 ? data.getUpdatedrowCount() + " Row Updated "+Constant.CR+Constant.LF : "";
+			}
+			data = normalizationService.addNormalizedData(data);
+			if(data.getAddedrowCount()!=null){
+			result += data.getAddedrowCount() > 0 ? data.getAddedrowCount() + " Row Added "+Constant.CR+Constant.LF : "";
+			}
+			msgList.add(result);
+			data.setMsg(msgList);
+			LOGGER.info(result);
+			/********** call service to insert object *************/
+
+		} catch (Exception e) {
+			LOGGER.error(expMessage, e);
+			e.printStackTrace();
+		}
+
+		LOGGER.info("------------------ updateChildNormalization request Completed --------------------");
+		if (result.isEmpty()) {
+			if (data.getAddSequence() != null) {
+				if (data.getAddPoLable().size() > 0) {
+					result = "No Information Updated";
+				} else {
+					result = "As Reported Label should not be blank";
+				}
+			} else {
+				result = "No Information Updated";
+			}
+		}
+		return data.getRefPOID();
+
+	}
+    //added by Naveed.Khan
+    @RequestMapping(value = "/updateMakerCheckerStatus.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	int updateMakerCheckerStatus(@RequestParam("customerId") String customerId,
+			@RequestParam("fillingId") String fillingId,
+			@RequestParam("wqId") String wqId,
+			@RequestParam("customerName") String customerName) {
+		LOGGER.info("------------------ updateMakerCheckerStatus  starts --------------------");
+			Integer wqIdNo = new Integer((CipherUtils.decrypt(wqId)));
+			fillingId = CipherUtils.decrypt(fillingId);
+			customerId = CipherUtils.decrypt(customerId);
+			customerName = CipherUtils.decrypt(customerName);
+			int submitOrNot=workQueueService.submitCase(wqIdNo);
+	LOGGER.info("------------------ updateMakerCheckerStatus  ends --------------------");
+	return submitOrNot;
+}//updateMakerCheckerStatus()
+    
+    //added by Naveed.Khan    
+
+	boolean allowAccessWorkQueue(WorkQueue workQueue,HttpSession session,User user) {
+			LOGGER.info("------------------ allowAccessWorkQueue  starts --------------------");
+			boolean allowOrNot=workQueueService.allowUserToAccessWorkQueue(workQueue ,session);
+			if(allowOrNot)
+			{
+				String userRole = ReleaseLockedUser.caseStatus(workQueue, user);
+				session.setAttribute("userRole",userRole);	
+				Calendar endTime=Calendar.getInstance();
+	    		Date startTime= endTime.getTime();
+				session.setAttribute("caseStartTime",startTime);	
+			}
+	LOGGER.info("------------------ allowAccessWorkQueue  ends --------------------");
+	return allowOrNot;
+}//allowAccessWorkQueue()
+    
+	
+    //added by Naveed.Khan
+    @RequestMapping(value = "/assignMakerChecker.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	int assignMakerChecker(@RequestParam("filingId") String filingId,
+			@RequestParam("userId") String userId,
+			@RequestParam("makerOrChecker") String makerOrChecker) {
+    	LOGGER.info("------------------ assignMakerChecker  starts --------------------");
+    		int submitOrNot=0;
+    		if(filingId!=null && filingId.trim().length()>0)
+    		{
+    		if(userId.isEmpty()){
+	    			submitOrNot=workQueueService.updateMakerCheckerStatus(null,new Integer(filingId.trim()), makerOrChecker);	
+    		}else{
+	    			submitOrNot=workQueueService.updateMakerCheckerStatus( new Integer(userId),new Integer(filingId.trim()), makerOrChecker);
+	    		}
+    		}
+    		
+    		LOGGER.info("------------------ assignMakerChecker  ends --------------------");
+	return submitOrNot;
+}//assignMakerChecker()
+    
+    @RequestMapping(value = "/delete_ArsPoMapping.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String deleteArsPoMapping(@RequestParam("mappingVal") String mappingVal) {
+    	
+    	try{
+        	String tempArray[]=null;
+        	tempArray=mappingVal.split("#");
+        	Integer poId=0;
+        	String coulmnName="";
+        	if(tempArray!=null && tempArray.length==2){
+        		poId=new Integer(tempArray[0]);
+        		coulmnName=tempArray[1];
+        	}
+        	
+        	normalizationService.deleteArsPoMapping(poId, coulmnName);
+    	}catch(Exception e){
+    		e.printStackTrace();
+    		return "error";
+    	}
+    	
+    	return "success";
+    }    
+
+    
+    
+	@SuppressWarnings({ "unchecked" })
+	@RequestMapping(value = "/getNiChildRecords.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody JSONObject getNiChildRecords(@RequestParam(value="nivId") Integer niId) 
+	{
+    	JSONObject jsonResponse = new JSONObject();
+    	 try{
+    		 List<NormalizationBreakupData> normalizationBreakupDataList =normalizationService.getchildNormalizedDataByNiId(niId);
+    		 jsonResponse.put("poObject", normalizationBreakupDataList);
+    		 jsonResponse.put("status", "ok");   
+    		 String nonEnglishLabelFlag="N";
+    		 if(!CollectionUtils.isEmpty(normalizationBreakupDataList)){
+    			 WorkQueue workQueue = null;
+				try {
+					Integer decryptedFillingId = Integer.parseInt(CipherUtils.decrypt(normalizationBreakupDataList.get(0).getFilingId()));
+					 workQueue = workQueueService.getWorkQueueDetailsUsingFilingId(decryptedFillingId);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}	
+    			 if(workQueue!=null){
+					 if(workQueue.getLanguage()!=null && !workQueue.getLanguage().equalsIgnoreCase("") && !workQueue.getLanguage().equalsIgnoreCase("English")){
+						 nonEnglishLabelFlag = "Y";
+					 }
+				 }
+    		 }
+    		 String balancingValue = normalizationService.checkBalancingValue(niId);
+    		 jsonResponse.put("nonEnglishLabelFlag",nonEnglishLabelFlag); 
+    		 jsonResponse.put("balancingValue",balancingValue);
+    	 } catch(Exception ex){
+    	        ex.printStackTrace();  
+    	 }
+    	 return jsonResponse;
+    }
+    
+    
+    
+    @RequestMapping(value = "/saveNormLable_ParserOutPut.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String saveNormLableParserOutPut(
+			@RequestParam("niItem") Integer niItem,
+			@RequestParam("sectionName") String sectionName,
+			@RequestParam("filingId") String filingIdStr,
+			@RequestParam("poIdVal") Integer poIdVal,
+			@RequestParam("documentStatus") String documentStatus,
+			HttpSession session) {
+		LOGGER.info("** Start-saveNormLableParserOutPut methode");
+		String msg = "Record Saved seccessfully";
+		try {
+			 User user = (User) session.getAttribute("user");
+			 Integer fillingId = Integer.parseInt(CipherUtils.decrypt(filingIdStr));
+			 Integer templateId = normalizationService.getTemplateIdByFilingIdFromFiling(fillingId);
+			 String niLable = normalizationService.getNormItemLabelsByNiItemAndTemplateId(niItem, templateId);
+			 NormalizeFormData normalizeFormData=new NormalizeFormData();
+			
+			 WorkQueue  wq = workQueueService.getCompanyId(fillingId);
+			    String caseStatus=caseStatus(wq,user);
+			     normalizeFormData.setCaseStatus(caseStatus);
+				normalizeFormData.setAddPoId(Lists.newArrayList(poIdVal));
+				normalizeFormData.setFillingId(fillingId);
+				normalizeFormData.setDocumentStatus(documentStatus);
+				normalizeFormData.setTransactionId(normalizationService.f_getMaxTransactionId());
+				normalizeFormData.setCreatedBy(user.getUserId().intValue());
+				normalizeFormData.setNormLableId(niItem);
+				normalizeFormData.setNormLable(niLable);
+				normalizeFormData.seteId(wq.geteId());
+				normalizeFormData.setUser(user);
+				normalizeFormData.setParserId(wq.getParserMasterId());
+				
+			 	boolean flag=normalizationService.updateNormalizedLabelByPoID(normalizeFormData);
+                if(flag){
+					msg = normalizeFormData.getSubSection();
+				}else{
+					msg = "";
+				}
+
+		} catch (Exception e) {
+			msg = "Transactions mapping failed";
+			e.printStackTrace();
+			LOGGER.error(expMessage, e);
+		}
+
+		LOGGER.info("** End-saveNormLableParserOutPut methode");
+
+		return msg;
+	}
+    
+ 
+    @RequestMapping(value = "/notes_Save.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String notes_Save(HttpSession session,HttpServletRequest request) {
+		LOGGER.info("** Start-NormalizationController in notes_Save methode");
+		String msg = null;
+		String fianlTextArea=null;
+		String textAeraOfUser=null;
+		String updatedTextarea=null;
+		boolean flag=false;
+		StringBuffer   finalTextArea=new StringBuffer();
+		try{
+			String noteText = request.getParameter("noteTxId").trim();
+			User user = (User) session.getAttribute("user");
+			String encriptedWqEId = request.getParameter("encriptedWqEId")!=null?(String)request.getParameter("encriptedWqEId"):"";
+			if(user!=null && encriptedWqEId!=null && user!=null){
+				Integer decryptedWqEid  = Integer.parseInt(CipherUtils.decrypt(encriptedWqEId));
+				if(noteText!=null && !noteText.isEmpty() ){ 
+			       String noteTextlastChar=	noteText.substring(noteText.length()-1);
+				    //case 2 if end with comma update as it is
+			       if(noteTextlastChar.equalsIgnoreCase(",")){
+			    			String arry[] = noteText.split(","); 
+			    			if (arry != null && arry.length >= 1) {
+			    				for(int i=0;i<arry.length;i++){
+			    					finalTextArea.append(arry[i].trim()+",");
+			    				}
+			    			}
+			    			 flag=normalizationService.updateNotes(decryptedWqEid,finalTextArea.toString());	
+			    	     updatedTextarea=finalTextArea.toString();
+			      }
+				    //case 3 if end with comma update with userName
+			   if(!noteTextlastChar.equalsIgnoreCase(",")){   
+				if (noteText != null && noteText.contains(",")) {
+					String arry[] = noteText.split(",");
+					if (arry != null && arry.length >= 1) {
+						String lastNote = arry[arry.length - 1];
+						textAeraOfUser = capitalize(user.getLogin())+" : " + lastNote.trim();
+						System.out.println(textAeraOfUser);
+						for (int i = 0; i < arry.length - 1; i++) {
+							finalTextArea.append(arry[i].trim()+ ",");
+						}
+						fianlTextArea = finalTextArea + textAeraOfUser + ",";
+					}
+				}
+	          //case 3 first time update
+				else{
+					fianlTextArea = capitalize(user.getLogin()) + " : " +noteText + ",";
+				}
+				 flag=normalizationService.updateNotes(decryptedWqEid,fianlTextArea);
+				 updatedTextarea=fianlTextArea;
+			   }
+			   }else{
+			    //case 1 if note area empty update normally
+			     flag=normalizationService.updateNotes(decryptedWqEid,noteText);	
+			     updatedTextarea=noteText;
+				} 
+				}
+			if(flag){
+				msg =updatedTextarea.replaceAll(",", ","+Constant.CR+Constant.LF);
+			}else{
+				msg = "Error";
+			}
+			
+			
+		}catch(Exception e){
+			e.printStackTrace();
+			LOGGER.error("exception in while updating Notes in Normalization controller"+e);
+		}		
+		
+		return msg;
+    }
+        private String capitalize(final String userName) {
+    	   return Character.toUpperCase(userName.charAt(0)) + userName.substring(1);
+    	}
+        
+        @RequestMapping(value = "/filesInfo_notesText.htm", method = {RequestMethod.GET, RequestMethod.POST })
+        public @ResponseBody
+    	String filesInfo_notesText(HttpSession session,HttpServletRequest request) {
+    		LOGGER.info("** Start-NormalizationController in filesInfo_notesText methode");
+    		String noteText= null;
+    		String encryptedWqEid = request.getParameter("encriptedWqEId")!=null?(String)request.getParameter("encriptedWqEId"):"";
+    			try{
+    			//in notes popUp displaying  textarea
+   			if(encryptedWqEid!=null && !encryptedWqEid.isEmpty()){
+   				Integer decryptedWqEid  = Integer.parseInt(CipherUtils.decrypt(encryptedWqEid));
+   		    	
+   				noteText = normalizationService.findNoteTextByWqEid(decryptedWqEid);
+   				if(noteText!=null && !noteText.isEmpty()){
+   				noteText =noteText.replaceAll(",", ","+Constant.CR+Constant.LF);
+   				}
+   				}
+   		
+    		}catch(Exception e){
+    			e.printStackTrace();
+    			LOGGER.error("exception in while filesInfo_notesText in Normalization controller"+e);
+    		}		
+    		
+    		return noteText;
+        }  
+        
+        private String caseStatus(WorkQueue workQueue, User user){
+        	String caseStatus=null;
+        if (workQueue != null && workQueue.getCaseStatus().equalsIgnoreCase(WorkQueueServiceImpl.ASSIGN_TO_MAKER)) {
+        	if((workQueue.getMaker()!=null &&  user.getUserId()!=null) && (workQueue.getMaker().intValue()==user.getUserId().intValue())){
+        		 caseStatus=WorkQueueServiceImpl.MAKER;		 
+        	}else{
+        		 caseStatus=WorkQueueServiceImpl.ASSIGN_ADMIN;		 
+        	}		
+        }else  if (workQueue != null && workQueue.getCaseStatus().equalsIgnoreCase(WorkQueueServiceImpl.ASSIGN_TO_CHECKER1)) {
+        	if((workQueue.getChecker()!=null &&  user.getUserId()!=null) && (workQueue.getChecker().intValue()==user.getUserId().intValue())){
+        		 caseStatus=WorkQueueServiceImpl.CHECKER1;		 
+        	}else{
+        		 caseStatus=WorkQueueServiceImpl.ASSIGN_ADMIN;			 
+        	}
+        }else  if (workQueue != null && workQueue.getCaseStatus().equalsIgnoreCase(WorkQueueServiceImpl.ASSIGN_TO_CHECKER2)) {
+        	if((workQueue.getChecker2()!=null &&  user.getUserId()!=null) && (workQueue.getChecker2().intValue()==user.getUserId().intValue())){
+        		 caseStatus=WorkQueueServiceImpl.ASSIGN_QA;				 
+        	}else{
+        		 caseStatus=WorkQueueServiceImpl.ASSIGN_ADMIN;			 
+        	}
+        }else{
+                caseStatus=WorkQueueServiceImpl.ASSIGN_ADMIN;		
+        }
+        return caseStatus;
+        }     
+        
+        
+        @RequestMapping(value = "/create_Update_Scale_Change_Po_Mapping.htm", method = {RequestMethod.GET, RequestMethod.POST })
+        public @ResponseBody
+    	String createOrUpdateScaleChangePoMapping(@RequestParam("scaleValue") String scaleValue,
+    			@RequestParam("columnVal") String columnVal,
+    			@RequestParam("filingId") String filingIdStr,
+    			@RequestParam("poIdVal") Integer poIdVal,
+    			@RequestParam("poColumnName") String poColumnName,
+    			@RequestParam("documentStatus") String documentStatus,
+    			HttpSession session,HttpServletRequest request) {
+    		LOGGER.info(" Start-NormalizationController in createOrUpdateScaleChangePoMapping method");
+    		User user = (User) session.getAttribute("user");	
+    		try{
+    			
+    			if(filingIdStr!=null && !filingIdStr.equalsIgnoreCase("") && poIdVal!=null  && scaleValue!=null){
+    				Integer filingId = Integer.parseInt(CipherUtils.decrypt(filingIdStr));
+    				BigDecimal poAsRepVal = new BigDecimal(columnVal.trim().replaceAll(",", ""));
+    				
+    				ScaleChangeSignPoMappingCommand scaleChangeSignPoMappingCommand = new ScaleChangeSignPoMappingCommand();
+    				scaleChangeSignPoMappingCommand.setFilingId(filingId);
+    				scaleChangeSignPoMappingCommand.setPoId(poIdVal);
+    				scaleChangeSignPoMappingCommand.setScaleVal(scaleValue.trim());
+    				scaleChangeSignPoMappingCommand.setPoColumnName(poColumnName);
+    				BigDecimal calcValue = poAsRepVal.multiply(new BigDecimal(scaleValue.trim())).stripTrailingZeros();
+    				String myValue = calcValue.toPlainString();
+    				scaleChangeSignPoMappingCommand.setChangedColumnVal(myValue);
+    				scaleChangeSignPoMappingCommand.setScaleChange("Y");
+    				scaleChangeSignPoMappingCommand.setUser(user);
+    				scaleChangeSignPoMappingCommand.setDocumentStatus(documentStatus);
+    				WorkQueue  wq = workQueueService.getCompanyId(filingId);
+    				scaleChangeSignPoMappingCommand.setCaseStatus(wq.getCaseStatus());
+    				scaleChangeSignPoMappingCommand.setUserRole(ReleaseLockedUser.caseStatus(wq, user));
+    				scaleChangeSignPoMappingCommand.setCreatedDate(new Date());
+    				scaleChangeSignPoMappingCommand.setCreatedBy(user.getUserId().intValue());
+    				
+    				boolean flag=normalizationService.createOrUpdateScaleChangePoMapping(scaleChangeSignPoMappingCommand);
+    				if(flag){
+    					DecimalFormat df = new DecimalFormat("##.###");
+    				  
+    					return df.format(new BigDecimal(scaleChangeSignPoMappingCommand.getChangedColumnVal()));
+    				}
+    				
+    			}
+    		
+    		}catch(Exception e){
+    			LOGGER.error("exception in while createOrUpdateScaleChangePoMapping in Normalization controller"+e);
+    			return "N";
+    		}		
+    		
+    		LOGGER.info(" End-NormalizationController in createOrUpdateScaleChangePoMapping method");
+    		return "N";
+    		
+        }  
+        
+        @RequestMapping(value = "/create_Update_Sign_Change_Po_Mapping.htm", method = {RequestMethod.GET, RequestMethod.POST })
+        public @ResponseBody
+    	String createOrUpdateSignChangePoMapping(@RequestParam("signValue") String signValueStr,
+    			@RequestParam("columnVal") String columnVal,
+    			@RequestParam("filingId") String filingIdStr,
+    			@RequestParam("poIdVal") Integer poIdVal,
+    			@RequestParam("poColumnName") String poColumnName,
+    			@RequestParam("documentStatus") String documentStatus,
+    			HttpSession session,HttpServletRequest request) {
+    		LOGGER.info(" Start-NormalizationController in createOrUpdateSignChangePoMapping method");
+    		User user = (User) session.getAttribute("user");	
+    		try{
+    			if(filingIdStr!=null && !filingIdStr.equalsIgnoreCase("") && poIdVal!=null  && signValueStr!=null){
+    				Integer filingId = Integer.parseInt(CipherUtils.decrypt(filingIdStr));
+    				String poAsRepVal = columnVal.trim().replaceAll(",", "");
+    				String signValue ="";
+    				ScaleChangeSignPoMappingCommand scaleChangeSignPoMappingCommand = new ScaleChangeSignPoMappingCommand();
+    				scaleChangeSignPoMappingCommand.setFilingId(filingId);
+    				scaleChangeSignPoMappingCommand.setPoId(poIdVal);
+    				scaleChangeSignPoMappingCommand.setPoColumnName(poColumnName);
+    				scaleChangeSignPoMappingCommand.setChangedColumnVal(poAsRepVal);
+    				scaleChangeSignPoMappingCommand.setSignChange("Y");
+    				scaleChangeSignPoMappingCommand.setUser(user);
+    				scaleChangeSignPoMappingCommand.setDocumentStatus(documentStatus);
+    				WorkQueue  wq = workQueueService.getCompanyId(filingId);
+    				scaleChangeSignPoMappingCommand.setCaseStatus(wq.getCaseStatus());
+    				scaleChangeSignPoMappingCommand.setUserRole(ReleaseLockedUser.caseStatus(wq, user));
+    				scaleChangeSignPoMappingCommand.setCreatedDate(new Date());
+    				scaleChangeSignPoMappingCommand.setCreatedBy(user.getUserId().intValue());
+    				
+    				if(signValueStr.equalsIgnoreCase("positive")){
+    					poAsRepVal =poAsRepVal.replaceAll("-", "");
+    					signValue="+";
+    					scaleChangeSignPoMappingCommand.setChangedColumnVal(poAsRepVal);
+    					
+    				}else if(signValueStr.equalsIgnoreCase("negetive")){
+    					signValue="-";
+    					poAsRepVal =poAsRepVal.replaceAll("-", "");
+    					scaleChangeSignPoMappingCommand.setChangedColumnVal(signValue+poAsRepVal);
+    				}
+    				scaleChangeSignPoMappingCommand.setSignVal(signValue);
+    				
+    				boolean flag=normalizationService.createOrUpdateSignChangePoMapping(scaleChangeSignPoMappingCommand);
+    				if(flag){
+    					return "Y";
+    				}
+    				
+    			}
+    		
+    		}catch(Exception e){
+    			e.printStackTrace();
+    			LOGGER.error("exception in while createOrUpdateSignChangePoMapping in Normalization controller"+e);
+    		}		
+    		LOGGER.info(" End-NormalizationController in createOrUpdateSignChangePoMapping method");
+    		return "N";
+        }  
+        
+        @RequestMapping(value = "/scrollPage_norm.htm")
+      	public @ResponseBody
+      	Map<String, String> apendData(
+      			@RequestParam("fillingId") String fillingId,
+      			@RequestParam("statementFormat") String statementFormat,
+      			@RequestParam("scrollCount") Integer  scrollCount,
+      			@RequestParam("wqId") String  wqId,
+      			@RequestParam("parserId") Integer  parserId,
+      			@RequestParam("columnCount") Integer  columnCount,
+      			@RequestParam("updatedAllPoId") String  updatedAllPoId,
+      			@RequestParam("addedAllPoId") String  addedAllPoId,
+      			@RequestParam("recordType") String recordType,
+      			@RequestParam("asReportedLable") String asReportedLable,
+      			Model map,HttpServletRequest request,HttpSession session) {
+      		    String parserList = "";
+      			User user = (User) session.getAttribute("user");
+      			String usersGroupName = user.getUsersGroupName();
+      			LOGGER.info("--- viewReportPage request Mapping completed with viewReportPage--------");
+      			Map<String, String> data = new HashMap<String, String>();
+      			List<ParserOutput> parserOutput = null; 
+      			List<ParserOutputDisplayCommand> listOfNormalisedParserOutput = new ArrayList<ParserOutputDisplayCommand>();
+      			Integer startNum=0;
+      			Integer endNum=0;
+      			String updatedPoidsList="";
+      			//logic for display pages
+      			Integer x=scrollCount;
+				Integer y=norm_DispalyRecords;
+				Integer z=y-1;
+	            startNum=(x*y)-z;
+				endNum=(x*y);
+				//updated ans added poids
+				if(updatedAllPoId!=null && !updatedAllPoId.isEmpty()&& !updatedAllPoId.equalsIgnoreCase("null") ){
+					updatedPoidsList=updatedAllPoId+",";			
+				}
+				if(addedAllPoId!=null && !addedAllPoId.isEmpty()&& !addedAllPoId.equalsIgnoreCase("null")){
+					updatedPoidsList=updatedPoidsList+addedAllPoId;
+				}else{
+					if(updatedPoidsList!=null && !updatedPoidsList.isEmpty()){
+						updatedPoidsList.substring(0, updatedPoidsList.length() - 1);	
+					}
+				}
+
+				NormInputParamers inputParameters=new  NormInputParamers();
+				inputParameters.setFillingId(Integer.parseInt(CipherUtils.decrypt(fillingId)));
+				inputParameters.setWqId(Integer.parseInt(CipherUtils.decrypt(wqId)));
+				inputParameters.setWqId(Integer.parseInt(CipherUtils.decrypt(wqId)));
+				inputParameters.setStartNum(startNum);
+				inputParameters.setEndNum(endNum);
+				inputParameters.setUpdatedPoidsList(updatedPoidsList);
+				inputParameters.setRecordType(recordType);
+				inputParameters.setSection(statementFormat);
+				inputParameters.setAsRepLabel(asReportedLable);
+			
+      			parserOutput = normalizationService.getNormalizedData(inputParameters);
+      			DynaparserData(parserOutput,parserId,usersGroupName,listOfNormalisedParserOutput,columnCount,statementFormat,Integer.parseInt(CipherUtils.decrypt(fillingId)));
+      			/*
+      			 * if parser is bank then bring all Description(Statment attribute)
+      			 */
+      			
+      			if (parserId == 6 || parserId == 7 || parserId == 16) {
+      				List<String> sortOrder = new ArrayList<String>();
+      				sortOrder.add("DESCRIPTION");
+      				sortOrder.add("Description");
+      				Collections.sort(listOfNormalisedParserOutput,new ParserOutputDisplayComparator(sortOrder));
+      			}
+      			ObjectMapper mapper = new ObjectMapper();
+      			try {
+      				parserList = mapper.writeValueAsString(listOfNormalisedParserOutput);
+      				
+      				data.put("parserList", parserList);
+      				if(!CollectionUtils.isEmpty(listOfNormalisedParserOutput)){
+      					data.put("totalRecords", new Integer(listOfNormalisedParserOutput.size()).toString());
+      				}else{
+      					data.put("totalRecords", "0");
+      				}
+      				
+      			} catch (JsonGenerationException e) {
+      				LOGGER.error("Error:", e);
+      				e.printStackTrace();
+      			} catch (JsonMappingException e) {
+      				LOGGER.error("Error:", e);
+      				e.printStackTrace();
+      			} catch (IOException e) {
+      				LOGGER.error("Error:", e);
+
+      				LOGGER.error(
+      						"Exception Occured class:ReportController; method: getAnalystSummery ",
+      						e);
+      			}
+      		return data;
+      	}
+        
+//dynamic parserData
+private void  DynaparserData(List<ParserOutput> parserOutput,Integer parserId,String usersGroupName, List<ParserOutputDisplayCommand> listOfNormalisedParserOutput,Integer colCountValue,String statementFormat,Integer filingId) 
+{
+	List<Integer> poIdList = null;
+	List<String> isCoordinateExists = null;
+	Map<Integer, POCordHighlightDetails> seletedPoCordDetailsMap = null;
+	Method  method = null;
+	Object objectValue = null;
+	Class<?> parserOutputClass =null;
+	Class<?> poCordHighlightDetailsClass =null;
+	try {
+		parserOutputClass = Class.forName("com.livespread.domain.ParserOutput");
+		poCordHighlightDetailsClass = Class.forName("com.livespread.domain.POCordHighlightDetails");
+	} catch (ClassNotFoundException e1) {
+		e1.printStackTrace();
+	}
+	try {
+		
+		if(!CollectionUtils.isEmpty(parserOutput))
+		{
+			poIdList = new ArrayList<>();
+			seletedPoCordDetailsMap = new HashMap<>();
+			for (ParserOutput selectedParserOutput : parserOutput) 
+			{
+				poIdList.add(selectedParserOutput.getPoId());
+			}
+			seletedPoCordDetailsMap = poCordHighlightDetailsService.getCoordinateDetailsMap(poIdList);
+		}
+		
+		
+		/**Dynamic val1,val2...val30 functionality
+		 * Here we find out how many column exist in table based on section and filing id*/
+		ParserOutputDisplayCommand normalisedParserOutputTemp = new ParserOutputDisplayCommand();
+		ParserOutputDisplayCommand normalisedParserOutput = null;
+		if(!CollectionUtils.isEmpty(parserOutput)){
+			//Added for enable hyperling when child poId's are existing
+			List<Integer> supplPoiIdList = normalizationService.selectSupplPoIds(filingId);
+			List<Integer> breakupPoiIdList = normalizationService.selectBreakupsPoIds(filingId);
+			//End of Adding for enable hyperling when child poId's are existing
+			Map<Integer, List<ParserOutputCommand>> childRecordMap=normalizationService.getChildRecordsforReviewMapping(filingId);
+			
+			List<ArsPoMapping> arsPoMappingRecordList =normalizationService.getArsPoMappingdByFilingId(filingId);
+			String tempNiTem="";
+			String[] tempNiTemArray=null;
+			Integer niItem=0;
+			String trClass="";
+			for (ParserOutput objIn : parserOutput) {
+				normalisedParserOutput = new ParserOutputDisplayCommand();
+				normalisedParserOutput.setPoId(objIn.getPoId() != null ? Integer.parseInt(objIn.getPoId().toString()) : 0);
+				normalisedParserOutput.setRefPoId(objIn.getRefPoId() != null ? Integer.parseInt(objIn.getRefPoId().toString()) : 0);
+				
+				Map<Integer, String> isPoAsRepValueMapped=new HashMap<Integer,String>();
+				Map<Integer, String> isPoAsRepValueMappedByPeriod=new HashMap<Integer,String>();
+				 /**Here set isPoAsRepValueMapped and isPoAsRepValueMappedByPeriod values to "N"**/
+				for(int i=1;i<=colCountValue;i++){
+					isPoAsRepValueMapped.put(i,"N");
+					isPoAsRepValueMappedByPeriod.put(i,"N");
+				 }
+				 normalisedParserOutput.setIsPoAsRepValueMappedByPeriod(isPoAsRepValueMappedByPeriod);
+				 normalisedParserOutput.setIsPoAsRepValueMapped(isPoAsRepValueMapped);	
+				 normalisedParserOutput.setMappingName(objIn.getMappingName());
+				 normalisedParserOutput.setMappingType(objIn.getMappingType());
+				String columnName = null;
+				for(ArsPoMapping arsPoMapping : arsPoMappingRecordList){
+					columnName = arsPoMapping.getPoColumnName();
+					columnName = columnName.replace("child", "");
+					if(arsPoMapping.getPoId().equals(normalisedParserOutput.getPoId())){
+						for(int i=1;i<=colCountValue;i++)
+						{
+						 if(columnName.equalsIgnoreCase("val"+i))
+						  {
+							 if(arsPoMapping.getArsId().intValue() == 0 )
+							 {
+								 isPoAsRepValueMappedByPeriod.put(i,"Y");
+							 }
+							 else
+							 {
+								 isPoAsRepValueMapped.put(i,"Y");
+							 }
+						 }
+						}//end column counter loop
+					}//end arsPoMapping if condition
+				}//end arsPoMapping for loop
+				
+				if(supplPoiIdList.contains(normalisedParserOutput.getPoId())){
+					normalisedParserOutput.setIsParent("Y");
+					if(breakupPoiIdList.contains(normalisedParserOutput.getPoId())){
+						normalisedParserOutput.setIsonlyBreakup("Y");
+					}
+				}
+				else if(breakupPoiIdList.contains(normalisedParserOutput.getPoId()) && normalisedParserOutput.getIsParent()==null){
+					normalisedParserOutput.setIsonlyBreakup("Y");	
+				}
+				else{
+					normalisedParserOutput.setIsParent("N");
+				}
+
+				normalisedParserOutput.setPoAsRepLabel(objIn.getPoAsRepLabel() != null ? ReplaceSpace.replaceSpac(objIn.getPoAsRepLabel().toString()) : "");
+				normalisedParserOutput.setPoIndexOrder(objIn.getPoIndexOrder() != null ? Integer.parseInt(objIn.getPoIndexOrder().toString()) : 0);
+				Map<Integer,String> asRepValMap=new LinkedHashMap<Integer,String>();
+				POCordHighlightDetails seletedPoCordDetails = null;
+				isCoordinateExists = new ArrayList<>();
+				for (int i = 1 ; i<= colCountValue; i++){
+					
+					method = parserOutputClass.getDeclaredMethod("getPoAsRepVal"+i);
+					objectValue = method.invoke (objIn);
+					if(objectValue!=null && !objectValue.toString().isEmpty())
+					{
+						objectValue.toString().trim();
+						asRepValMap.put(i, objectValue.toString().trim());
+					}
+					if(null!=seletedPoCordDetailsMap){
+						seletedPoCordDetails = seletedPoCordDetailsMap.get(objIn.getPoId());
+					}
+					
+					if(seletedPoCordDetails!=null)
+					{
+						method = poCordHighlightDetailsClass.getDeclaredMethod("getCordDetailsVAL"+i);
+						objectValue = method.invoke (seletedPoCordDetails);
+						if(objectValue!=null && objectValue.toString().trim()!="" && !objectValue.toString().trim().contains("0,0,0,0"))
+						{
+							isCoordinateExists.add("Y");
+						}
+						else
+						{
+							isCoordinateExists.add("N");
+						}
+					}else{
+						isCoordinateExists.add("N");
+					}
+				}
+				if(!CollectionUtils.isEmpty(isCoordinateExists))
+				{
+					normalisedParserOutput.setIsCoordinateExists(isCoordinateExists);
+				}
+				normalisedParserOutput.setPoAsRepVal(asRepValMap);	
+				normalisedParserOutput.setPoSubSection(objIn.getPoSubSection() != null ? objIn.getPoSubSection() : "");
+				tempNiTem=objIn.getNiItemSuggstive() != null ? objIn.getNiItemSuggstive().toString() : "";
+				tempNiTemArray =tempNiTem.split(",");
+				normalisedParserOutput.setNiItemSuggstive(tempNiTem.trim());
+				niItem = objIn.getNiItem() != null ? Integer.parseInt(objIn.getNiItem().toString()) : 0;
+				
+				if(tempNiTemArray.length >1){
+					normalisedParserOutput.setIsMultipleNiItems("Y");
+					normalisedParserOutput.setNormalizedLabel(tempNiTemArray.length + " items selected.");
+				}else if(niItem.equals(0) && (tempNiTemArray.length==1 && !tempNiTemArray[0].equalsIgnoreCase(""))){
+					normalisedParserOutput.setIsMultipleNiItems("Y");
+					normalisedParserOutput.setNormalizedLabel("1 item selected.");
+				}else{
+					normalisedParserOutput.setIsMultipleNiItems("N");
+					normalisedParserOutput.setNormalizedLabel(objIn.getNilLabel() != null ? objIn.getNilLabel().toString() : "");
+				}
+				
+				// Account number and Time Period Required for Banks Parser
+				normalisedParserOutput.setPoAccountNumber(objIn.getAccountNumber() != null ? objIn.getAccountNumber().toString() : "");
+				normalisedParserOutput.setPoTimePeriod(objIn.getTimePeriod() != null ? objIn.getTimePeriod().toString() : "");
+				normalisedParserOutput.setPoCustodianName(objIn.getCustodianName() != null ? objIn.getCustodianName().toString() : "");
+				normalisedParserOutput.setPoBreakup(objIn.getPoBreakup() != null ? objIn.getPoBreakup().toString() : "");
+				normalisedParserOutput.setPageNo(objIn.getPageNo() != null ? objIn.getPageNo().toString() : "");
+				normalisedParserOutput.setNote(objIn.getNote() != null ? objIn.getNote().toString() : "");
+				String isDuplicate=objIn.getIsDuplicate() != null ? objIn.getIsDuplicate().toString() : "";
+				if(isDuplicate.equalsIgnoreCase("Y")){
+					isDuplicate="trDublicate";
+				}else{
+					isDuplicate="";
+				}
+				normalisedParserOutput.setIsDuplicate(isDuplicate);
+				
+				
+				if(!normalisedParserOutput.getPoSubSection().equalsIgnoreCase("ATTR") ){
+					if(normalisedParserOutput.getPoBreakup().equalsIgnoreCase("Y")){
+						trClass=LiveSpreadUtil.getReviewString(tempNiTem, niItem, statementFormat);
+					}else{
+						trClass=LiveSpreadUtil.getReviewType(statementFormat,tempNiTem,niItem,childRecordMap,normalisedParserOutput.getPoId());
+					}
+					
+					
+					if(normalisedParserOutput.getMappingName()!=null) 
+					{
+						if(normalisedParserOutput.getMappingName().toLowerCase().contains("globallevel"))
+						{
+							if(trClass!=null && trClass.trim().length()>0)
+							{
+								trClass = trClass + " GlobalLevel";
+							}
+						}
+						if(normalisedParserOutput.getMappingName().toLowerCase().contains("companylevel"))
+						{
+							if(trClass!=null && trClass.trim().length()>0)
+							{
+								trClass = trClass + " CompanyLevel";
+							}
+						}
+					}
+					
+					
+					if(normalisedParserOutput.getMappingType()!=null)
+					{
+						if(normalisedParserOutput.getMappingType().toLowerCase().contains("automated"))
+						{
+							if(trClass!=null && trClass.trim().length()>0)
+							{
+								trClass = trClass + " automated";
+							}
+						}
+						
+						if(normalisedParserOutput.getMappingType().toLowerCase().contains("manual"))
+						{
+							if(trClass!=null && trClass.trim().length()>0)
+							{
+								trClass = trClass + " manual";
+							}
+						}
+					}
+					
+					
+				}else{
+					trClass="noMapping";
+				}
+				normalisedParserOutput.setTrClass(trClass);
+				
+				if (parserId != 12) {
+				normalisedParserOutput.setUploadId(objIn.getUploadId() != null ? objIn.getUploadId().toString() : "");
+				}
+				
+				if (parserId != 12) {
+					normalisedParserOutput.setYcoordinates(objIn.getPoYcoordinates() != null ? objIn.getPoYcoordinates().toString() : "");
+				}
+		
+				if (usersGroupName.equals("CP_SEC")) {
+					normalisedParserOutput.setPoSubTotal(objIn.getPoSubTotal() != null ? objIn.getPoSubTotal().toString() : "");
+				}
+				
+				normalisedParserOutput.setNonEnglishLabel(objIn.getNonEnglishLable() != null ? objIn.getNonEnglishLable().toString() : "");
+				
+				/*
+				 * Removeing leading and trailing spaces from PoAsRepLabel
+				 */
+				normalisedParserOutput.setPoAsRepLabel(normalisedParserOutput.getPoAsRepLabel());
+
+				if (normalisedParserOutputTemp.getPoId() != null) {
+					if (normalisedParserOutputTemp.getPoIndexOrder().intValue() != normalisedParserOutput.getPoIndexOrder().intValue()) {
+						listOfNormalisedParserOutput.add(normalisedParserOutput);
+					}
+				} else {
+					listOfNormalisedParserOutput.add(normalisedParserOutput);
+				}
+				normalisedParserOutputTemp = normalisedParserOutput;
+			}
+		}
+	} catch (Exception e) {
+		LOGGER.error("Exception Occured", e);
+		e.printStackTrace();
+	}
+}
+
+
+@RequestMapping(value = "/update_asRepLabelByPoId.htm", method = {RequestMethod.GET, RequestMethod.POST })
+public @ResponseBody
+String update_asRepLabelByPoId(
+		@RequestParam(value="poIdArray") String[] poIdArray,
+		@RequestParam(value="fillingId") Integer fillingId,
+		@RequestParam(value="asRepLable_PoId") Integer asRepLable_PoId,
+		@RequestParam(value="asRepLableSection") String asRepLableSection,
+		HttpSession session) {	
+	String msg="not updated successfully!";
+    boolean  flag=false;
+    LOGGER.info("**start- update_asRepLabelByPoId moethode.");
+    List<Integer> poids=null;
+    try{
+ 			if (poIdArray != null) {
+				poids = new ArrayList<Integer>();
+				for (String poId : poIdArray) {
+					poids.add(Integer.parseInt(poId));
+				}
+				if (poids != null && fillingId != null && asRepLable_PoId != null && asRepLableSection != null) {
+					flag = normalizationService.updateByAsRepLabelPoId(fillingId, asRepLableSection, asRepLable_PoId,
+							poids);
+					if (flag) {
+						msg = "updated successfully!";
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("error in update_asRepLabelByPoId.htm " + e);
+		}
+	return msg;
+
+}
+
+/**
+ *Below function used for search filter for Bank parser 
+ */
+@RequestMapping(value = "/searchDataByFilter.htm")
+	public @ResponseBody Map<String, String> searchDataByFilter(
+			@RequestParam("fillingId") String fillingId,
+			@RequestParam("statementFormat") String statementFormat,
+			@RequestParam("scrollCount") Integer  scrollCount,
+			@RequestParam("wqId") String  wqId,
+			@RequestParam("parserId") Integer  parserId,
+			@RequestParam("columnCount") Integer  columnCount,			
+			@RequestParam("accountNumber") String accountNumber,
+			@RequestParam("timePeriod") String timePeriod,
+			@RequestParam("custodianName") String custodianName,
+	        @RequestParam("updatedAllPoId") String  updatedAllPoId,
+		    @RequestParam("addedAllPoId") String  addedAllPoId,Model map,HttpServletRequest request,HttpSession session){
+	        String parserList = "";
+			User user = (User) session.getAttribute("user");
+			String usersGroupName = user.getUsersGroupName();
+			Integer startNum=0;
+  			Integer endNum=0;
+  			String updatedPoidsList="";
+  			
+  			//logic for display pages
+  			Integer x=scrollCount;
+			Integer y=norm_DispalyRecords;
+			Integer z=y-1;
+            startNum=(x*y)-z;
+			endNum=(x*y);
+			
+			LOGGER.info("--- viewReportPage request Mapping completed with viewReportPage--------");
+			Map<String, String> data = new HashMap<String, String>();
+			List<ParserOutput> parserOutput = null; 
+			List<ParserOutputDisplayCommand> listOfNormalisedParserOutput = new ArrayList<ParserOutputDisplayCommand>();
+
+			//updated ans added poids
+			if(updatedAllPoId!=null && !updatedAllPoId.isEmpty()&& !updatedAllPoId.equalsIgnoreCase("null") ){
+				updatedPoidsList=updatedAllPoId+",";			
+			}
+			if(addedAllPoId!=null && !addedAllPoId.isEmpty()&& !addedAllPoId.equalsIgnoreCase("null")){
+				updatedPoidsList=updatedPoidsList+addedAllPoId;
+			}else{
+				if(updatedPoidsList!=null && !updatedPoidsList.isEmpty()){
+					updatedPoidsList.substring(0, updatedPoidsList.length() - 1);	
+				}
+				
+			}		
+			parserOutput = normalizationService.getNormalizedDataByFilter(
+						statementFormat,
+						Integer.parseInt(CipherUtils.decrypt(wqId)),
+						Integer.parseInt(CipherUtils.decrypt(fillingId)),startNum,endNum,accountNumber,timePeriod,custodianName,updatedPoidsList);
+			DynaparserData(parserOutput,parserId,usersGroupName,listOfNormalisedParserOutput,columnCount,statementFormat,Integer.parseInt(CipherUtils.decrypt(fillingId)));
+			/*
+			 * if parser is bank then bring all Description(Statment attribute)
+			 */
+			if (parserId == 6 || parserId == 7 || parserId == 16) {
+				List<String> sortOrder = new ArrayList<String>();
+				sortOrder.add("DESCRIPTION");
+				sortOrder.add("Description");
+				Collections.sort(listOfNormalisedParserOutput,new ParserOutputDisplayComparator(sortOrder));
+			}
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				parserList = mapper.writeValueAsString(listOfNormalisedParserOutput);
+				
+				data.put("parserList", parserList);
+				
+				if(!CollectionUtils.isEmpty(listOfNormalisedParserOutput)){
+  					data.put("totalRecords", new Integer(listOfNormalisedParserOutput.size()).toString());
+  				}else{
+  					data.put("totalRecords", "0");
+  				}
+			} catch (JsonGenerationException e) {
+				LOGGER.error("Error:", e);
+				e.printStackTrace();
+			} catch (JsonMappingException e) {
+				LOGGER.error("Error:", e);
+				e.printStackTrace();
+			} catch (IOException e) {
+				LOGGER.error("Error:", e);
+			LOGGER.error("Exception Occured class:ReportController; method: getAnalystSummery ",e);
+			}
+		return data;
+
+	}
+
+
+
+
+
+
+
+
+
+@SuppressWarnings("unchecked")
+@RequestMapping(value = "/getTransactionAutoComplete.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody JSONObject getHeaderLabelAutoComplete(@RequestParam("transactionId") String transactionId,HttpServletRequest request) {
+	LOGGER.info("** Start-showDataMappingPagination method");
+	List<String> transactionIdList =null;
+	JSONObject globalJSON = new JSONObject();
+	try{
+	   if(transactionId!=null){
+			transactionIdList = workQueueService.getTransactionsIdsList(transactionId);
+		}
+		globalJSON.put("transactionList", transactionIdList);
+	}
+	catch(Exception e){
+		e.printStackTrace();
+		LOGGER.error("autocomplete", e);
+	}
+	return globalJSON;
+  }
+
+@RequestMapping(value = "/updateBatchId.htm", method = {RequestMethod.GET, RequestMethod.POST })
+public @ResponseBody String updateBatchIds(@RequestParam("transactionId") Integer transactionId,HttpServletRequest request) {
+LOGGER.info("** Start-showDataMappingPagination method");
+int updatedRows =0;
+String updateMsg ="";
+List<Integer> updTimePeriodAyyar=null; 
+String[] caseIdsArray = request.getParameterValues("caseIds[]");
+try{
+			if (transactionId != null && transactionId != 0) {
+				if (caseIdsArray[0] != null && !caseIdsArray[0].trim().equals("")) {
+					updTimePeriodAyyar = new ArrayList<Integer>();
+							String[] abc = caseIdsArray[0].split(",");
+							for (String string : abc) {
+								updTimePeriodAyyar.add(Integer.parseInt(string));
+							}
+							updatedRows = workQueueService.updateTransactionId(updTimePeriodAyyar, transactionId);
+				} else {
+					updateMsg = "Please select checkBox";
+					return updateMsg;
+				}
+				if (updatedRows == 0) {
+					updateMsg = "BatchId not updated  successfully.";
+				}
+			}else{
+		            updateMsg="BatchId is not empty";	
+	             }
+}catch(Exception e){
+	e.printStackTrace();
+	LOGGER.error("updateBatchId", e);
+}
+return updateMsg;
+}
+
+
+@RequestMapping(value = "/getChlidRecordByRefPoId.htm", method = {RequestMethod.GET, RequestMethod.POST })
+public @ResponseBody Map<String, String> getChlidRecordByRefPoId(@RequestParam("fillingId") String fillingId,
+		@RequestParam("poId") Integer poId,
+		@RequestParam("poSection") String section,
+		@RequestParam("parserId") Integer  parserId,
+		@RequestParam("columnCount") Integer  columnCount,
+		@RequestParam("asReportedLable") String asReportedLable,
+		HttpServletRequest request,HttpSession session) 
+{
+	List<ParserOutput> parserOutput = null;
+	Map<String, String> data = new HashMap<String, String>();
+	String parserList = "";
+	List<ParserOutputDisplayCommand> listOfNormalisedParserOutput = new ArrayList<ParserOutputDisplayCommand>();
+	User user = (User) session.getAttribute("user");
+	String usersGroupName = user.getUsersGroupName();
+	
+	NormInputParamers inputParameters=new  NormInputParamers();
+	inputParameters.setFillingId(Integer.parseInt(CipherUtils.decrypt(fillingId)));
+	inputParameters.setPoId(poId);
+	inputParameters.setSection(section);
+	inputParameters.setAsRepLabel(asReportedLable);
+
+	
+	parserOutput = normalizationService.getNormalizedDataByRefPoId(inputParameters);
+	DynaparserData(parserOutput,parserId,usersGroupName,listOfNormalisedParserOutput,columnCount,section,Integer.parseInt(CipherUtils.decrypt(fillingId)));
+	/*
+	 * if parser is bank then bring all Description(Statment attribute)
+	 */
+	
+	if (parserId == 6 || parserId == 7 || parserId == 16) {
+		List<String> sortOrder = new ArrayList<String>();
+		sortOrder.add("DESCRIPTION");
+		sortOrder.add("Description");
+		Collections.sort(listOfNormalisedParserOutput,new ParserOutputDisplayComparator(sortOrder));
+	}
+	ObjectMapper mapper = new ObjectMapper();
+	try {
+		parserList = mapper.writeValueAsString(listOfNormalisedParserOutput);
+		data.put("parserList", parserList);
+			if(!CollectionUtils.isEmpty(listOfNormalisedParserOutput)){
+				data.put("totalRecords", new Integer(listOfNormalisedParserOutput.size()).toString());
+			}else{
+				data.put("totalRecords", "0");
+			}
+	} catch (JsonGenerationException e) {
+		e.printStackTrace();
+		LOGGER.error("Error:", e);
+	} catch (JsonMappingException e) {
+		e.printStackTrace();
+		LOGGER.error("Error:", e);
+	} catch (IOException e) {
+		e.printStackTrace();
+		LOGGER.error("Error:", e);
+	}
+return data;
+}
+
+}

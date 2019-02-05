@@ -1,0 +1,111 @@
+@media screen and (min-width: 800px) and (min-height: 600px){
+.lt-panel{min-height:147px !important}
+.chosen-container{width:100% !important}
+.income-statement{margin-left:0 !important;}
+.income-statement{margin-left:0 !important;}
+.bootstrap-select.btn-group .dropdown-menu.inner{max-height:286px !important}
+.msgBg{top:438px !important; margin-left:0px !important;}
+.formula-txtbox{width:72% !important}
+.bootstrap-select.btn-group:not(.input-group-btn), .bootstrap-select.btn-group[class*="col-"]{margin-left:0px !important}
+}
+
+@media screen and (min-width: 1024px) and (min-height: 768px){
+.chosen-container{width:175px !important}
+.income-statement{margin-left:0 !important;}	
+.lt-panel{min-height:457px !important}
+.chosen-container-single .chosen-single{width:150px !important; height:28px !important; margin:2px 0 0 0 !important}
+.chosen-drop{width:150px !important}
+.msgBg{top:145px !important; margin-left:0px;}
+.bootstrap-select.btn-group:not(.input-group-btn), .bootstrap-select.btn-group[class*="col-"]{margin-left:0px !important; width:187px !important}
+.bootstrap-select.btn-group .btn .caret {left:170px !important;}
+}
+
+@media screen and (min-width: 1024px) and (min-height: 1366px){
+.chosen-container{width:175px !important}
+.income-statement{margin-left:0 !important;}	
+.lt-panel{min-height:457px !important}
+.msgBg{top:145px !important; margin-left:0px;}
+.bootstrap-select.btn-group:not(.input-group-btn), .bootstrap-select.btn-group[class*="col-"]{margin-left:0px !important; width:187px !important}
+.bootstrap-select.btn-group .btn .caret {left:170px !important;}
+}
+
+@media screen and (min-width: 1152px) and (min-height: 864px){
+.chosen-container{width:175px !important}	
+.lt-panel{min-height:683px !important}
+.msgBg{top:145px !important; margin-left:0px;}
+.income-statement{margin-left:0 !important;}
+.formula-txtbox{width:78% !important}
+.bootstrap-select.btn-group:not(.input-group-btn), .bootstrap-select.btn-group[class*="col-"]{margin-left:0px !important; width:187px !important}
+.bootstrap-select.btn-group .btn .caret {left:170px !important;}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 600px){
+.chosen-container{width:175px !important}	
+.lt-panel{min-height:420px !important}
+.income-statement{margin-left:0px !important;}
+.msgBg{top:142px !important; margin-left:0px;}
+.bootstrap-select.btn-group:not(.input-group-btn), .bootstrap-select.btn-group[class*="col-"]{margin-left:0px !important}
+.bootstrap-select.btn-group .btn .caret{left:200px !important}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 720px){
+.chosen-container{width:175px !important}	
+.lt-panel{min-height:540px !important}
+.income-statement{margin-left:0px !important;}
+.formula-txtbox{width:80% !important}
+.bootstrap-select.btn-group:not(.input-group-btn), .bootstrap-select.btn-group[class*="col-"]{margin-left:0px !important}
+.bootstrap-select.btn-group .btn .caret{left:200px !important}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 768px){
+.chosen-container{width:100% !important}	
+.lt-panel{min-height:586px !important}
+.income-statement{margin-left:0px !important;}
+.formula-txtbox{width:80% !important}
+.bootstrap-select.btn-group:not(.input-group-btn), .bootstrap-select.btn-group[class*="col-"]{margin-left:0px !important}
+.bootstrap-select.btn-group .btn .caret{left:200px !important}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 800px){
+.chosen-container{width:175px !important}	
+.lt-panel{min-height:618px !important}
+.income-statement{margin-left:0px !important;}
+.formula-txtbox{width:80% !important}
+.bootstrap-select.btn-group:not(.input-group-btn), .bootstrap-select.btn-group[class*="col-"]{margin-left:0px !important}
+.bootstrap-select.btn-group .btn .caret{left:200px !important}
+}
+
+@media screen and (min-width: 1360px) and (min-height: 637px){
+.lt-panel{min-height:457px !important}
+}
+
+@media screen and (min-width: 1360px) and (min-height: 662px){	
+.chosen-container{width:175px !important}	
+.lt-panel{min-height:483px !important}
+.income-statement{margin-left:0px !important;}
+.formula-txtbox{width:80% !important}
+.bootstrap-select.btn-group:not(.input-group-btn), .bootstrap-select.btn-group[class*="col-"]{margin-left:0px !important}
+.bootstrap-select.btn-group .btn .caret{left:200px !important}
+}
+
+@media screen and (min-width: 1440px) and (min-height: 900px){
+.chosen-container{width:175px !important}	
+.lt-panel{min-height:719px !important}
+.formula-txtbox{width:85% !important}
+.bootstrap-select.btn-group .btn .caret{left:170px !important}
+}
+
+@media screen and (min-width: 1600px) and (min-height: 900px){
+.chosen-container{width:175px !important}	
+.lt-panel{min-height:719px !important}
+.formula-txtbox{width:85% !important}
+.bootstrap-select.btn-group .btn .caret{left:170px !important}
+}
+
+@media screen and (min-width: 1680px) and (min-height: 1050px){	
+.chosen-container{width:175px !important}	
+.lt-panel{min-height:868px !important}
+.formula-txtbox{width:85% !important}
+.bootstrap-select.btn-group .dropdown-menu.inner{max-height:450px !important}
+.bootstrap-select.btn-group .btn .caret{left:170px !important}
+}

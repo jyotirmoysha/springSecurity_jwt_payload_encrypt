@@ -1,0 +1,24 @@
+package com.livespread.command;
+
+
+public class UltimateParentCommand {
+
+	private Integer ultimateParentId;
+	private String ultimateParentName;
+	
+	public Integer getUltimateParentId() {
+		return ultimateParentId;
+	}
+
+	public void setUltimateParentId(Integer ultimateParentId) {
+		this.ultimateParentId = ultimateParentId;
+	}
+
+	public String getUltimateParentName() {
+		return ultimateParentName;
+	}
+
+	public void setUltimateParentName(String ultimateParentName) {
+		this.ultimateParentName = ultimateParentName;
+	}
+}

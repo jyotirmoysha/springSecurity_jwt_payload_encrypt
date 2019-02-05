@@ -1,0 +1,106 @@
+.bg-green{background:#51b2b6 !important; color:#fff; font-weight:bold; padding:5px !important; margin-bottom:10px !important;}
+.myTable tr th{color:#fff !important; font-weight:bold !important; background:#004870}
+.unmappedAsRep{background:#004870; color:#fff; font-weight:bold; padding:5px 0 5px 5px; margin:0 0 1px 0}
+.panel-info>.panel-heading{background-color:#004870 !important; color:#fff !important}
+.newtable tr td{color:#333 !important;}
+table th, td {border: none; border-top: none; line-height: 18px; font: 0.7em/18px Helvetica Neue, Helvetica, Arial, sans-serif !important; padding:5px !important; color:#fff !important}
+.custom-tbl thead th{background:#006995 !important}
+
+@media screen and (min-width: 1024px) and (min-height: 768px){
+  #qaMessages{height:58% !important}
+  #noteCheckList{height:58% !important}
+  .navbar-default .navbar-nav > li > a{font-size:14px}
+  .note-txt{padding:10px 0 0 0; color:#fff; font-size:11px}
+  .note-icon-ft{color: #fff !important; font-size: 14px !important}
+}
+
+@media screen and (min-width: 1024px) and (min-height: 1366px){
+  #qaMessages{height:76% !important}
+  #noteCheckList{height:76% !important}
+  .navbar-default .navbar-nav > li > a{font-size:14px}
+  .note-txt{padding:10px 0 0 0; color:#fff; font-size:12px}
+  .note-icon-ft{color: #fff !important; font-size: 16px !important}
+}
+
+@media screen and (min-width: 1152px) and (min-height: 864px){
+  #qaMessages{height:63% !important}
+  #noteCheckList{height:63% !important}
+  .navbar-default .navbar-nav > li > a{font-size:14px}
+  .note-txt{padding:10px 0 0 0; color:#fff; font-size:12px}
+  .note-icon-ft{color: #fff !important; font-size: 16px !important}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 600px){
+  #qaMessages{height:47% !important}
+  #noteCheckList{height:47% !important}
+  .navbar-default .navbar-nav > li > a{font-size:14px}
+  .note-txt{padding:10px 0 0 0; color:#fff; font-size:12px}
+  .note-icon-ft{color: #fff !important; font-size: 16px !important}
+}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 720px){
+  #qaMessages{height:56% !important}
+  #noteCheckList{height:56% !important}
+  .navbar-default .navbar-nav > li > a{font-size:14px}
+  .note-txt{padding:10px 0 0 0; color:#fff; font-size:12px}
+  .note-icon-ft{color: #fff !important; font-size: 16px !important}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 768px){
+  #qaMessages{height:58% !important}
+  #noteCheckList{height:58% !important}
+  .navbar-default .navbar-nav > li > a{font-size:14px}
+  .note-txt{padding:10px 0 0 0; color:#fff; font-size:12px}
+  .note-icon-ft{color: #fff !important; font-size: 16px !important}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 800px){
+  #qaMessages{height:60% !important}
+  #noteCheckList{height:60% !important}
+  .navbar-default .navbar-nav > li > a{font-size:14px}
+  .note-txt{padding:10px 0 0 0; color:#fff; font-size:12px}
+  .note-icon-ft{color: #fff !important; font-size: 16px !important}
+}
+
+
+@media screen and (min-width: 1360px) and (min-height: 768px){
+  #qaMessages{height:58% !important}
+  #noteCheckList{height:58% !important}
+  .navbar-default .navbar-nav > li > a{font-size:14px}
+  .note-txt{padding:10px 0 0 0; color:#fff; font-size:12px}
+  .note-icon-ft{color: #fff !important; font-size: 16px !important}
+}
+
+@media screen and (min-width: 1360px) and (min-height: 797px){
+  #qaMessages{height:60% !important}
+  #noteCheckList{height:60% !important}
+  .navbar-default .navbar-nav > li > a{font-size:14px}
+  .note-txt{padding:10px 0 0 0; color:#fff; font-size:12px}
+  .note-icon-ft{color: #fff !important; font-size: 16px !important}
+}
+
+@media screen and (min-width: 1440px) and (min-height: 900px){
+  #qaMessages{height:64% !important}
+  #noteCheckList{height:64% !important}
+  .navbar-default .navbar-nav > li > a{font-size:14px}
+  .note-txt{padding:10px 0 0 0; color:#fff; font-size:12px}
+  .note-icon-ft{color: #fff !important; font-size: 16px !important}
+}
+
+@media screen and (min-width: 1600px) and (min-height: 900px){
+  #qaMessages{height:64% !important}
+  #noteCheckList{height:64% !important}
+  .navbar-default .navbar-nav > li > a{font-size:14px}
+  .note-txt{padding:10px 0 0 0; color:#fff; font-size:12px}
+  .note-icon-ft{color: #fff !important; font-size: 16px !important}
+}
+
+@media screen and (min-width: 1680px) and (min-height: 1050px){
+  #qaMessages{height:69% !important}
+  #noteCheckList{height:69% !important}
+  .navbar-default .navbar-nav > li > a{font-size:14px}
+  .note-txt{padding:10px 0 0 0; color:#fff; font-size:12px}
+  .note-icon-ft{color: #fff !important; font-size: 16px !important}
+}
+}

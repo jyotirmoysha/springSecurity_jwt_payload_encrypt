@@ -1,0 +1,34 @@
+package com.livespread.util;
+
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class HTMLTagValidator{
+
+	   private Pattern pattern;
+	   private Matcher matcher;
+
+   private static final String HTML_TAG_PATTERN = "<(\"[^\"]*\"|'[^']*'|[^'\">])*>";
+
+   public HTMLTagValidator(){
+	  pattern = Pattern.compile(HTML_TAG_PATTERN);
+   }
+
+  /**
+   * Validate html tag with regular expression
+   * @param tag html tag for validation
+   * @return true valid html tag, false invalid html tag
+   */
+  public  boolean validate(final List<String> tag){
+	  for(String inputName:tag)
+	  {
+	  if(inputName!=null && !inputName.isEmpty()){
+	  matcher = pattern.matcher(inputName);
+	  return matcher.matches();
+	  }
+	  }
+	  return false;
+  }
+  
+}

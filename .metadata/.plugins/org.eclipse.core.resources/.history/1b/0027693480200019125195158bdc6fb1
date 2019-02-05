@@ -1,0 +1,27 @@
+package com.livespread.common;
+
+import java.util.Comparator;
+import java.util.List;
+
+import com.livespread.rage.domain.ExtractorTableidRouteByCik;
+
+public class RulesManagementComparator implements
+		Comparator<ExtractorTableidRouteByCik> {
+
+	private List<String> sortOrder;
+
+	public RulesManagementComparator(List<String> sortOrder) {
+		this.sortOrder = sortOrder;
+	}
+
+	@Override
+	public int compare(ExtractorTableidRouteByCik arg0,
+			ExtractorTableidRouteByCik arg1) {
+
+		String a1 = arg0.getEtrbc_tag();
+		String a2 = arg1.getEtrbc_tag();
+
+		return sortOrder.indexOf(a1) - sortOrder.indexOf(a2);
+	}
+
+}

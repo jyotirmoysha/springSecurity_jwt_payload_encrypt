@@ -1,0 +1,68 @@
+/**
+ * 
+ */
+package com.livespread.command;
+
+/**
+ * @author KP0e1301
+ *
+ */
+public class NormTemplateExtractCommand {
+	
+	private String sectionName;
+	private Integer normLabelId;
+	private String normLabelName;
+	private String category;
+	private String derivedFromula;
+	private String normQAcheck;
+	private String labelSection;
+	private String subSection;
+	public String getSectionName() {
+		return sectionName;
+	}
+	public void setSectionName(String sectionName) {
+		this.sectionName = sectionName;
+	}
+	public Integer getNormLabelId() {
+		return normLabelId;
+	}
+	public void setNormLabelId(Integer normLabelId) {
+		this.normLabelId = normLabelId;
+	}
+	public String getNormLabelName() {
+		return normLabelName;
+	}
+	public void setNormLabelName(String normLabelName) {
+		this.normLabelName = normLabelName;
+	}
+	public String getCategory() {
+		return category;
+	}
+	public void setCategory(String category) {
+		this.category = category;
+	}
+	public String getDerivedFromula() {
+		return derivedFromula;
+	}
+	public void setDerivedFromula(String derivedFromula) {
+		this.derivedFromula = derivedFromula;
+	}
+	public String getNormQAcheck() {
+		return normQAcheck;
+	}
+	public void setNormQAcheck(String normQAcheck) {
+		this.normQAcheck = normQAcheck;
+	}
+	public String getLabelSection() {
+		return labelSection;
+	}
+	public void setLabelSection(String labelSection) {
+		this.labelSection = labelSection;
+	}
+	public String getSubSection() {
+		return subSection;
+	}
+	public void setSubSection(String subSection) {
+		this.subSection = subSection;
+	}
+}

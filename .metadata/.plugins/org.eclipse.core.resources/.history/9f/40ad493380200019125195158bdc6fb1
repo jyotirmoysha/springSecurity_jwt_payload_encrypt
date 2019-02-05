@@ -1,0 +1,3445 @@
+package com.livespread.util;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.log4j.Logger;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.servlet.view.document.AbstractJExcelView;
+
+import com.livespread.excel.WriteExcel;
+import com.livespread.rage.domain.ExcelViewData;
+
+import jxl.CellView;
+import jxl.format.Border;
+import jxl.format.BorderLineStyle;
+import jxl.format.VerticalAlignment;
+import jxl.write.Label;
+import jxl.write.Number;
+import jxl.write.WritableCellFormat;
+import jxl.write.WritableFont;
+import jxl.write.WritableImage;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+
+public class ExcelBuilder extends AbstractJExcelView {
+	private Logger LOGGER = Logger.getLogger(ExcelBuilder.class);
+	private WritableCellFormat headcellFormat;
+	private WritableCellFormat cellFormat;
+	private WritableCellFormat cellFormatWithBorder;
+
+	
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	protected void buildExcelDocument(Map<String, Object> model,
+			WritableWorkbook workbook, HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+
+		Map<String, Object> dataMap = (LinkedHashMap<String, Object>) model.get("excelViewDataMap");
+
+		String statement = (String) dataMap.get("stmtFormat");
+		String custName = (String) dataMap.get("customerName");
+		
+		/**
+		 * Here we required parser id for Dealer form parser 
+		 */
+		Integer parserId = (Integer) request.getSession().getAttribute("sessionParserId");
+		
+		/**
+		 * Here we get filingId from session used for append excel name
+		 */
+		Integer fillingId = (Integer) request.getSession().getAttribute("sessionfillingId");
+		
+		WritableSheet sheet = null;
+		String fileName =fillingId+"_"+custName + "_Output.xls";
+
+		response.reset();
+		response.setContentType("application/vnd.ms-excel");
+		response.setHeader("Content-Disposition", "attachment;filename=\"" + StringEscapeUtils.escapeJava(fileName) + "\"");
+
+		WritableFont headcellFont = new WritableFont(WritableFont.TAHOMA, 10);
+		headcellFont.setBoldStyle(WritableFont.BOLD);
+
+		headcellFormat = new WritableCellFormat(headcellFont);
+		headcellFormat.setWrap(true);
+		headcellFormat.setAlignment(jxl.format.Alignment.LEFT);
+		headcellFormat.setVerticalAlignment(VerticalAlignment.TOP);
+
+		WritableFont cellFont = new WritableFont(WritableFont.TAHOMA, 10);
+		cellFormat = new WritableCellFormat(cellFont);
+		cellFormat.setWrap(true);
+		cellFormat.setAlignment(jxl.format.Alignment.LEFT);
+		cellFormat.setVerticalAlignment(VerticalAlignment.TOP);
+
+		cellFormatWithBorder = new WritableCellFormat(cellFont);
+		cellFormatWithBorder.setVerticalAlignment(VerticalAlignment.TOP);
+		cellFormatWithBorder.setBorder(Border.ALL, BorderLineStyle.THIN);
+
+		CellView cellView = new CellView();
+		cellView.setHidden(true); // set hidden
+
+
+		/*
+		 * This code used for Fund Performance Report parser
+		 */
+		if (null != statement && statement.equalsIgnoreCase("NMP")
+				|| statement.equalsIgnoreCase("NAS")
+				|| statement.equalsIgnoreCase("SP")
+				|| statement.equalsIgnoreCase("ALLOCATION")
+				|| statement.equalsIgnoreCase("PC")) {
+
+			Set<ExcelViewData> excelViewDataSetNMP = (Set<ExcelViewData>) dataMap
+					.get("excelViewDataSetNMP");
+			List<ExcelViewData> excelViewDataListNMP = new ArrayList<ExcelViewData>(
+					excelViewDataSetNMP);
+			Collections.sort(excelViewDataListNMP);
+
+			Set<ExcelViewData> excelViewDataSetNAS = (Set<ExcelViewData>) dataMap.get("excelViewDataSetNAS");
+			List<ExcelViewData> excelViewDataListNAS = new ArrayList<ExcelViewData>(excelViewDataSetNAS);
+			Collections.sort(excelViewDataListNAS);
+
+			Set<ExcelViewData> excelViewDataSetSP = (Set<ExcelViewData>) dataMap.get("excelViewDataSetSP");
+			List<ExcelViewData> excelViewDataListSP = new ArrayList<ExcelViewData>(excelViewDataSetSP);
+			Collections.sort(excelViewDataListSP);
+
+			Set<ExcelViewData> excelViewDataSetAllocation = (Set<ExcelViewData>) dataMap.get("excelViewDataSetAllocation");
+			List<ExcelViewData> excelViewDataListAllocation = new ArrayList<ExcelViewData>(excelViewDataSetAllocation);
+			Collections.sort(excelViewDataListAllocation);
+
+			Set<ExcelViewData> excelViewDataSetPC = (Set<ExcelViewData>) dataMap.get("excelViewDataSetPC");
+			List<ExcelViewData> excelViewDataListPC = new ArrayList<ExcelViewData>(excelViewDataSetPC);
+			Collections.sort(excelViewDataListPC);
+
+			int rowCount = 0;
+			if (null != excelViewDataListNMP && !excelViewDataListNMP.isEmpty()
+					&& excelViewDataListNMP.size() > 0) {
+				sheet = workbook.createSheet("Net Monthly Performance", 0);
+				if (statement.equals("NMP")) {
+					sheet = workbook.getSheet("Net Monthly Performance");
+					sheet.getSettings().setSelected(true);
+				}
+				sheet.setColumnView(0, 40);
+				sheet.setColumnView(1, 25);
+				sheet.setColumnView(2, 20);
+				sheet.setColumnView(3, 40);
+				sheet.setColumnView(4, 25);
+				sheet.setColumnView(5, 25);
+				sheet.setColumnView(6, 25);
+				sheet.setColumnView(7, 25);
+				sheet.setColumnView(8, 25);
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal5()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal5()
+								.equals("")) {
+					sheet.setColumnView(9, 20);
+				} else if (null != excelViewDataListNMP.get(1).getPoAsRepVal5()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal5()
+								.equals("")) {
+					sheet.setColumnView(9, 20);
+				}
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal6()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal6()
+								.equals("")) {
+					sheet.setColumnView(10, 20);
+				} else if (null != excelViewDataListNMP.get(1).getPoAsRepVal6()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal6()
+								.equals("")) {
+					sheet.setColumnView(10, 20);
+				}
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal7()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal7()
+								.equals("")) {
+					sheet.setColumnView(11, 15);
+				} else if (null != excelViewDataListNMP.get(1).getPoAsRepVal7()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal7()
+								.equals("")) {
+					sheet.setColumnView(11, 20);
+				}
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal8()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal8()
+								.equals("")) {
+					sheet.setColumnView(12, 15);
+				} else if (null != excelViewDataListNMP.get(1).getPoAsRepVal8()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal8()
+								.equals("")) {
+					sheet.setColumnView(12, 20);
+				}
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal9()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal9()
+								.equals("")) {
+					sheet.setColumnView(13, 15);
+				} else if (null != excelViewDataListNMP.get(1).getPoAsRepVal9()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal9()
+								.equals("")) {
+					sheet.setColumnView(13, 20);
+				}
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal10()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal10()
+								.equals("")) {
+					sheet.setColumnView(14, 15);
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal10()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal10()
+								.equals("")) {
+					sheet.setColumnView(14, 20);
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal11()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal11()
+								.equals("")) {
+					sheet.setColumnView(15, 15);
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal11()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal11()
+								.equals("")) {
+					sheet.setColumnView(15, 20);
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal12()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal12()
+								.equals("")) {
+					sheet.setColumnView(16, 15);
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal12()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal12()
+								.equals("")) {
+					sheet.setColumnView(16, 20);
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal13()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal13()
+								.equals("")) {
+					sheet.setColumnView(17, 15);
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal13()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal13()
+								.equals("")) {
+					sheet.setColumnView(17, 20);
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal14()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal14()
+								.equals("")) {
+					sheet.setColumnView(18, 15);
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal14()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal14()
+								.equals("")) {
+					sheet.setColumnView(18, 20);
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal15()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal15()
+								.equals("")) {
+					sheet.setColumnView(19, 15);
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal15()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal15()
+								.equals("")) {
+					sheet.setColumnView(19, 20);
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal16()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal16()
+								.equals("")) {
+					sheet.setColumnView(20, 15);
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal16()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal16()
+								.equals("")) {
+					sheet.setColumnView(20, 20);
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal17()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal17()
+								.equals("")) {
+					sheet.setColumnView(21, 15);
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal17()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal17()
+								.equals("")) {
+					sheet.setColumnView(21, 20);
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal18()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal18()
+								.equals("")) {
+					sheet.setColumnView(22, 15);
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal18()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal18()
+								.equals("")) {
+					sheet.setColumnView(22, 20);
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal19()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal19()
+								.equals("")) {
+					sheet.setColumnView(23, 15);
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal13()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal19()
+								.equals("")) {
+					sheet.setColumnView(23, 20);
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal20()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal20()
+								.equals("")) {
+					sheet.setColumnView(24, 15);
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal20()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal20()
+								.equals("")) {
+					sheet.setColumnView(24, 20);
+				}
+
+				sheet.setColumnView(25, 25);
+				rowCount = 1;
+
+				sheet.addCell(new Label(0, 0, "As Reported Label",
+						headcellFormat));
+				sheet.addCell(new Label(1, 0, "Normalized Label",
+						headcellFormat));
+				sheet.addCell(new Label(2, 0, "Sequence", headcellFormat));
+				sheet.addCell(new Label(3, 0, "Account Number", headcellFormat));
+				sheet.addCell(new Label(4, 0, "Time Period", headcellFormat));
+				sheet.addCell(new Label(5, 0, "Value1", headcellFormat));
+				sheet.addCell(new Label(6, 0, "Value2", headcellFormat));
+				sheet.addCell(new Label(7, 0, "Value3", headcellFormat));
+				sheet.addCell(new Label(8, 0, "Value4", headcellFormat));
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal5()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal5()
+								.equals("")) {
+					sheet.addCell(new Label(9, 0, "Value5", headcellFormat));
+				} else if (null != excelViewDataListNMP.get(1).getPoAsRepVal5()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal5()
+								.equals("")) {
+					sheet.addCell(new Label(9, 0, "Value5", headcellFormat));
+				}
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal6()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal6()
+								.equals("")) {
+					sheet.addCell(new Label(10, 0, "Value6", headcellFormat));
+				} else if (null != excelViewDataListNMP.get(1).getPoAsRepVal6()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal6()
+								.equals("")) {
+					sheet.addCell(new Label(10, 0, "Value6", headcellFormat));
+				}
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal7()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal7()
+								.equals("")) {
+					sheet.addCell(new Label(11, 0, "Value7", headcellFormat));
+				} else if (null != excelViewDataListNMP.get(1).getPoAsRepVal7()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal7()
+								.equals("")) {
+					sheet.addCell(new Label(11, 0, "Value7", headcellFormat));
+				}
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal8()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal8()
+								.equals("")) {
+					sheet.addCell(new Label(12, 0, "Value8", headcellFormat));
+				} else if (null != excelViewDataListNMP.get(1).getPoAsRepVal8()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal8()
+								.equals("")) {
+					sheet.addCell(new Label(12, 0, "Value8", headcellFormat));
+				}
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal9()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal9()
+								.equals("")) {
+					sheet.addCell(new Label(13, 0, "Value9", headcellFormat));
+				} else if (null != excelViewDataListNMP.get(1).getPoAsRepVal9()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal9()
+								.equals("")) {
+					sheet.addCell(new Label(13, 0, "Value9", headcellFormat));
+				}
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal10()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal10()
+								.equals("")) {
+					sheet.addCell(new Label(14, 0, "Value10", headcellFormat));
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal10()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal10()
+								.equals("")) {
+					sheet.addCell(new Label(14, 0, "Value10", headcellFormat));
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal11()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal11()
+								.equals("")) {
+					sheet.addCell(new Label(15, 0, "Value11", headcellFormat));
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal11()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal11()
+								.equals("")) {
+					sheet.addCell(new Label(15, 0, "Value11", headcellFormat));
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal12()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal12()
+								.equals("")) {
+					sheet.addCell(new Label(16, 0, "Value12", headcellFormat));
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal12()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal12()
+								.equals("")) {
+					sheet.addCell(new Label(16, 0, "Value12", headcellFormat));
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal13()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal13()
+								.equals("")) {
+					sheet.addCell(new Label(17, 0, "Value13", headcellFormat));
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal13()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal13()
+								.equals("")) {
+					sheet.addCell(new Label(17, 0, "Value13", headcellFormat));
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal14()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal14()
+								.equals("")) {
+					sheet.addCell(new Label(18, 0, "Value14", headcellFormat));
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal14()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal14()
+								.equals("")) {
+					sheet.addCell(new Label(18, 0, "Value14", headcellFormat));
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal15()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal15()
+								.equals("")) {
+					sheet.addCell(new Label(19, 0, "Value15", headcellFormat));
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal15()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal15()
+								.equals("")) {
+					sheet.addCell(new Label(19, 0, "Value15", headcellFormat));
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal16()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal16()
+								.equals("")) {
+					sheet.addCell(new Label(20, 0, "Value16", headcellFormat));
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal16()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal16()
+								.equals("")) {
+					sheet.addCell(new Label(20, 0, "Value16", headcellFormat));
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal17()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal17()
+								.equals("")) {
+					sheet.addCell(new Label(21, 0, "Value17", headcellFormat));
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal17()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal17()
+								.equals("")) {
+					sheet.addCell(new Label(21, 0, "Value17", headcellFormat));
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal18()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal18()
+								.equals("")) {
+					sheet.addCell(new Label(22, 0, "Value18", headcellFormat));
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal18()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal18()
+								.equals("")) {
+					sheet.addCell(new Label(22, 0, "Value18", headcellFormat));
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal19()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal19()
+								.equals("")) {
+					sheet.addCell(new Label(23, 0, "Value19", headcellFormat));
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal19()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal19()
+								.equals("")) {
+					sheet.addCell(new Label(23, 0, "Value10", headcellFormat));
+				}
+
+				if (null != excelViewDataListNMP.get(0).getPoAsRepVal20()
+						&& !excelViewDataListNMP.get(0).getPoAsRepVal20()
+								.equals("")) {
+					sheet.addCell(new Label(24, 0, "Value20", headcellFormat));
+				} else if (null != excelViewDataListNMP.get(1)
+						.getPoAsRepVal20()
+						&& !excelViewDataListNMP.get(1).getPoAsRepVal20()
+								.equals("")) {
+					sheet.addCell(new Label(24, 0, "Value20", headcellFormat));
+				}
+
+				sheet.addCell(new Label(25, 0, "Custodian Name", headcellFormat));
+
+				for (ExcelViewData excelViewData : excelViewDataListNMP) {
+					if (null != excelViewData.getPoAsRepLabel()) {
+						sheet.addCell(new Label(0, rowCount, excelViewData
+								.getPoAsRepLabel(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(0, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getNilLabel()) {
+						sheet.addCell(new Label(1, rowCount, excelViewData
+								.getNilLabel(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(1, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoIndexOrder()) {
+						sheet.addCell(new Number(2, rowCount, excelViewData
+								.getPoIndexOrder(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Number(2, rowCount, 0,
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getAccountNumber()) {
+						sheet.addCell(new Label(3, rowCount, excelViewData
+								.getAccountNumber(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(3, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getTimePeriod()) {
+						sheet.addCell(new Label(4, rowCount, excelViewData
+								.getTimePeriod(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(4, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal1()) {
+						sheet.addCell(new Label(5, rowCount, excelViewData
+								.getPoAsRepVal1(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(5, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal2()) {
+						sheet.addCell(new Label(6, rowCount, excelViewData
+								.getPoAsRepVal2(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(6, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal3()) {
+						sheet.addCell(new Label(7, rowCount, excelViewData
+								.getPoAsRepVal3(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(7, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal4()) {
+						sheet.addCell(new Label(8, rowCount, excelViewData
+								.getPoAsRepVal4(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(8, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal5()) {
+						sheet.addCell(new Label(9, rowCount, excelViewData
+								.getPoAsRepVal5(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(9, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal6()) {
+						sheet.addCell(new Label(10, rowCount, excelViewData
+								.getPoAsRepVal6(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(10, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal7()) {
+						sheet.addCell(new Label(11, rowCount, excelViewData
+								.getPoAsRepVal7(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(11, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal8()) {
+						sheet.addCell(new Label(12, rowCount, excelViewData
+								.getPoAsRepVal8(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(12, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal9()) {
+						sheet.addCell(new Label(13, rowCount, excelViewData
+								.getPoAsRepVal9(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(13, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal10()) {
+						sheet.addCell(new Label(14, rowCount, excelViewData
+								.getPoAsRepVal10(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(14, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal11()) {
+						sheet.addCell(new Label(15, rowCount, excelViewData
+								.getPoAsRepVal11(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(15, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal12()) {
+						sheet.addCell(new Label(16, rowCount, excelViewData
+								.getPoAsRepVal12(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(16, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal13()) {
+						sheet.addCell(new Label(17, rowCount, excelViewData
+								.getPoAsRepVal13(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(17, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal14()) {
+						sheet.addCell(new Label(18, rowCount, excelViewData
+								.getPoAsRepVal14(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(18, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal15()) {
+						sheet.addCell(new Label(19, rowCount, excelViewData
+								.getPoAsRepVal15(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(19, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal16()) {
+						sheet.addCell(new Label(20, rowCount, excelViewData
+								.getPoAsRepVal16(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(20, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal17()) {
+						sheet.addCell(new Label(21, rowCount, excelViewData
+								.getPoAsRepVal17(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(21, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal18()) {
+						sheet.addCell(new Label(22, rowCount, excelViewData
+								.getPoAsRepVal18(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(22, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal19()) {
+						sheet.addCell(new Label(23, rowCount, excelViewData
+								.getPoAsRepVal19(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(23, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal20()) {
+						sheet.addCell(new Label(24, rowCount, excelViewData
+								.getPoAsRepVal20(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(24, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getCustodianName()) {
+						sheet.addCell(new Label(25, rowCount, excelViewData
+								.getCustodianName(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(25, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					rowCount++;
+				}
+			}
+
+			if (null != excelViewDataListNAS && !excelViewDataListNAS.isEmpty()
+					&& excelViewDataListNAS.size() > 0) {
+				sheet = workbook.createSheet("Net Annualized Statistics", 0);
+				if (statement.equals("NAS")) {
+					sheet = workbook.getSheet("Net Annualized Statistics");
+					sheet.getSettings().setSelected(true);
+				}
+				sheet.setColumnView(0, 40);
+				sheet.setColumnView(1, 25);
+				sheet.setColumnView(2, 20);
+				sheet.setColumnView(3, 40);
+				sheet.setColumnView(4, 25);
+				sheet.setColumnView(5, 25);
+				sheet.setColumnView(6, 25);
+				sheet.setColumnView(7, 25);
+				sheet.setColumnView(8, 25);
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal5()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal5()
+								.equals("")) {
+					sheet.setColumnView(9, 20);
+				} else if (null != excelViewDataListNAS.get(1).getPoAsRepVal5()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal5()
+								.equals("")) {
+					sheet.setColumnView(9, 20);
+				}
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal6()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal6()
+								.equals("")) {
+					sheet.setColumnView(10, 20);
+				} else if (null != excelViewDataListNAS.get(1).getPoAsRepVal6()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal6()
+								.equals("")) {
+					sheet.setColumnView(10, 20);
+				}
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal7()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal7()
+								.equals("")) {
+					sheet.setColumnView(11, 15);
+				} else if (null != excelViewDataListNAS.get(1).getPoAsRepVal7()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal7()
+								.equals("")) {
+					sheet.setColumnView(11, 20);
+				}
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal8()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal8()
+								.equals("")) {
+					sheet.setColumnView(12, 15);
+				} else if (null != excelViewDataListNAS.get(1).getPoAsRepVal8()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal8()
+								.equals("")) {
+					sheet.setColumnView(12, 20);
+				}
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal9()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal9()
+								.equals("")) {
+					sheet.setColumnView(13, 15);
+				} else if (null != excelViewDataListNAS.get(1).getPoAsRepVal9()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal9()
+								.equals("")) {
+					sheet.setColumnView(13, 20);
+				}
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal10()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal10()
+								.equals("")) {
+					sheet.setColumnView(14, 15);
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal10()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal10()
+								.equals("")) {
+					sheet.setColumnView(14, 20);
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal11()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal11()
+								.equals("")) {
+					sheet.setColumnView(15, 15);
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal11()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal11()
+								.equals("")) {
+					sheet.setColumnView(15, 20);
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal12()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal12()
+								.equals("")) {
+					sheet.setColumnView(16, 15);
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal12()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal12()
+								.equals("")) {
+					sheet.setColumnView(16, 20);
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal13()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal13()
+								.equals("")) {
+					sheet.setColumnView(17, 15);
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal13()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal13()
+								.equals("")) {
+					sheet.setColumnView(17, 20);
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal14()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal14()
+								.equals("")) {
+					sheet.setColumnView(18, 15);
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal14()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal14()
+								.equals("")) {
+					sheet.setColumnView(18, 20);
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal15()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal15()
+								.equals("")) {
+					sheet.setColumnView(19, 15);
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal15()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal15()
+								.equals("")) {
+					sheet.setColumnView(19, 20);
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal16()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal16()
+								.equals("")) {
+					sheet.setColumnView(20, 15);
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal16()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal16()
+								.equals("")) {
+					sheet.setColumnView(20, 20);
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal17()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal17()
+								.equals("")) {
+					sheet.setColumnView(21, 15);
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal17()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal17()
+								.equals("")) {
+					sheet.setColumnView(21, 20);
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal18()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal18()
+								.equals("")) {
+					sheet.setColumnView(22, 15);
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal18()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal18()
+								.equals("")) {
+					sheet.setColumnView(22, 20);
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal19()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal19()
+								.equals("")) {
+					sheet.setColumnView(23, 15);
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal13()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal19()
+								.equals("")) {
+					sheet.setColumnView(23, 20);
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal20()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal20()
+								.equals("")) {
+					sheet.setColumnView(24, 15);
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal20()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal20()
+								.equals("")) {
+					sheet.setColumnView(24, 20);
+				}
+
+				sheet.setColumnView(25, 25);
+				rowCount = 1;
+
+				sheet.addCell(new Label(0, 0, "As Reported Label",
+						headcellFormat));
+				sheet.addCell(new Label(1, 0, "Normalized Label",
+						headcellFormat));
+				sheet.addCell(new Label(2, 0, "Sequence", headcellFormat));
+				sheet.addCell(new Label(3, 0, "Account Number", headcellFormat));
+				sheet.addCell(new Label(4, 0, "Time Period", headcellFormat));
+				sheet.addCell(new Label(5, 0, "Value1", headcellFormat));
+				sheet.addCell(new Label(6, 0, "Value2", headcellFormat));
+				sheet.addCell(new Label(7, 0, "Value3", headcellFormat));
+				sheet.addCell(new Label(8, 0, "Value4", headcellFormat));
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal5()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal5()
+								.equals("")) {
+					sheet.addCell(new Label(9, 0, "Value5", headcellFormat));
+				} else if (null != excelViewDataListNAS.get(1).getPoAsRepVal5()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal5()
+								.equals("")) {
+					sheet.addCell(new Label(9, 0, "Value5", headcellFormat));
+				}
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal6()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal6()
+								.equals("")) {
+					sheet.addCell(new Label(10, 0, "Value6", headcellFormat));
+				} else if (null != excelViewDataListNAS.get(1).getPoAsRepVal6()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal6()
+								.equals("")) {
+					sheet.addCell(new Label(10, 0, "Value6", headcellFormat));
+				}
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal7()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal7()
+								.equals("")) {
+					sheet.addCell(new Label(11, 0, "Value7", headcellFormat));
+				} else if (null != excelViewDataListNAS.get(1).getPoAsRepVal7()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal7()
+								.equals("")) {
+					sheet.addCell(new Label(11, 0, "Value7", headcellFormat));
+				}
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal8()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal8()
+								.equals("")) {
+					sheet.addCell(new Label(12, 0, "Value8", headcellFormat));
+				} else if (null != excelViewDataListNAS.get(1).getPoAsRepVal8()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal8()
+								.equals("")) {
+					sheet.addCell(new Label(12, 0, "Value8", headcellFormat));
+				}
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal9()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal9()
+								.equals("")) {
+					sheet.addCell(new Label(13, 0, "Value9", headcellFormat));
+				} else if (null != excelViewDataListNAS.get(1).getPoAsRepVal9()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal9()
+								.equals("")) {
+					sheet.addCell(new Label(13, 0, "Value9", headcellFormat));
+				}
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal10()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal10()
+								.equals("")) {
+					sheet.addCell(new Label(14, 0, "Value10", headcellFormat));
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal10()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal10()
+								.equals("")) {
+					sheet.addCell(new Label(14, 0, "Value10", headcellFormat));
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal11()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal11()
+								.equals("")) {
+					sheet.addCell(new Label(15, 0, "Value11", headcellFormat));
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal11()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal11()
+								.equals("")) {
+					sheet.addCell(new Label(15, 0, "Value11", headcellFormat));
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal12()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal12()
+								.equals("")) {
+					sheet.addCell(new Label(16, 0, "Value12", headcellFormat));
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal12()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal12()
+								.equals("")) {
+					sheet.addCell(new Label(16, 0, "Value12", headcellFormat));
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal13()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal13()
+								.equals("")) {
+					sheet.addCell(new Label(17, 0, "Value13", headcellFormat));
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal13()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal13()
+								.equals("")) {
+					sheet.addCell(new Label(17, 0, "Value13", headcellFormat));
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal14()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal14()
+								.equals("")) {
+					sheet.addCell(new Label(18, 0, "Value14", headcellFormat));
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal14()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal14()
+								.equals("")) {
+					sheet.addCell(new Label(18, 0, "Value14", headcellFormat));
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal15()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal15()
+								.equals("")) {
+					sheet.addCell(new Label(19, 0, "Value15", headcellFormat));
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal15()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal15()
+								.equals("")) {
+					sheet.addCell(new Label(19, 0, "Value15", headcellFormat));
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal16()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal16()
+								.equals("")) {
+					sheet.addCell(new Label(20, 0, "Value16", headcellFormat));
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal16()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal16()
+								.equals("")) {
+					sheet.addCell(new Label(20, 0, "Value16", headcellFormat));
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal17()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal17()
+								.equals("")) {
+					sheet.addCell(new Label(21, 0, "Value17", headcellFormat));
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal17()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal17()
+								.equals("")) {
+					sheet.addCell(new Label(21, 0, "Value17", headcellFormat));
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal18()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal18()
+								.equals("")) {
+					sheet.addCell(new Label(22, 0, "Value18", headcellFormat));
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal18()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal18()
+								.equals("")) {
+					sheet.addCell(new Label(22, 0, "Value18", headcellFormat));
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal19()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal19()
+								.equals("")) {
+					sheet.addCell(new Label(23, 0, "Value19", headcellFormat));
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal19()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal19()
+								.equals("")) {
+					sheet.addCell(new Label(23, 0, "Value10", headcellFormat));
+				}
+
+				if (null != excelViewDataListNAS.get(0).getPoAsRepVal20()
+						&& !excelViewDataListNAS.get(0).getPoAsRepVal20()
+								.equals("")) {
+					sheet.addCell(new Label(24, 0, "Value20", headcellFormat));
+				} else if (null != excelViewDataListNAS.get(1)
+						.getPoAsRepVal20()
+						&& !excelViewDataListNAS.get(1).getPoAsRepVal20()
+								.equals("")) {
+					sheet.addCell(new Label(24, 0, "Value20", headcellFormat));
+				}
+
+				sheet.addCell(new Label(25, 0, "Custodian Name", headcellFormat));
+
+				for (ExcelViewData excelViewData : excelViewDataListNAS) {
+					if (null != excelViewData.getPoAsRepLabel()) {
+						sheet.addCell(new Label(0, rowCount, excelViewData
+								.getPoAsRepLabel(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(0, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getNilLabel()) {
+						sheet.addCell(new Label(1, rowCount, excelViewData
+								.getNilLabel(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(1, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoIndexOrder()) {
+						sheet.addCell(new Number(2, rowCount, excelViewData
+								.getPoIndexOrder(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Number(2, rowCount, 0,
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getAccountNumber()) {
+						sheet.addCell(new Label(3, rowCount, excelViewData
+								.getAccountNumber(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(3, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getTimePeriod()) {
+						sheet.addCell(new Label(4, rowCount, excelViewData
+								.getTimePeriod(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(4, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal1()) {
+						sheet.addCell(new Label(5, rowCount, excelViewData
+								.getPoAsRepVal1(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(5, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal2()) {
+						sheet.addCell(new Label(6, rowCount, excelViewData
+								.getPoAsRepVal2(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(6, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal3()) {
+						sheet.addCell(new Label(7, rowCount, excelViewData
+								.getPoAsRepVal3(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(7, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal4()) {
+						sheet.addCell(new Label(8, rowCount, excelViewData
+								.getPoAsRepVal4(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(8, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal5()) {
+						sheet.addCell(new Label(9, rowCount, excelViewData
+								.getPoAsRepVal5(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(9, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal6()) {
+						sheet.addCell(new Label(10, rowCount, excelViewData
+								.getPoAsRepVal6(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(10, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal7()) {
+						sheet.addCell(new Label(11, rowCount, excelViewData
+								.getPoAsRepVal7(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(11, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal8()) {
+						sheet.addCell(new Label(12, rowCount, excelViewData
+								.getPoAsRepVal8(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(12, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal9()) {
+						sheet.addCell(new Label(13, rowCount, excelViewData
+								.getPoAsRepVal9(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(13, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal10()) {
+						sheet.addCell(new Label(14, rowCount, excelViewData
+								.getPoAsRepVal10(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(14, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal11()) {
+						sheet.addCell(new Label(15, rowCount, excelViewData
+								.getPoAsRepVal11(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(15, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal12()) {
+						sheet.addCell(new Label(16, rowCount, excelViewData
+								.getPoAsRepVal12(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(16, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal13()) {
+						sheet.addCell(new Label(17, rowCount, excelViewData
+								.getPoAsRepVal13(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(17, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal14()) {
+						sheet.addCell(new Label(18, rowCount, excelViewData
+								.getPoAsRepVal14(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(18, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal15()) {
+						sheet.addCell(new Label(19, rowCount, excelViewData
+								.getPoAsRepVal15(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(19, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal16()) {
+						sheet.addCell(new Label(20, rowCount, excelViewData
+								.getPoAsRepVal16(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(20, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal17()) {
+						sheet.addCell(new Label(21, rowCount, excelViewData
+								.getPoAsRepVal17(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(21, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal18()) {
+						sheet.addCell(new Label(22, rowCount, excelViewData
+								.getPoAsRepVal18(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(22, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal19()) {
+						sheet.addCell(new Label(23, rowCount, excelViewData
+								.getPoAsRepVal19(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(23, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal20()) {
+						sheet.addCell(new Label(24, rowCount, excelViewData
+								.getPoAsRepVal20(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(24, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getCustodianName()) {
+						sheet.addCell(new Label(25, rowCount, excelViewData
+								.getCustodianName(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(25, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					rowCount++;
+				}
+			}
+
+			if (null != excelViewDataListSP && !excelViewDataListSP.isEmpty()
+					&& excelViewDataListSP.size() > 0) {
+				sheet = workbook.createSheet("Strategy Performance", 0);
+				if (statement.equals("SP")) {
+					sheet = workbook.getSheet("Strategy Performance");
+					sheet.getSettings().setSelected(true);
+				}
+				sheet.setColumnView(0, 40);
+				sheet.setColumnView(1, 25);
+				sheet.setColumnView(2, 20);
+				sheet.setColumnView(3, 40);
+				sheet.setColumnView(4, 25);
+				sheet.setColumnView(5, 25);
+				sheet.setColumnView(6, 25);
+				sheet.setColumnView(7, 25);
+				sheet.setColumnView(8, 25);
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal5()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal5()
+								.equals("")) {
+					sheet.setColumnView(9, 20);
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal5()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal5()
+								.equals("")) {
+					sheet.setColumnView(9, 20);
+				}
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal6()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal6()
+								.equals("")) {
+					sheet.setColumnView(10, 20);
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal6()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal6()
+								.equals("")) {
+					sheet.setColumnView(10, 20);
+				}
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal7()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal7()
+								.equals("")) {
+					sheet.setColumnView(11, 15);
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal7()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal7()
+								.equals("")) {
+					sheet.setColumnView(11, 20);
+				}
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal8()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal8()
+								.equals("")) {
+					sheet.setColumnView(12, 15);
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal8()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal8()
+								.equals("")) {
+					sheet.setColumnView(12, 20);
+				}
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal9()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal9()
+								.equals("")) {
+					sheet.setColumnView(13, 15);
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal9()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal9()
+								.equals("")) {
+					sheet.setColumnView(13, 20);
+				}
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal10()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal10()
+								.equals("")) {
+					sheet.setColumnView(14, 15);
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal10()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal10()
+								.equals("")) {
+					sheet.setColumnView(14, 20);
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal11()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal11()
+								.equals("")) {
+					sheet.setColumnView(15, 15);
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal11()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal11()
+								.equals("")) {
+					sheet.setColumnView(15, 20);
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal12()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal12()
+								.equals("")) {
+					sheet.setColumnView(16, 15);
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal12()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal12()
+								.equals("")) {
+					sheet.setColumnView(16, 20);
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal13()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal13()
+								.equals("")) {
+					sheet.setColumnView(17, 15);
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal13()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal13()
+								.equals("")) {
+					sheet.setColumnView(17, 20);
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal14()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal14()
+								.equals("")) {
+					sheet.setColumnView(18, 15);
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal14()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal14()
+								.equals("")) {
+					sheet.setColumnView(18, 20);
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal15()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal15()
+								.equals("")) {
+					sheet.setColumnView(19, 15);
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal15()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal15()
+								.equals("")) {
+					sheet.setColumnView(19, 20);
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal16()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal16()
+								.equals("")) {
+					sheet.setColumnView(20, 15);
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal16()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal16()
+								.equals("")) {
+					sheet.setColumnView(20, 20);
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal17()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal17()
+								.equals("")) {
+					sheet.setColumnView(21, 15);
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal17()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal17()
+								.equals("")) {
+					sheet.setColumnView(21, 20);
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal18()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal18()
+								.equals("")) {
+					sheet.setColumnView(22, 15);
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal18()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal18()
+								.equals("")) {
+					sheet.setColumnView(22, 20);
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal19()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal19()
+								.equals("")) {
+					sheet.setColumnView(23, 15);
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal13()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal19()
+								.equals("")) {
+					sheet.setColumnView(23, 20);
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal20()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal20()
+								.equals("")) {
+					sheet.setColumnView(24, 15);
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal20()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal20()
+								.equals("")) {
+					sheet.setColumnView(24, 20);
+				}
+
+				sheet.setColumnView(25, 25);
+				rowCount = 1;
+
+				sheet.addCell(new Label(0, 0, "As Reported Label",
+						headcellFormat));
+				sheet.addCell(new Label(1, 0, "Normalized Label",
+						headcellFormat));
+				sheet.addCell(new Label(2, 0, "Sequence", headcellFormat));
+				sheet.addCell(new Label(3, 0, "Account Number", headcellFormat));
+				sheet.addCell(new Label(4, 0, "Time Period", headcellFormat));
+				sheet.addCell(new Label(5, 0, "Value1", headcellFormat));
+				sheet.addCell(new Label(6, 0, "Value2", headcellFormat));
+				sheet.addCell(new Label(7, 0, "Value3", headcellFormat));
+				sheet.addCell(new Label(8, 0, "Value4", headcellFormat));
+				sheet.addCell(new Label(9, 0, "Value5", headcellFormat));
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal5()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal5()
+								.equals("")) {
+					sheet.addCell(new Label(9, 0, "Value5", headcellFormat));
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal5()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal5()
+								.equals("")) {
+					sheet.addCell(new Label(9, 0, "Value5", headcellFormat));
+				}
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal6()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal6()
+								.equals("")) {
+					sheet.addCell(new Label(10, 0, "Value6", headcellFormat));
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal6()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal6()
+								.equals("")) {
+					sheet.addCell(new Label(10, 0, "Value6", headcellFormat));
+				}
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal7()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal7()
+								.equals("")) {
+					sheet.addCell(new Label(11, 0, "Value7", headcellFormat));
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal7()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal7()
+								.equals("")) {
+					sheet.addCell(new Label(11, 0, "Value7", headcellFormat));
+				}
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal8()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal8()
+								.equals("")) {
+					sheet.addCell(new Label(12, 0, "Value8", headcellFormat));
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal8()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal8()
+								.equals("")) {
+					sheet.addCell(new Label(12, 0, "Value8", headcellFormat));
+				}
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal9()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal9()
+								.equals("")) {
+					sheet.addCell(new Label(13, 0, "Value9", headcellFormat));
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal9()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal9()
+								.equals("")) {
+					sheet.addCell(new Label(13, 0, "Value9", headcellFormat));
+				}
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal10()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal10()
+								.equals("")) {
+					sheet.addCell(new Label(14, 0, "Value10", headcellFormat));
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal10()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal10()
+								.equals("")) {
+					sheet.addCell(new Label(14, 0, "Value10", headcellFormat));
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal11()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal11()
+								.equals("")) {
+					sheet.addCell(new Label(15, 0, "Value11", headcellFormat));
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal11()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal11()
+								.equals("")) {
+					sheet.addCell(new Label(15, 0, "Value11", headcellFormat));
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal12()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal12()
+								.equals("")) {
+					sheet.addCell(new Label(16, 0, "Value12", headcellFormat));
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal12()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal12()
+								.equals("")) {
+					sheet.addCell(new Label(16, 0, "Value12", headcellFormat));
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal13()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal13()
+								.equals("")) {
+					sheet.addCell(new Label(17, 0, "Value13", headcellFormat));
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal13()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal13()
+								.equals("")) {
+					sheet.addCell(new Label(17, 0, "Value13", headcellFormat));
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal14()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal14()
+								.equals("")) {
+					sheet.addCell(new Label(18, 0, "Value14", headcellFormat));
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal14()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal14()
+								.equals("")) {
+					sheet.addCell(new Label(18, 0, "Value14", headcellFormat));
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal15()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal15()
+								.equals("")) {
+					sheet.addCell(new Label(19, 0, "Value15", headcellFormat));
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal15()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal15()
+								.equals("")) {
+					sheet.addCell(new Label(19, 0, "Value15", headcellFormat));
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal16()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal16()
+								.equals("")) {
+					sheet.addCell(new Label(20, 0, "Value16", headcellFormat));
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal16()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal16()
+								.equals("")) {
+					sheet.addCell(new Label(20, 0, "Value16", headcellFormat));
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal17()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal17()
+								.equals("")) {
+					sheet.addCell(new Label(21, 0, "Value17", headcellFormat));
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal17()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal17()
+								.equals("")) {
+					sheet.addCell(new Label(21, 0, "Value17", headcellFormat));
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal18()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal18()
+								.equals("")) {
+					sheet.addCell(new Label(22, 0, "Value18", headcellFormat));
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal18()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal18()
+								.equals("")) {
+					sheet.addCell(new Label(22, 0, "Value18", headcellFormat));
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal19()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal19()
+								.equals("")) {
+					sheet.addCell(new Label(23, 0, "Value19", headcellFormat));
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal19()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal19()
+								.equals("")) {
+					sheet.addCell(new Label(23, 0, "Value10", headcellFormat));
+				}
+
+				if (null != excelViewDataListSP.get(0).getPoAsRepVal20()
+						&& !excelViewDataListSP.get(0).getPoAsRepVal20()
+								.equals("")) {
+					sheet.addCell(new Label(24, 0, "Value20", headcellFormat));
+				} else if (null != excelViewDataListSP.get(1).getPoAsRepVal20()
+						&& !excelViewDataListSP.get(1).getPoAsRepVal20()
+								.equals("")) {
+					sheet.addCell(new Label(24, 0, "Value20", headcellFormat));
+				}
+
+				sheet.addCell(new Label(25, 0, "Custodian Name", headcellFormat));
+
+				for (ExcelViewData excelViewData : excelViewDataListSP) {
+					if (null != excelViewData.getPoAsRepLabel()) {
+						sheet.addCell(new Label(0, rowCount, excelViewData
+								.getPoAsRepLabel(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(0, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getNilLabel()) {
+						sheet.addCell(new Label(1, rowCount, excelViewData
+								.getNilLabel(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(1, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoIndexOrder()) {
+						sheet.addCell(new Number(2, rowCount, excelViewData
+								.getPoIndexOrder(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Number(2, rowCount, 0,
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getAccountNumber()) {
+						sheet.addCell(new Label(3, rowCount, excelViewData
+								.getAccountNumber(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(3, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getTimePeriod()) {
+						sheet.addCell(new Label(4, rowCount, excelViewData
+								.getTimePeriod(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(4, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal1()) {
+						sheet.addCell(new Label(5, rowCount, excelViewData
+								.getPoAsRepVal1(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(5, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal2()) {
+						sheet.addCell(new Label(6, rowCount, excelViewData
+								.getPoAsRepVal2(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(6, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal3()) {
+						sheet.addCell(new Label(7, rowCount, excelViewData
+								.getPoAsRepVal3(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(7, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal4()) {
+						sheet.addCell(new Label(8, rowCount, excelViewData
+								.getPoAsRepVal4(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(8, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal5()) {
+						sheet.addCell(new Label(9, rowCount, excelViewData
+								.getPoAsRepVal5(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(9, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal6()) {
+						sheet.addCell(new Label(10, rowCount, excelViewData
+								.getPoAsRepVal6(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(10, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal7()) {
+						sheet.addCell(new Label(11, rowCount, excelViewData
+								.getPoAsRepVal7(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(11, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal8()) {
+						sheet.addCell(new Label(12, rowCount, excelViewData
+								.getPoAsRepVal8(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(12, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal9()) {
+						sheet.addCell(new Label(13, rowCount, excelViewData
+								.getPoAsRepVal9(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(13, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal10()) {
+						sheet.addCell(new Label(14, rowCount, excelViewData
+								.getPoAsRepVal10(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(14, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal11()) {
+						sheet.addCell(new Label(15, rowCount, excelViewData
+								.getPoAsRepVal11(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(15, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal12()) {
+						sheet.addCell(new Label(16, rowCount, excelViewData
+								.getPoAsRepVal12(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(16, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal13()) {
+						sheet.addCell(new Label(17, rowCount, excelViewData
+								.getPoAsRepVal13(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(17, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal14()) {
+						sheet.addCell(new Label(18, rowCount, excelViewData
+								.getPoAsRepVal14(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(18, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal15()) {
+						sheet.addCell(new Label(19, rowCount, excelViewData
+								.getPoAsRepVal15(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(19, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal16()) {
+						sheet.addCell(new Label(20, rowCount, excelViewData
+								.getPoAsRepVal16(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(20, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal17()) {
+						sheet.addCell(new Label(21, rowCount, excelViewData
+								.getPoAsRepVal17(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(21, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal18()) {
+						sheet.addCell(new Label(22, rowCount, excelViewData
+								.getPoAsRepVal18(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(22, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal19()) {
+						sheet.addCell(new Label(23, rowCount, excelViewData
+								.getPoAsRepVal19(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(23, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal20()) {
+						sheet.addCell(new Label(24, rowCount, excelViewData
+								.getPoAsRepVal20(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(24, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getCustodianName()) {
+						sheet.addCell(new Label(25, rowCount, excelViewData
+								.getCustodianName(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(25, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					rowCount++;
+				}
+			}
+
+			if (null != excelViewDataListAllocation
+					&& !excelViewDataListAllocation.isEmpty()
+					&& excelViewDataListAllocation.size() > 0) {
+				sheet = workbook.createSheet("Fund Allocation", 0);
+				if (statement.equals("ALLOCATION")) {
+					sheet = workbook.getSheet("Fund Allocation");
+					sheet.getSettings().setSelected(true);
+				}
+				sheet.setColumnView(0, 40);
+				sheet.setColumnView(1, 25);
+				sheet.setColumnView(2, 20);
+				sheet.setColumnView(3, 40);
+				sheet.setColumnView(4, 25);
+				sheet.setColumnView(5, 25);
+				sheet.setColumnView(6, 25);
+				sheet.setColumnView(7, 25);
+				sheet.setColumnView(8, 25);
+				if (null != excelViewDataListAllocation.get(0).getPoAsRepVal5()
+						&& !excelViewDataListAllocation.get(0).getPoAsRepVal5()
+								.equals("")) {
+					sheet.setColumnView(9, 20);
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal5()
+						&& !excelViewDataListAllocation.get(1).getPoAsRepVal5()
+								.equals("")) {
+					sheet.setColumnView(9, 20);
+				}
+				if (null != excelViewDataListAllocation.get(0).getPoAsRepVal6()
+						&& !excelViewDataListAllocation.get(0).getPoAsRepVal6()
+								.equals("")) {
+					sheet.setColumnView(10, 20);
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal6()
+						&& !excelViewDataListAllocation.get(1).getPoAsRepVal6()
+								.equals("")) {
+					sheet.setColumnView(10, 20);
+				}
+				if (null != excelViewDataListAllocation.get(0).getPoAsRepVal7()
+						&& !excelViewDataListAllocation.get(0).getPoAsRepVal7()
+								.equals("")) {
+					sheet.setColumnView(11, 15);
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal7()
+						&& !excelViewDataListAllocation.get(1).getPoAsRepVal7()
+								.equals("")) {
+					sheet.setColumnView(11, 20);
+				}
+				if (null != excelViewDataListAllocation.get(0).getPoAsRepVal8()
+						&& !excelViewDataListAllocation.get(0).getPoAsRepVal8()
+								.equals("")) {
+					sheet.setColumnView(12, 15);
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal8()
+						&& !excelViewDataListAllocation.get(1).getPoAsRepVal8()
+								.equals("")) {
+					sheet.setColumnView(12, 20);
+				}
+				if (null != excelViewDataListAllocation.get(0).getPoAsRepVal9()
+						&& !excelViewDataListAllocation.get(0).getPoAsRepVal9()
+								.equals("")) {
+					sheet.setColumnView(13, 15);
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal9()
+						&& !excelViewDataListAllocation.get(1).getPoAsRepVal9()
+								.equals("")) {
+					sheet.setColumnView(13, 20);
+				}
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal10()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal10().equals("")) {
+					sheet.setColumnView(14, 15);
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal10()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal10().equals("")) {
+					sheet.setColumnView(14, 20);
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal11()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal11().equals("")) {
+					sheet.setColumnView(15, 15);
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal11()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal11().equals("")) {
+					sheet.setColumnView(15, 20);
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal12()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal12().equals("")) {
+					sheet.setColumnView(16, 15);
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal12()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal12().equals("")) {
+					sheet.setColumnView(16, 20);
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal13()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal13().equals("")) {
+					sheet.setColumnView(17, 15);
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal13()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal13().equals("")) {
+					sheet.setColumnView(17, 20);
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal14()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal14().equals("")) {
+					sheet.setColumnView(18, 15);
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal14()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal14().equals("")) {
+					sheet.setColumnView(18, 20);
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal15()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal15().equals("")) {
+					sheet.setColumnView(19, 15);
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal15()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal15().equals("")) {
+					sheet.setColumnView(19, 20);
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal16()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal16().equals("")) {
+					sheet.setColumnView(20, 15);
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal16()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal16().equals("")) {
+					sheet.setColumnView(20, 20);
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal17()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal17().equals("")) {
+					sheet.setColumnView(21, 15);
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal17()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal17().equals("")) {
+					sheet.setColumnView(21, 20);
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal18()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal18().equals("")) {
+					sheet.setColumnView(22, 15);
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal18()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal18().equals("")) {
+					sheet.setColumnView(22, 20);
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal19()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal19().equals("")) {
+					sheet.setColumnView(23, 15);
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal13()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal19().equals("")) {
+					sheet.setColumnView(23, 20);
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal20()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal20().equals("")) {
+					sheet.setColumnView(24, 15);
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal20()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal20().equals("")) {
+					sheet.setColumnView(24, 20);
+				}
+
+				sheet.setColumnView(25, 25);
+				rowCount = 1;
+
+				sheet.addCell(new Label(0, 0, "As Reported Label",
+						headcellFormat));
+				sheet.addCell(new Label(1, 0, "Normalized Label",
+						headcellFormat));
+				sheet.addCell(new Label(2, 0, "Sequence", headcellFormat));
+				sheet.addCell(new Label(3, 0, "Account Number", headcellFormat));
+				sheet.addCell(new Label(4, 0, "Time Period", headcellFormat));
+				sheet.addCell(new Label(5, 0, "Value1", headcellFormat));
+				sheet.addCell(new Label(6, 0, "Value2", headcellFormat));
+				sheet.addCell(new Label(7, 0, "Value3", headcellFormat));
+				sheet.addCell(new Label(8, 0, "Value4", headcellFormat));
+
+				if (null != excelViewDataListAllocation.get(0).getPoAsRepVal5()
+						&& !excelViewDataListAllocation.get(0).getPoAsRepVal5()
+								.equals("")) {
+					sheet.addCell(new Label(9, 0, "Value5", headcellFormat));
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal5()
+						&& !excelViewDataListAllocation.get(1).getPoAsRepVal5()
+								.equals("")) {
+					sheet.addCell(new Label(9, 0, "Value5", headcellFormat));
+				}
+				if (null != excelViewDataListAllocation.get(0).getPoAsRepVal6()
+						&& !excelViewDataListAllocation.get(0).getPoAsRepVal6()
+								.equals("")) {
+					sheet.addCell(new Label(10, 0, "Value6", headcellFormat));
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal6()
+						&& !excelViewDataListAllocation.get(1).getPoAsRepVal6()
+								.equals("")) {
+					sheet.addCell(new Label(10, 0, "Value6", headcellFormat));
+				}
+				if (null != excelViewDataListAllocation.get(0).getPoAsRepVal7()
+						&& !excelViewDataListAllocation.get(0).getPoAsRepVal7()
+								.equals("")) {
+					sheet.addCell(new Label(11, 0, "Value7", headcellFormat));
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal7()
+						&& !excelViewDataListAllocation.get(1).getPoAsRepVal7()
+								.equals("")) {
+					sheet.addCell(new Label(11, 0, "Value7", headcellFormat));
+				}
+				if (null != excelViewDataListAllocation.get(0).getPoAsRepVal8()
+						&& !excelViewDataListAllocation.get(0).getPoAsRepVal8()
+								.equals("")) {
+					sheet.addCell(new Label(12, 0, "Value8", headcellFormat));
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal8()
+						&& !excelViewDataListAllocation.get(1).getPoAsRepVal8()
+								.equals("")) {
+					sheet.addCell(new Label(12, 0, "Value8", headcellFormat));
+				}
+				if (null != excelViewDataListAllocation.get(0).getPoAsRepVal9()
+						&& !excelViewDataListAllocation.get(0).getPoAsRepVal9()
+								.equals("")) {
+					sheet.addCell(new Label(13, 0, "Value9", headcellFormat));
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal9()
+						&& !excelViewDataListAllocation.get(1).getPoAsRepVal9()
+								.equals("")) {
+					sheet.addCell(new Label(13, 0, "Value9", headcellFormat));
+				}
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal10()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal10().equals("")) {
+					sheet.addCell(new Label(14, 0, "Value10", headcellFormat));
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal10()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal10().equals("")) {
+					sheet.addCell(new Label(14, 0, "Value10", headcellFormat));
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal11()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal11().equals("")) {
+					sheet.addCell(new Label(15, 0, "Value11", headcellFormat));
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal11()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal11().equals("")) {
+					sheet.addCell(new Label(15, 0, "Value11", headcellFormat));
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal12()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal12().equals("")) {
+					sheet.addCell(new Label(16, 0, "Value12", headcellFormat));
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal12()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal12().equals("")) {
+					sheet.addCell(new Label(16, 0, "Value12", headcellFormat));
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal13()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal13().equals("")) {
+					sheet.addCell(new Label(17, 0, "Value13", headcellFormat));
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal13()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal13().equals("")) {
+					sheet.addCell(new Label(17, 0, "Value13", headcellFormat));
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal14()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal14().equals("")) {
+					sheet.addCell(new Label(18, 0, "Value14", headcellFormat));
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal14()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal14().equals("")) {
+					sheet.addCell(new Label(18, 0, "Value14", headcellFormat));
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal15()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal15().equals("")) {
+					sheet.addCell(new Label(19, 0, "Value15", headcellFormat));
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal15()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal15().equals("")) {
+					sheet.addCell(new Label(19, 0, "Value15", headcellFormat));
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal16()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal16().equals("")) {
+					sheet.addCell(new Label(20, 0, "Value16", headcellFormat));
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal16()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal16().equals("")) {
+					sheet.addCell(new Label(20, 0, "Value16", headcellFormat));
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal17()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal17().equals("")) {
+					sheet.addCell(new Label(21, 0, "Value17", headcellFormat));
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal17()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal17().equals("")) {
+					sheet.addCell(new Label(21, 0, "Value17", headcellFormat));
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal18()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal18().equals("")) {
+					sheet.addCell(new Label(22, 0, "Value18", headcellFormat));
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal18()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal18().equals("")) {
+					sheet.addCell(new Label(22, 0, "Value18", headcellFormat));
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal19()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal19().equals("")) {
+					sheet.addCell(new Label(23, 0, "Value19", headcellFormat));
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal19()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal19().equals("")) {
+					sheet.addCell(new Label(23, 0, "Value10", headcellFormat));
+				}
+
+				if (null != excelViewDataListAllocation.get(0)
+						.getPoAsRepVal20()
+						&& !excelViewDataListAllocation.get(0)
+								.getPoAsRepVal20().equals("")) {
+					sheet.addCell(new Label(24, 0, "Value20", headcellFormat));
+				} else if (null != excelViewDataListAllocation.get(1)
+						.getPoAsRepVal20()
+						&& !excelViewDataListAllocation.get(1)
+								.getPoAsRepVal20().equals("")) {
+					sheet.addCell(new Label(24, 0, "Value20", headcellFormat));
+				}
+
+				sheet.addCell(new Label(25, 0, "Custodian Name", headcellFormat));
+
+				for (ExcelViewData excelViewData : excelViewDataListAllocation) {
+					if (null != excelViewData.getPoAsRepLabel()) {
+						sheet.addCell(new Label(0, rowCount, excelViewData
+								.getPoAsRepLabel(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(0, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getNilLabel()) {
+						sheet.addCell(new Label(1, rowCount, excelViewData
+								.getNilLabel(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(1, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoIndexOrder()) {
+						sheet.addCell(new Number(2, rowCount, excelViewData
+								.getPoIndexOrder(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Number(2, rowCount, 0,
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getAccountNumber()) {
+						sheet.addCell(new Label(3, rowCount, excelViewData
+								.getAccountNumber(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(3, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getTimePeriod()) {
+						sheet.addCell(new Label(4, rowCount, excelViewData
+								.getTimePeriod(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(4, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal1()) {
+						sheet.addCell(new Label(5, rowCount, excelViewData
+								.getPoAsRepVal1(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(5, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal2()) {
+						sheet.addCell(new Label(6, rowCount, excelViewData
+								.getPoAsRepVal2(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(6, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal3()) {
+						sheet.addCell(new Label(7, rowCount, excelViewData
+								.getPoAsRepVal3(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(7, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal4()) {
+						sheet.addCell(new Label(8, rowCount, excelViewData
+								.getPoAsRepVal4(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(8, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal5()) {
+						sheet.addCell(new Label(9, rowCount, excelViewData
+								.getPoAsRepVal5(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(9, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal6()) {
+						sheet.addCell(new Label(10, rowCount, excelViewData
+								.getPoAsRepVal6(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(10, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal7()) {
+						sheet.addCell(new Label(11, rowCount, excelViewData
+								.getPoAsRepVal7(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(11, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal8()) {
+						sheet.addCell(new Label(12, rowCount, excelViewData
+								.getPoAsRepVal8(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(12, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal9()) {
+						sheet.addCell(new Label(13, rowCount, excelViewData
+								.getPoAsRepVal9(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(13, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal10()) {
+						sheet.addCell(new Label(14, rowCount, excelViewData
+								.getPoAsRepVal10(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(14, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal11()) {
+						sheet.addCell(new Label(15, rowCount, excelViewData
+								.getPoAsRepVal11(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(15, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal12()) {
+						sheet.addCell(new Label(16, rowCount, excelViewData
+								.getPoAsRepVal12(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(16, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal13()) {
+						sheet.addCell(new Label(17, rowCount, excelViewData
+								.getPoAsRepVal13(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(17, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal14()) {
+						sheet.addCell(new Label(18, rowCount, excelViewData
+								.getPoAsRepVal14(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(18, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal15()) {
+						sheet.addCell(new Label(19, rowCount, excelViewData
+								.getPoAsRepVal15(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(19, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal16()) {
+						sheet.addCell(new Label(20, rowCount, excelViewData
+								.getPoAsRepVal16(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(20, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal17()) {
+						sheet.addCell(new Label(21, rowCount, excelViewData
+								.getPoAsRepVal17(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(21, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal18()) {
+						sheet.addCell(new Label(22, rowCount, excelViewData
+								.getPoAsRepVal18(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(22, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal19()) {
+						sheet.addCell(new Label(23, rowCount, excelViewData
+								.getPoAsRepVal19(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(23, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal20()) {
+						sheet.addCell(new Label(24, rowCount, excelViewData
+								.getPoAsRepVal20(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(24, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getCustodianName()) {
+						sheet.addCell(new Label(25, rowCount, excelViewData
+								.getCustodianName(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(25, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					rowCount++;
+				}
+
+				String imagefileNamePath = (String) dataMap
+						.get("imagefileNamePath");
+				String imgPath = "";
+				String fileNameWithOutExt = "";
+				if (imagefileNamePath != null) {
+					int index = imagefileNamePath.lastIndexOf("/");
+					imgPath = imagefileNamePath.substring(0, index + 1);
+					fileName = imagefileNamePath.substring(index + 1);
+					fileNameWithOutExt = FilenameUtils
+							.removeExtension(fileName);
+					imagefileNamePath = "Graph_" + fileNameWithOutExt + ".png";
+
+				}
+
+				LOGGER.info("** imagefileNamePath=" + imgPath
+						+ imagefileNamePath);
+
+				File f = new File(imgPath + imagefileNamePath).getCanonicalFile();
+				if (f.exists()) {
+					if (imagefileNamePath != null) {
+						WritableImage image = new WritableImage(1, rowCount, // column,
+																				// row
+								6, 15, // width, height in terms of number of
+										// cells
+								f); // Supports only 'png' images
+						sheet.addImage(image);
+					}
+				}
+
+			}
+
+			if (null != excelViewDataListPC && !excelViewDataListPC.isEmpty()
+					&& excelViewDataListPC.size() > 0) {
+				sheet = workbook.createSheet("Performance Commentary", 0);
+				if (statement.equals("PC")) {
+					sheet = workbook.getSheet("Performance Commentary");
+					sheet.getSettings().setSelected(true);
+				}
+				sheet.setColumnView(0, 40);
+				sheet.setColumnView(1, 25);
+				sheet.setColumnView(2, 20);
+				sheet.setColumnView(3, 40);
+				sheet.setColumnView(4, 25);
+				sheet.setColumnView(5, 25);
+				sheet.setColumnView(6, 25);
+				sheet.setColumnView(7, 25);
+				sheet.setColumnView(8, 25);
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal5()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal5()
+								.equals("")) {
+					sheet.setColumnView(9, 20);
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal5()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal5()
+								.equals("")) {
+					sheet.setColumnView(9, 20);
+				}
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal6()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal6()
+								.equals("")) {
+					sheet.setColumnView(10, 20);
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal6()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal6()
+								.equals("")) {
+					sheet.setColumnView(10, 20);
+				}
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal7()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal7()
+								.equals("")) {
+					sheet.setColumnView(11, 15);
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal7()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal7()
+								.equals("")) {
+					sheet.setColumnView(11, 20);
+				}
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal8()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal8()
+								.equals("")) {
+					sheet.setColumnView(12, 15);
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal8()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal8()
+								.equals("")) {
+					sheet.setColumnView(12, 20);
+				}
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal9()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal9()
+								.equals("")) {
+					sheet.setColumnView(13, 15);
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal9()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal9()
+								.equals("")) {
+					sheet.setColumnView(13, 20);
+				}
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal10()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal10()
+								.equals("")) {
+					sheet.setColumnView(14, 15);
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal10()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal10()
+								.equals("")) {
+					sheet.setColumnView(14, 20);
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal11()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal11()
+								.equals("")) {
+					sheet.setColumnView(15, 15);
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal11()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal11()
+								.equals("")) {
+					sheet.setColumnView(15, 20);
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal12()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal12()
+								.equals("")) {
+					sheet.setColumnView(16, 15);
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal12()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal12()
+								.equals("")) {
+					sheet.setColumnView(16, 20);
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal13()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal13()
+								.equals("")) {
+					sheet.setColumnView(17, 15);
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal13()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal13()
+								.equals("")) {
+					sheet.setColumnView(17, 20);
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal14()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal14()
+								.equals("")) {
+					sheet.setColumnView(18, 15);
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal14()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal14()
+								.equals("")) {
+					sheet.setColumnView(18, 20);
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal15()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal15()
+								.equals("")) {
+					sheet.setColumnView(19, 15);
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal15()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal15()
+								.equals("")) {
+					sheet.setColumnView(19, 20);
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal16()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal16()
+								.equals("")) {
+					sheet.setColumnView(20, 15);
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal16()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal16()
+								.equals("")) {
+					sheet.setColumnView(20, 20);
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal17()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal17()
+								.equals("")) {
+					sheet.setColumnView(21, 15);
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal17()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal17()
+								.equals("")) {
+					sheet.setColumnView(21, 20);
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal18()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal18()
+								.equals("")) {
+					sheet.setColumnView(22, 15);
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal18()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal18()
+								.equals("")) {
+					sheet.setColumnView(22, 20);
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal19()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal19()
+								.equals("")) {
+					sheet.setColumnView(23, 15);
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal13()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal19()
+								.equals("")) {
+					sheet.setColumnView(23, 20);
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal20()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal20()
+								.equals("")) {
+					sheet.setColumnView(24, 15);
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal20()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal20()
+								.equals("")) {
+					sheet.setColumnView(24, 20);
+				}
+
+				sheet.setColumnView(25, 25);
+				rowCount = 1;
+
+				sheet.addCell(new Label(0, 0, "As Reported Label",
+						headcellFormat));
+				sheet.addCell(new Label(1, 0, "Normalized Label",
+						headcellFormat));
+				sheet.addCell(new Label(2, 0, "Sequence", headcellFormat));
+				sheet.addCell(new Label(3, 0, "Account Number", headcellFormat));
+				sheet.addCell(new Label(4, 0, "Time Period", headcellFormat));
+				sheet.addCell(new Label(5, 0, "Value1", headcellFormat));
+				sheet.addCell(new Label(6, 0, "Value2", headcellFormat));
+				sheet.addCell(new Label(7, 0, "Value3", headcellFormat));
+				sheet.addCell(new Label(8, 0, "Value4", headcellFormat));
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal5()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal5()
+								.equals("")) {
+					sheet.addCell(new Label(9, 0, "Value5", headcellFormat));
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal5()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal5()
+								.equals("")) {
+					sheet.addCell(new Label(9, 0, "Value5", headcellFormat));
+				}
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal6()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal6()
+								.equals("")) {
+					sheet.addCell(new Label(10, 0, "Value6", headcellFormat));
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal6()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal6()
+								.equals("")) {
+					sheet.addCell(new Label(10, 0, "Value6", headcellFormat));
+				}
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal7()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal7()
+								.equals("")) {
+					sheet.addCell(new Label(11, 0, "Value7", headcellFormat));
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal7()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal7()
+								.equals("")) {
+					sheet.addCell(new Label(11, 0, "Value7", headcellFormat));
+				}
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal8()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal8()
+								.equals("")) {
+					sheet.addCell(new Label(12, 0, "Value8", headcellFormat));
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal8()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal8()
+								.equals("")) {
+					sheet.addCell(new Label(12, 0, "Value8", headcellFormat));
+				}
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal9()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal9()
+								.equals("")) {
+					sheet.addCell(new Label(13, 0, "Value9", headcellFormat));
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal9()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal9()
+								.equals("")) {
+					sheet.addCell(new Label(13, 0, "Value9", headcellFormat));
+				}
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal10()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal10()
+								.equals("")) {
+					sheet.addCell(new Label(14, 0, "Value10", headcellFormat));
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal10()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal10()
+								.equals("")) {
+					sheet.addCell(new Label(14, 0, "Value10", headcellFormat));
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal11()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal11()
+								.equals("")) {
+					sheet.addCell(new Label(15, 0, "Value11", headcellFormat));
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal11()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal11()
+								.equals("")) {
+					sheet.addCell(new Label(15, 0, "Value11", headcellFormat));
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal12()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal12()
+								.equals("")) {
+					sheet.addCell(new Label(16, 0, "Value12", headcellFormat));
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal12()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal12()
+								.equals("")) {
+					sheet.addCell(new Label(16, 0, "Value12", headcellFormat));
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal13()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal13()
+								.equals("")) {
+					sheet.addCell(new Label(17, 0, "Value13", headcellFormat));
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal13()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal13()
+								.equals("")) {
+					sheet.addCell(new Label(17, 0, "Value13", headcellFormat));
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal14()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal14()
+								.equals("")) {
+					sheet.addCell(new Label(18, 0, "Value14", headcellFormat));
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal14()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal14()
+								.equals("")) {
+					sheet.addCell(new Label(18, 0, "Value14", headcellFormat));
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal15()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal15()
+								.equals("")) {
+					sheet.addCell(new Label(19, 0, "Value15", headcellFormat));
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal15()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal15()
+								.equals("")) {
+					sheet.addCell(new Label(19, 0, "Value15", headcellFormat));
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal16()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal16()
+								.equals("")) {
+					sheet.addCell(new Label(20, 0, "Value16", headcellFormat));
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal16()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal16()
+								.equals("")) {
+					sheet.addCell(new Label(20, 0, "Value16", headcellFormat));
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal17()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal17()
+								.equals("")) {
+					sheet.addCell(new Label(21, 0, "Value17", headcellFormat));
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal17()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal17()
+								.equals("")) {
+					sheet.addCell(new Label(21, 0, "Value17", headcellFormat));
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal18()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal18()
+								.equals("")) {
+					sheet.addCell(new Label(22, 0, "Value18", headcellFormat));
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal18()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal18()
+								.equals("")) {
+					sheet.addCell(new Label(22, 0, "Value18", headcellFormat));
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal19()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal19()
+								.equals("")) {
+					sheet.addCell(new Label(23, 0, "Value19", headcellFormat));
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal19()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal19()
+								.equals("")) {
+					sheet.addCell(new Label(23, 0, "Value10", headcellFormat));
+				}
+
+				if (null != excelViewDataListPC.get(0).getPoAsRepVal20()
+						&& !excelViewDataListPC.get(0).getPoAsRepVal20()
+								.equals("")) {
+					sheet.addCell(new Label(24, 0, "Value20", headcellFormat));
+				} else if (null != excelViewDataListPC.get(1).getPoAsRepVal20()
+						&& !excelViewDataListPC.get(1).getPoAsRepVal20()
+								.equals("")) {
+					sheet.addCell(new Label(24, 0, "Value20", headcellFormat));
+				}
+
+				sheet.addCell(new Label(25, 0, "Custodian Name", headcellFormat));
+
+				for (ExcelViewData excelViewData : excelViewDataListPC) {
+					if (null != excelViewData.getPoAsRepLabel()) {
+						sheet.addCell(new Label(0, rowCount, excelViewData
+								.getPoAsRepLabel(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(0, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getNilLabel()) {
+						sheet.addCell(new Label(1, rowCount, excelViewData
+								.getNilLabel(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(1, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoIndexOrder()) {
+						sheet.addCell(new Number(2, rowCount, excelViewData
+								.getPoIndexOrder(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Number(2, rowCount, 0,
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getAccountNumber()) {
+						sheet.addCell(new Label(3, rowCount, excelViewData
+								.getAccountNumber(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(3, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getTimePeriod()) {
+						sheet.addCell(new Label(4, rowCount, excelViewData
+								.getTimePeriod(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(4, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal1()) {
+						sheet.addCell(new Label(5, rowCount, excelViewData
+								.getPoAsRepVal1(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(5, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal2()) {
+						sheet.addCell(new Label(6, rowCount, excelViewData
+								.getPoAsRepVal2(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(6, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal3()) {
+						sheet.addCell(new Label(7, rowCount, excelViewData
+								.getPoAsRepVal3(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(7, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal4()) {
+						sheet.addCell(new Label(8, rowCount, excelViewData
+								.getPoAsRepVal4(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(8, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal5()) {
+						sheet.addCell(new Label(9, rowCount, excelViewData
+								.getPoAsRepVal5(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(9, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal6()) {
+						sheet.addCell(new Label(10, rowCount, excelViewData
+								.getPoAsRepVal6(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(10, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal7()) {
+						sheet.addCell(new Label(11, rowCount, excelViewData
+								.getPoAsRepVal7(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(11, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal8()) {
+						sheet.addCell(new Label(12, rowCount, excelViewData
+								.getPoAsRepVal8(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(12, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal9()) {
+						sheet.addCell(new Label(13, rowCount, excelViewData
+								.getPoAsRepVal9(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(13, rowCount, "-",
+								cellFormatWithBorder));
+					}
+					if (null != excelViewData.getPoAsRepVal10()) {
+						sheet.addCell(new Label(14, rowCount, excelViewData
+								.getPoAsRepVal10(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(14, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal11()) {
+						sheet.addCell(new Label(15, rowCount, excelViewData
+								.getPoAsRepVal11(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(15, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal12()) {
+						sheet.addCell(new Label(16, rowCount, excelViewData
+								.getPoAsRepVal12(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(16, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal13()) {
+						sheet.addCell(new Label(17, rowCount, excelViewData
+								.getPoAsRepVal13(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(17, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal14()) {
+						sheet.addCell(new Label(18, rowCount, excelViewData
+								.getPoAsRepVal14(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(18, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal15()) {
+						sheet.addCell(new Label(19, rowCount, excelViewData
+								.getPoAsRepVal15(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(19, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal16()) {
+						sheet.addCell(new Label(20, rowCount, excelViewData
+								.getPoAsRepVal16(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(20, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal17()) {
+						sheet.addCell(new Label(21, rowCount, excelViewData
+								.getPoAsRepVal17(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(21, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal18()) {
+						sheet.addCell(new Label(22, rowCount, excelViewData
+								.getPoAsRepVal18(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(22, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal19()) {
+						sheet.addCell(new Label(23, rowCount, excelViewData
+								.getPoAsRepVal19(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(23, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getPoAsRepVal20()) {
+						sheet.addCell(new Label(24, rowCount, excelViewData
+								.getPoAsRepVal20(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(24, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					if (null != excelViewData.getCustodianName()) {
+						sheet.addCell(new Label(25, rowCount, excelViewData
+								.getCustodianName(), cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(25, rowCount, "-",
+								cellFormatWithBorder));
+					}
+
+					rowCount++;
+				}
+			}
+
+		}
+		// re designing normalization excel import for section generic
+		Map<String,String> sectionMappingMap=(Map<String,String>)dataMap.get("sectionMappingMap");
+		if(sectionMappingMap!=null){
+			
+			String sheetName="";
+			int sheetNo=0;
+			Iterator<Entry<String,String>> sectionMappingEntries = sectionMappingMap.entrySet().iterator();
+			while (sectionMappingEntries.hasNext()) {
+			  Entry<String,String> thisEntry = (Entry<String,String>) sectionMappingEntries.next();
+			  //String sectionName = thisEntry.getKey();
+			  sheetName = thisEntry.getValue();
+			  if(sheetName!=null){
+				  LinkedHashSet<ExcelViewData> excelViewDataSet = (LinkedHashSet<ExcelViewData>) dataMap.get(sheetName);
+				  if(!CollectionUtils.isEmpty(excelViewDataSet)){
+					  List<ExcelViewData> excelViewDataList = new ArrayList<ExcelViewData>(excelViewDataSet);
+						if(parserId!=14)
+						{
+							Collections.sort(excelViewDataList);
+						}
+						if (null != excelViewDataList && !excelViewDataList.isEmpty()
+								&& excelViewDataList.size() > 0) {
+							 sheetName =sheetName.replaceAll("/", " ");
+							prepareSheet(excelViewDataList,workbook,sheet,sheetName,sheetNo,parserId);
+							sheetNo++;
+						}
+				  }
+					
+			  }
+			 
+			}
+		}
+
+	}
+
+	
+	
+	private void prepareSheet(List<ExcelViewData> excelViewDataList,WritableWorkbook workbook,WritableSheet sheet,String sheetName,int sheetNo, Integer parserId){
+
+		sheet = workbook.createSheet(sheetName, sheetNo);
+		sheet = workbook.getSheet(sheetName);
+		//sheet.getSettings().setSelected(true);
+		
+		sheet.setColumnView(0, 10);
+		sheet.setColumnView(1, 45);
+		if(parserId!=14){
+			sheet.setColumnView(2, 30);
+		}
+		sheet.setColumnView(3, 8);
+		sheet.setColumnView(4, 8);
+		sheet.setColumnView(5, 20);
+		sheet.setColumnView(6, 20);
+		sheet.setColumnView(7, 20);
+		sheet.setColumnView(8, 15);
+		sheet.setColumnView(9, 15);
+
+		sheet.setColumnView(10, 15);
+		sheet.setColumnView(11, 15);
+		sheet.setColumnView(12, 15);
+		sheet.setColumnView(13, 15);
+		sheet.setColumnView(14, 15);
+		sheet.setColumnView(15, 15);
+		sheet.setColumnView(16, 15);
+		sheet.setColumnView(17, 15);
+		sheet.setColumnView(18, 15);
+		sheet.setColumnView(19, 15);
+		sheet.setColumnView(20, 15);
+		sheet.setColumnView(21, 15);
+		sheet.setColumnView(22, 15);
+		sheet.setColumnView(23, 15);
+		sheet.setColumnView(24, 15);
+		sheet.setColumnView(25, 15);
+		sheet.setColumnView(26, 15);
+
+
+		int rowCount = 1;
+		try{
+			sheet.addCell(new Label(0, 0, "Sequence",
+					headcellFormat));
+			sheet.addCell(new Label(1, 0, "As Reported Label",
+					headcellFormat));
+			
+			sheet.addCell(new Label(2, 0, "Normalized Label",
+					headcellFormat));
+			
+			
+			sheet.addCell(new Label(3, 0, "Sub Section", headcellFormat));
+			sheet.addCell(new Label(4, 0, "Breakup Flag", headcellFormat));
+			sheet.addCell(new Label(5, 0, "Page No", headcellFormat));
+			sheet.addCell(new Label(6, 0, "Value1", headcellFormat));
+			sheet.addCell(new Label(7, 0, "Value2", headcellFormat));
+			sheet.addCell(new Label(8, 0, "Value3", headcellFormat));
+			sheet.addCell(new Label(9, 0, "Value4", headcellFormat));
+			sheet.addCell(new Label(10, 0, "Value5", headcellFormat));
+			sheet.addCell(new Label(11, 0, "Value6", headcellFormat));
+			sheet.addCell(new Label(12, 0, "Value7", headcellFormat));
+			sheet.addCell(new Label(13, 0, "Value8", headcellFormat));
+			sheet.addCell(new Label(14, 0, "Value9", headcellFormat));
+			sheet.addCell(new Label(15, 0, "Value10", headcellFormat));
+			sheet.addCell(new Label(16, 0, "Value11", headcellFormat));
+			sheet.addCell(new Label(17, 0, "Value12", headcellFormat));
+			sheet.addCell(new Label(18, 0, "Value13", headcellFormat));
+			sheet.addCell(new Label(19, 0, "Value14", headcellFormat));
+			sheet.addCell(new Label(20, 0, "Value15", headcellFormat));
+			sheet.addCell(new Label(21, 0, "Value16", headcellFormat));
+			sheet.addCell(new Label(22, 0, "Value17", headcellFormat));
+			sheet.addCell(new Label(23, 0, "Value18", headcellFormat));
+			sheet.addCell(new Label(24, 0, "Value19", headcellFormat));
+			sheet.addCell(new Label(25, 0, "Value20", headcellFormat));
+			sheet.addCell(new Label(26, 0, "Non English Label", headcellFormat));
+
+			Double doubleValue =null;
+			Integer integreValue=null;
+			for (ExcelViewData excelViewData : excelViewDataList) {
+				if (null != excelViewData.getPoIndexOrder()) {
+					sheet.addCell(new Label(0, rowCount, excelViewData.getPoIndexOrder().toString(), cellFormatWithBorder));
+				} else {
+					sheet.addCell(new Label(0, rowCount, "-",cellFormatWithBorder));
+				}
+				
+				if (null != excelViewData.getPoAsRepLabel()) {
+					sheet.addCell(new Label(1, rowCount, excelViewData
+							.getPoAsRepLabel(), cellFormatWithBorder));
+				} else {
+					sheet.addCell(new Label(1, rowCount, "-",
+							cellFormatWithBorder));
+				}
+				if (null != excelViewData.getNilLabel()) {
+					sheet.addCell(new Label(2, rowCount, excelViewData
+							.getNilLabel(), cellFormatWithBorder));
+				} else {
+					sheet.addCell(new Label(2, rowCount, "-",
+							cellFormatWithBorder));
+				}
+				if (null != excelViewData.getPoSubSectionParserOutPut()) {
+					sheet.addCell(new Label(3, rowCount, excelViewData
+							.getPoSubSectionParserOutPut(),
+							cellFormatWithBorder));
+				} else {
+					sheet.addCell(new Label(3, rowCount, "-",
+							cellFormatWithBorder));
+				}
+				if (null != excelViewData.getPoBreakUp()
+						&& excelViewData.getPoBreakUp().length() > 0
+						&& "Y".equals(excelViewData.getPoBreakUp())) {
+
+					sheet.addCell(new Label(4, rowCount, excelViewData
+							.getPoBreakUp(), cellFormatWithBorder));
+				} else {
+					sheet.addCell(new Label(4, rowCount, "",
+							cellFormatWithBorder));
+				}
+				if (null != excelViewData.getPageNo()) {
+					sheet.addCell(new Label(5, rowCount, excelViewData
+							.getPageNo(), cellFormatWithBorder));
+				} else {
+					sheet.addCell(new Label(5, rowCount, "-",
+							cellFormatWithBorder));
+				}
+				
+				if (null != excelViewData.getPoAsRepVal1()) {
+					String poAsRepVal1=excelViewData.getPoAsRepVal1().trim();
+					if (WriteExcel.isNumeric(poAsRepVal1)) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal1);
+						sheet.addCell(new Number(6, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal1)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal1);
+						sheet.addCell(new Number(6, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(6, rowCount, poAsRepVal1, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(6, rowCount, "-", cellFormatWithBorder));
+				}
+				
+				if (null != excelViewData.getPoAsRepVal2()) {
+					String poAsRepVal2=excelViewData.getPoAsRepVal2().trim();
+					if (WriteExcel.isNumeric(poAsRepVal2)) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal2);
+						sheet.addCell(new Number(7, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal2)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal2.trim());
+						sheet.addCell(new Number(7, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(7, rowCount, poAsRepVal2, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(7, rowCount, "-", cellFormatWithBorder));
+				}
+
+				if (null != excelViewData.getPoAsRepVal3()) {
+					String poAsRepVal3=excelViewData.getPoAsRepVal3().trim();
+					if (WriteExcel.isNumeric(poAsRepVal3)) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal3);
+						sheet.addCell(new Number(8, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal3)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal3.trim());
+						sheet.addCell(new Number(8, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(8, rowCount, poAsRepVal3, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(8, rowCount, "-", cellFormatWithBorder));
+				}
+				
+				if (null != excelViewData.getPoAsRepVal4()) {
+					String poAsRepVal4=excelViewData.getPoAsRepVal4().trim();
+					if (WriteExcel.isNumeric(poAsRepVal4)) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal4);
+						sheet.addCell(new Number(9, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal4)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal4);
+						sheet.addCell(new Number(9, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(9, rowCount, poAsRepVal4, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(9, rowCount, "-", cellFormatWithBorder));
+				}
+				
+				if (null != excelViewData.getPoAsRepVal5()) {
+					String poAsRepVal5=excelViewData.getPoAsRepVal5().trim();
+					if (WriteExcel.isNumeric(poAsRepVal5)) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal5);
+						sheet.addCell(new Number(10, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal5)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal5);
+						sheet.addCell(new Number(10, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(10, rowCount, poAsRepVal5, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(10, rowCount, "-", cellFormatWithBorder));
+				}
+				
+				if (null != excelViewData.getPoAsRepVal6()) {
+					String poAsRepVal6=excelViewData.getPoAsRepVal6().trim();
+					if (WriteExcel.isNumeric(poAsRepVal6)) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal6);
+						sheet.addCell(new Number(11, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal6)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal6);
+						sheet.addCell(new Number(11, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(11, rowCount, poAsRepVal6, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(11, rowCount, "-", cellFormatWithBorder));
+				}
+
+				if (null != excelViewData.getPoAsRepVal7()) {
+					String poAsRepVal7=excelViewData.getPoAsRepVal7().trim();
+					if (WriteExcel.isNumeric(poAsRepVal7)) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal7);
+						sheet.addCell(new Number(12, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal7)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal7);
+						sheet.addCell(new Number(12, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(12, rowCount, poAsRepVal7, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(12, rowCount, "-", cellFormatWithBorder));
+				}
+				
+				if (null != excelViewData.getPoAsRepVal8()) {
+					String poAsRepVal8=excelViewData.getPoAsRepVal8().trim();
+					if (WriteExcel.isNumeric(poAsRepVal8)) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal8);
+						sheet.addCell(new Number(13, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal8)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal8);
+						sheet.addCell(new Number(13, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(13, rowCount, poAsRepVal8, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(13, rowCount, "-", cellFormatWithBorder));
+				}
+
+				if (null != excelViewData.getPoAsRepVal9()) {
+					String poAsRepVal9=excelViewData.getPoAsRepVal9().trim();
+					if (WriteExcel.isNumeric(poAsRepVal9)) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal9);
+						sheet.addCell(new Number(14, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal9)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal9);
+						sheet.addCell(new Number(14, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(14, rowCount, poAsRepVal9, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(14, rowCount, "-", cellFormatWithBorder));
+				}
+				
+				if (null != excelViewData.getPoAsRepVal10()) {
+					String poAsRepVal10=excelViewData.getPoAsRepVal10().trim();
+					if (WriteExcel.isNumeric(excelViewData.getPoAsRepVal10())) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal10);
+						sheet.addCell(new Number(15, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal10)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal10);
+						sheet.addCell(new Number(15, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(15, rowCount, poAsRepVal10, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(15, rowCount, "-", cellFormatWithBorder));
+				}
+				
+				if (null != excelViewData.getPoAsRepVal11()) {
+					String poAsRepVal11=excelViewData.getPoAsRepVal11().trim();
+					if (WriteExcel.isNumeric(poAsRepVal11)) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal11);
+						sheet.addCell(new Number(16, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal11)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal11);
+						sheet.addCell(new Number(16, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(16, rowCount, poAsRepVal11, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(16, rowCount, "-", cellFormatWithBorder));
+				}
+				
+				if (null != excelViewData.getPoAsRepVal12()) {
+					String poAsRepVal12=excelViewData.getPoAsRepVal12().trim();
+					if (WriteExcel.isNumeric(poAsRepVal12)) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal12);
+						sheet.addCell(new Number(17, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal12)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal12);
+						sheet.addCell(new Number(17, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(17, rowCount, poAsRepVal12, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(17, rowCount, "-", cellFormatWithBorder));
+				}
+				
+				if (null != excelViewData.getPoAsRepVal13()) {
+					String poAsRepVal13=excelViewData.getPoAsRepVal13().trim();
+					if (WriteExcel.isNumeric(poAsRepVal13)) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal13);
+						sheet.addCell(new Number(18, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal13)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal13);
+						sheet.addCell(new Number(18, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(18, rowCount, poAsRepVal13, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(18, rowCount, "-", cellFormatWithBorder));
+				}
+				
+				if (null != excelViewData.getPoAsRepVal14()) {
+					String poAsRepVal14=excelViewData.getPoAsRepVal14().trim();
+					if (WriteExcel.isNumeric(poAsRepVal14)) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal14);
+						sheet.addCell(new Number(19, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal14)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal14);
+						sheet.addCell(new Number(19, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(19, rowCount, poAsRepVal14, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(19, rowCount, "-", cellFormatWithBorder));
+				}
+
+				
+				if (null != excelViewData.getPoAsRepVal15()) {
+					String poAsRepVal15=excelViewData.getPoAsRepVal15().trim();
+					if (WriteExcel.isNumeric(excelViewData.getPoAsRepVal15())) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal15);
+						sheet.addCell(new Number(20, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal15)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal15);
+						sheet.addCell(new Number(20, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(20, rowCount, poAsRepVal15, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(20, rowCount, "-", cellFormatWithBorder));
+				}
+				
+				if (null != excelViewData.getPoAsRepVal16()) {
+					String poAsRepVal16=excelViewData.getPoAsRepVal16().trim();
+					if (WriteExcel.isNumeric(poAsRepVal16)) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal16);
+						sheet.addCell(new Number(21, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal16)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal16);
+						sheet.addCell(new Number(21, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(21, rowCount, poAsRepVal16, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(21, rowCount, "-", cellFormatWithBorder));
+				}
+				if (null != excelViewData.getPoAsRepVal17()) {
+					String poAsRepVal17=excelViewData.getPoAsRepVal17().trim();
+					if (WriteExcel.isNumeric(poAsRepVal17)) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal17);
+						sheet.addCell(new Number(22, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal17)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal17);
+						sheet.addCell(new Number(22, rowCount,doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(22, rowCount, poAsRepVal17, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(22, rowCount, "-", cellFormatWithBorder));
+				}
+				
+				if (null != excelViewData.getPoAsRepVal18()) {
+					String poAsRepVal18=excelViewData.getPoAsRepVal18().trim();
+					if (WriteExcel.isNumeric(poAsRepVal18)) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal18);
+						sheet.addCell(new Number(23, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal18)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal18);
+						sheet.addCell(new Number(23, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(23, rowCount, poAsRepVal18, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(23, rowCount, "-", cellFormatWithBorder));
+				}
+				
+				if (null != excelViewData.getPoAsRepVal19()) {
+					String poAsRepVal19=excelViewData.getPoAsRepVal19().trim();
+					if (WriteExcel.isNumeric(poAsRepVal19)) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal19);
+						sheet.addCell(new Number(24, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal19)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal19);
+						sheet.addCell(new Number(24, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(24, rowCount, poAsRepVal19, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(24, rowCount, "-", cellFormatWithBorder));
+				}
+
+				if (null != excelViewData.getPoAsRepVal20()) {
+					String poAsRepVal20=excelViewData.getPoAsRepVal20().trim();
+					if (WriteExcel.isNumeric(poAsRepVal20)) {
+						integreValue = WriteExcel.NumericConvert(poAsRepVal20);
+						sheet.addCell(new Number(25, rowCount, integreValue,cellFormatWithBorder));
+					} else if (WriteExcel.isDoubleValue(poAsRepVal20)) {
+						doubleValue = WriteExcel.doubleValueConvert(poAsRepVal20);
+						sheet.addCell(new Number(25, rowCount, doubleValue,cellFormatWithBorder));
+					} else {
+						sheet.addCell(new Label(25, rowCount, poAsRepVal20, cellFormatWithBorder));
+					}
+				} else {
+					sheet.addCell(new Label(25, rowCount, "-", cellFormatWithBorder));
+				}
+				if (null != excelViewData.getNonEnglishLable()) {
+					sheet.addCell(new Label(26, rowCount, excelViewData
+							.getNonEnglishLable(), cellFormatWithBorder));
+				} else {
+					sheet.addCell(new Label(26, rowCount, "-",
+							cellFormatWithBorder));
+				}
+				rowCount++;
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	}

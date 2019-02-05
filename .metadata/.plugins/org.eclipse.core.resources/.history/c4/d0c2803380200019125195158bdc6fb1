@@ -1,0 +1,554 @@
+package com.livespread.service;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import com.livespread.command.AsRepStatementCommand;
+import com.livespread.command.NormalisedLabelAndValues;
+import com.livespread.command.NormalizedDetails;
+import com.livespread.domain.AsRepStatement;
+import com.livespread.domain.NamedNativeQueryName;
+import com.livespread.util.GetQuartorByMonthPeriod;
+import com.rage.extendeddao.ExtendedGenericDao;
+
+@Service("CRTemplateServiceImpl")
+public class CRTemplateServiceImpl implements CRTemplateService
+{
+	private Logger LOGGER = Logger.getLogger(CRTemplateServiceImpl.class);
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+
+	
+	@Override
+	public Map<String, Object> getHeaderDetailsForCRTemplate(Integer filingId)
+	{
+			LOGGER.info("-------------- getHeaderDetailsForCRTemplate started -------------------");
+			HashMap<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("filingId", filingId);
+			String companyName="";
+			String currency="";
+			String month=null;
+			Integer tempMonth=0;
+			Integer period=null;
+			String financialScale=null;
+			String quality="Unaudited";
+			List<Object> listOfNormalisedLabels = null;
+			listOfNormalisedLabels = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getAsRepStatementHeaderDetailsCRTemplate,AsRepStatement.class, parameters);
+		
+			List<String> yearList=new ArrayList<>();
+			List<Integer> periodList=new ArrayList<>();
+ 			Map<String, Object> mapOfHeaderDetails = new LinkedHashMap<String, Object>();
+ 			List<String> arsIdList  = new ArrayList<String>();
+ 			List<AsRepStatementCommand> asRepStatementCommandList = new ArrayList<>();
+ 			AsRepStatementCommand asRepStatementCommand = null;
+ 			
+ 			Map<String, String> unitMap =new HashMap<>();
+ 			unitMap.put("actuals", "AC");
+ 			unitMap.put("thousands", "M");
+ 			unitMap.put("millions", "MM");
+ 			unitMap.put("billions", "MMM");
+ 			unitMap.put("trilions", "MMMM");
+ 			
+			for (Object object : listOfNormalisedLabels) {
+				Object[] objIn = (Object[]) object;
+				asRepStatementCommand = new AsRepStatementCommand();
+				if(objIn[1]!=null){
+					try{
+					period=Integer.parseInt(objIn[1].toString());
+					asRepStatementCommand.setPeriod(period);
+					periodList.add(period);
+					}catch(NumberFormatException nfe){
+						LOGGER.error("period is not valid:"+nfe);
+					}
+				}
+					
+				if(objIn[0]!=null){
+				//Here we fetch month from date like 12/31/2016 eg: 12 
+				String strDate=objIn[0].toString();
+				asRepStatementCommand.setStatementDate(strDate);
+				if(strDate!=null && !strDate.isEmpty()){
+					String[] ateArry=strDate.split("/");
+					try{
+					//here insert month only for Annual period(12)
+					if(period==12){
+					if(tempMonth<Integer.parseInt(ateArry[0]))
+					{
+					 month=ateArry[0];
+					 tempMonth=Integer.parseInt(ateArry[0]);
+					 financialScale=objIn[7]!=null? objIn[7].toString() :"";
+					}
+					
+					}
+					asRepStatementCommand.setYear(ateArry[2]);
+					yearList.add(ateArry[2]+"~"+ateArry[0]);
+					asRepStatementCommand.setTimePeriod(ateArry[2]+"~"+ateArry[0]);
+					}catch(NumberFormatException nfe){
+						LOGGER.error("Valid Date is not exist for ARS Date:"+nfe);
+					}
+				}
+				if(objIn[2]!=null){
+				currency=objIn[2].toString();
+				}if(objIn[4]!=null){
+					companyName=objIn[4].toString();
+				}
+				
+				if(objIn[8]!=null && objIn[8].toString().equalsIgnoreCase("Audited"))
+				{
+					quality=objIn[8].toString();
+				}
+				
+				arsIdList.add(objIn[5].toString());
+				asRepStatementCommand.setArsId(Integer.parseInt(objIn[5].toString()));
+				asRepStatementCommand.setArsUnit(objIn[7]!=null? objIn[7].toString() :"");
+				asRepStatementCommand.setAuditedUnaudited(quality);
+				asRepStatementCommandList.add(asRepStatementCommand);
+			}
+			
+		
+			LOGGER.info("-------------- getHeaderDetailsForCRTemplate ended -------------------");
+			}//end for
+			if(month==null)
+			{
+				month = "12";
+			}
+			String unitValue =null;
+			if(financialScale!=null && financialScale.trim().length()>0)
+			{
+				unitValue = unitMap.get(financialScale.toLowerCase());
+			}
+			else
+			{
+				for (AsRepStatementCommand selectedAsRepStatement : asRepStatementCommandList) 
+				{
+					
+					if(selectedAsRepStatement.getArsUnit()!=null)
+					{
+						financialScale=selectedAsRepStatement.getArsUnit();
+						unitValue=unitMap.get(financialScale.toLowerCase());
+						break;
+					}
+				}
+			}
+			mapOfHeaderDetails.put("Company Name", companyName);
+			mapOfHeaderDetails.put("Currency", currency);
+			mapOfHeaderDetails.put("Fiscal Year End", month);
+			mapOfHeaderDetails.put("Time Period", yearList);
+			mapOfHeaderDetails.put("periodList", periodList);
+			mapOfHeaderDetails.put("asRepStatementObjectList", asRepStatementCommandList);
+			mapOfHeaderDetails.put("Financial Scale",unitValue);
+			return mapOfHeaderDetails;
+	
+}//end function
+	@SuppressWarnings("unchecked")
+	@Override
+	public void downloadCRTemplateForClient(
+			Map<String, List<NormalisedLabelAndValues>> normalzedLabelsDetailsMap,
+			String oparationName, String customerName,
+			String downloadedCRTemplatePath, String CRTemplateFilePath,
+			Map<String, Object> mapOfHeaders) {
+		LOGGER.info("** Start--downloadCRTemplate start");
+		try {
+			/*
+			 * Create copy of main file to another file
+			 */
+			String mainFilename = CRTemplateFilePath;
+			String filePathToDownload = downloadedCRTemplatePath
+					+ customerName + ".xlsx";
+			File fileToCopy = new File(mainFilename).getCanonicalFile();
+			File fileToWrite = new File(filePathToDownload).getCanonicalFile();
+			FileUtils.copyFile(fileToCopy, fileToWrite);
+			/*
+			 * End copy file code
+			 */
+			FileInputStream fis = new FileInputStream(filePathToDownload);
+			XSSFWorkbook book = new XSSFWorkbook(fis);
+			XSSFSheet sheet = book.getSheet("Financials");
+			/*
+			 * Insert all item lables value and their row number from excel in
+			 * Map
+			 */
+			Map<String, List<NormalizedDetails>> lableAndValueMap = new LinkedHashMap<String, List<NormalizedDetails>>();
+			for (Map.Entry<String, List<NormalisedLabelAndValues>> normalisedLabelAndValues : normalzedLabelsDetailsMap.entrySet()) 
+			{
+				List<NormalisedLabelAndValues> normLableList = normalisedLabelAndValues.getValue();
+				for (NormalisedLabelAndValues normlableObj : normLableList) 
+				{
+					if ((!normlableObj.getHeader().equalsIgnoreCase("Y") && !normlableObj.getDisplayFormat().equalsIgnoreCase("B")) || (normlableObj.getHeader().equalsIgnoreCase("A"))) 
+					{
+						lableAndValueMap.put(normlableObj.getLabel(),normlableObj.getList());
+					}
+				}
+			}
+			
+			Map<String, List<String>> annualMap = new LinkedHashMap<>();
+			Map<String, List<String>> nineSixMonthMap = new LinkedHashMap<>();
+			Map<String, List<String>> threeMonthMap = new LinkedHashMap<>();
+			Map<String, List<String>> oneMonthMap = new LinkedHashMap<>();
+			List<AsRepStatementCommand> annualAsRepCommandList = new ArrayList<>();
+			List<AsRepStatementCommand> nineSixMonthAsRepCommandList = new ArrayList<>();
+			List<AsRepStatementCommand> threeMonthAsRepCommandList = new ArrayList<>();
+			List<AsRepStatementCommand> oneMonthAsRepCommandList = new ArrayList<>();
+			List<AsRepStatementCommand> asRepStatementCommandList = (List<AsRepStatementCommand>) mapOfHeaders.get("asRepStatementObjectList");
+			for (AsRepStatementCommand asRepStatementCommand : asRepStatementCommandList) 
+			{
+				if(asRepStatementCommand.getPeriod()!=null)
+				{
+					if(asRepStatementCommand.getPeriod() == 12 && annualAsRepCommandList.size()<5)
+					{
+						annualAsRepCommandList.add(asRepStatementCommand);
+					}
+					else if(asRepStatementCommand.getPeriod() == 9 || asRepStatementCommand.getPeriod() == 6 && nineSixMonthAsRepCommandList.size()<3)
+					{
+						nineSixMonthAsRepCommandList.add(asRepStatementCommand);
+					}
+					else if(asRepStatementCommand.getPeriod() == 3 && threeMonthAsRepCommandList.size()<4)
+					{
+						threeMonthAsRepCommandList.add(asRepStatementCommand);
+					}
+					else if(asRepStatementCommand.getPeriod() == 1 && oneMonthAsRepCommandList.size()<3)
+					{
+						oneMonthAsRepCommandList.add(asRepStatementCommand);
+					}
+				}
+			}
+			
+			if(!CollectionUtils.isEmpty(annualAsRepCommandList))
+			{
+				
+				annualMap = getPeriodMap(annualAsRepCommandList,lableAndValueMap);
+			}
+			if(!CollectionUtils.isEmpty(nineSixMonthAsRepCommandList))
+			{
+				nineSixMonthMap = getPeriodMap(nineSixMonthAsRepCommandList,lableAndValueMap);
+			}
+			if(!CollectionUtils.isEmpty(threeMonthAsRepCommandList))
+			{
+				threeMonthMap = getPeriodMap(threeMonthAsRepCommandList,lableAndValueMap);
+			}
+			if(!CollectionUtils.isEmpty(oneMonthAsRepCommandList))
+			{
+				oneMonthMap = getPeriodMap(oneMonthAsRepCommandList,lableAndValueMap);
+			}
+			
+			int startRowIndex =0;
+			String fiscalYearEnd = (String) mapOfHeaders.get("Fiscal Year End");
+			String currency = (String) mapOfHeaders.get("Currency");
+			String companyName = (String) mapOfHeaders.get("Company Name");
+			String financialScale = (String) mapOfHeaders.get("Financial Scale");
+			
+			
+			Map<String, Integer> sheetRowMap = getSheetRowMap(sheet);
+			
+			Map<String,String> headerInfoMap=new HashMap<>();
+			headerInfoMap.put("Company Name", companyName);
+			headerInfoMap.put("Currency", currency);
+			headerInfoMap.put("Fiscal Year End", fiscalYearEnd);
+			headerInfoMap.put("Financial Scale", financialScale);
+			int startHeaderRowIndex=1;
+			int endHeaderRowIndex=7;
+			int columnIndex=4;
+			
+			writeGenericDataInfo(sheet,headerInfoMap,startHeaderRowIndex,endHeaderRowIndex,columnIndex);
+			if(!CollectionUtils.isEmpty(annualMap))
+			{
+				WriteNormalizationTemplateData(sheetRowMap,annualAsRepCommandList,annualMap,5,startRowIndex,11,sheet,fiscalYearEnd);	
+			}
+			if(!CollectionUtils.isEmpty(nineSixMonthMap))
+			{
+				WriteNormalizationTemplateData(sheetRowMap,nineSixMonthAsRepCommandList,nineSixMonthMap,3,startRowIndex,20,sheet,fiscalYearEnd);	
+			}
+			if(!CollectionUtils.isEmpty(threeMonthMap))
+			{
+				WriteNormalizationTemplateData(sheetRowMap,threeMonthAsRepCommandList,threeMonthMap,4,startRowIndex,16,sheet,fiscalYearEnd);	
+			}
+			if(!CollectionUtils.isEmpty(oneMonthMap))
+			{
+				WriteNormalizationTemplateData(sheetRowMap,oneMonthAsRepCommandList,oneMonthMap,3,startRowIndex,24,sheet,fiscalYearEnd);	
+			}
+			
+			// open an OutputStream to save written data into Excel file
+			FileOutputStream os = new FileOutputStream(filePathToDownload);
+			book.setForceFormulaRecalculation(true);
+			book.write(os);
+			LOGGER.info("Writing on Excel file Finished.");
+			// Close workbook, OutputStream and Excel file to prevent leak
+			os.close();
+			fis.close();
+			LOGGER.info("** End--downloadCRTemplate start");
+		} catch (FileNotFoundException fe) {
+			fe.printStackTrace();
+			LOGGER.error("Error:" + fe);
+		} catch (IOException ie) {
+			ie.printStackTrace();
+			LOGGER.error("Error:" + ie);
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:" + e);
+		}
+	}
+
+	
+
+	private Map<String, List<String>> getPeriodMap(List<AsRepStatementCommand> oneMonthAsRepCommandList,Map<String, List<NormalizedDetails>> lableAndValueMap) 
+	{
+		Map<String, List<String>> resultMap = new LinkedHashMap<>();
+		List<NormalizedDetails> normalizedDetailList =null;
+		List<String> valueListAsPerArsId=null;
+		String addStatus = "N";
+		for (Entry<String, List<NormalizedDetails>> selectedValueMap : lableAndValueMap.entrySet()) 
+		{
+			normalizedDetailList = selectedValueMap.getValue();
+			if(!CollectionUtils.isEmpty(normalizedDetailList))
+			{
+				valueListAsPerArsId = new ArrayList<>();
+				
+				for ( AsRepStatementCommand selectedAsRepCommand : oneMonthAsRepCommandList) 
+				{
+					addStatus = "N";
+					for (NormalizedDetails selectedNormalizedDetails : normalizedDetailList) 
+					{
+						if(selectedNormalizedDetails!=null && selectedNormalizedDetails.getArsId()!=null && selectedNormalizedDetails.getArsId().intValue() == selectedAsRepCommand.getArsId().intValue())
+						{
+							valueListAsPerArsId.add(selectedNormalizedDetails.getValue());
+							addStatus = "Y";
+							break;
+						}
+					}
+					if(addStatus.equalsIgnoreCase("N"))
+					{
+						valueListAsPerArsId.add("");
+					}
+				}
+				resultMap.put(selectedValueMap.getKey().toLowerCase(), valueListAsPerArsId);
+			}
+			else
+			{
+				resultMap.put(selectedValueMap.getKey().toLowerCase(), null);
+			}
+		}
+		return resultMap;
+	}
+	
+	
+	private Map<String, Integer> getSheetRowMap(XSSFSheet sheet) 
+	{
+		Iterator<Row> itr = sheet.iterator();
+		int rowNum = 1;
+		Map<String, Integer> sheetRowsMap = new LinkedHashMap<String, Integer>();
+		while (itr.hasNext()) {
+			Row row = itr.next();
+			// Iterating over each column of Excel file
+			Iterator<Cell> cellIterator = row.cellIterator();
+			while (cellIterator.hasNext()) {
+				Cell cell = cellIterator.next();
+				switch (cell.getCellType()) {
+				case Cell.CELL_TYPE_STRING:
+					if (cell.getColumnIndex() == 0) {
+						/*
+						 * Remove leading spaces from label
+						 */
+						sheetRowsMap.put(cell.getStringCellValue().trim().toLowerCase(),rowNum);
+					}
+					break;
+				case Cell.CELL_TYPE_NUMERIC:
+
+					break;
+				case Cell.CELL_TYPE_BOOLEAN:
+
+					break;
+				default:
+
+				}
+			}
+
+			rowNum++;
+		}
+		
+		return sheetRowsMap;
+	}
+	
+	
+	private void writeGenericDataInfo(XSSFSheet sheet, Map<String, String> headerInfoMap, int startHeaderRowIndex,int endHeaderRowIndex,int columnIndex) 
+	{
+		Row row =null;
+			do{
+				row = sheet.getRow(startHeaderRowIndex - 1);
+				do {
+				 	if(sheet.isColumnHidden(columnIndex))
+				 	{
+				 		columnIndex=columnIndex-1;
+				 	}
+				 	}while(sheet.isColumnHidden(columnIndex));
+					Cell cell = row.getCell(columnIndex);	
+					if(cell == null){
+					cell = row.createCell(columnIndex);
+					}
+					String value = headerInfoMap.get(row.getCell(0).toString());
+					if(value!=null && value.length()>0)
+					{
+						cell.setCellValue(value);
+					}
+					startHeaderRowIndex++;
+			}while(endHeaderRowIndex>startHeaderRowIndex);
+			
+		
+	}
+	
+	
+	private void WriteNormalizationTemplateData(Map<String, Integer> sheetRowMap,List<AsRepStatementCommand> asRepCommandList,Map<String, List<String>> normalizedDataMap, int maxRecords,int startRowIndex,int startColumnIndex, XSSFSheet sheet, String fiscalYearEnd) 
+	{
+		Row row = null;
+		int counter = 0;
+		int startTimePeriodCell = startColumnIndex;
+		for(String selectedNormLable:sheetRowMap.keySet())
+		{
+			counter = 0;
+			startTimePeriodCell = startColumnIndex;
+			row = sheet.getRow(startRowIndex);
+			for (AsRepStatementCommand selectedCommand : asRepCommandList) 
+			{
+				 	do {
+				 	if(sheet.isColumnHidden(startTimePeriodCell))
+				 	{
+				 		startTimePeriodCell=startTimePeriodCell-1;
+				 	}
+				 	}while(sheet.isColumnHidden(startTimePeriodCell));
+
+					Cell cell = row.getCell(startTimePeriodCell);	
+					if(cell == null){
+					cell = row.createCell(startTimePeriodCell);
+					}
+					if(selectedNormLable.equalsIgnoreCase("Time Period"))
+					{
+						String[] yearmonthArray=selectedCommand.getTimePeriod().toString().split("~");
+						String quartor=GetQuartorByMonthPeriod.f_getQuartorByMonthPeriod(Integer.parseInt(fiscalYearEnd), Integer.parseInt(yearmonthArray[1]));
+						int tempPeriod = selectedCommand.getPeriod();
+						 if (tempPeriod == 3) {
+							 cell.setCellValue(yearmonthArray[0] + quartor);
+						 } else if (tempPeriod == 6 || tempPeriod == 9) {
+							cell.setCellValue(yearmonthArray[0] +"YTD-"+quartor);
+						}
+						 else if (tempPeriod == 12) {
+							 cell.setCellValue(yearmonthArray[0]+"Annual");
+						 }
+						 else{
+							cell.setCellValue(yearmonthArray[0]);
+							}	
+						 startTimePeriodCell--;
+						 counter++;
+						 if(counter==maxRecords)
+						 {
+							 break;
+						 }
+					}
+					else if(selectedNormLable.equalsIgnoreCase("Audited/Unaudited"))
+					{
+						if(selectedCommand.getArsUnit()!=null && selectedCommand.getArsUnit().length()>0)
+						{
+							cell.setCellValue(selectedCommand.getAuditedUnaudited());
+						}
+						 startTimePeriodCell--;
+						 counter++;
+						 if(counter==maxRecords)
+						 {
+							 break;
+						 }
+					}
+			}
+			startRowIndex++;
+		}
+		
+		counter = 0;
+		int startDataRowIndex = 0;
+		for(String selectedNormLable:sheetRowMap.keySet())
+		{
+			System.out.println("selectedNormLable  " + selectedNormLable);
+			counter = 0;
+			int startDataCellIndex = startColumnIndex;
+			row= sheet.getRow(startDataRowIndex);
+			while (row.getCell(0)==null || row.getCell(0).toString() == null || row.getCell(0).toString().trim().length()==0) {
+				startDataRowIndex++;
+				row= sheet.getRow(startDataRowIndex);
+			}
+			List<String> normValueList = normalizedDataMap.get(selectedNormLable);
+			if(!CollectionUtils.isEmpty(normValueList))
+			{
+				
+			for (String selectedValue : normValueList) 
+			{
+				if(selectedNormLable.equalsIgnoreCase("Accounts Receivable - Trade"))
+				{
+					System.out.println("Value" + selectedValue);
+				}
+				do {
+				 	if(sheet.isColumnHidden(startDataCellIndex))
+				 	{
+				 		startDataCellIndex=startDataCellIndex-1;
+				 	}
+				 	}while(sheet.isColumnHidden(startDataCellIndex));
+
+					Cell cell = row.getCell(startDataCellIndex);	
+					if(cell == null){
+					cell = row.createCell(startDataCellIndex);
+					}
+					if(isDouble(selectedValue))
+					{
+						if(selectedNormLable.equalsIgnoreCase("Accounts Receivable - Trade"))
+						{
+							System.out.println("Value DBL" + selectedValue);
+						}
+						cell.setCellValue(Double.parseDouble(selectedValue.toString().replaceAll(",", "")));
+					}
+					else
+					{
+						if(selectedNormLable.equalsIgnoreCase("Accounts Receivable - Trade"))
+						{
+							System.out.println("Value NO DBL" + selectedValue);
+						}
+						if(selectedValue!=null && selectedValue!="")
+						{
+							cell.setCellValue(selectedValue);	
+						}
+					}
+					startDataCellIndex--;
+					counter++;
+					if(counter==maxRecords)
+					 {
+						 break;
+					 }
+			}
+		}
+			startDataRowIndex++;
+		}	
+	}
+	private boolean isDouble(String value)
+	{
+		try {
+			Double.parseDouble(value.toString().replaceAll(",", ""));
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+}

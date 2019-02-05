@@ -1,0 +1,1025 @@
+package com.livespread.service;
+
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.livespread.command.ClientFeatureMappingCmd;
+import com.livespread.command.ParserSectionMappingCommand;
+import com.livespread.command.UserGroupCommand;
+import com.livespread.command.UserTemplateCommand;
+import com.livespread.domain.ClientFeatureMapping;
+import com.livespread.domain.LsFeatures;
+import com.livespread.domain.NamedNativeQueryName;
+import com.livespread.domain.NamedQueryName;
+import com.livespread.domain.NormItemLabels;
+import com.livespread.domain.ParserMaster;
+import com.livespread.domain.ParserSectionMapping;
+import com.livespread.domain.SectionMappingModel;
+import com.livespread.domain.User;
+import com.livespread.domain.UserActivationDetails;
+import com.livespread.domain.UserGroupParserMapping;
+import com.livespread.domain.UserTemplateDetails;
+import com.livespread.domain.UsersGroup;
+import com.livespread.util.DateHelper;
+import com.livespread.util.PasswordGenerator;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Service("userGroupService")
+public class UserGroupServiceImpl implements UserGroupService {
+
+	private Logger LOGGER = Logger.getLogger(UserGroupServiceImpl.class);
+	Date currentDate = null;
+	SimpleDateFormat format2 = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss");
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+	@Autowired
+	MessageDigestPasswordEncoder messageDigestPasswordEncoder;
+
+	DateFormat outputFormat = new SimpleDateFormat("dd-MMM-yyyy");
+	DateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+	@Override
+	public List<UsersGroup> getAllUserGroupList(Long userGroupId){
+		LOGGER.info("** Start--getAllUserGroupList methode");
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("usersGroupId", userGroupId);
+		@SuppressWarnings("unchecked")
+		List<UsersGroup> usersGroupsList = (ArrayList<UsersGroup>) (Object) genericDaoImpl
+				.findByNamedQuery(NamedQueryName.getAllUserGroups,
+						UsersGroup.class,parameterMap);
+		LOGGER.info("** End--size=" + usersGroupsList.size());
+		return usersGroupsList;
+	}
+
+	@Override
+	public Map<String, UserGroupCommand> getUserGroupNames(Integer userGroupId,Integer user_role) {
+		LOGGER.info("** Start--getUserGroupNames methode");
+		List<String> userGroupList = null;
+		Map<String, UserGroupCommand> mapList = new LinkedHashMap<String, UserGroupCommand>();
+		
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		List<Object> listOfUserGroupNames=null;
+		if(user_role!=null){
+		if(user_role==2){	
+		parameterMap.put("groupId", userGroupId.longValue());
+		listOfUserGroupNames = genericDaoImpl
+				.findByNativeNamedQuery(
+						NamedNativeQueryName.findAllGroupNamesWithParsersByGroupId,
+						UsersGroup.class, parameterMap);
+		 }else if(user_role==1){
+		  parameterMap.put("parentUserGroup", userGroupId);
+		  listOfUserGroupNames=genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.findAllGroupNamesWithParsers,UsersGroup.class,parameterMap);
+		 }
+		}else{
+		listOfUserGroupNames=genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.findAllGroupNamesWithParsers,UsersGroup.class);
+		}
+			for (Object object : listOfUserGroupNames) {
+				Object[] obj = (Object[]) object;
+				if (mapList.containsKey(obj[0].toString())) {
+					UserGroupCommand tempObj = mapList.get(obj[0].toString());
+					tempObj.getParseId().add(
+							obj[2] != null ? obj[2].toString() : "");
+					tempObj.getParserName().add(
+							obj[3] != null ? obj[3].toString() : "");
+				} else {
+					UserGroupCommand userGroup = new UserGroupCommand();
+					userGroup.setUser_Group_Id(obj[0] != null ? Long
+							.parseLong(obj[0].toString()) : 0);
+					userGroup.setUser_Group_Name(obj[1] != null ? obj[1]
+							.toString() : "");
+					userGroupList = new ArrayList<String>();
+					userGroupList.add(obj[2] != null ? obj[2].toString() : "");
+					userGroup.setParseId(userGroupList);
+					userGroupList = new ArrayList<String>();
+					userGroupList.add(obj[3] != null ? obj[3].toString() : "");
+					userGroup.setParserName(userGroupList);
+					String inputText = obj[4] != null ? obj[4].toString() : "";
+					Date date;
+					try {
+						date = inputFormat.parse(inputText);
+						String crateDate = outputFormat.format(date);
+						userGroup.setCreateDate(crateDate);
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+					userGroup.setFlag(obj[5]!=null ? obj[5].toString() : "");
+					mapList.put(obj[0].toString(), userGroup);
+				}
+			}
+		return mapList;
+	}
+
+	@Override
+	public Map<Integer, String> getParsersList() {
+		Map<Integer, String> map = new HashMap<Integer, String>();
+		
+			List<Object> parsersList = genericDaoImpl.findByNamedQuery(
+					NamedQueryName.getParsersList, ParserMaster.class);
+			for (Object object : parsersList) {
+				Object[] obj = (Object[]) object;
+				map.put((int) (obj[0] != null ? Long.parseLong(obj[0]
+						.toString()) : 0), obj[1] != null ? obj[1].toString()
+						: "");
+			}
+		
+		return map;
+	}
+
+	@Override
+	public List<String> getParserNamesByGroupId(String groupId) {
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("userGroupId", groupId);
+		List<Object> parserIdList = null;
+		List<String> parserList = null;
+	
+			parserIdList = genericDaoImpl.findByNamedQuery(
+					NamedQueryName.getParserIdListByUserGroupId,
+					UserGroupParserMapping.class, parameterMap);
+			parserList = new ArrayList<String>();
+			if(parserIdList!=null){
+			for (Object obj : parserIdList) {
+				parserList.add((String) obj);
+			}
+		}
+		return parserList;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public int removeParserIds(String groupId, String userId, List<String> list) {
+		int removeflag = 0;
+		int removedsize = 0;
+		String cdate = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss")
+				.format(new Date());
+		try {
+			currentDate = format2.parse(cdate.trim());
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+			if (groupId != null && list != null) {
+				Map<String, Object> parameterMap = new HashMap<String, Object>();
+				parameterMap.put("userGroupId", groupId);
+				parameterMap.put("parserId", list);
+				parameterMap.put("flag", "D");
+				parameterMap.put("modifiedBy", userId);
+				parameterMap.put("modifiedDate", currentDate);
+				removeflag = genericDaoImpl.updateByNamedQuery(
+						NamedQueryName.updateParserIdFlag,
+						UserGroupParserMapping.class, parameterMap);
+				if (removeflag == 0) {
+					removedsize = list.size();
+				} else if (removeflag > 0) {
+					removedsize = list.size();
+				}
+			}
+		
+		return removedsize;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public int addedParserIds(String groupId, String userId, List<String> list) {
+		int addedRows = 0;
+		Date Timestamp = null;
+		List<String> removedParserIds = new ArrayList<String>();
+		List<String> newParserIds = new ArrayList<String>();
+		int activeflag = 0;
+		String cdate = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss")
+				.format(new Date());
+		try {
+			currentDate = format2.parse(cdate.trim());
+			 Timestamp = format2.parse(cdate.trim());
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+			if (groupId != null && list != null) {
+				Map<String, Object> parameterAddIds = new HashMap<String, Object>();
+				parameterAddIds.put("userGroupId", groupId);
+				parameterAddIds.put("flag", "D");
+				List<Object> parserIdListdeleted = genericDaoImpl
+						.findByNamedQuery(NamedQueryName.getDeteltedParserIds,
+								UserGroupParserMapping.class, parameterAddIds);
+				for (Object obj : parserIdListdeleted) {
+					removedParserIds.add((String) obj != null ? (String) obj
+							.toString() : "");
+				}
+				newParserIds.addAll(list);
+				list.retainAll(removedParserIds);
+				newParserIds.removeAll(removedParserIds);
+				LOGGER.info("exits" + list);
+				LOGGER.info("added" + newParserIds);
+				if (list != null && list.size() != 0) {
+					Map<String, Object> parameterMap = new HashMap<String, Object>();
+					parameterMap.put("userGroupId", groupId);
+					parameterMap.put("createdBy", userId);
+					parameterMap.put("parserId", list);
+					parameterMap.put("createdDate", currentDate);
+					parameterMap.put("flag", "A");
+					activeflag = genericDaoImpl.updateByNamedQuery(
+							NamedQueryName.updateNewParserIdFlag,
+							UserGroupParserMapping.class, parameterMap);
+					if (activeflag == 0) {
+						addedRows = 0;
+					} else {
+						addedRows = list.size();
+					}
+				}
+
+				if (newParserIds != null && newParserIds.size() != 0) {
+					for (int i = 0; i < newParserIds.size(); i++) {
+						UserGroupParserMapping userGroupParserMapping = new UserGroupParserMapping();
+						userGroupParserMapping.setParserId(newParserIds.get(i));
+						userGroupParserMapping.setUserGroupId(groupId);
+						userGroupParserMapping.setFlag("A");
+						userGroupParserMapping.setCreatedBy(userId);
+						userGroupParserMapping.setCreatedDate(new java.sql.Timestamp(Timestamp.getTime()));
+						genericDaoImpl.persist(userGroupParserMapping);
+						addedRows++;
+					}
+				}
+			}
+		return addedRows;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public int updateGroupName(String groupName, String groupId, String userId,String flag) {
+		int updateNameSuccess = 0;
+		try{
+			if (!groupId.isEmpty() && !userId.isEmpty() && !groupName.isEmpty()) {
+				String cdate = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss")
+						.format(new Date());
+				try {
+					currentDate = format2.parse(cdate.trim());
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+				Map<String, Object> parameterMap = new HashMap<String, Object>();
+				parameterMap.put("usersGroupName", groupName);
+				parameterMap.put("userGroupId", Long.parseLong(groupId));
+				parameterMap.put("modifiedBy", userId);
+				parameterMap.put("modifiedDate", currentDate);
+				parameterMap.put("flag", flag);
+
+				updateNameSuccess = genericDaoImpl.updateByNamedQuery(
+						NamedQueryName.updateGroupName, UsersGroup.class,
+						parameterMap);
+				if (updateNameSuccess > 0) {
+					updateNameSuccess = 1;
+					return updateNameSuccess;
+				} else {
+					updateNameSuccess = 0;
+					return updateNameSuccess;
+				}
+
+			}
+	
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return updateNameSuccess;
+	}
+
+	@Override
+	public List<String> getOnlyUserGroupNames() {
+		List<String> groupNames = new ArrayList<String>();
+
+			List<Object> parsersList = genericDaoImpl.findByNamedQuery(
+					NamedQueryName.getOnlyGroupNames, UsersGroup.class);
+			if(parsersList!=null){
+			for (Object object : parsersList) {
+				groupNames.add((String) object);
+			}
+		} 
+		return groupNames;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public String addNewGroupWithParsers(String groupName, String userId,
+			List<String> finallistPid,Integer userGroupId) {
+		String cdate = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss")
+				.format(new Date());
+		Date Timestamp=null;
+		try {
+			Timestamp = format2.parse(cdate.trim());
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		Long newAddedGidVal = (long) 0;
+		Integer insertedParsertIds = 0;
+		boolean insertdGroup = false;
+		String groupNameAdded = "";
+
+			if (!groupName.isEmpty() && !userId.isEmpty()) {
+				UsersGroup newGroup = new UsersGroup();
+				newGroup.setUsersGroupName(groupName);
+				newGroup.setUsersGroupDesc("");
+				newGroup.setFlag("A");
+				newGroup.setCreatedDate(new java.sql.Timestamp(Timestamp
+						.getTime()));
+				newGroup.setParentUserGroup(userGroupId);
+				newGroup.setGoldenSetGroup("N");
+				genericDaoImpl.persist(newGroup);
+				insertdGroup = true;
+			}
+			if (insertdGroup) {
+				Map<String, Object> addedGroupId = new HashMap<String, Object>();
+				addedGroupId.put("usersGroupName", groupName.trim());
+				List<Object> newAddedGid = genericDaoImpl.findByNamedQuery(
+						NamedQueryName.getAddedGroupId, UsersGroup.class,
+						addedGroupId);
+				newAddedGidVal = (Long) newAddedGid.get(0);
+				insertedParsertIds++;
+				groupNameAdded = insertedParsertIds
+						+ "  Group added successfully";
+
+			} else {
+				return groupNameAdded;
+			}
+			if (!finallistPid.isEmpty() && finallistPid.size() != 0
+					&& newAddedGidVal != 0) {
+				insertedParsertIds = 0;
+				for (int i = 0; i < finallistPid.size(); i++) {
+					UserGroupParserMapping userGroupParserMapping = new UserGroupParserMapping();
+					userGroupParserMapping.setParserId(finallistPid.get(i));
+					userGroupParserMapping.setFlag("A");
+					userGroupParserMapping.setCreatedBy(userId);
+					userGroupParserMapping.setUserGroupId(newAddedGidVal + "");
+					userGroupParserMapping
+							.setCreatedDate(new java.sql.Timestamp(Timestamp
+									.getTime()));
+					genericDaoImpl.persist(userGroupParserMapping);
+					insertedParsertIds++;
+				}
+				groupNameAdded = groupNameAdded + "" + insertedParsertIds
+						+ "parsers added successfully";
+			}
+	
+		return groupNameAdded;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public int removingGroupId(String userId, String removegroupId,String flag) {
+		int removedSuccess = 0;
+		String cdate = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss")
+				.format(new Date());
+		try {
+			try {
+				currentDate = format2.parse(cdate.trim());	
+			} catch (ParseException ex) {
+				ex.printStackTrace();
+			}
+			
+		
+			if (removegroupId != null) {
+				Map<String, Object> parameterMap = new HashMap<String, Object>();
+				parameterMap.put("flag", flag);
+				parameterMap.put("removegroupId", Long.parseLong(removegroupId));
+				parameterMap.put("modifiedBy", userId);
+				parameterMap.put("modifiedDate", currentDate);
+				//Here remove User_group and its parent
+			   removedSuccess = genericDaoImpl.updateByNamedQuery(NamedQueryName.removeGroupId, UsersGroup.class,parameterMap);
+			   /**
+			    * Here we Inactive all users based on user_group
+			    * if User Group is Super Admin then remove all child groups and child group users and parent group and its users  
+			    */
+			   parameterMap.put("usersGroupId", Long.parseLong(removegroupId));
+			   if(flag.equalsIgnoreCase("D")){
+			   parameterMap.put("flag", "InActive");   
+			   }else{
+				parameterMap.put("flag", "InActive");
+			   }
+			   
+			   genericDaoImpl.updateByNamedQuery(NamedQueryName.deleteUsersByGroupId, User.class,parameterMap);
+			   
+				if (removedSuccess == 0) {
+					return removedSuccess;
+				} else {
+					return removedSuccess;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return removedSuccess;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean saveUser(User user) {
+		LOGGER.info("** Start--saveUser methode");
+		Timestamp timestamp = new Timestamp(new Date().getTime());
+		String grpArray[] = user.getUsersGroupName().split("~");
+		user.setUserGroupId(Integer.parseInt(grpArray[0]));
+		user.setUsersGroupName(grpArray[1]);
+		user.setCreatedDate(timestamp);
+		user.setFlag("InActive");
+
+		PasswordGenerator passwordGenerator = new PasswordGenerator.PasswordGeneratorBuilder()
+		        .useDigits(true)
+		        .useLower(true)
+		        .useUpper(true)
+		        .build();
+		String password = passwordGenerator.generate(8);
+		user.setPassword(messageDigestPasswordEncoder.encodePassword(password, null));
+		genericDaoImpl.merge(user);
+		LOGGER.info("** End--saveUser methode");
+		return true;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public String saveActivationDetails(String emailId,
+			MessageDigestPasswordEncoder messageDigestPasswordEncoder) {
+		LOGGER.info("**start :::UserManagementServiceImpl:::saveActivationDetails");
+		String encActivationId = "";
+		try {
+			UserActivationDetails userActivationDetails = new UserActivationDetails();
+			/*
+			 * Here we fetch user based on email
+			 */
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("email", emailId);
+			User user = (User) (Object) genericDaoImpl.findByColumn(
+					NamedQueryName.checkUserExistByEmail, User.class,
+					parameters);
+
+			if (user != null) {
+				userActivationDetails.setUserId(user.getUserId());
+				userActivationDetails.setEmailId(messageDigestPasswordEncoder
+						.encodePassword(emailId, null));
+				Date activationExpireDate = DateHelper.addDays(new Date(), 1);
+				userActivationDetails
+						.setActivationExpireDate(activationExpireDate);
+				genericDaoImpl.persist(userActivationDetails);
+
+				Long activationId = userActivationDetails.getUserActivationId();
+				encActivationId = messageDigestPasswordEncoder.encodePassword(
+						activationId + "", null);
+				userActivationDetails.setEncActivationId(encActivationId);
+				genericDaoImpl.merge(userActivationDetails);
+			}
+
+		} catch (Exception e) {
+			LOGGER.error("Error :: ", e);
+		}
+		LOGGER.info("END :::UserManagementServiceImpl:::saveActivationDetails");
+		return encActivationId;
+	}
+
+	@Override
+	public Map<String, String> getUserGroupParserListByGid(String userId) {
+		LOGGER.info("** Start--getUserGroupNames methode");
+		Map<String, String> userData = new LinkedHashMap<String, String>();
+			if (!userId.isEmpty()) {
+				Map<String, Object> parameterMap = new HashMap<String, Object>();
+				parameterMap.put("groupId", userId);
+				List<Object> listOfUserGroupNames = genericDaoImpl
+						.findByNativeNamedQuery(
+								NamedNativeQueryName.findAllGroupNamesWithParsersByGroupId,
+								UsersGroup.class, parameterMap);
+				if(listOfUserGroupNames!=null){
+				for (Object object : listOfUserGroupNames) {
+					Object[] obj = (Object[]) object;
+					if (userData.containsKey(obj[1].toString())) {
+						String tempObj = userData.get(obj[1].toString());
+						tempObj = tempObj + "<br />"
+								+ (obj[3] != null ? obj[3].toString() : "");
+						userData.put(obj[1].toString(), tempObj);
+					} else {
+						userData.put(obj[1].toString(),
+								obj[3] != null ? obj[3].toString() : "");
+					}
+
+				}
+				}
+			}
+	
+		return userData;
+	}
+
+	@Override
+	public Map<String, Integer> getGroupNamesforReportAdmin(Integer userGroupId) {
+		Map<String, Integer> map = new HashMap<String, Integer>();
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("userGroupId", userGroupId);
+							
+		List<Object> groupNameList = genericDaoImpl.findByNamedQuery(NamedQueryName.findUserGroupsForDropdown, UsersGroup.class,parameterMap);
+		for (Object object : groupNameList)
+		{
+		Object[] obj = (Object[]) object;
+		map.put(obj[0] != null ? obj[0].toString() : "", (int) (obj[1] != null ? Long.parseLong(obj[1].toString()) : 0));
+		}
+		return map;
+	}
+
+	@Override
+	public Map<Integer, String> getParserNamesByGroupIdforReportAdmin(
+			Integer groupId) {
+		Map<Integer, String> map = new HashMap<Integer, String>();
+			if (groupId != null) {
+				Map<String, Object> parameterMap = new HashMap<String, Object>();
+				parameterMap.put("userGroupId", groupId);
+				List<Object> parserListbyGid = genericDaoImpl
+						.findByNativeNamedQuery(
+								NamedNativeQueryName.getParserListByGroupIdforReportAdmin,
+								UserGroupParserMapping.class, parameterMap);
+				if(parserListbyGid!=null){
+				for (Object object : parserListbyGid) {
+					Object[] obj = (Object[]) object;
+					map.put((int) (obj[0] != null ? Long.parseLong(obj[0]
+							.toString()) : 0),
+							obj[1] != null ? obj[1].toString() : "");
+				}
+				
+			}
+		} 
+		return map;
+	}
+
+	@Override
+	public String f_getUserGroupNamebyId(Long userGroupId) {
+	
+		UsersGroup usersGroup=genericDaoImpl.findById(UsersGroup.class, userGroupId);
+		String userGroupName=usersGroup.getUsersGroupName();
+		
+		return userGroupName;
+	}
+	
+	@Override
+	public List<User> f_getActiveUserList(){
+		LOGGER.info("** Start--getAllActiveUserList methode");
+		@SuppressWarnings("unchecked")
+		List<User> usersList = (ArrayList<User>)(Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getActiveUserList,User.class);
+		LOGGER.info("** End--size=" + usersList.size());
+		return usersList;
+	}
+
+	@Override
+	public Map<String, UserTemplateCommand> getTemplatebyGroupId(Integer userGroupId,Integer userAccess) {
+        LOGGER.info("** Start--getUserTemplateNames methode");
+		List<String> userTemplateList = null;
+		Map<String, UserTemplateCommand> mapList = new LinkedHashMap<String, UserTemplateCommand>();
+		List<Object> listOfUserTemplateNames=null;
+		if(userGroupId!=null && userAccess!=null){
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		if(userAccess==1){
+		parameters.put("userGroupId", userGroupId);
+		listOfUserTemplateNames = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.findAllUserTemplatesByGroupId,UserTemplateDetails.class,parameters);
+		}else{
+		parameters.put("userGroupId", userGroupId);
+		listOfUserTemplateNames = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.findAllUserTemplatesByGroupIdForGrpAdmin,UserTemplateDetails.class,parameters);
+		}
+		}
+		
+			for (Object object : listOfUserTemplateNames) {
+				Object[] obj = (Object[]) object;
+				if (mapList.containsKey(obj[2].toString())) {
+					UserTemplateCommand tempObj = mapList.get(obj[2].toString());
+					tempObj.getTemplateId().add(
+							obj[0] != null ? obj[0].toString() : "");
+					tempObj.getTemplateName().add(
+							obj[1] != null ? obj[1].toString() : "");
+				} else {
+					UserTemplateCommand userTemplate = new UserTemplateCommand();
+					userTemplate.setUser_Group_Id(obj[2] != null ? Long
+							.parseLong(obj[2].toString()) : 0);
+					userTemplate.setUser_Group_Name(obj[3] != null ? obj[3]
+							.toString() : "");
+					userTemplateList = new ArrayList<String>();
+					userTemplateList.add(obj[0] != null ? obj[0].toString() : "");
+					userTemplate.setTemplateId(userTemplateList);
+					userTemplateList = new ArrayList<String>();
+					userTemplateList.add(obj[1] != null ? obj[1].toString() : "");
+					userTemplate.setTemplateName(userTemplateList);
+					String inputText = obj[4] != null ? obj[4].toString() : "";
+					Date date;
+					try {
+						if(inputText!=null && !inputText.isEmpty()){
+						date = inputFormat.parse(inputText);
+						String crateDate = outputFormat.format(date);
+						userTemplate.setCreateDate(crateDate);
+						}
+						else{
+						userTemplate.setCreateDate(inputText);
+						}
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+					mapList.put(obj[2].toString(), userTemplate);
+				}
+			}
+		return mapList;
+	
+	}
+
+	@Override
+	public Map<Integer, String> getTemplateList(Integer userGroupId,Integer userAccess) {
+        LOGGER.info("** Start--getUserTemplateNames methode");
+		Map<Integer, String> map = new HashMap<Integer, String>();
+		List<Object> templateList=null;
+		try{
+			if(userGroupId!=null && userAccess!=null){
+			if(userAccess==1){
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("userGroupId", userGroupId);
+			templateList = genericDaoImpl.findByNamedQuery(NamedQueryName.getTemplateList, NormItemLabels.class,parameters);
+			}else{
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("userGroupId", Long.parseLong(userGroupId.toString()));
+			templateList = genericDaoImpl.findByNamedQuery(NamedQueryName.getTemplateListForGroupAdmin, NormItemLabels.class,parameters);
+			}
+		}
+
+		
+		for (Object object : templateList) {
+			Object[] obj = (Object[]) object;
+			map.put((int) (obj[0] != null ? Long.parseLong(obj[0]
+					.toString()) : 0), obj[1] != null ? obj[1].toString()
+					: "");
+		}
+		}catch(Exception e){
+			LOGGER.error("error in getUserTemplateNames", e);
+			e.printStackTrace();
+		}
+	
+	return map;
+	}
+
+	@SuppressWarnings("unused")
+	@Override
+	public List<String> templeteIdsByGroupId(Integer groupId) {
+		 LOGGER.info("** Start-- templeteIdsByGroupId   methode");
+		 List<String> list = new ArrayList<String>();
+			List<Object> templatesByGroupIdList=null;
+			Map<String, Object> parameterMap = new HashMap<String, Object>();
+			parameterMap.put("userGroupId", groupId);
+			try{
+		 	templatesByGroupIdList = genericDaoImpl.findByNamedQuery(NamedQueryName.templeteIdsListByGroupId,UserTemplateDetails.class,parameterMap);
+			int i=0;
+		 	for (Object object :templatesByGroupIdList) {
+				String templateId=templatesByGroupIdList.get(i).toString()!= null? templatesByGroupIdList.get(i).toString() :"0";
+				list.add(templateId);
+				i++;
+			}
+			}catch(Exception e){
+				e.printStackTrace();
+				LOGGER.error("error in getUserTemplateNames", e);
+			}
+		return list;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean updateTemplates(List<String> removedTemplate, List<String> addedTemplate,Integer userId,Integer groupid){
+		boolean flag=false;
+		int removed =0;
+		Timestamp timestamp = new Timestamp(new Date().getTime());
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("userGroupId", groupid);
+		parameterMap.put("flag", "D");
+		parameterMap.put("modifiedDate", timestamp);
+		parameterMap.put("modifiedBy", userId);
+		parameterMap.put("templateId", removedTemplate);
+		try{
+		//removed 
+		if(removedTemplate!=null && removedTemplate.size()>0){
+            removed = genericDaoImpl.updateByNamedQuery(
+					NamedQueryName.updateTemplateIdFlagbyGroupId,UserTemplateDetails.class,parameterMap);
+            if(removed >0){
+            	flag=true;
+            }
+		}
+		//added
+       if(addedTemplate!=null && addedTemplate.size()>0){
+    	   for(int i=0;i<addedTemplate.size();i++){
+    	   UserTemplateDetails addUtd=new UserTemplateDetails();
+    	   addUtd.setTemplateId(addedTemplate.get(i));
+    	   addUtd.setUserGroupId(groupid);
+    	   addUtd.setCreatedBy(userId);
+    	   addUtd.setModifiedBy(userId);
+    	   addUtd.setCreatedDate(timestamp);
+    	   addUtd.setModifiedDate(timestamp);
+    	   addUtd.setFlag("A");
+    	   genericDaoImpl.persist(addUtd);
+    	   }
+         	flag=true;
+		}	}
+		catch(Exception e){
+			e.printStackTrace();
+			LOGGER.error("error in updateTemplates", e);
+		}
+		return  flag;
+	}
+
+	@Override
+	public Map<Integer, String> f_getTemplateIdAndNameByGroupId(Integer groupId) {
+		LOGGER.info("**Start--f_getTemplateIdAndNameByGroupId methode");
+		
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("userGroupId", groupId);
+		List<Object> objectList = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.findTemplateIdAndNameByGroupId,UserTemplateDetails.class, parameterMap);
+		Map<Integer,String> templateIdNameList=null;
+		Object[] objectArray = null;
+		if(objectList!=null){
+			templateIdNameList=new LinkedHashMap<Integer,String>();
+		for(Object object:objectList){
+			objectArray = (Object[]) object;
+			templateIdNameList.put(objectArray[0]!=null? new Integer(objectArray[0].toString()) :0,objectArray[1]!=null? objectArray[1].toString() :"");
+		}
+		}//end objectList null
+		LOGGER.info("**End--f_getTemplateIdAndNameByGroupId methode");
+		
+		return templateIdNameList;
+	}
+
+	@Override
+	public Map<String, ClientFeatureMappingCmd> getStatusByGroup(Integer uGroupId)   {    
+		LOGGER.info("** Start--ClientFeatureMappingCmd methode");
+		Map<String,Object> parameters = new HashMap<String,Object>();
+		parameters.put("uGroupId", uGroupId);
+		Map<String, ClientFeatureMappingCmd> mapList = new LinkedHashMap<String, ClientFeatureMappingCmd>();
+		List<Object> featureMappingList=null;
+		List<String>  featureList=null;
+		List<String>  featureIds=null;
+		featureMappingList = genericDaoImpl
+				.findByNativeNamedQuery(NamedNativeQueryName.findAllGroupFeatureByGroupId,
+						ClientFeatureMapping.class,parameters);
+		if(featureMappingList!=null){
+
+			for (Object object : featureMappingList) {
+				Object[] obj = (Object[]) object;
+			if(mapList.containsKey(obj[0].toString())){
+				ClientFeatureMappingCmd tempObj = mapList.get(obj[0].toString());
+				tempObj.getFeatureIds().add(
+						obj[2] != null ? obj[2].toString() : "");
+				tempObj.getFeatureNames().add(
+						obj[3] != null ? obj[3].toString() : "");
+		
+			}else{
+				 ClientFeatureMappingCmd cmd=new ClientFeatureMappingCmd();
+				   cmd.setUserGroupId(obj[0] != null ? Long.parseLong(obj[0].toString()) : 0l);
+				   cmd.setUserGroupName(obj[1] != null ? obj[1].toString() : "");
+				   featureIds=new ArrayList<String>();
+				   featureIds.add(obj[2] != null ? obj[2].toString() : "");
+				   cmd.setFeatureIds(featureIds);
+				   featureList=new ArrayList<String>();
+				   featureList.add(obj[3] != null ? obj[3].toString() : "");
+				   cmd.setFeatureNames(featureList);
+				   mapList.put(obj[0].toString(), cmd);
+			}	
+		}
+		}
+		return mapList;
+	}
+
+
+	@Override
+	public Map<Integer, String> getFeatureList() {
+        LOGGER.info("** Start--getFeatureList methode");
+		Map<Integer, String> map = new HashMap<Integer, String>();
+		List<Object> featureList=null;
+		try{
+        	featureList = genericDaoImpl.findByNamedQuery(
+				NamedQueryName.getListOfFeatures, LsFeatures.class);
+		for (Object object : featureList) {
+			Object[] obj = (Object[]) object;
+			map.put((int) (obj[0] != null ? Integer.parseInt(obj[0].toString()) : 0), obj[1] != null ? obj[1].toString()
+					: "");
+		}
+		}catch(Exception e){
+			e.printStackTrace();
+			LOGGER.error("error in featureList", e);
+		}
+	return map;
+
+	}
+
+	@SuppressWarnings("unused")
+	@Override
+	public List<String> featuresByGroupId(Integer groupId) {
+		 LOGGER.info("** Start-- featuresByGroupId   methode");
+		 List<String> list = new ArrayList<String>();
+			List<Object> featuresByGroupIdList=null;
+			Map<String, Object> parameterMap = new HashMap<String, Object>();
+			parameterMap.put("userGroupId", groupId);
+			try{
+				featuresByGroupIdList = genericDaoImpl.findByNamedQuery(NamedQueryName.featuresNameByGroupId,ClientFeatureMapping.class,parameterMap);
+			int i=0;
+		 	for (Object object :featuresByGroupIdList) {
+				String featuresId=featuresByGroupIdList.get(i).toString()!= null? featuresByGroupIdList.get(i).toString() :"0";
+				list.add(featuresId);
+				i++;
+			}
+			}catch(Exception e){
+				e.printStackTrace();
+				LOGGER.error("error in featuresByGroupId", e);
+			}
+		return list;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean updateLsFeatures(List<String> removedLsFeature, List<String> addedLsFeature, String groupName,
+			Integer groupId) {
+
+	
+		boolean flag=false;
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("userGroupId", groupId);
+
+		try{
+	 //removed 
+		if(removedLsFeature!=null && removedLsFeature.size()>0){
+			int removed =0;
+			for(int i=0; i<removedLsFeature.size();i++){   
+    		parameterMap.put("featureId", Integer.parseInt(removedLsFeature.get(i)));
+			removed = genericDaoImpl.updateByNamedQuery(
+					NamedQueryName.deleteFeatureIdbyGroupId,ClientFeatureMapping.class,parameterMap);
+          }
+            if(removed >0){
+            	flag=true;
+            }
+		}
+		//added
+       if(addedLsFeature!=null && addedLsFeature.size()>0){
+    	   ClientFeatureMapping addCFM=null;
+    	   for(int i=0;i<addedLsFeature.size();i++){
+    	   addCFM=new ClientFeatureMapping(); 
+    	   addCFM.setUserGroupId(groupId);
+    	   addCFM.setClients(groupName);
+    	   addCFM.setFeatureId(Integer.parseInt(addedLsFeature.get(i)));
+    	   addCFM.setIsActive("Y");
+    	   genericDaoImpl.persist(addCFM);
+    	   }
+         	flag=true;
+		}	}
+		catch(Exception e){
+			e.printStackTrace();
+			LOGGER.error("error in updateTemplates", e);
+		}
+		return  flag;
+	}
+	
+	
+	@Override
+	public Map<Integer, String> getTemplateListByUserGroup(Integer userGroupId) {
+        LOGGER.info("** Start--getUserTemplateNames methode");
+		Map<Integer, String> map = new HashMap<Integer, String>();
+		List<Object> templateList=null;
+		try{
+		
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("userGroupId", userGroupId);
+			templateList = genericDaoImpl.findByNamedQuery(NamedQueryName.getTemplateListByUserGroup, NormItemLabels.class,parameters);
+		for (Object object : templateList) {
+			Object[] obj = (Object[]) object;
+			map.put((int) (obj[0] != null ? Long.parseLong(obj[0]
+					.toString()) : 0), obj[1] != null ? obj[1].toString()
+					: "");
+		}
+		}catch(Exception e){
+			LOGGER.error("error in getUserTemplateNames", e);
+			e.printStackTrace();
+		}
+	
+	return map;
+	}
+
+	@Override
+	public int f_getUserGroupsCountByFlag(Long userGroupId, String flag) {
+		   LOGGER.info("** Start--f_getUserGroupsCountByFlag methode");
+		   long rowCount=0;
+	try{
+		   Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("usersGroupId",userGroupId);
+			
+			parameters.put("flag", flag);
+
+			rowCount=(long) genericDaoImpl.findByNamedQuery(NamedQueryName.checkActiveOrInActiveUserGroup, UsersGroup.class,parameters).get(0);
+  	      LOGGER.info("** End--f_getUserGroupsCountByFlag methode");
+		
+	}catch(Exception e){
+		e.printStackTrace();
+	}
+		return (int) rowCount;
+	}
+	
+	
+	@Override
+	public Map<String, ParserSectionMappingCommand> getParserSectionMapping() {
+		LOGGER.info("** Start--getUserGroupNames methode");
+		List<String> sectionIdList = null;
+		Map<String, ParserSectionMappingCommand> mapList = new LinkedHashMap<String, ParserSectionMappingCommand>();
+		List<Object> listOfParsersSectionNames=null;
+		listOfParsersSectionNames=genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.findAllParsersWithSection,ParserMaster.class);
+		
+			for (Object object : listOfParsersSectionNames) {
+				Object[] obj = (Object[]) object;
+				if (mapList.containsKey(obj[0].toString())) {
+					ParserSectionMappingCommand tempObj = mapList.get(obj[0].toString());
+					tempObj.getSectionId().add(obj[2] != null ? obj[2].toString() : "");
+					tempObj.getSectionName().add(obj[3] != null ? obj[3].toString() : "");
+				} else {
+					ParserSectionMappingCommand parserSectionCmdObj = new ParserSectionMappingCommand();
+					parserSectionCmdObj.setParserId((obj[0] != null ? Long.parseLong(obj[0].toString()) :0));
+					parserSectionCmdObj.setParser_name((obj[1] != null ? obj[1].toString() : ""));
+					sectionIdList = new ArrayList<String>();
+					sectionIdList.add(obj[2] != null ? obj[2].toString() : "");
+					parserSectionCmdObj.setSectionId(sectionIdList);
+					sectionIdList = new ArrayList<String>();
+					sectionIdList.add(obj[3] != null ? obj[3].toString() : "");
+					parserSectionCmdObj.setSectionName(sectionIdList);
+					
+					mapList.put(obj[0].toString(), parserSectionCmdObj);
+				}
+			}
+		return mapList;
+	}
+	
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<Integer, String> getSectionList() {
+			Map<Integer, String> map = new HashMap<Integer, String>();
+			List<SectionMappingModel> sectionList =(List<SectionMappingModel>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getAllSections, SectionMappingModel.class);
+			for (SectionMappingModel object : sectionList) {
+			 map.put(object.getSM_ID(),object.getSectionName());
+			}
+		return map;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean f_updateParserSectionMapping(List<ParserSectionMapping> parserSectionMappingsList) {
+		LOGGER.info("** Start--f_updateParserSectionMapping methode");
+		boolean flag = false;
+		boolean isSectionExist = false;
+		try {
+			for (ParserSectionMapping parserSectionMapping : parserSectionMappingsList) {
+				int parserId = parserSectionMapping.getPsmParserId();
+				Map<String, Object> parameter = new HashMap<String, Object>();
+				parameter.put("parserId", parserId);
+    			genericDaoImpl.updateByNamedQuery(NamedQueryName.deleteParserSectionByParserId,ParserSectionMapping.class, parameter);
+				if (parserSectionMapping.getPsmSectionId() != null) {
+					isSectionExist = true;
+				}
+				break;
+			}
+			if (isSectionExist) {
+				genericDaoImpl.merge(parserSectionMappingsList);
+			}
+			flag = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error(e);
+		}
+		LOGGER.info("** End--f_updateParserSectionMapping methode");
+
+		return flag;
+	}
+
+	@Override
+	public UsersGroup f_getUserGroupsByGroupId(Long userGroupId) {
+		UsersGroup usersGroup=genericDaoImpl.findById(UsersGroup.class, userGroupId);
+		return usersGroup;
+	}
+
+	public UsersGroup getUserGroupbyGroupId(Integer userGroupId) {
+		try {
+			LOGGER.info("start getUserGroupObj () ");
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("usersGroupId", userGroupId.longValue());
+			parameters.put("flag", "A");
+			UsersGroup usersGroup = genericDaoImpl.findByColumn(
+					NamedQueryName.getUserGroupbyGroupId, UsersGroup.class, parameters);
+			if (usersGroup != null) {
+				return usersGroup;
+			}		
+		}catch(Exception e){
+			e.printStackTrace();
+			LOGGER.error("getUserGroupbyGroupId::::: "+e);
+		}	
+		return null;
+	}
+	
+}

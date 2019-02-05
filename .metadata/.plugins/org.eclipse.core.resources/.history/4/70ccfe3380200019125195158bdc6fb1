@@ -1,0 +1,502 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "PROCESSING_REPORT_TRACKER")
+@NamedQueries({
+	@NamedQuery(name = "getAuditTrailProcessingReportTracker", query = "from ProcessingReportTracker where filingId=:filingId"),
+	@NamedQuery(name = "getAuditTrailProcessingReportTrackerByStartDateEndDate", query = "from ProcessingReportTracker where createDate BETWEEN :startDate AND :endDate"),
+	@NamedQuery(name = "getAuditTrailProcessingReportTrackerByStartDateEndDateFilingId", query = "from ProcessingReportTracker where createDate BETWEEN :startDate AND :endDate and filingId=:filingId")
+})
+public class ProcessingReportTracker  implements Serializable, BaseEntity{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "PRT_ID")
+	private Integer prtId;
+	
+	@Column(name = "WQ_ID")
+	private Integer wqId;
+
+	@Column(name = "COMPANY_ID")
+	private String companyId;
+	
+	@Column(name = "WQ_STATUS")
+	private String wqStatus;
+
+	@Column(name = "FILENAME")
+	private String fileName;
+	
+	@Column(name = "FILING_ID")
+	private Integer filingId;
+
+	@Column(name = "PAGE_SIZE")
+	private Integer pageSize;
+	
+	@Column(name = "NUMBER_OF_PERIODS")
+	private Integer numberOfPeriods;
+	
+	@Column(name = "CREATE_DATE")
+	private Date createDate;
+	
+	@Column(name = "CUSTOMER_NAME")
+	private String customerName;
+
+	@Column(name = "CASE_STATUS")
+	private String caseStatus;
+	
+	@Column(name = "SEARCHER")
+	private String searcher;
+	
+	@Column(name = "MAKER")
+	private String maker;
+	@Column(name = "CHECKER")
+	private String checker;
+	@Column(name = "FILE_IDENTIFICATION_ST")
+	private String fileIdentificationSt;
+	@Column(name = "EXTRACTION_PROCESS_ST")
+	private String extractionProcessSt;
+	@Column(name = "NORM_PROCESS_ST")
+	private String normProcessSt;
+	@Column(name = "NORM_PROCESS_ET")
+	private String normProcessEt;
+	@Column(name = "MAKER_ASSIGNED_ON")
+	private String makerAssignedOn;
+	@Column(name = "MAKER_STARTED_ON")
+	private String makerStartedOn;
+	@Column(name = "MAKER_COMPLETED")
+	private String makerCompleted;
+	@Column(name = "CHECKER_ASSIGNED_ON")
+	private String checkerAssignedOn;
+	@Column(name = "CHECKER_STARTED_ON")
+	private String checkerStartedOn;
+	@Column(name = "CHECKER_COMPLETED")
+	private String checkerCompleted;
+	@Column(name = "QA_ASSIGNED_ON")
+	private String qaAssignedOn;
+	@Column(name = "QA_STARTED_ON")
+	private String qaStartedOn;
+	@Column(name = "QA_COMPLETED")
+	private String qaCompleted;
+	@Column(name = "FILE_IDENTIFICATION_PT")
+	private Integer fileIdentificationPt;
+	@Column(name = "EXTRACTION_PT")
+	private Integer extractionPt;
+	@Column(name = "NORM_PROCESSING_TIME")
+	private Integer normProcessingTime;
+	@Column(name = "NORM_COMPLETE_TO_MAKER_ASGN")
+	private Integer normCompleteToMakerAsgn;
+	@Column(name = "MAKER_ASSINGED_T0_ST")
+	private Integer makerAssingedT0St;
+	@Column(name = "MAKER_START_TO_COMPLETE_TIME")
+	private Integer makerStartToCompleteTime;
+	@Column(name = "MAKER_TOTAL_PROCESSING_TIME")
+	private Integer makerTotalProcessingTime;
+	@Column(name = "CHECKER_ASSINGED_T0_ST")
+	private Integer checkerAssingedT0St;
+	@Column(name = "CHECKER_ST_TO_CT")
+	private Integer checkerStToCt;
+	@Column(name = "CHECKER_TOTAL_PT")
+	private Integer checkerTotalPt;
+	@Column(name = "QA_ASSINGED_T0_ST")
+	private Integer qaAssingedT0St;
+	@Column(name = "QA_START_TO_CT")
+	private Integer qaStartToCt;
+	@Column(name = "QA_TOTAL_PT")
+	private Integer qaTotalPt;
+	@Column(name = "TOTAL_PROCESSING_LS")
+	private Integer totalProcessingLs;
+	@Column(name = "TOTAL_PROCESSING_ANALYST")
+	private Integer totalProcessingAnalyst;
+	@Column(name = "TOTAL_PROCESSING_E2E")
+	private Integer totalProcessingE2e;
+	@Column(name = "AUDIT_TRAIL")
+	private String auditTrail;
+	@Column(name = "QA")
+	private String qa;
+	
+	public Integer getPrtId() {
+		return prtId;
+	}
+
+	public void setPrtId(Integer prtId) {
+		this.prtId = prtId;
+	}
+
+	public Integer getWqId() {
+		return wqId;
+	}
+
+	public void setWqId(Integer wqId) {
+		this.wqId = wqId;
+	}
+
+	public String getCompanyId() {
+		return companyId;
+	}
+
+	public void setCompanyId(String companyId) {
+		this.companyId = companyId;
+	}
+
+	public String getWqStatus() {
+		return wqStatus;
+	}
+
+	public void setWqStatus(String wqStatus) {
+		this.wqStatus = wqStatus;
+	}
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public Integer getPageSize() {
+		return pageSize;
+	}
+
+	public void setPageSize(Integer pageSize) {
+		this.pageSize = pageSize;
+	}
+
+	public Integer getNumberOfPeriods() {
+		return numberOfPeriods;
+	}
+
+	public void setNumberOfPeriods(Integer numberOfPeriods) {
+		this.numberOfPeriods = numberOfPeriods;
+	}
+
+	public Date getCreateDate() {
+		return createDate;
+	}
+
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
+	}
+
+	public String getCustomerName() {
+		return customerName;
+	}
+
+	public void setCustomerName(String customerName) {
+		this.customerName = customerName;
+	}
+
+	public String getCaseStatus() {
+		return caseStatus;
+	}
+
+	public void setCaseStatus(String caseStatus) {
+		this.caseStatus = caseStatus;
+	}
+
+	public String getSearcher() {
+		return searcher;
+	}
+
+	public void setSearcher(String searcher) {
+		this.searcher = searcher;
+	}
+
+	public String getMaker() {
+		return maker;
+	}
+
+	public void setMaker(String maker) {
+		this.maker = maker;
+	}
+
+	public String getChecker() {
+		return checker;
+	}
+
+	public void setChecker(String checker) {
+		this.checker = checker;
+	}
+
+	public String getFileIdentificationSt() {
+		return fileIdentificationSt;
+	}
+
+	public void setFileIdentificationSt(String fileIdentificationSt) {
+		this.fileIdentificationSt = fileIdentificationSt;
+	}
+
+	public String getExtractionProcessSt() {
+		return extractionProcessSt;
+	}
+
+	public void setExtractionProcessSt(String extractionProcessSt) {
+		this.extractionProcessSt = extractionProcessSt;
+	}
+
+	public String getNormProcessSt() {
+		return normProcessSt;
+	}
+
+	public void setNormProcessSt(String normProcessSt) {
+		this.normProcessSt = normProcessSt;
+	}
+
+	public String getNormProcessEt() {
+		return normProcessEt;
+	}
+
+	public void setNormProcessEt(String normProcessEt) {
+		this.normProcessEt = normProcessEt;
+	}
+
+	public String getMakerAssignedOn() {
+		return makerAssignedOn;
+	}
+
+	public void setMakerAssignedOn(String makerAssignedOn) {
+		this.makerAssignedOn = makerAssignedOn;
+	}
+
+	public String getMakerStartedOn() {
+		return makerStartedOn;
+	}
+
+	public void setMakerStartedOn(String makerStartedOn) {
+		this.makerStartedOn = makerStartedOn;
+	}
+
+	public String getMakerCompleted() {
+		return makerCompleted;
+	}
+
+	public void setMakerCompleted(String makerCompleted) {
+		this.makerCompleted = makerCompleted;
+	}
+
+	public String getCheckerAssignedOn() {
+		return checkerAssignedOn;
+	}
+
+	public void setCheckerAssignedOn(String checkerAssignedOn) {
+		this.checkerAssignedOn = checkerAssignedOn;
+	}
+
+	public String getCheckerStartedOn() {
+		return checkerStartedOn;
+	}
+
+	public void setCheckerStartedOn(String checkerStartedOn) {
+		this.checkerStartedOn = checkerStartedOn;
+	}
+
+	public String getCheckerCompleted() {
+		return checkerCompleted;
+	}
+
+	public void setCheckerCompleted(String checkerCompleted) {
+		this.checkerCompleted = checkerCompleted;
+	}
+
+	public String getQaAssignedOn() {
+		return qaAssignedOn;
+	}
+
+	public void setQaAssignedOn(String qaAssignedOn) {
+		this.qaAssignedOn = qaAssignedOn;
+	}
+
+	public String getQaStartedOn() {
+		return qaStartedOn;
+	}
+
+	public void setQaStartedOn(String qaStartedOn) {
+		this.qaStartedOn = qaStartedOn;
+	}
+
+	public String getQaCompleted() {
+		return qaCompleted;
+	}
+
+	public void setQaCompleted(String qaCompleted) {
+		this.qaCompleted = qaCompleted;
+	}
+
+	public Integer getFileIdentificationPt() {
+		return fileIdentificationPt;
+	}
+
+	public void setFileIdentificationPt(Integer fileIdentificationPt) {
+		this.fileIdentificationPt = fileIdentificationPt;
+	}
+
+	public Integer getExtractionPt() {
+		return extractionPt;
+	}
+
+	public void setExtractionPt(Integer extractionPt) {
+		this.extractionPt = extractionPt;
+	}
+
+	public Integer getNormProcessingTime() {
+		return normProcessingTime;
+	}
+
+	public void setNormProcessingTime(Integer normProcessingTime) {
+		this.normProcessingTime = normProcessingTime;
+	}
+
+	public Integer getNormCompleteToMakerAsgn() {
+		return normCompleteToMakerAsgn;
+	}
+
+	public void setNormCompleteToMakerAsgn(Integer normCompleteToMakerAsgn) {
+		this.normCompleteToMakerAsgn = normCompleteToMakerAsgn;
+	}
+
+	public Integer getMakerAssingedT0St() {
+		return makerAssingedT0St;
+	}
+
+	public void setMakerAssingedT0St(Integer makerAssingedT0St) {
+		this.makerAssingedT0St = makerAssingedT0St;
+	}
+
+	public Integer getMakerStartToCompleteTime() {
+		return makerStartToCompleteTime;
+	}
+
+	public void setMakerStartToCompleteTime(Integer makerStartToCompleteTime) {
+		this.makerStartToCompleteTime = makerStartToCompleteTime;
+	}
+
+	public Integer getMakerTotalProcessingTime() {
+		return makerTotalProcessingTime;
+	}
+
+	public void setMakerTotalProcessingTime(Integer makerTotalProcessingTime) {
+		this.makerTotalProcessingTime = makerTotalProcessingTime;
+	}
+
+	public Integer getCheckerAssingedT0St() {
+		return checkerAssingedT0St;
+	}
+
+	public void setCheckerAssingedT0St(Integer checkerAssingedT0St) {
+		this.checkerAssingedT0St = checkerAssingedT0St;
+	}
+
+	public Integer getCheckerStToCt() {
+		return checkerStToCt;
+	}
+
+	public void setCheckerStToCt(Integer checkerStToCt) {
+		this.checkerStToCt = checkerStToCt;
+	}
+
+	public Integer getCheckerTotalPt() {
+		return checkerTotalPt;
+	}
+
+	public void setCheckerTotalPt(Integer checkerTotalPt) {
+		this.checkerTotalPt = checkerTotalPt;
+	}
+
+	public Integer getQaAssingedT0St() {
+		return qaAssingedT0St;
+	}
+
+	public void setQaAssingedT0St(Integer qaAssingedT0St) {
+		this.qaAssingedT0St = qaAssingedT0St;
+	}
+
+	public Integer getQaStartToCt() {
+		return qaStartToCt;
+	}
+
+	public void setQaStartToCt(Integer qaStartToCt) {
+		this.qaStartToCt = qaStartToCt;
+	}
+
+	public Integer getQaTotalPt() {
+		return qaTotalPt;
+	}
+
+	public void setQaTotalPt(Integer qaTotalPt) {
+		this.qaTotalPt = qaTotalPt;
+	}
+
+	public Integer getTotalProcessingLs() {
+		return totalProcessingLs;
+	}
+
+	public void setTotalProcessingLs(Integer totalProcessingLs) {
+		this.totalProcessingLs = totalProcessingLs;
+	}
+
+	public Integer getTotalProcessingAnalyst() {
+		return totalProcessingAnalyst;
+	}
+
+	public void setTotalProcessingAnalyst(Integer totalProcessingAnalyst) {
+		this.totalProcessingAnalyst = totalProcessingAnalyst;
+	}
+
+	public Integer getTotalProcessingE2e() {
+		return totalProcessingE2e;
+	}
+
+	public void setTotalProcessingE2e(Integer totalProcessingE2e) {
+		this.totalProcessingE2e = totalProcessingE2e;
+	}
+
+	public String getAuditTrail() {
+		return auditTrail;
+	}
+
+	public void setAuditTrail(String auditTrail) {
+		this.auditTrail = auditTrail;
+	}
+
+	public String getQa() {
+		return qa;
+	}
+
+	public void setQa(String qa) {
+		this.qa = qa;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+	
+}

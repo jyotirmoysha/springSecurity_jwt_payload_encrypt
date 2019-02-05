@@ -1,0 +1,489 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "NORM_ITEM_LABELS")
+@NamedQueries({
+		@NamedQuery(name = "getNormItemLabelsListBySection", query = "SELECT N FROM NormItemLabels N where nilSection = :section and templateId = :templateId ORDER BY niItem"),
+		@NamedQuery(name = "getNormalizationLableName", query = "select DISTINCT(templateId), nilIndustry from NormItemLabels where templateId=:templateId"),
+		@NamedQuery(name = "checkLableName", query = "select  distinct nilIndustry from NormItemLabels"),
+		@NamedQuery(name = "maxTemplateId", query = "select max(templateId) from NormItemLabels"),
+		@NamedQuery(name = "getNormItemLabelsList", query = "SELECT N FROM NormItemLabels N ORDER BY niItem"),
+		@NamedQuery(name = "findNormalizeTemplateList", query = "select DISTINCT(templateId), nilIndustry from NormItemLabels where  userGroupId in :userGroupId"),
+		@NamedQuery(name = "exportNormItemLabelsList", query = "select templateId, nilIndustry,nilSection, niItem, nilLabel from NormItemLabels where  templateId=:templateId ORDER by niItem asc"),
+		@NamedQuery(name = "getNormItemLabelsListByTemplate", query = "SELECT N FROM NormItemLabels N where templateId = :templateId and (mappingDisplay is null or mappingDisplay='Y') and niItem is not null ORDER BY nilSection"),
+		@NamedQuery(name = "getNrmItmLblByTmplteNiItem", query = "SELECT N FROM NormItemLabels N where templateId = :templateId and niItem = :niItem ORDER BY niItem"),
+		@NamedQuery(name = "getNormLableByNormItemAndSectionAndIndustry", query = "SELECT nil.niItem,nil.nilLabel FROM NormItemLabels nil where nil.niItem IN (:niItem) and nil.nilSection=:nilSection and nil.nilIndustry=:nilIndustry"),
+		@NamedQuery(name = "getTemplateList", query = "select DISTINCT(templateId), nilIndustry from NormItemLabels where userGroupId in (select usersGroupId from UsersGroup where parentUserGroup=:userGroupId)"),
+		@NamedQuery(name = "getTemplateListForGroupAdmin", query = "select DISTINCT(NIL.templateId), NIL.nilIndustry from NormItemLabels NIL where NIL.userGroupId in (select UG.usersGroupId from UsersGroup UG where UG.parentUserGroup in(select UG1.parentUserGroup from UsersGroup UG1 where UG1.usersGroupId=:userGroupId))"),
+		@NamedQuery(name = "getTemplateListByUserGroup", query = "select DISTINCT(templateId), nilIndustry from NormItemLabels where userGroupId=:userGroupId"),
+		@NamedQuery(name = "getNrmItmLblSubSectionByTmplteNiItem", query = "SELECT nilSubSection FROM NormItemLabels N where templateId = :templateId and niItem = :niItem "),
+		@NamedQuery(name = "getSubSectionListByTemplateId", query = "SELECT N.nilSubSection FROM NormItemLabels N where templateId = :templateId and N.nilSection=:section GROUP BY N.nilSubSection ORDER BY MAX(N.nilId) ASC"),
+		@NamedQuery(name = "getNormItemLabelsByNiItemAndTemplateId", query = "SELECT nilLabel FROM NormItemLabels N where templateId = :templateId and niItem = :niItem "),
+		@NamedQuery(name = "getTemplateNameByTemplateId", query = "SELECT DISTINCT(nilIndustry) FROM NormItemLabels N where templateId = :templateId")
+		})
+@NamedNativeQueries({
+	@NamedNativeQuery(name = "getNormItemLabelsAndValues", query = "select NIL.TEMPLATE_ID, nil.ni_item, CONVERT(VARCHAR(10),ni_ars.ars_date,101) as final_date, "
+			+ "ni_ars.FILING_ID, ni_ars.ni_value, "
+			+ "nil.nil_label, nil.header, nil.display_format, NIL.NIL_section, nil.display_seq ,  ni_ars.ars_date as ars_date,ni_ars.ars_period from "
+			+ "(select ars.FILING_ID, ars.ARS_SECTION, ars.ARS_ID, ars.TEMPLATE_ID, ars.ars_date, ars.ars_column, ars.ars_period, nv.NI_VALUE, nv.NI_ITEM "
+			+ "from as_rep_statement ars, ni_values nv where ars.ARS_ID = nv.ARS_ID and "
+			+ "ars.FILING_ID = nv.FILING_ID and "
+			+ "ars.TEMPLATE_ID = nv.TEMPLATE_ID and "
+			+ "ars.template_id =(select f.template_id from filings f where f.filing_id = :filingId) and "
+			+ "ars.FILING_ID = :filingId) ni_ars "
+			+ "RIGHT  join (select * from norm_item_labels "
+			+ "where template_id = (select f.template_id from filings f where f.filing_id = :filingId) and nil_display='Y') nil on nil.template_id = ni_ars.template_id AND "
+			+ "nil.ni_item = ni_ars.ni_item  and "
+			+ "ni_ars.FILING_ID is not null "
+			+ "order by nil_section,nil.display_seq asc ,CONVERT(VARCHAR(10),ni_ars.ars_date,101) desc "),
+
+	@NamedNativeQuery(name = "getNormItemLabelsAndValuesWithPoRefIds", query = "select NIL.TEMPLATE_ID, nil.ni_item, CONVERT(VARCHAR(10),ni_ars.ars_date,101) as final_date, "
+			+ "ni_ars.FILING_ID, ni_ars.ni_value, "
+			+ "nil.nil_label, nil.header, nil.display_format, NIL.NIL_section, nil.display_seq,  ni_ars.ars_date as ars_date, ni_ars.ars_period, ni_ars.REF_PO_ID,ni_ars.NI_ID, "
+			+ "nil.account_nm,nil.account_display_long_ds,nil.INDENTATION_DEPTH_NBR,ni_ars.ars_id,nil.CATEGORY,ni_ars.SOURCE_DATA from "
+			+ "(select ars.FILING_ID, ars.ARS_SECTION, ars.ARS_ID, ars.TEMPLATE_ID, ars.ars_date, ars.ars_column, ars.ars_period, nv.NI_VALUE, nv.NI_ITEM,nv.REF_PO_ID,nv.NI_ID,nv.SOURCE_DATA "
+			+ "from as_rep_statement ars, ni_values nv where ars.ARS_ID = nv.ARS_ID and "
+			+ "ars.FILING_ID = nv.FILING_ID and "
+			+ "ars.TEMPLATE_ID = nv.TEMPLATE_ID and "
+			+ "ars.template_id =(select f.template_id from filings f where f.filing_id = :filingId) and "
+			+ "ars.FILING_ID = :filingId) ni_ars "
+			+ "RIGHT  join (select nilabel.*,ctm.account_nm,ctm.account_display_long_ds,ctm.INDENTATION_DEPTH_NBR from norm_item_labels nilabel "
+			+ "LEFT OUTER join coa_template_metadata ctm on  nilabel.ni_item = ctm.seqid and nilabel.template_id = ctm.Template_ID "
+			+ "where nilabel.template_id = (select f.template_id from filings f where f.filing_id = :filingId) and nilabel.nil_display='Y') nil on nil.template_id = ni_ars.template_id AND "
+			+ "nil.ni_item = ni_ars.ni_item  and "
+			+ "ni_ars.FILING_ID is not null "
+			+ "order by nil_section,nil.display_seq asc ,CONVERT(VARCHAR(10),ni_ars.ars_date,101) desc "),
+
+		@NamedNativeQuery(name = "getBankAccountSummaryHeaders", query = "select * from norm_item_labels where template_id =:template_id and nil_section = 'AccountSummary' order by nil_label"),
+
+		@NamedNativeQuery(name = "getBankDepositsHeaders", query = "select * from norm_item_labels where template_id = :template_id and nil_section = 'Deposits' and NIL_DISPLAY='Y' order by nil_label"),
+
+		@NamedNativeQuery(name = "getNormItemLabelsAndIdList", query = "SELECT NI_ITEM, NIL_LABEL, NIL_INDUSTRY, TEMPLATE_ID FROM NORM_ITEM_LABELS ORDER BY NI_ITEM"),
+		
+		@NamedNativeQuery(name = "getNiValuesNiLableDataByNiItem", query = "select nilabel.nil_label,NI.ni_value from NORM_ITEM_LABELS nilabel left join NI_VALUES NI"
+				+ " on (nilabel.ni_item=ni.ni_item and nilabel.template_id=ni.template_id and NI.ars_id=:arsId and NI.filing_id = :filingId)"
+				+ " where nilabel.ni_item=:niItem and nilabel.template_id=:templateId"),
+
+		@NamedNativeQuery(name = "getNiValuesNiLableDataByNiLable", query = "select NI.ni_value from NORM_ITEM_LABELS nilabel left join NI_VALUES NI"
+				+ " on (nilabel.ni_item=ni.ni_item and nilabel.template_id=ni.template_id and NI.ars_id=:arsId and NI.filing_id = :filingId)"
+				+ " where nilabel.nil_label=:nilLabel and nilabel.template_id=:templateId"),
+
+})
+public class NormItemLabels implements Serializable, BaseEntity {
+
+	private static final long serialVersionUID = 1L;
+
+	@Id
+//	@GeneratedValue(generator = "sequence")
+//	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "seq_norm_item_labels") })
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "NIL_ID")
+	private Integer nilId;
+
+	@Column(name = "TEMPLATE_ID")
+	private Integer templateId;
+
+	@Column(name = "NI_ITEM")
+	private Integer niItem;
+
+	@Column(name = "NIL_LABEL")
+	private String nilLabel;
+
+	@Column(name = "NIL_INDEX_ORDER")
+	private Integer nilIndexOrder;
+
+	@Column(name = "NIL_SIGN_CODE")
+	private String nilSignCode;
+
+	@Column(name = "NIL_SECTION")
+	private String nilSection;
+
+	@Column(name = "NIL_SUB_SECTION")
+	private String nilSubSection;
+
+	@Column(name = "NIL_DISPLAY")
+	private String nilDisplay;
+
+	@Column(name = "NIL_INDENTATION")
+	private Integer nilIndentation;
+
+	@Column(name = "NIL_FIELD")
+	private String nilField;
+
+	@Column(name = "MANDATORY_FLAG")
+	private String mandatoryFlag;
+
+	@Column(name = "CREATED_BY")
+	private String createdBy;
+
+	@Column(name = "CREATE_DATE")
+	private Date createDate;
+
+	@Column(name = "MODIFIED_BY")
+	private String modifiedBy;
+
+	@Column(name = "MODIFY_DATE")
+	private Date modifyDate;
+
+	@Column(name = "NIL_DATATYPE")
+	private String nilDatatype;
+
+	@Column(name = "DISPLAY_SEQ")
+	private Integer displaySeq;
+
+	@Column(name = "HEADER")
+	private String header;
+
+	@Column(name = "DISPLAY_FORMAT")
+	private String displayFormat;
+
+	@Column(name = "DISPLAY_LOCATION")
+	private String displayLocation;
+
+	@Column(name = "Q_ID")
+	private Integer qId;
+
+	@Column(name = "IS_CURRENCY")
+	private String isCurrency;
+
+	@Column(name = "NIL_LANGUAGE")
+	private String nilLanguage;
+
+	@Column(name = "NIL_INDUSTRY")
+	private String nilIndustry;
+
+	@Column(name = "USER_GROUP_ID")
+	private Integer userGroupId;
+	
+	@Column(name = "NIL_ALTR_SECTION")
+	private String nilAltrSection;
+	
+	@Column(name = "LABEL_SECTION")
+	private String labelSection;
+	
+	@Column(name = "BU_mapp_req")
+	private String BUMappReq;
+	
+	@Column(name = "ASSOCIATION_FLAG")
+	private String associationFlag;
+	
+	@Column(name = "PARENT_FLAG")
+	private String parentFlag;
+	
+	@Column(name = "QC_Flag")
+	private String qcFlag;
+	
+	@Column(name = "XML_File")
+	private String xmlFile;
+	
+	@Column(name = "MAPPING_DISPLAY")
+	private String mappingDisplay;
+	
+	
+	public String getLabelSection() {
+		return labelSection;
+	}
+
+	public void setLabelSection(String labelSection) {
+		this.labelSection = labelSection;
+	}
+
+	public String getNilAltrSection() {
+		return nilAltrSection;
+	}
+
+	public void setNilAltrSection(String nilAltrSection) {
+		this.nilAltrSection = nilAltrSection;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	public Integer getUserGroupId() {
+		return userGroupId;
+	}
+
+	public void setUserGroupId(Integer userGroupId) {
+		this.userGroupId = userGroupId;
+	}
+
+	public Integer getNilId() {
+		return nilId;
+	}
+
+	public void setNilId(Integer nilId) {
+		this.nilId = nilId;
+	}
+
+	public Integer getTemplateId() {
+		return templateId;
+	}
+
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+
+	public Integer getNiItem() {
+		return niItem;
+	}
+
+	public void setNiItem(Integer niItem) {
+		this.niItem = niItem;
+	}
+
+	public String getNilLabel() {
+		return nilLabel;
+	}
+
+	public void setNilLabel(String nilLabel) {
+		this.nilLabel = nilLabel;
+	}
+
+	public Integer getNilIndexOrder() {
+		return nilIndexOrder;
+	}
+
+	public void setNilIndexOrder(Integer nilIndexOrder) {
+		this.nilIndexOrder = nilIndexOrder;
+	}
+
+	public String getNilSignCode() {
+		return nilSignCode;
+	}
+
+	public void setNilSignCode(String nilSignCode) {
+		this.nilSignCode = nilSignCode;
+	}
+
+	public String getNilSection() {
+		return nilSection;
+	}
+
+	public void setNilSection(String nilSection) {
+		this.nilSection = nilSection;
+	}
+
+	public String getNilSubSection() {
+		return nilSubSection;
+	}
+
+	public void setNilSubSection(String nilSubSection) {
+		this.nilSubSection = nilSubSection;
+	}
+
+	public String getNilDisplay() {
+		return nilDisplay;
+	}
+
+	public void setNilDisplay(String nilDisplay) {
+		this.nilDisplay = nilDisplay;
+	}
+
+	public Integer getNilIndentation() {
+		return nilIndentation;
+	}
+
+	public void setNilIndentation(Integer nilIndentation) {
+		this.nilIndentation = nilIndentation;
+	}
+
+	public String getNilField() {
+		return nilField;
+	}
+
+	public void setNilField(String nilField) {
+		this.nilField = nilField;
+	}
+
+	public String getMandatoryFlag() {
+		return mandatoryFlag;
+	}
+
+	public void setMandatoryFlag(String mandatoryFlag) {
+		this.mandatoryFlag = mandatoryFlag;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Date getCreateDate() {
+		return createDate;
+	}
+
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
+	}
+
+	public String getModifiedBy() {
+		return modifiedBy;
+	}
+
+	public void setModifiedBy(String modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
+	public Date getModifyDate() {
+		return modifyDate;
+	}
+
+	public void setModifyDate(Date modifyDate) {
+		this.modifyDate = modifyDate;
+	}
+
+	public String getNilDatatype() {
+		return nilDatatype;
+	}
+
+	public void setNilDatatype(String nilDatatype) {
+		this.nilDatatype = nilDatatype;
+	}
+
+	public Integer getDisplaySeq() {
+		return displaySeq;
+	}
+
+	public void setDisplaySeq(Integer displaySeq) {
+		this.displaySeq = displaySeq;
+	}
+
+	public String getHeader() {
+		return header;
+	}
+
+	public void setHeader(String header) {
+		this.header = header;
+	}
+
+	public String getDisplayFormat() {
+		return displayFormat;
+	}
+
+	public void setDisplayFormat(String displayFormat) {
+		this.displayFormat = displayFormat;
+	}
+
+	public String getDisplayLocation() {
+		return displayLocation;
+	}
+
+	public void setDisplayLocation(String displayLocation) {
+		this.displayLocation = displayLocation;
+	}
+
+	public Integer getqId() {
+		return qId;
+	}
+
+	public void setqId(Integer qId) {
+		this.qId = qId;
+	}
+
+	public String getIsCurrency() {
+		return isCurrency;
+	}
+
+	public void setIsCurrency(String isCurrency) {
+		this.isCurrency = isCurrency;
+	}
+
+	public String getNilLanguage() {
+		return nilLanguage;
+	}
+
+	public void setNilLanguage(String nilLanguage) {
+		this.nilLanguage = nilLanguage;
+	}
+
+	public String getNilIndustry() {
+		return nilIndustry;
+	}
+
+	public void setNilIndustry(String nilIndustry) {
+		this.nilIndustry = nilIndustry;
+	}
+
+	
+	
+	public String getBUMappReq() {
+		return BUMappReq;
+	}
+
+	public void setBUMappReq(String bUMappReq) {
+		BUMappReq = bUMappReq;
+	}
+
+	
+	
+	public String getAssociationFlag() {
+		return associationFlag;
+	}
+
+	public void setAssociationFlag(String associationFlag) {
+		this.associationFlag = associationFlag;
+	}
+	
+	
+
+	public String getParentFlag() {
+		return parentFlag;
+	}
+
+	public void setParentFlag(String parentFlag) {
+		this.parentFlag = parentFlag;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+	public String getQcFlag() {
+		return qcFlag;
+	}
+
+	public void setQcFlag(String qcFlag) {
+		this.qcFlag = qcFlag;
+	}
+
+	public String getXmlFile() {
+		return xmlFile;
+	}
+
+	public void setXmlFile(String xmlFile) {
+		this.xmlFile = xmlFile;
+	}
+
+	public String getMappingDisplay() {
+		return mappingDisplay;
+	}
+
+	public void setMappingDisplay(String mappingDisplay) {
+		this.mappingDisplay = mappingDisplay;
+	}
+	
+	
+
+}

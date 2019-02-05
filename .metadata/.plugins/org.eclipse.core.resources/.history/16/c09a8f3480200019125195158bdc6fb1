@@ -1,0 +1,51 @@
+/**
+ * 
+ */
+package com.livespread.command;
+
+import java.io.Serializable;
+
+import com.livespread.excel.StyleBuilder;
+
+/**
+ * @author gd0e895
+ *
+ */
+public class ValueCommand implements Serializable 
+{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	private String value;
+	private StyleBuilder styleBuilder;
+	private String asRepLabel;
+	
+	
+	public String getValue() {
+		return value;
+	}
+	public void setValue(String value) {
+		this.value = value;
+	}
+	public StyleBuilder getStyleBuilder() {
+		return styleBuilder;
+	}
+	public void setStyleBuilder(StyleBuilder styleBuilder) {
+		this.styleBuilder = styleBuilder;
+	}
+	/**
+	 * @return the asRepLabel
+	 */
+	public String getAsRepLabel() {
+		return asRepLabel;
+	}
+	/**
+	 * @param asRepLabel the asRepLabel to set
+	 */
+	public void setAsRepLabel(String asRepLabel) {
+		this.asRepLabel = asRepLabel;
+	}
+
+}

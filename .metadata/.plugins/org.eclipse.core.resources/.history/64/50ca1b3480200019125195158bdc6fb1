@@ -1,0 +1,182 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.sql.Timestamp;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "AUTO_CASE_DATA")
+public class AutoCaseData implements Serializable, BaseEntity{
+
+	private static final long serialVersionUID = 1;
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "ACD_ID")
+	private Integer ACD_ID ;
+	
+	@Column(name = "CUSTOMER_NAME")
+	private String customerName;
+
+	@Column(name = "COMPANYID")
+	private String companyId;
+	
+	@Column(name = "PARSER_TYPE")
+	private String parserType;
+	
+	@Column(name = "FILE_PATH")
+	private String filePath;
+	
+	
+	@Column(name = "PROCESSED_STATUS")
+	private String processedStatus;
+	
+	
+	@Column(name = "CREATED_BY", updatable = false)
+	private String createdBy;
+
+	@Column(name = "LAST_MODIFIED_BY")
+	private String modifiedBy;
+
+	@Column(name = "CREATED_DATE", updatable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date createdDate;
+
+	@Column(name = "LAST_MODIFIED_DATE")
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date modifiedDate;
+
+	@PrePersist
+	public void onCreate() {
+		this.createdDate = new java.util.Date();
+	}
+
+	@PreUpdate
+	public void onUpdate() {
+		this.modifiedDate = new java.util.Date();
+	}
+	
+	
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public String getModifiedBy() {
+		return modifiedBy;
+	}
+
+	public void setModifiedBy(String modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public Date getModifiedDate() {
+		return modifiedDate;
+	}
+
+	public void setModifiedDate(Date modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+	public void setModifiedDate(Timestamp modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+	
+	
+	public Integer getACD_ID() {
+		return ACD_ID;
+	}
+
+
+	public void setACD_ID(Integer aCD_ID) {
+		ACD_ID = aCD_ID;
+	}
+
+
+	public String getCustomerName() {
+		return customerName;
+	}
+
+
+	public void setCustomerName(String customerName) {
+		this.customerName = customerName;
+	}
+
+
+	public String getCompanyId() {
+		return companyId;
+	}
+
+
+	public void setCompanyId(String companyId) {
+		this.companyId = companyId;
+	}
+
+
+	public String getParserType() {
+		return parserType;
+	}
+
+
+	public void setParserType(String parserType) {
+		this.parserType = parserType;
+	}
+
+
+	public String getFilePath() {
+		return filePath;
+	}
+
+
+	public void setFilePath(String filePath) {
+		this.filePath = filePath;
+	}
+
+
+
+	public String getProcessedStatus() {
+		return processedStatus;
+	}
+
+
+	public void setProcessedStatus(String processedStatus) {
+		this.processedStatus = processedStatus;
+	}
+
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+
+}

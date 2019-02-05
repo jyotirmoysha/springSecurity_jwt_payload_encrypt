@@ -1,0 +1,603 @@
+package com.livespread.util;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.log4j.Logger;
+import org.springframework.web.servlet.view.document.AbstractJExcelView;
+
+import com.livespread.command.NormalizeViewForDebitACHCommand;
+import com.livespread.command.NormalizedDetails;
+
+import jxl.CellView;
+import jxl.format.Border;
+import jxl.format.BorderLineStyle;
+import jxl.format.Colour;
+import jxl.format.VerticalAlignment;
+import jxl.write.Label;
+import jxl.write.WritableCellFormat;
+import jxl.write.WritableFont;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+
+public class BankNormalizedViewExcelBuilder extends AbstractJExcelView {
+	private WritableCellFormat headcellFormat;
+	private WritableCellFormat cellFormat;
+	private WritableCellFormat cellFormatWithBorder;
+	private WritableCellFormat headcellFormat1;
+	private Logger LOGGER = Logger
+			.getLogger(BankNormalizedViewExcelBuilder.class);
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	protected void buildExcelDocument(Map<String, Object> model,
+			WritableWorkbook workbook, HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+		LOGGER.info("calssName:BankNormalizedViewExcelBuilder >> methodName>>buildExcelDocument");
+		Map<String, Object> dataMap = (Map<String, Object>) model
+				.get("excelViewDataMap");
+
+		String fileName = (String) dataMap.get("fileName");
+
+		WritableSheet sheet = null;
+		WritableSheet sheet1 = null;
+		boolean sheetVal = true;
+
+		response.reset();
+		response.setContentType("application/vnd.ms-excel");
+		response.setHeader("Content-Disposition", "attachment;filename=\""
+				+ StringEscapeUtils.escapeJava(fileName) + "\"");
+
+		WritableFont headcellFont = new WritableFont(WritableFont.TAHOMA, 10);
+		headcellFont.setBoldStyle(WritableFont.BOLD);
+
+		headcellFormat = new WritableCellFormat(headcellFont);
+		headcellFormat.setWrap(true);
+		headcellFormat.setAlignment(jxl.format.Alignment.LEFT);
+		headcellFormat.setVerticalAlignment(VerticalAlignment.TOP);
+		headcellFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
+
+		WritableFont headcellFont1 = new WritableFont(WritableFont.TAHOMA, 10);
+		headcellFont1.setBoldStyle(WritableFont.BOLD);
+		headcellFormat1 = new WritableCellFormat(headcellFont1);
+		headcellFormat1.setWrap(true);
+		headcellFormat1.setAlignment(jxl.format.Alignment.CENTRE);
+		headcellFormat1.setVerticalAlignment(VerticalAlignment.TOP);
+		headcellFormat1.setBorder(Border.ALL, BorderLineStyle.THIN);
+		headcellFormat1.setBackground(Colour.GRAY_25);
+
+		WritableFont cellFont = new WritableFont(WritableFont.TAHOMA, 10);
+		cellFormat = new WritableCellFormat(cellFont);
+		cellFormat.setWrap(true);
+		cellFormat.setAlignment(jxl.format.Alignment.LEFT);
+		cellFormat.setVerticalAlignment(VerticalAlignment.TOP);
+		cellFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
+
+		cellFormatWithBorder = new WritableCellFormat(cellFont);
+		cellFormatWithBorder.setVerticalAlignment(VerticalAlignment.TOP);
+		cellFormatWithBorder.setBorder(Border.ALL, BorderLineStyle.THIN);
+
+		CellView cellView = new CellView();
+		cellView.setHidden(true); // set hidden
+
+		Map<String, Map<String, Object>> NormalizedBankValueDetails = (Map<String, Map<String, Object>>) dataMap.get("NormalizedBankValueDetails");
+		int rowCount = 0;
+		sheet = workbook.createSheet("Normalization Rules", 0);
+
+		for (Map.Entry<String, Map<String, Object>> normalizedBankValueDetails : NormalizedBankValueDetails
+				.entrySet()) {
+
+			String accNo = normalizedBankValueDetails.getKey();
+			Map<String, Object> accValMap = (Map<String, Object>) normalizedBankValueDetails
+					.getValue();
+
+			List<String> strNIItemHeaderList = (List<String>) accValMap.get("NIItemHeaderList");
+
+			int headerLength = strNIItemHeaderList.size();
+
+			if (null != strNIItemHeaderList && !strNIItemHeaderList.isEmpty()
+					&& strNIItemHeaderList.size() > 0) {
+
+				rowCount = rowCount + 1;
+
+				String accHeader = "Account Number : " + accNo;
+
+				sheet.mergeCells(0, rowCount, headerLength, rowCount);
+				Label lable = new Label(0, rowCount, accHeader, headcellFormat1);
+				sheet.addCell(lable);
+
+				rowCount = rowCount + 2;
+
+				int col = 0;
+
+				Map<String, List<Integer>> mapOfNiItem = (Map<String, List<Integer>>) accValMap
+						.get("NIItemMap");
+				col = 0;
+				for (Map.Entry<String, List<Integer>> niItemMapVal : mapOfNiItem
+						.entrySet()) { // / upper for
+
+					String ni_itemKey = niItemMapVal.getKey();
+
+					if ("NIItemList".equals(ni_itemKey)) {
+						sheet.mergeCells(0, rowCount, headerLength, rowCount);
+						Label lable1 = new Label(0, rowCount,
+								"Account Summary", headcellFormat1);
+						sheet.addCell(lable1);
+
+						String showNIItemValueMapFlag = (String) accValMap
+								.get("showNIItemValueMapFlag");
+						rowCount = rowCount + 2;
+						if ("false".equals(showNIItemValueMapFlag)) {
+							sheet.mergeCells(0, rowCount, headerLength,
+									rowCount);
+							Label lable40 = new Label(0, rowCount,
+									" No data available for Account Summary.",
+									headcellFormat1);
+							sheet.addCell(lable40);
+						} else {
+
+							col = 0;
+							sheet.setColumnView(0, 50);
+							sheet.addCell(new Label(col++, rowCount,
+									"Description", headcellFormat));
+							for (String header : strNIItemHeaderList) {
+								sheet.addCell(new Label(col, rowCount, header,
+										headcellFormat));
+								col++;
+							}
+
+							rowCount++;
+
+							List<Integer> ni_itemValList = niItemMapVal
+									.getValue();
+
+							for (Integer ni_itemVal : ni_itemValList) {
+								col = 0;
+
+								if (ni_itemVal.equals(new Integer(130))) {
+									sheet.addCell(new Label(col, rowCount,
+											"Beginning Balance", headcellFormat));
+								} else if (ni_itemVal.equals(new Integer(140))) {
+									sheet.addCell(new Label(col, rowCount,
+											"Deposits", headcellFormat));
+								} else if (ni_itemVal.equals(new Integer(150))) {
+									sheet.addCell(new Label(col, rowCount,
+											"Withdrawals", headcellFormat));
+								} else if (ni_itemVal.equals(new Integer(160))) {
+									sheet.addCell(new Label(col, rowCount,
+											"Ending Balance", headcellFormat));
+								} else if (ni_itemVal
+										.equals(new Integer(100000))) {
+									sheet.addCell(new Label(col, rowCount,
+											"Calculated Balance",
+											headcellFormat));
+								}
+								Map<Integer, List<NormalizedDetails>> mapOfValueDetails = (Map<Integer, List<NormalizedDetails>>) accValMap
+										.get("NIItemValueMap");
+								col = 1;
+								for (Map.Entry<Integer, List<NormalizedDetails>> NIItemValue : mapOfValueDetails
+										.entrySet()) {
+
+									if (ni_itemVal.equals(NIItemValue.getKey())) {
+										List<NormalizedDetails> normalizedDetailsList = NIItemValue
+												.getValue();
+
+										for (NormalizedDetails normalizedDetailsval : normalizedDetailsList) {
+											sheet.setColumnView(col, 20);
+											sheet.addCell(new Label(col,
+													rowCount,
+													normalizedDetailsval
+															.getValue(),
+													cellFormatWithBorder));
+											col++;
+										}
+									}
+								}
+								rowCount++;
+
+							}
+						} // end of zero col
+					} else if ("NIItemDepositList".equals(ni_itemKey)) {
+						rowCount = rowCount + 3;
+						sheet.mergeCells(0, rowCount, headerLength, rowCount);
+						Label lable2 = new Label(0, rowCount, "Deposit",
+								headcellFormat1);
+						sheet.addCell(lable2);
+
+						String showNIDepositItemValueMap = (String) accValMap.get("showNIDepositItemValueMap");
+						rowCount = rowCount + 2;
+						if ("false".equals(showNIDepositItemValueMap)) {
+							sheet.mergeCells(0, rowCount, headerLength,
+									rowCount);
+							Label lable41 = new Label(0, rowCount,
+									" No data available for Deposit.",
+									headcellFormat1);
+							sheet.addCell(lable41);
+						} else {
+
+							col = 0;
+							sheet.addCell(new Label(col++, rowCount,
+									"Description", headcellFormat));
+							for (String header : strNIItemHeaderList) {
+								sheet.addCell(new Label(col, rowCount, header,
+										headcellFormat));
+								col++;
+							}
+
+							rowCount++;
+
+							List<Integer> ni_itemValList = niItemMapVal
+									.getValue();
+
+							for (Integer ni_itemVal : ni_itemValList) {
+								col = 0;
+
+								if (ni_itemVal.equals(new Integer(480))) {
+									sheet.addCell(new Label(col, rowCount,
+											"AXP", headcellFormat));
+								} else if (ni_itemVal.equals(new Integer(490))) {
+									sheet.addCell(new Label(col, rowCount,
+											"Other Bankcard", headcellFormat));
+								} else if (ni_itemVal.equals(new Integer(500))) {
+									sheet.addCell(new Label(col, rowCount,
+											"Cash", headcellFormat));
+								} else if (ni_itemVal.equals(new Integer(2940))) {
+									sheet.addCell(new Label(col, rowCount,
+											"Total Deposits", headcellFormat));
+								}
+
+								Map<Integer, List<NormalizedDetails>> mapOfDepositValueDetails = (Map<Integer, List<NormalizedDetails>>) accValMap
+										.get("NIDepositItemValueMap");
+								col = 1;
+								for (Map.Entry<Integer, List<NormalizedDetails>> NIItemValue : mapOfDepositValueDetails
+										.entrySet()) {
+									if (ni_itemVal.equals(NIItemValue.getKey())) {
+										List<NormalizedDetails> normalizedDetailsList = NIItemValue
+												.getValue();
+
+										for (NormalizedDetails normalizedDetailsval : normalizedDetailsList) {
+											sheet.setColumnView(col, 20);
+											sheet.addCell(new Label(col,
+													rowCount,
+													normalizedDetailsval
+															.getValue(),
+													cellFormatWithBorder));
+											col++;
+										}
+									}
+								}
+								rowCount++;
+
+							} // end of zero col
+						}
+					}
+
+				}// end of upper for
+
+			}// end of outer for
+
+			rowCount = rowCount + 2;
+
+			Map<String, Map<String, NormalizeViewForDebitACHCommand>> NormalizeViewForDebitACHCommand = (Map<String, Map<String, NormalizeViewForDebitACHCommand>>) dataMap
+					.get("normalizedBankValueDetailsForDebitACH");
+
+			if (!NormalizeViewForDebitACHCommand.isEmpty()) {
+
+				int col = 0;
+				int rowCount1 = 0;
+				for (Map.Entry<String, Map<String, NormalizeViewForDebitACHCommand>> NormalizeViewForDebitACH : NormalizeViewForDebitACHCommand
+						.entrySet()) {
+					String accNoVal = NormalizeViewForDebitACH.getKey();
+
+					if (!NormalizeViewForDebitACH.getValue().isEmpty()) {
+						if (sheetVal) {
+							sheet1 = workbook.createSheet("Debit ACH", 1);
+							sheetVal = false;
+						}
+
+						Map<String, NormalizeViewForDebitACHCommand> DebitACH = (Map<String, NormalizeViewForDebitACHCommand>) NormalizeViewForDebitACH
+								.getValue();
+
+						++rowCount1;
+						String accHeaderAc = "Account Number :" + accNoVal;
+
+						sheet1.mergeCells(0, rowCount1, 11, rowCount1);
+						Label lable1 = new Label(0, rowCount1, accHeaderAc,
+								headcellFormat1);
+						sheet1.addCell(lable1);
+
+						if (null != DebitACH && !DebitACH.isEmpty()
+								&& DebitACH.size() > 0) {
+							rowCount1 = rowCount1 + 1;
+							int countVal = 0;
+							int constant = 0;
+
+							String accHeader = "Debit ACH Summary";
+							rowCount1++;
+							sheet1.mergeCells(0, rowCount1, 11, rowCount1);
+							Label lable = new Label(0, rowCount1, accHeader,
+									headcellFormat1);
+							sheet1.addCell(lable);
+							rowCount1 = rowCount1 + 2;
+							constant = rowCount1;
+							for (Map.Entry data : DebitACH.entrySet()) {
+								rowCount = constant;
+								NormalizeViewForDebitACHCommand Obj = (com.livespread.command.NormalizeViewForDebitACHCommand) data
+										.getValue();
+								List<String> list = Obj.getStmtDate();
+								List<Object> finalList = new ArrayList<Object>();
+								List<Object> finalList1 = new ArrayList<Object>();
+								List<Object> finalList2 = new ArrayList<Object>();
+								List<Object> finalList3 = new ArrayList<Object>();
+								List<Object> finalTest1 = new ArrayList<Object>();
+								List<Object> finalListKey1 = new ArrayList<Object>();
+								List<Object> finalTest2 = new ArrayList<Object>();
+								List<Object> finalListKey2 = new ArrayList<Object>();
+								List<Object> finalTest3 = new ArrayList<Object>();
+								List<Object> finalListKey3 = new ArrayList<Object>();
+
+								Map<String, Double> mapval = Obj.getDeposits();
+								for (Map.Entry dataDeposit : mapval.entrySet()) {
+									finalListKey1.add(String
+											.valueOf(dataDeposit.getKey()));
+									finalTest1.add(String.valueOf(dataDeposit
+											.getValue()));
+								}
+								Map<String, Double> Withdrwals = Obj
+										.getWithdrwals();
+								for (Map.Entry WithdrwalsVal : Withdrwals
+										.entrySet()) {
+									finalListKey2.add(String
+											.valueOf(WithdrwalsVal.getKey()));
+									finalTest2.add(String.valueOf(WithdrwalsVal
+											.getValue()));
+								}
+								Map<String, Double> mapCashBalance = Obj
+										.getDailyCashBalance();
+								for (Map.Entry cashBalance : mapCashBalance
+										.entrySet()) {
+									finalListKey3.add(String
+											.valueOf(cashBalance.getKey()));
+									finalTest3.add(String.valueOf(cashBalance
+											.getValue()));
+								}
+
+								Integer Temp = 0;
+								Integer Temp1 = 0;
+								Integer Temp2 = 0;
+								for (int x = 0; x < list.size(); x++) {
+									finalList.add(list.get(x));
+									if (finalListKey1
+											.contains(finalList.get(x))) {
+										finalList1.add(finalTest1.get(Temp));
+										Temp++;
+									} else {
+										finalList1.add("");
+									}
+									if (finalListKey2
+											.contains(finalList.get(x))) {
+										finalList2.add(finalTest2.get(Temp1));
+										Temp1++;
+									} else {
+										finalList2.add("");
+									}
+									if (finalListKey3
+											.contains(finalList.get(x))) {
+										finalList3.add(finalTest3.get(Temp2));
+										Temp2++;
+									} else {
+										finalList3.add("");
+									}
+								}
+
+								if (countVal == 0) {
+									col = 0;
+
+									sheet1.addCell(new Label(col++, rowCount,
+											"Month", headcellFormat));
+									sheet1.addCell(new Label(col++, rowCount,
+											Obj.getStmtMonth(),
+											cellFormatWithBorder));
+									rowCount = rowCount + 1;
+									col = 0;
+									sheet1.addCell(new Label(col++, rowCount,
+											"Begining Balence", headcellFormat));
+									sheet1.addCell(new Label(col++, rowCount,
+											Double.toString(Obj
+													.getBeginingBalance()),
+											cellFormatWithBorder));
+									rowCount = rowCount + 1;
+									col = 0;
+									sheet1.addCell(new Label(col++, rowCount,
+											"Date", headcellFormat));
+									sheet1.addCell(new Label(col++, rowCount,
+											"Deposits 	", headcellFormat));
+									sheet1.addCell(new Label(col++, rowCount,
+											"Withdrawals", headcellFormat));
+									sheet1.addCell(new Label(col++, rowCount,
+											"Daily Cash Balance",
+											headcellFormat));
+									for (int y = 0; y < finalList.size(); y++) {
+										col = 0;
+										++rowCount;
+										if (!finalList.isEmpty()) {
+											sheet1.addCell(new Label(
+													col++,
+													rowCount,
+													finalList.get(y).equals(
+															"null") ? ""
+															: (String) finalList
+																	.get(y),
+													cellFormatWithBorder));
+										} else {
+											sheet1.addCell(new Label(col++,
+													rowCount, "",
+													cellFormatWithBorder));
+										}
+										if (!finalList1.isEmpty()) {
+											sheet1.addCell(new Label(
+													col++,
+													rowCount,
+													finalList1.get(y).equals(
+															"null") ? ""
+															: (String) finalList1
+																	.get(y),
+													cellFormatWithBorder));
+										} else {
+											sheet1.addCell(new Label(col++,
+													rowCount, "",
+													cellFormatWithBorder));
+										}
+										if (!finalList2.isEmpty()) {
+											sheet1.addCell(new Label(
+													col++,
+													rowCount,
+													finalList2.get(y).equals(
+															"null") ? ""
+															: (String) finalList2
+																	.get(y),
+													cellFormatWithBorder));
+
+										} else {
+											sheet1.addCell(new Label(col++,
+													rowCount, "",
+													cellFormatWithBorder));
+										}
+
+										if (!finalList3.isEmpty()) {
+											sheet1.addCell(new Label(
+													col++,
+													rowCount,
+													finalList3.get(y).equals(
+															"null") ? ""
+															: (String) finalList3
+																	.get(y),
+													cellFormatWithBorder));
+
+										} else {
+											sheet1.addCell(new Label(col++,
+													rowCount, "",
+													cellFormatWithBorder));
+										}
+
+									}
+									rowCount = rowCount + 1;
+								} else if (countVal != 0) {
+									rowCount = constant;
+									int DynaCols = 0;
+									if (countVal == 1) {
+										DynaCols = 4;
+									} else {
+										DynaCols = 8;
+									}
+									col = DynaCols;
+									sheet1.addCell(new Label(col++, rowCount,
+											"Month", headcellFormat));
+									sheet1.addCell(new Label(col++, rowCount,
+											Obj.getStmtMonth(),
+											cellFormatWithBorder));
+									rowCount = rowCount + 1;
+									col = DynaCols;
+									sheet1.addCell(new Label(col++, rowCount,
+											"Begining Balence", headcellFormat));
+									sheet1.addCell(new Label(col++, rowCount,
+											Double.toString(Obj
+													.getBeginingBalance()),
+											cellFormatWithBorder));
+									rowCount = rowCount + 1;
+									col = DynaCols;
+									sheet1.addCell(new Label(col++, rowCount,
+											"Date", headcellFormat));
+									sheet1.addCell(new Label(col++, rowCount,
+											"Deposits 	", headcellFormat));
+									sheet1.addCell(new Label(col++, rowCount,
+											"Withdrawals", headcellFormat));
+									sheet1.addCell(new Label(col++, rowCount,
+											"Daily Cash Balance",
+											headcellFormat));
+									for (int y = 0; y < finalList.size(); y++) {
+										col = DynaCols;
+										++rowCount;
+										if (!finalList.isEmpty()) {
+											sheet1.addCell(new Label(
+													col++,
+													rowCount,
+													finalList.get(y).equals(
+															"null") ? ""
+															: (String) finalList
+																	.get(y),
+													cellFormatWithBorder));
+										} else {
+											sheet1.addCell(new Label(col++,
+													rowCount, "",
+													cellFormatWithBorder));
+										}
+										if (!finalList1.isEmpty()) {
+											sheet1.addCell(new Label(
+													col++,
+													rowCount,
+													finalList1.get(y).equals(
+															"null") ? ""
+															: (String) finalList1
+																	.get(y),
+													cellFormatWithBorder));
+										} else {
+											sheet1.addCell(new Label(col++,
+													rowCount, "",
+													cellFormatWithBorder));
+										}
+										if (!finalList2.isEmpty()) {
+											sheet1.addCell(new Label(
+													col++,
+													rowCount,
+													finalList2.get(y).equals(
+															"null") ? ""
+															: (String) finalList2
+																	.get(y),
+													cellFormatWithBorder));
+
+										} else {
+											sheet1.addCell(new Label(col++,
+													rowCount, "",
+													cellFormatWithBorder));
+										}
+
+										if (!finalList3.isEmpty()) {
+											sheet1.addCell(new Label(
+													col++,
+													rowCount,
+													finalList3.get(y).equals(
+															"null") ? ""
+															: (String) finalList3
+																	.get(y),
+													cellFormatWithBorder));
+
+										} else {
+											sheet1.addCell(new Label(col++,
+													rowCount, "",
+													cellFormatWithBorder));
+										}
+									}
+									rowCount = rowCount + 1;
+
+								}
+
+								++countVal;
+							}
+							rowCount1 = rowCount + 2;
+
+						}
+					}
+
+				}
+			}
+		}
+		LOGGER.info("end of calssName:BankNormalizedViewExcelBuilder >> methodName>>buildExcelDocument");
+
+	}
+}

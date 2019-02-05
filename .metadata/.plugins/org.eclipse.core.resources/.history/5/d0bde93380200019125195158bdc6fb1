@@ -1,0 +1,146 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+	@Entity
+	@Table(name = "industry_type")
+	@NamedQueries({ @NamedQuery(name = "getIndustryList", query = "From IndustryTypeModel  order by industryTypeId desc"),
+					@NamedQuery(name = "getIndustryTypeList", query = "From IndustryTypeModel  order by industryTypeId desc")
+	})
+	public class IndustryTypeModel implements Serializable, BaseEntity{
+		private static final long serialVersionUID = 1;
+		
+		@Id
+		@GeneratedValue(strategy = GenerationType.AUTO)
+		@Column(name = "INDUSTRY_ID")
+		private Integer industryTypeId;
+	
+		@Column(name = "SUB_PORTFOLIO_ID")
+		private Integer subPortFolioId;
+		
+		@Column(name = "INDUSTRY_NAME")
+		private String industryName;
+		
+		public Integer getIndustryTypeId() {
+			return industryTypeId;
+		}
+
+		public void setIndustryTypeId(Integer industryTypeId) {
+			this.industryTypeId = industryTypeId;
+		}
+
+		                          	
+
+		@Column(name = "ISACTIVE")
+		private String isActive;
+		
+		@Column(name = "CREATED_BY", updatable = false)
+		private String createdBy;
+
+		@Column(name = "MODIFIED_BY")
+		private String modifiedBy;
+
+		@Column(name = "CREATED_DATE", updatable = false)
+		@Temporal(TemporalType.TIMESTAMP)
+		@DateTimeFormat(style = "M-")
+		private Date createdDate;
+
+		@Column(name = "MODIFIED_DATE")
+		@Temporal(TemporalType.TIMESTAMP)
+		@DateTimeFormat(style = "M-")
+		private Date modifiedDate;
+		
+		@PrePersist
+		public void onCreate() {
+			this.createdDate = new java.util.Date();
+			this.createdBy = createdBy;
+		}
+
+		@PreUpdate
+		public void onUpdate() {
+			this.modifiedDate = new java.util.Date();
+			this.modifiedBy = modifiedBy;
+		}
+		
+		
+		
+		public Integer getSubPortFolioId() {
+			return subPortFolioId;
+		}
+
+		public void setSubPortFolioId(Integer subPortFolioId) {
+			this.subPortFolioId = subPortFolioId;
+		}
+
+		public String getIndustryName() {
+			return industryName;
+		}
+
+		public void setIndustryName(String industryName) {
+			this.industryName = industryName;
+		}
+
+		public String getIsActive() {
+			return isActive;
+		}
+
+		public void setIsActive(String isActive) {
+			this.isActive = isActive;
+		}
+
+		public String getCreatedBy() {
+			return createdBy;
+		}
+
+		public void setCreatedBy(String createdBy) {
+			this.createdBy = createdBy;
+		}
+
+		public String getModifiedBy() {
+			return modifiedBy;
+		}
+
+		public void setModifiedBy(String modifiedBy) {
+			this.modifiedBy = modifiedBy;
+		}
+
+		public Date getCreatedDate() {
+			return createdDate;
+		}
+
+		public void setCreatedDate(Date createdDate) {
+			this.createdDate = createdDate;
+		}
+
+		public Date getModifiedDate() {
+			return modifiedDate;
+		}
+
+		public void setModifiedDate(Date modifiedDate) {
+			this.modifiedDate = modifiedDate;
+		}
+
+		@Override
+		public EntityType getEntityType() {
+			return EntityType.APPLICATION;
+		}
+
+}

@@ -1,0 +1,230 @@
+package com.livespread.service;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import com.livespread.dao.LSExtendedGenericDao;
+import com.livespread.domain.DeletedFinancialItems;
+import com.livespread.domain.FinancialItems;
+import com.livespread.domain.NamedQueryName;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Service("financialItemService")
+public class FinancialItemServiceImpl implements FinancialItemService {
+	private Logger LOGGER = Logger.getLogger(FinancialItemServiceImpl.class);
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+	
+	@Autowired
+	private LSExtendedGenericDao extendedExtendedGenericDao;
+
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value = ReusableConstant.APPLICATION_TX_MANAGER)
+	public List<FinancialItems> f_findFinancialListByEntityId(Integer entityId,Integer firstRecord,Integer displayRecords,String fiLabel,Integer templateId) {
+		LOGGER.info("** start f_findFinancialListByEntityId function");
+		List<FinancialItems> financialItemList = new LinkedList<FinancialItems>();
+		try {
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("companyId", entityId);
+			List<Object> objectList=extendedExtendedGenericDao.getFinancialDataByCriteriaByEntityId(entityId,firstRecord,displayRecords,fiLabel,templateId);
+
+			if (!CollectionUtils.isEmpty(objectList)) {
+
+				for (Object object : objectList) {
+					FinancialItems financialItems = new FinancialItems();
+					Object[] obj = (Object[]) object;
+					financialItems.setFiId(obj[0] != null ? new Integer(obj[0].toString().trim()) : 0);
+					financialItems.setFiLabel(obj[1] == null ? "" : obj[1].toString().trim());
+					financialItems.setFiSection(obj[2] == null ? "" : obj[2].toString().trim());
+					financialItems.setFiSubSection(obj[3] == null ? "" : obj[3].toString().trim());
+					financialItems.setNil_Lable(obj[4] == null ? "" : obj[4].toString().trim());
+					financialItems.setFiIndustry(obj[5] == null ? "" : obj[5].toString().trim());
+					financialItems.setCreatedBy(obj[6] == null ? "" : obj[6].toString().trim());
+					financialItemList.add(financialItems);
+				}
+				LOGGER.info("** end f_findFinancialListByEntityId function");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error(e);
+		}
+		return financialItemList;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value = ReusableConstant.APPLICATION_TX_MANAGER)
+	public List<FinancialItems> f_findFinancialListByTemplateId(Integer templateId,Integer firstRecord,Integer displayRecords,String fiLabel) {
+		LOGGER.info("** start f_findFinancialListByTemplateId function");
+		List<FinancialItems> financialItemList = new LinkedList<FinancialItems>();
+		try {
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("templateId", templateId);
+			List<Object> objectList=extendedExtendedGenericDao.getFinancialDataByCriteriaByTemplateId(templateId,firstRecord,displayRecords,fiLabel);
+
+			if (!CollectionUtils.isEmpty(objectList)) {
+				for (Object object : objectList) {
+					FinancialItems financialItems = new FinancialItems();
+					Object[] obj = (Object[]) object;
+					financialItems.setFiId(obj[0] != null ? new Integer(obj[0].toString().trim()) : 0);
+					financialItems.setFiLabel(obj[1] == null ? "" : obj[1].toString().trim());
+					financialItems.setFiSection(obj[2] == null ? "" : obj[2].toString().trim());
+					financialItems.setFiSubSection(obj[3] == null ? "" : obj[3].toString().trim());
+					financialItems.setNil_Lable(obj[4] == null ? "" : obj[4].toString().trim());
+					financialItems.setFiIndustry(obj[5] == null ? "" : obj[5].toString().trim());
+					financialItems.setCreatedBy(obj[6] == null ? "" : obj[6].toString().trim());
+					financialItemList.add(financialItems);
+				}
+				LOGGER.info("** end f_findFinancialListByTemplateId function");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error(e);
+		}
+		return financialItemList;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value = ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean f_deleteFinancialItemByFiId(Integer fiId,int userId) {
+	LOGGER.info("** start f_deleteFinancialItemByFiId function");
+	boolean flag=false;
+	try{
+	Map<String, Object> parameters = new HashMap<String, Object>();
+	parameters.put("fiId", fiId);
+	FinancialItems financialItems = genericDaoImpl.findById(FinancialItems.class, fiId);
+	DeletedFinancialItems deletedFinancialItems=new DeletedFinancialItems();
+	BeanUtils.copyProperties(financialItems,deletedFinancialItems);
+	deletedFinancialItems.setDeletedDate(new Date());
+	deletedFinancialItems.setDeletedBy(userId);
+	genericDaoImpl.persist(deletedFinancialItems);
+	genericDaoImpl.remove(financialItems);
+	flag=true;
+	}catch(Exception e){
+		e.printStackTrace();
+		LOGGER.error(e);
+	}
+	LOGGER.info("** end f_deleteFinancialItemByFiId function");
+	return flag;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value = ReusableConstant.APPLICATION_TX_MANAGER,readOnly=true)
+	public Integer totalFinancialsItemCountByEntityId(Integer entityId,String filLable,Integer templateId) {
+	int count=0;
+	try{
+	Map<String, Object> parameters = new HashMap<String, Object>();
+	parameters.put("eId", entityId);
+	count=extendedExtendedGenericDao.countFinancialsItemtByEntityId(entityId,filLable,templateId);
+
+	}catch(Exception e){
+	e.printStackTrace();
+	LOGGER.error(e);
+	}
+	return count;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value = ReusableConstant.APPLICATION_TX_MANAGER,readOnly=true)
+	public Integer totalFinancialsItemCountByTemplateId(Integer templateId,String filLable) {
+		Integer count=0;
+		try{
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("templateId", templateId);
+		count=extendedExtendedGenericDao.countFinancialsItemtByTemplateId(templateId,filLable);
+		}catch(Exception e){
+		e.printStackTrace();
+		LOGGER.error(e);
+		}
+		return count;
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value = ReusableConstant.APPLICATION_TX_MANAGER,readOnly=true)
+	public List<String> f_getfiLabelList(String fiLabel,Integer id,String level) {
+			
+			try{
+				Map<String, Object> parameters = new HashMap<String, Object>();
+				parameters.put("fiLabel", fiLabel);
+				if(level.equalsIgnoreCase("CompanyLevel")){
+				parameters.put("eId", id);
+				return (List<String>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getfiLabelListByEntityId, FinancialItems.class, parameters);	
+				}
+				else if(level.equalsIgnoreCase("IndustryLevel")){
+					parameters.put("industryId", id);
+					return (List<String>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getfiLabelListByIndustryId, FinancialItems.class, parameters);	
+					}
+				else{
+				parameters.put("templateId", id);
+				return (List<String>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getfiLabelListByTemplateId, FinancialItems.class, parameters);
+				}
+				
+				
+			}catch(Exception e){
+				e.printStackTrace();
+				return null;
+			}
+	}
+
+	@Override
+	public Integer totalFinancialsItemCountByIndustryId(String industryId, String fiLabel, int templateId) 
+	{
+		int count=0;
+		try{
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("industryId", industryId);
+		count=extendedExtendedGenericDao.countFinancialsItemsByIndustryId(industryId,fiLabel,templateId);
+		}catch(Exception e){
+		e.printStackTrace();
+		LOGGER.error(e);
+		}
+		return count;
+	}
+
+	@Override
+	public List<FinancialItems> f_findFinancialListByIndustryId(String industryId, Integer firstRecord,Integer displayRecords, String fiLabel, Integer templateId) 
+	{
+		List<FinancialItems> financialItemList = new LinkedList<FinancialItems>();
+		try {
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("industryId", industryId);
+			List<Object> objectList=extendedExtendedGenericDao.getFinancialDataByCriteriaByIndustryId(industryId,firstRecord,displayRecords,fiLabel,templateId);
+
+			if (!CollectionUtils.isEmpty(objectList)) {
+
+				for (Object object : objectList) {
+					FinancialItems financialItems = new FinancialItems();
+					Object[] obj = (Object[]) object;
+					financialItems.setFiId(obj[0] != null ? new Integer(obj[0].toString().trim()) : 0);
+					financialItems.setFiLabel(obj[1] == null ? "" : obj[1].toString().trim());
+					financialItems.setFiSection(obj[2] == null ? "" : obj[2].toString().trim());
+					financialItems.setFiSubSection(obj[3] == null ? "" : obj[3].toString().trim());
+					financialItems.setNil_Lable(obj[4] == null ? "" : obj[4].toString().trim());
+					financialItems.setFiIndustry(obj[5] == null ? "" : obj[5].toString().trim());
+					financialItems.setCreatedBy(obj[6] == null ? "" : obj[6].toString().trim());
+					financialItemList.add(financialItems);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error(e);
+		}
+		return financialItemList;
+	
+	}
+
+}

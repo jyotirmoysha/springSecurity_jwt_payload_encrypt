@@ -1,0 +1,71 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "NAICS_DESCRIPTION")
+@NamedNativeQueries({
+	@NamedNativeQuery(name = "getNaicsDescription", query = "SELECT ID,NAICS_ID,DESCRIPTION FROM NAICS_DESCRIPTION WHERE LOWER(NAICS_ID) LIKE CONCAT(:descr, '%') or LOWER(DESCRIPTION) LIKE CONCAT(:descr, '%') ")
+})
+
+public class NaicsDescription implements Serializable, BaseEntity{
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	@Column(name = "ID")
+	private Integer id;
+	
+	@Column(name = "NAICS_ID")
+	private Integer naicsId;
+
+	@Column(name = "DESCRIPTION")
+	private String DESCRIPTION;
+	
+	public Integer getNaicsId() {
+		return naicsId;
+	}
+
+
+	public void setNaicsId(Integer naicsId) {
+		this.naicsId = naicsId;
+	}
+
+
+	public Integer getId() {
+		return id;
+	}
+
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+
+	public String getDESCRIPTION() {
+		return DESCRIPTION;
+	}
+
+
+	public void setDESCRIPTION(String dESCRIPTION) {
+		DESCRIPTION = dESCRIPTION;
+	}
+
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

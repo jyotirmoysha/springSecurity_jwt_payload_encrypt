@@ -1,0 +1,114 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "BUSINESS_ENTITY")
+@NamedNativeQueries({ 
+	@NamedNativeQuery(name = "getBusinessListByuserGroupId", query = "SELECT ci.company_id,be.e_name FROM business_entity be inner join company_information ci  ON be.e_id= ci.e_id "),
+	@NamedNativeQuery(name = "getBusinessEntityCompanyIdAutoComplete", query = "SELECT ci.company_id,be.e_name,be.E_ID FROM business_entity be inner join company_information ci  ON be.e_id= ci.e_id where ci.company_id like CONCAT(:companyId, '%') "),
+	@NamedNativeQuery(name = "getBusinessEntityCompanyNameAutoComplete", query = "SELECT ci.company_id,be.e_name,be.E_ID FROM business_entity be inner join company_information ci  ON be.e_id= ci.e_id where be.e_name like CONCAT(:companyName, '%') "),
+	@NamedNativeQuery(name = "getBusinessEntityCompanyId", query = "SELECT ci.company_id,be.e_name,be.E_ID FROM business_entity be inner join company_information ci  ON be.e_id= ci.e_id where ci.company_id =:companyId"),
+	@NamedNativeQuery(name = "getBusinessEntityCompanyName", query = "SELECT ci.company_id,be.e_name,be.E_ID FROM business_entity be inner join company_information ci  ON be.e_id= ci.e_id where be.e_name =:companyName")
+
+})
+@NamedQueries({
+		@NamedQuery(name = "checkEntityPresent", query = "SELECT be FROM BusinessEntity be where be.ename=:ename"),
+		@NamedQuery(name = "getDistinctBusinessList", query = "SELECT distinct be.eid,be.ename FROM BusinessEntity be where be.ename is not null and be.ename like CONCAT(:cName, '%') order by eid asc"),
+		@NamedQuery(name = "findCompanyName", query = "select eid,ename from BusinessEntity where ename like CONCAT(:searchVal, '%') order by eid asc"),
+		
+})
+public class BusinessEntity implements Serializable, BaseEntity {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	//@GeneratedValue(generator = "sequence")
+	//@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_E_ID") })
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "E_ID")
+	private Integer eid;
+
+	@Column(name = "E_NAME")
+	private String ename;
+
+	@Column(name = "E_DATE_CREATED")
+	private Date createdDate;
+	
+	@Column(name = "CREATED_BY")
+	private Integer createdBy;
+	
+	
+	@Column(name = "USER_GROUP_ID")
+	private Integer userGroupId;
+
+	public Integer getEid() {
+		return eid;
+	}
+
+	public void setEid(Integer eid) {
+		this.eid = eid;
+	}
+
+	public String getEname() {
+		return ename;
+	}
+
+	public void setEname(String ename) {
+		this.ename = ename;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	@Override
+	public String toString() {
+		return "BusinessEntity [eid=" + eid + ", ename=" + ename
+				+ ", createdDate=" + createdDate + "]";
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Integer getUserGroupId() {
+		return userGroupId;
+	}
+
+	public void setUserGroupId(Integer userGroupId) {
+		this.userGroupId = userGroupId;
+	}
+
+}

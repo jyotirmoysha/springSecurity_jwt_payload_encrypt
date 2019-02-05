@@ -1,0 +1,116 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "ALIAS_BUSINESS_ENTITY")
+@NamedQueries({ @NamedQuery(name = "getAliasBusinessEntity", query = "SELECT abe FROM AliasBusinessEntity abe where abe.eId=:eID and companyId=:companyId and userGroupId=:userGroupId"),
+	@NamedQuery(name = "getDistinctCompanyIdsList", query = "select distinct companyId from AliasBusinessEntity where companyId is not null and companyId like CONCAT(:companyId, '%') order by companyId asc"),
+	})
+
+public class AliasBusinessEntity implements Serializable, BaseEntity {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "ABE_ID")
+	private Integer abeId;
+
+	@Column(name = "E_ID")
+	private Integer eId;
+
+	@Column(name = "COMPANY_ID")
+	private String companyId;
+
+	@Column(name = "USER_GROUP_ID")
+	private Integer userGroupId;
+
+	@Column(name = "USER_ID")
+	private Long userId;
+
+	@Column(name = "CREATED_DATE")
+	private Date createdDate;
+
+	public Integer getAbeId() {
+		return abeId;
+	}
+
+	public void setAbeId(Integer abeId) {
+		this.abeId = abeId;
+	}
+
+	public Integer geteId() {
+		return eId;
+	}
+
+	public void seteId(Integer eId) {
+		this.eId = eId;
+	}
+	
+	public void seteId(Float eId) {
+		this.eId  = eId.intValue();
+		//this.eId = eId;
+	}
+
+	public String getCompanyId() {
+		return companyId;
+	}
+
+	public void setCompanyId(String companyId) {
+		this.companyId = companyId;
+	}
+
+	public Integer getUserGroupId() {
+		return userGroupId;
+	}
+
+	public void setUserGroupId(Integer userGroupId) {
+		this.userGroupId = userGroupId;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	@Override
+	public String toString() {
+		return "AliasBusinessEntity [abeId=" + abeId + ", eId=" + eId
+				+ ", companyId=" + companyId + ", userGroupId=" + userGroupId
+				+ ", userId=" + userId + ", createdDate=" + createdDate + "]";
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

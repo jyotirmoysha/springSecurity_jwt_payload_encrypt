@@ -1,0 +1,25 @@
+/**
+ * 
+ */
+package com.livespread.util;
+
+/**
+ * @author rk0e884
+ *
+ */
+public class MetaRowInfo {
+	private String language;
+	private Integer tagId;
+	public String getLanguage() {
+		return language;
+	}
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+	public Integer getTagId() {
+		return tagId;
+	}
+	public void setTagId(Integer tagId) {
+		this.tagId = tagId;
+	}
+}

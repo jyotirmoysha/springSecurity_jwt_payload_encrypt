@@ -1,0 +1,201 @@
+package com.livespread.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.livespread.domain.ApplicationScreenComponents;
+import com.livespread.domain.NamedQueryName;
+import com.livespread.domain.UserGroupsAttributeMapping;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.rage.reusable.constants.ReusableConstant;
+
+
+@Service("componentAssignService")
+public class ComponentAssignServiceImpl implements ComponentAssignService{
+
+	private Logger LOGGER = Logger.getLogger(ComponentAssignServiceImpl.class);
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+	
+	@SuppressWarnings("unchecked")
+	public List<ApplicationScreenComponents> f_findScreenAllComponent() throws DataAccessException {
+		
+		LOGGER.info("**start-f_findScreenAllComponent methode");
+		
+		List<ApplicationScreenComponents> appScreenList=(List<ApplicationScreenComponents>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getAllInputField, ApplicationScreenComponents.class);
+		LOGGER.info("**end-f_findScreenAllComponent methode");
+
+		return appScreenList;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<UserGroupsAttributeMapping> f_findAllMappingRecords() throws DataAccessException {
+	LOGGER.info("**start-f_findScreenAllComponent methode");
+		
+		List<UserGroupsAttributeMapping> mappingList=(List<UserGroupsAttributeMapping>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.findAllMappingRecords, UserGroupsAttributeMapping.class);
+		LOGGER.info("**end-f_findScreenAllComponent methode");
+
+		return mappingList;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<String> f_findDistinctScreenName() throws DataAccessException {
+		LOGGER.info("**start-f_findDistinctScreenName methode");
+		
+		List<String> sreenList=(List<String>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getAllDistinctScreenName, ApplicationScreenComponents.class);
+		LOGGER.info("**end-f_findDistinctScreenName methode");
+		return sreenList;
+
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Integer> f_findScreenIdsByGroupId(Integer userGroupId) throws DataAccessException {
+		LOGGER.info("**start-f_findDistinctScreenName methode");
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("usersGroupId", userGroupId);	
+		List<Integer> screenIdList=(List<Integer>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.findAllDataByGroupId, UserGroupsAttributeMapping.class,parameterMap);
+		LOGGER.info("**end-f_findDistinctScreenName methode");
+		return screenIdList;
+
+	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Integer> f_findScreenIdsByTemplateId(Integer templateId) throws DataAccessException {
+		LOGGER.info("**start-f_findDistinctScreenName methode");
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("templateId", templateId);	
+		List<Integer> screenIdList=(List<Integer>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.findAllTemplateDataByGroupId, UserGroupsAttributeMapping.class,parameterMap);
+		LOGGER.info("**end-f_findDistinctScreenName methode");
+		return screenIdList;
+
+	}
+/**
+ * This method used for insert,delete and update	
+ */
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+public boolean f_updateScreenComponentByGroupId(int id,List<Integer> newIdsList,String basedOn)throws DataAccessException{
+	LOGGER.info("**start-f_updateScreenComponentByGroupId methode");
+	boolean flag=true;
+	try{
+	List<Integer> existingIdsList=null;
+	int userGroupId=0;
+	int templateId=0;
+	if(basedOn.equalsIgnoreCase("TemplateBased")){
+	 templateId=id;
+	 existingIdsList=f_findScreenIdsByTemplateId(templateId);
+	}else{
+	 userGroupId=id;
+    existingIdsList=f_findScreenIdsByGroupId(userGroupId);
+	}
+	/**
+	 * Find out difference between two list
+	 */
+	
+	List<Integer> union=findTwoListDiff(newIdsList,existingIdsList);
+	
+	if (union != null && !union.isEmpty()) {
+	 List<Integer> deletedIdsListId=new ArrayList<Integer>();
+	 List<Integer> insertedIdsListId=new ArrayList<Integer>();
+	 for (Integer n : union) {
+	  if (existingIdsList.contains(n)) {
+		deletedIdsListId.add(n);
+	  } else {
+	    insertedIdsListId.add(n);
+	 }
+	}
+	//insert entry in table
+	 if(insertedIdsListId!=null && !insertedIdsListId.isEmpty())
+	 f_insertScreenComponent(id,insertedIdsListId,basedOn);
+	//delete entry from table
+	 if(deletedIdsListId!=null && !deletedIdsListId.isEmpty())
+	 f_deleteScreenComponentById(id,deletedIdsListId,basedOn);
+ }
+	LOGGER.info("**end-f_updateScreenComponentByGroupId methode");
+	}catch(Exception e){
+		flag=false;
+		e.printStackTrace();
+		LOGGER.error("Error in f_updateScreenComponentByGroupId methode="+e);
+	}
+	return flag;
+}
+@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+public void f_insertScreenComponent(Integer id,List<Integer> insertList,String basedOn){
+	LOGGER.info(" **strat- new entry inserted f_insertScreenComponent methode ");
+	List<UserGroupsAttributeMapping> screenCompList=null;
+	if(insertList!=null && !insertList.isEmpty()){
+		screenCompList=new ArrayList<UserGroupsAttributeMapping>();
+	for(Integer screenId:insertList){
+		UserGroupsAttributeMapping screnComponents=new UserGroupsAttributeMapping();
+		if(basedOn.equalsIgnoreCase("TemplateBased")){
+		screnComponents.setTemplateId(id);
+		}else{
+		screnComponents.setUsersGroupId(id);	
+		}
+		screnComponents.setScreenId(screenId);
+		screenCompList.add(screnComponents);
+	}
+	 genericDaoImpl.persist(screenCompList);
+	}
+	LOGGER.info(" **end- new entry inserted sucessfully in  UserGroupsAttributeMapping table ");
+}
+
+@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER,readOnly =false)
+public void f_deleteScreenComponentById(Integer id,List<Integer> deletedIdsListId,String basedon){
+	LOGGER.info(" **strat- f_deleteScreenComponentById() methode ");
+	if(deletedIdsListId!=null && !deletedIdsListId.isEmpty()){
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("deletedIdsListId", deletedIdsListId);	
+		if(basedon.equalsIgnoreCase("TemplateBased")){
+		parameterMap.put("templateId",id);
+       genericDaoImpl.updateByNamedQuery(NamedQueryName.deleteDataByScreenIdAndTemplateId,UserGroupsAttributeMapping.class,parameterMap);
+		}else{
+		parameterMap.put("usergroupId",id);
+       genericDaoImpl.updateByNamedQuery(NamedQueryName.deleteDataByScreenIdAndGroupId, UserGroupsAttributeMapping.class,parameterMap);
+		}
+	 
+     }//end if
+	
+	LOGGER.info(" **end-  entry deleted sucessfully in  UserGroupsAttributeMapping table ");
+}
+
+public List<Integer> findTwoListDiff(List<Integer> list1,List<Integer> list2){
+	if(list1==null){
+		list1=new ArrayList<Integer>();
+	}if(list2==null){
+		list2=new ArrayList<Integer>();
+	}
+	List<Integer> newList=new ArrayList<Integer>(list1);
+	newList.addAll(list2);
+
+	List<Integer> intersection = new ArrayList<Integer>(list1);
+	intersection.retainAll(list2);
+	newList.removeAll(intersection);
+	
+ return newList;
+}
+@SuppressWarnings("unchecked")
+@Override
+public List<UserGroupsAttributeMapping> f_findAllMappingRecordsGrpAdmin(Integer userGroupId) throws DataAccessException {
+LOGGER.info("**start-f_findScreenAllComponent methode");
+Map<String, Object> parameterMap = new HashMap<String, Object>();
+parameterMap.put("userGroupId", userGroupId);	
+List<UserGroupsAttributeMapping> mappingList=(List<UserGroupsAttributeMapping>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.findAllMappingRecordsGrpAdmin, UserGroupsAttributeMapping.class,parameterMap);
+LOGGER.info("**end-f_findScreenAllComponent methode");
+	return mappingList;
+}
+}

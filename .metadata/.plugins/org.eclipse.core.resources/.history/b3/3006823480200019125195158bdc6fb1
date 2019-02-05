@@ -1,0 +1,400 @@
+package com.livespread.command;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @author Sainath.Dekate
+ *
+ */
+public class ParserOutputDisplayCommand  {
+
+	private Integer poId;
+	private String poSection;
+	private String poAsRepLabel;
+	private Integer poIndexOrder;
+	Map<Integer,String> poAsRepVal;
+	private String rowClass;
+	private String normalizedLabel;
+	private String poSubSection;
+	private String poSubTotal;
+	private String poBreakup;
+	private String poAccountNumber;
+	private String poTimePeriod;
+	private String poCustodianName;
+	private String pageNo;
+	private String uploadId;
+	private String ycoordinates;
+	private String nonEnglishLabel;
+	private String isParent;
+	private String isonlyBreakup;
+	private String isValueDiffThreshold;
+	private String note;
+	private String isDuplicate;
+	private String niItemSuggstive;
+	private String isMultipleNiItems;
+	private Map<Integer,String> isPoAsRepValueMapped;
+	private Map<Integer,String> isPoAsRepValueMappedByPeriod;
+	private String trClass;
+	private Integer refPoId;
+	private String mappingName;
+	private String mappingType;
+	private String niItem;
+	private List<String> isCoordinateExists;
+	
+	/**
+	 * @return the poId
+	 */
+	public Integer getPoId() {
+		return poId;
+	}
+	/**
+	 * @param poId the poId to set
+	 */
+	public void setPoId(Integer poId) {
+		this.poId = poId;
+	}
+	/**
+	 * @return the poSection
+	 */
+	public String getPoSection() {
+		return poSection;
+	}
+	/**
+	 * @param poSection the poSection to set
+	 */
+	public void setPoSection(String poSection) {
+		this.poSection = poSection;
+	}
+	/**
+	 * @return the poAsRepLabel
+	 */
+	public String getPoAsRepLabel() {
+		return poAsRepLabel;
+	}
+	/**
+	 * @param poAsRepLabel the poAsRepLabel to set
+	 */
+	public void setPoAsRepLabel(String poAsRepLabel) {
+		this.poAsRepLabel = poAsRepLabel;
+	}
+	/**
+	 * @return the poIndexOrder
+	 */
+	public Integer getPoIndexOrder() {
+		return poIndexOrder;
+	}
+	/**
+	 * @param poIndexOrder the poIndexOrder to set
+	 */
+	public void setPoIndexOrder(Integer poIndexOrder) {
+		this.poIndexOrder = poIndexOrder;
+	}
+	/**
+	 * @return the poAsRepVal
+	 */
+	public Map<Integer, String> getPoAsRepVal() {
+		return poAsRepVal;
+	}
+	/**
+	 * @param poAsRepVal the poAsRepVal to set
+	 */
+	public void setPoAsRepVal(Map<Integer, String> poAsRepVal) {
+		this.poAsRepVal = poAsRepVal;
+	}
+	/**
+	 * @return the rowClass
+	 */
+	public String getRowClass() {
+		return rowClass;
+	}
+	/**
+	 * @param rowClass the rowClass to set
+	 */
+	public void setRowClass(String rowClass) {
+		this.rowClass = rowClass;
+	}
+	/**
+	 * @return the normalizedLabel
+	 */
+	public String getNormalizedLabel() {
+		return normalizedLabel;
+	}
+	/**
+	 * @param normalizedLabel the normalizedLabel to set
+	 */
+	public void setNormalizedLabel(String normalizedLabel) {
+		this.normalizedLabel = normalizedLabel;
+	}
+	/**
+	 * @return the poSubSection
+	 */
+	public String getPoSubSection() {
+		return poSubSection;
+	}
+	/**
+	 * @param poSubSection the poSubSection to set
+	 */
+	public void setPoSubSection(String poSubSection) {
+		this.poSubSection = poSubSection;
+	}
+	/**
+	 * @return the poSubTotal
+	 */
+	public String getPoSubTotal() {
+		return poSubTotal;
+	}
+	/**
+	 * @param poSubTotal the poSubTotal to set
+	 */
+	public void setPoSubTotal(String poSubTotal) {
+		this.poSubTotal = poSubTotal;
+	}
+	/**
+	 * @return the poBreakup
+	 */
+	public String getPoBreakup() {
+		return poBreakup;
+	}
+	/**
+	 * @param poBreakup the poBreakup to set
+	 */
+	public void setPoBreakup(String poBreakup) {
+		this.poBreakup = poBreakup;
+	}
+	/**
+	 * @return the poAccountNumber
+	 */
+	public String getPoAccountNumber() {
+		return poAccountNumber;
+	}
+	/**
+	 * @param poAccountNumber the poAccountNumber to set
+	 */
+	public void setPoAccountNumber(String poAccountNumber) {
+		this.poAccountNumber = poAccountNumber;
+	}
+	/**
+	 * @return the poTimePeriod
+	 */
+	public String getPoTimePeriod() {
+		return poTimePeriod;
+	}
+	/**
+	 * @param poTimePeriod the poTimePeriod to set
+	 */
+	public void setPoTimePeriod(String poTimePeriod) {
+		this.poTimePeriod = poTimePeriod;
+	}
+	/**
+	 * @return the poCustodianName
+	 */
+	public String getPoCustodianName() {
+		return poCustodianName;
+	}
+	/**
+	 * @param poCustodianName the poCustodianName to set
+	 */
+	public void setPoCustodianName(String poCustodianName) {
+		this.poCustodianName = poCustodianName;
+	}
+	/**
+	 * @return the pageNo
+	 */
+	public String getPageNo() {
+		return pageNo;
+	}
+	/**
+	 * @param pageNo the pageNo to set
+	 */
+	public void setPageNo(String pageNo) {
+		this.pageNo = pageNo;
+	}
+	/**
+	 * @return the uploadId
+	 */
+	public String getUploadId() {
+		return uploadId;
+	}
+	/**
+	 * @param uploadId the uploadId to set
+	 */
+	public void setUploadId(String uploadId) {
+		this.uploadId = uploadId;
+	}
+	/**
+	 * @return the ycoordinates
+	 */
+	public String getYcoordinates() {
+		return ycoordinates;
+	}
+	/**
+	 * @param ycoordinates the ycoordinates to set
+	 */
+	public void setYcoordinates(String ycoordinates) {
+		this.ycoordinates = ycoordinates;
+	}
+	/**
+	 * @return the nonEnglishLabel
+	 */
+	public String getNonEnglishLabel() {
+		return nonEnglishLabel;
+	}
+	/**
+	 * @param nonEnglishLabel the nonEnglishLabel to set
+	 */
+	public void setNonEnglishLabel(String nonEnglishLabel) {
+		this.nonEnglishLabel = nonEnglishLabel;
+	}
+	/**
+	 * @return the isParent
+	 */
+	public String getIsParent() {
+		return isParent;
+	}
+	/**
+	 * @param isParent the isParent to set
+	 */
+	public void setIsParent(String isParent) {
+		this.isParent = isParent;
+	}
+	/**
+	 * @return the isonlyBreakup
+	 */
+	public String getIsonlyBreakup() {
+		return isonlyBreakup;
+	}
+	/**
+	 * @param isonlyBreakup the isonlyBreakup to set
+	 */
+	public void setIsonlyBreakup(String isonlyBreakup) {
+		this.isonlyBreakup = isonlyBreakup;
+	}
+	/**
+	 * @return the isValueDiffThreshold
+	 */
+	public String getIsValueDiffThreshold() {
+		return isValueDiffThreshold;
+	}
+	/**
+	 * @param isValueDiffThreshold the isValueDiffThreshold to set
+	 */
+	public void setIsValueDiffThreshold(String isValueDiffThreshold) {
+		this.isValueDiffThreshold = isValueDiffThreshold;
+	}
+	/**
+	 * @return the note
+	 */
+	public String getNote() {
+		return note;
+	}
+	/**
+	 * @param note the note to set
+	 */
+	public void setNote(String note) {
+		this.note = note;
+	}
+	/**
+	 * @return the isDuplicate
+	 */
+	public String getIsDuplicate() {
+		return isDuplicate;
+	}
+	/**
+	 * @param isDuplicate the isDuplicate to set
+	 */
+	public void setIsDuplicate(String isDuplicate) {
+		this.isDuplicate = isDuplicate;
+	}
+	/**
+	 * @return the niItemSuggstive
+	 */
+	public String getNiItemSuggstive() {
+		return niItemSuggstive;
+	}
+	/**
+	 * @param niItemSuggstive the niItemSuggstive to set
+	 */
+	public void setNiItemSuggstive(String niItemSuggstive) {
+		this.niItemSuggstive = niItemSuggstive;
+	}
+	/**
+	 * @return the isMultipleNiItems
+	 */
+	public String getIsMultipleNiItems() {
+		return isMultipleNiItems;
+	}
+	/**
+	 * @param isMultipleNiItems the isMultipleNiItems to set
+	 */
+	public void setIsMultipleNiItems(String isMultipleNiItems) {
+		this.isMultipleNiItems = isMultipleNiItems;
+	}
+	/**
+	 * @return the isPoAsRepValueMapped
+	 */
+	public Map<Integer, String> getIsPoAsRepValueMapped() {
+		return isPoAsRepValueMapped;
+	}
+	/**
+	 * @param isPoAsRepValueMapped the isPoAsRepValueMapped to set
+	 */
+	public void setIsPoAsRepValueMapped(Map<Integer, String> isPoAsRepValueMapped) {
+		this.isPoAsRepValueMapped = isPoAsRepValueMapped;
+	}
+	/**
+	 * @return the isPoAsRepValueMappedByPeriod
+	 */
+	public Map<Integer, String> getIsPoAsRepValueMappedByPeriod() {
+		return isPoAsRepValueMappedByPeriod;
+	}
+	/**
+	 * @param isPoAsRepValueMappedByPeriod the isPoAsRepValueMappedByPeriod to set
+	 */
+	public void setIsPoAsRepValueMappedByPeriod(Map<Integer, String> isPoAsRepValueMappedByPeriod) {
+		this.isPoAsRepValueMappedByPeriod = isPoAsRepValueMappedByPeriod;
+	}
+	/**
+	 * @return the trClass
+	 */
+	public String getTrClass() {
+		return trClass;
+	}
+	/**
+	 * @param trClass the trClass to set
+	 */
+	public void setTrClass(String trClass) {
+		this.trClass = trClass;
+	}
+	public Integer getRefPoId() {
+		return refPoId;
+	}
+	public void setRefPoId(Integer refPoId) {
+		this.refPoId = refPoId;
+	}
+	public String getMappingName() {
+		return mappingName;
+	}
+	public void setMappingName(String mappingName) {
+		this.mappingName = mappingName;
+	}
+	public String getMappingType() {
+		return mappingType;
+	}
+	public void setMappingType(String mappingType) {
+		this.mappingType = mappingType;
+	}
+	public String getNiItem() {
+		return niItem;
+	}
+	public void setNiItem(String niItem) {
+		this.niItem = niItem;
+	}
+	public List<String> getIsCoordinateExists() {
+		return isCoordinateExists;
+	}
+	public void setIsCoordinateExists(List<String> isCoordinateExists) {
+		this.isCoordinateExists = isCoordinateExists;
+	}
+
+}

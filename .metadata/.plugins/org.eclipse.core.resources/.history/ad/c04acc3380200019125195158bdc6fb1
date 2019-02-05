@@ -1,0 +1,81 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author KP0e1301
+ *
+ */
+@Entity
+@Table(name = "SCALE")
+@NamedQueries({
+	@NamedQuery(name = "getScaleList", query = "select scale from Scale scale ")
+})
+public class Scale implements Serializable, BaseEntity{
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	/*@GeneratedValue(generator = "sequence")
+	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_ARS_PO_MAPPING_ID") })*/
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "SCALE_ID")
+	private Integer scaleId;
+	
+	@Column(name = "SCALE_VALUE")
+	private String scaleVal;
+	
+	@Column(name = "SCALE_NAME")
+	private String scaleName;
+
+	public Integer getScaleId() {
+		return scaleId;
+	}
+
+	public void setScaleId(Integer scaleId) {
+		this.scaleId = scaleId;
+	}
+
+	public String getScaleVal() {
+		return scaleVal;
+	}
+
+	public void setScaleVal(String scaleVal) {
+		this.scaleVal = scaleVal;
+	}
+
+	
+	public String getScaleName() {
+		return scaleName;
+	}
+
+	public void setScaleName(String scaleName) {
+		this.scaleName = scaleName;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+	
+	
+
+}

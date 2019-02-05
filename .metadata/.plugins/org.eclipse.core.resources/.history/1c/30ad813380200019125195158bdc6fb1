@@ -1,0 +1,99 @@
+package com.livespread.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.dao.DataAccessException;
+import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
+
+import com.livespread.command.ClientFeatureMappingCmd;
+import com.livespread.command.ParserSectionMappingCommand;
+import com.livespread.command.UserGroupCommand;
+import com.livespread.command.UserTemplateCommand;
+import com.livespread.domain.ParserSectionMapping;
+import com.livespread.domain.User;
+import com.livespread.domain.UsersGroup;
+
+public interface UserGroupService {
+
+	/*
+	 * This function used for getting user group list
+	 */
+	List<UsersGroup> getAllUserGroupList(Long userGroupId);
+
+	Map<String, UserGroupCommand> getUserGroupNames(Integer userGroupId,Integer user_role);
+
+	List<String> getParserNamesByGroupId(String groupId);
+
+	int removeParserIds(String groupId, String removeParserIds,
+			List<String> list);
+
+	int addedParserIds(String groupId, String userId, List<String> list);
+
+	int updateGroupName(String groupName, String groupId, String userId,String flag);
+
+	Map<Integer, String> getParsersList();
+
+	List<String> getOnlyUserGroupNames();
+
+	String addNewGroupWithParsers(String groupName, String userId,
+			List<String> finallistPid,Integer userGroupId) ;
+
+	int removingGroupId(String userId, String removegroupId,String flag);
+
+	Map<String, String> getUserGroupParserListByGid(String userId);
+
+	/*
+	 * This function used for insert records in user table
+	 */
+	boolean saveUser(User user);
+
+	String saveActivationDetails(String emailId,
+			MessageDigestPasswordEncoder messageDigestPasswordEncoder);
+
+	/*
+	 * This function used for Dropdown for Report Admin
+	 */
+	Map<String, Integer> getGroupNamesforReportAdmin(Integer userGroupId);
+
+	Map<Integer, String> getParserNamesByGroupIdforReportAdmin(Integer groupId);
+	
+	String f_getUserGroupNamebyId(Long userGroupId);
+	
+	/**
+	 *This function used for get user object list 
+	 */
+	List<User> f_getActiveUserList() throws DataAccessException;
+	
+	Map<String, UserTemplateCommand> getTemplatebyGroupId(Integer userGroupId,Integer userAccess);
+	
+	Map<Integer, String> getTemplateList(Integer userGroupId,Integer userAccess);
+	
+	List<String>  templeteIdsByGroupId(Integer groupId);
+	
+	boolean updateTemplates(List<String> removedTemplate,List<String> addedTemplate,Integer userId,Integer groupId);
+   Map<Integer,String> f_getTemplateIdAndNameByGroupId(Integer groupId); 
+   
+	Map<String, ClientFeatureMappingCmd> getStatusByGroup(Integer uGroupId);  
+	
+	Map<Integer, String> getFeatureList(); 
+	
+	List<String>  featuresByGroupId(Integer groupId);
+	
+	boolean updateLsFeatures(List<String> removedLsFeature,List<String> addedLsFeature, String groupName,Integer groupId);
+	
+	Map<Integer, String> getTemplateListByUserGroup(Integer userGroupId);
+
+	int f_getUserGroupsCountByFlag(Long userGroupId,String flag);	
+	
+	public Map<String, ParserSectionMappingCommand> getParserSectionMapping();
+	public Map<Integer, String> getSectionList() ;
+	
+	boolean f_updateParserSectionMapping(List<ParserSectionMapping> parserSectionMappings);
+	
+	UsersGroup f_getUserGroupsByGroupId(Long userGroupId);	
+	
+	UsersGroup getUserGroupbyGroupId(Integer userGroupId);
+	
+
+}

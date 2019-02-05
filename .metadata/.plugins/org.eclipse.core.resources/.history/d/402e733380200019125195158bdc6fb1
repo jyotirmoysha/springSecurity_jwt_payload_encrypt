@@ -1,0 +1,1031 @@
+package com.livespread.service;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import com.livespread.dao.RageDAO;
+import com.livespread.domain.NamedNativeQueryName;
+import com.livespread.domain.NamedQueryName;
+import com.livespread.domain.ParserMaster;
+import com.livespread.domain.ServerListMetadata;
+import com.livespread.domain.User;
+import com.livespread.domain.WorkQueue;
+import com.livespread.rage.domain.Applications;
+import com.livespread.rage.domain.RequestQueue;
+import com.livespread.util.GetHrMinSecBYSecond;
+import com.livespread.util.ProcessListGenerator;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Service("workQueueService")
+public class WorkQueueServiceImpl implements WorkQueueService {
+
+	/**
+	 * 
+	 */
+	private Logger logger = Logger.getLogger(WorkQueueServiceImpl.class);
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+	
+	@Autowired
+	private ExtractionService extractionService;
+	
+	@Autowired
+	private BulkUploadService bulkUploadService;
+	
+	@Autowired
+	private NormalizationService normalizationService; 
+	
+	@Autowired
+	private RageDAO rageDao;
+	
+	private EntityManager entityManager;
+	
+	@Required
+	@PersistenceContext(unitName="uicAppPunit")
+	public void setApplicationEntityManager(EntityManager applicationEntityManager) {
+		this.entityManager = applicationEntityManager;
+	}
+
+	@Value("${rageAuditTrailCallProcessName}")
+	private String rageAuditTrailCallProcessName;
+	
+	@Value("${timeStatRageCallProcessName}")
+	private String timeStatRageCallProcessName;
+	
+	@Value("${mappingStats}")
+	private String mappingStats;
+	
+	@Value("${rageApplicationName}")
+	private String rageApplicationName;
+
+	//added by Naveed.Khan
+	public final static String UNASSIGNED="Unassigned";
+	public final static String ASSIGN_TO_MAKER="Maker Assigned";
+	public final static String ASSIGN_TO_CHECKER1="Checker Assigned";
+	public final static String ASSIGN_TO_CHECKER2="QA Assigned";
+	public final static String CASE_COMPLETED="Ready for submission";
+	public final static String CHECKER1="CHECKER";
+	public final static String CHECKER2="CHECKER2";
+	public final static String MAKER="MAKER";
+	public final static String ASSIGN_QA="QA";
+	public final static String ASSIGN_ADMIN="ADMIN";
+	
+	
+
+	@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public List<WorkQueue> getworKQueueList(){
+
+		logger.info("getworKQueueList starts");
+		List<WorkQueue> workQueueList = genericDaoImpl.findByTypedNamedQuery(
+				NamedQueryName.findAllWorkQueueRecords, WorkQueue.class);
+		if (workQueueList != null && workQueueList.size() > 0) {
+			logger.info("getworKQueueList ends");
+			return workQueueList;
+		}
+		logger.info("getworKQueueList ends");
+		return null;
+
+	}
+
+	@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public String findStatusByFilingId(Integer filingId){
+		logger.info("start find status in findStatusByFilingId function");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("filingId", filingId);
+		List<Object> statusNameList = genericDaoImpl.findByNamedQuery(
+				NamedQueryName.findWorkQueueStatusByFilingID, WorkQueue.class,
+				parameters);
+		logger.info("end find status in findStatusByFilingId function");
+		return statusNameList.get(0) == null ? "" : statusNameList.get(0)
+				.toString();
+	}
+
+	@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public void updateLockCaseForUser(Integer wqId, User user) {
+		logger.info("start updateLockCaseForUser function");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("wqId", wqId);
+		parameters.put("lockedBy", user.getLogin());
+		parameters.put("lockedSince", new Date());
+		genericDaoImpl.updateByNamedQuery(NamedQueryName.updateWorkQueueById,
+				WorkQueue.class, parameters);
+		logger.info("end updateLockCaseForUser function");
+	}
+
+	@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public void updateLockCaseForNullUser(Integer wqId) {
+		logger.info("start updateLockCaseForNullUser function");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("wqId", wqId);
+		genericDaoImpl.updateByNamedQuery(
+				NamedQueryName.updateWorkQueueByNullId, WorkQueue.class,
+				parameters);
+		logger.info("end updateLockCaseForNullUser function");
+
+	}
+
+	@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public void updateAllLockedCaseesForUser(String userLogin) {
+		logger.info("start updateAllLockedCaseesForUser function");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("userLogin", userLogin);
+		genericDaoImpl.updateByNamedQuery(
+				NamedQueryName.updateAllLockedCaseesForUser, WorkQueue.class,
+				parameters);
+		logger.info("end updateAllLockedCaseesForUser function");
+	}
+
+	@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean validateIfWorkQueueIsLocked(Integer wqId) {
+		logger.info("start updateAllLockedCaseesForUser function");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("wqId", wqId);
+		WorkQueue workQueue = genericDaoImpl.findByColumn(
+				NamedQueryName.getWorkQueueByWqId, WorkQueue.class, parameters);
+		if (workQueue.getLockedBy() != null) {
+			return true;
+		}
+
+		logger.info("end updateAllLockedCaseesForUser function");
+		return false;
+	}
+
+	@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public Map<String, Boolean> validateIfWorkQueueIsLockedByUser(WorkQueue workQueue,
+			String userLogin) {
+		logger.info("start updateAllLockedCaseesForUser function");
+		Map<String, Boolean> returnParam = new HashMap<String, Boolean>();
+		if (workQueue.getLockedBy() != null) {
+			if (workQueue.getLockedBy().trim().equals(userLogin)){
+			    returnParam.put("lockedBy", false);
+			}else{
+				returnParam.put("lockedBy", true);
+			}
+			returnParam.put("islockedbySameUser", false);
+			return returnParam;
+		}
+		logger.info("end updateAllLockedCaseesForUser function");
+		returnParam.put("islockedbySameUser", false);
+		returnParam.put("lockedBy", false);
+		return returnParam;
+
+	}
+
+@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public Integer getParserIdFromWorkQueue(Integer wqId){
+		logger.info("start getParserIdFromWorkQueue function");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("wqId", wqId);
+		WorkQueue workQueue = genericDaoImpl.findByColumn(
+				NamedQueryName.getWorkQueueByWqId, WorkQueue.class, parameters);
+		if (workQueue != null) {
+			return workQueue.getParserMasterId();
+		}
+		logger.info("end getParserIdFromWorkQueue function");
+		return null;
+	}
+
+	@Override
+	public void updateLockCaseForNullUser1(Integer wqId) {
+		logger.info("start updateLockCaseForNullUser function");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("wqId", wqId);
+		genericDaoImpl.updateByNamedQuery(
+				NamedQueryName.updateWorkQueueByNullId, WorkQueue.class,
+				parameters);
+		logger.info("end updateLockCaseForNullUser function");
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public void setLockedByNull(){
+		logger.info(" **-start setLockedByNull function");
+		genericDaoImpl.updateByNamedQuery(NamedQueryName.setlockedByNull,
+				WorkQueue.class);
+		logger.info("** end setLockedByNull function");
+	}
+
+	@Override
+	public WorkQueue getCompanyId(Integer fillingId) {
+		WorkQueue workQueue =null;
+		  if(fillingId!=null){
+		    	Map<String, Object> parameter = new HashMap<String, Object>();
+		    	parameter.put("filingId", fillingId);
+				 workQueue = genericDaoImpl.findByColumn(NamedQueryName.getCompanyId, WorkQueue.class,parameter);
+		     }
+		return workQueue ;
+	}
+
+	@Override
+	public List<Object> getAutoComplete(Map<String, Object> parameters, String filedName) {
+		List<Object>  result = null;
+		logger.info("class NameWorkQueueServiceImpl : methodName >>>getAutoComplete");
+		
+		if(filedName.equalsIgnoreCase("wq.filingId")){
+			result = genericDaoImpl.findByNamedQuery(NamedQueryName.findFillingId, WorkQueue.class,parameters);
+		}else if(filedName.equalsIgnoreCase("wq.wqCustomerName")){
+			result = genericDaoImpl.findByNamedQuery(NamedQueryName.findCustomerName, WorkQueue.class,parameters);	
+		}else if(filedName.equalsIgnoreCase("wq.companyId")){
+			result = genericDaoImpl.findByNamedQuery(NamedQueryName.findCompanyId, WorkQueue.class,parameters);	
+		}else if(filedName.equalsIgnoreCase("wq.portfolioName")){
+			result = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.findPortfolioName, WorkQueue.class,parameters);	
+		}else if(filedName.equalsIgnoreCase("wq.industryName")){
+			result = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.findIndustryName, WorkQueue.class,parameters);	
+		}else{
+			logger.debug("class NameWorkQueueServiceImpl : methodName >>>getAutoComplete fileName error");
+		}
+		return result;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public int f_updateMonthYearAndPeriod(String monthYear, String period,
+			Integer fillingId) {
+		
+		logger.info("**start-- f_updateMonthYearAndPeriod methode");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("monthYear", monthYear);
+		parameters.put("Period", period);
+		parameters.put("filingId", fillingId);
+		int i=genericDaoImpl.updateByNamedQuery(NamedQueryName.updateMonthYear_period,WorkQueue.class,parameters);
+		logger.info("**end-- f_updateMonthYearAndPeriod methode");
+		
+		return i;
+	}
+
+	@Override
+	public Map<Integer, String> f_getAllstatusList(Integer userId,Integer userGroupId) {
+		/**
+		 * Here we are fetching all filing id with respective status from work_queue table whose 
+		 * 1:based on user id and user group id
+		 * 2:Based on status
+		 */
+		logger.info("**start -f_getAllstatusList methode");
+	    Map<String,Object> parameters=new HashMap<String, Object>();
+	    parameters.put("userGroupId", userGroupId);
+	    parameters.put("userId", userId);
+		List<Object> workQueueList=genericDaoImpl.findByNamedQuery(NamedQueryName.findAllWorkQueueStatus, WorkQueue.class, parameters);
+		Map<Integer,String> statusMap=new HashMap<Integer,String>();
+		
+		for(Object object:workQueueList){
+		Object[] obj = (Object[]) object;
+		statusMap.put(obj[0] == null ? 0 : Integer.parseInt(obj[0].toString()),obj[1] == null ? "" :(obj[1].toString()));	
+		}
+		
+		logger.info("**end -f_getAllstatusList methode");
+		return statusMap;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<WorkQueue> f_getLockedCases(Integer userGroupId,Integer user_role) {
+		logger.info("**start f_getLockedCases()");
+		List<WorkQueue> workQueueList=new ArrayList<WorkQueue>();
+		List<WorkQueue> lockedCasesList=null;
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+
+		if(user_role!=null){
+			if(user_role==2){	
+   		parameterMap.put("userGroupId", userGroupId);
+		 lockedCasesList=(List<WorkQueue>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getWorkQueueByLockedCasesByGroupId, WorkQueue.class,parameterMap);
+		 }else if(user_role==1){
+    	 parameterMap.put("userGroupId", userGroupId);
+		 lockedCasesList=(List<WorkQueue>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getWorkQueueByLockedCases, WorkQueue.class,parameterMap);
+		 }
+		}else{	
+		 lockedCasesList=(List<WorkQueue>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getWorkQueueByLockedCases, WorkQueue.class);
+		}
+		for(WorkQueue workQueue:lockedCasesList){
+			long seconds =0;
+			if(workQueue.getLockedSince()!=null)
+			{
+				seconds = (new Date().getTime())/1000-(workQueue.getLockedSince().getTime())/1000;
+			}
+			else
+			{
+				seconds = (new Date().getTime())/1000;
+			}
+			workQueue.setDifferenceTwoDates(GetHrMinSecBYSecond.getDurationString((int) seconds));
+			workQueueList.add(workQueue);
+		}
+		logger.info("**end f_getLockedCases()");
+		return lockedCasesList;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public Integer f_releaseCasesByFilingId(List<Integer> filingIdList) {
+		
+		int flag=0;
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		for(Integer filingId:filingIdList){
+			parameters.put("lockedBy", null);
+			parameters.put("lockedSince", null);
+			parameters.put("filingId", filingId);
+			 flag=genericDaoImpl.updateByNamedQuery(NamedQueryName.updateLockedByColFromWorkQueueByFilingId, WorkQueue.class, parameters);
+		}
+		return flag;
+		
+	}
+
+	@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public String findLanguageByFilingId(Integer filingId){
+		logger.info("start find language in findStatusByFilingId function");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("filingId", filingId);
+		List<Object> LanguageList = genericDaoImpl.findByNamedQuery(
+				NamedQueryName.getLanguageByFilingId, WorkQueue.class,
+				parameters);
+		logger.info("end find language in findStatusByFilingId function");
+		return LanguageList.get(0) == null ? "" : LanguageList.get(0)
+				.toString();
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public void f_updateisXMLGenerateCol(boolean flag,Integer filingId) throws DataAccessException {
+	
+		logger.info("**start-- f_updateMonthYearAndPeriod methode");
+		Map<String, Object> parameter = new HashMap<String, Object>();
+		parameter.put("flag", flag);
+		parameter.put("filingId", filingId);
+		genericDaoImpl.updateByNamedQuery(NamedQueryName.updateisXMLGenerateCol,WorkQueue.class,parameter);
+		logger.info("**end-- f_updateMonthYearAndPeriod methode");
+	}
+
+	@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public List<Object> f_getisXMLGenerateColValue(Integer filingId) throws DataAccessException {
+	
+		logger.info("**start--f_getisXMLGenerateColValue function");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("filingId", filingId);
+		List<Object> isXMLGenerateObj= genericDaoImpl.findByNamedQuery(NamedQueryName.getisXMLGenerateCol, WorkQueue.class,parameters);
+		
+		
+		logger.info("**end--f_getisXMLGenerateColValue function");
+		return isXMLGenerateObj;
+		
+		
+	}
+
+	// added By Naveed.Khan
+	@Override
+	public WorkQueue getWorkQueueDetails(Integer wqId) {
+		logger.info("start getWorkQueueDetails() ");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("wqId", wqId);
+		WorkQueue workQueue = genericDaoImpl.findByColumn(
+				NamedQueryName.getWorkQueueByWqId, WorkQueue.class, parameters);
+		
+		if (workQueue != null) {
+			return workQueue;
+		}
+		
+		logger.info("end getWorkQueueDetails ()");
+		return null;
+	}//getWorkQueueDetails()
+	
+	// added By Naveed.Khan
+	@Override
+	public WorkQueue getWorkQueueDetailsUsingFilingId(Integer filingId) {
+		logger.info("start getWorkQueueDetailsUsingFilingId() ");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("filingId", filingId);
+		WorkQueue workQueue = genericDaoImpl.findByColumn(
+				NamedQueryName.getWorkQueueByFilingId, WorkQueue.class, parameters);
+		
+		if (workQueue != null) {
+			return workQueue;
+		}
+		
+		logger.info("end getWorkQueueDetailsUsingFilingId()");
+		return null;
+	}//getWorkQueueDetails()
+	
+	
+	
+
+	// added By Naveed.Khan
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public int submitCase(Integer wqId) {
+		logger.info("start submitCase()");
+			int result=0;
+			String processName=null;
+			Integer requestId =null;
+			try{
+			User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();	
+			// get workque details workQueue Object
+			WorkQueue workQueue= getWorkQueueDetails(wqId);
+			
+			if(WorkQueueServiceImpl.ASSIGN_TO_MAKER.equalsIgnoreCase(workQueue.getCaseStatus())){
+		 		//set case_status to "Assign to Checker" and 
+		 		//maker_completed = current timestamp when maker complete the case
+		 		Map<String, Object> parameter = new HashMap<String, Object>();
+				parameter.put("makerCompleted", new Date());
+				parameter.put("caseStatus", WorkQueueServiceImpl.ASSIGN_TO_CHECKER1);
+				parameter.put("wqId", wqId);
+		 		int res= genericDaoImpl.updateByNamedQuery(NamedQueryName.updateCaseStatusMakerById,WorkQueue.class, parameter);
+		 		
+		 		processName=timeStatRageCallProcessName;
+		 		requestId =callRageTimeStatsProcess(workQueue.getFilingId(),processName);
+		 		normalizationService.saveInvokeProcessTracker(requestId,workQueue.getFilingId(),"N",processName,user.getUserId());
+		 		processName=mappingStats;
+		 		requestId = callRageTimeStatsProcess(workQueue.getFilingId(),processName);
+		 		normalizationService.saveInvokeProcessTracker(requestId,workQueue.getFilingId(),"N",processName,user.getUserId());
+		 		return res;
+		 		
+		 	}else if(WorkQueueServiceImpl.ASSIGN_TO_CHECKER1.equalsIgnoreCase(workQueue.getCaseStatus())){
+		 		//set Case status to 
+		 		//"completed" and Maker completed = current timestamp when checker complete the case
+		 		Map<String, Object> parameter = new HashMap<String, Object>();
+				parameter.put("checkerCompleted", new Date());
+				parameter.put("caseStatus", WorkQueueServiceImpl.ASSIGN_TO_CHECKER2);
+				parameter.put("wqId", wqId);
+				int res= genericDaoImpl.updateByNamedQuery(NamedQueryName.updateCaseStatusCheckerById,WorkQueue.class, parameter);
+				
+				processName=timeStatRageCallProcessName;
+				requestId = callRageTimeStatsProcess(workQueue.getFilingId(),processName);
+				normalizationService.saveInvokeProcessTracker(requestId,workQueue.getFilingId(),"N",processName,user.getUserId());
+		 		return res;
+		 	}else if(WorkQueueServiceImpl.ASSIGN_TO_CHECKER2.equalsIgnoreCase(workQueue.getCaseStatus())){
+		 		//set Case status to 
+		 		//"completed" and Maker completed = current timestamp when checker complete the case
+		 		Map<String, Object> parameter = new HashMap<String, Object>();
+				parameter.put("checker2Completed", new Date());
+				parameter.put("caseStatus", WorkQueueServiceImpl.CASE_COMPLETED);
+				parameter.put("wqId", wqId);
+				int res= genericDaoImpl.updateByNamedQuery(NamedQueryName.updateCaseStatusChecker2ById,WorkQueue.class, parameter);
+				
+				processName=rageAuditTrailCallProcessName;
+				requestId = callRageTimeStatsProcess(workQueue.getFilingId(),processName);
+				normalizationService.saveInvokeProcessTracker(requestId,workQueue.getFilingId(),"N",processName,user.getUserId());
+				processName=timeStatRageCallProcessName;
+				requestId=callRageTimeStatsProcess(workQueue.getFilingId(),processName);
+				normalizationService.saveInvokeProcessTracker(requestId,workQueue.getFilingId(),"N",processName,user.getUserId());
+				return res;
+		 	}
+		 	else if(WorkQueueServiceImpl.CASE_COMPLETED.equalsIgnoreCase(workQueue.getCaseStatus())){
+		 		// nothing to do
+		 		return result;
+		 	} 
+		 	
+			}catch(Exception e){
+				return 0;
+			}
+			logger.info("end submitCase()");
+		 	return result;
+	}//submitCase()
+
+
+
+	// added By Naveed.Khan
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	@Override
+	public boolean allowUserToAccessWorkQueue(WorkQueue workQueue,HttpSession session) {
+		logger.info("start allowUserToAccessWorkQueue()");
+		boolean result=false;
+		try{
+		User user = (User) session.getAttribute("user");
+		
+		//every if should excecute user might be checker1,maker and checker2, admin , super admin
+		//user is checker then allow for that case
+		String caseStatus=workQueue.getCaseStatus();
+		if (null != caseStatus && !caseStatus .isEmpty()&& caseStatus.equals(WorkQueueServiceImpl.ASSIGN_TO_CHECKER1)){
+			if(String.valueOf(user.getUserId()).equalsIgnoreCase(String.valueOf(workQueue.getChecker()))){
+				if(workQueue.getCheckerStartedOn() == null){
+					updateStartedOnForMakerChecker1Checker2(workQueue.getWqId(),WorkQueueServiceImpl.CHECKER1);
+				}
+				result=true;
+			}
+		} if (null != caseStatus && !caseStatus .isEmpty()&& caseStatus.equals(WorkQueueServiceImpl.ASSIGN_TO_CHECKER2)){
+			if(String.valueOf(user.getUserId()).equalsIgnoreCase(String.valueOf(workQueue.getChecker2()))){
+				if(workQueue.getChecker2StartedOn() == null){
+					updateStartedOnForMakerChecker1Checker2(workQueue.getWqId(),WorkQueueServiceImpl.CHECKER2);
+				}
+				result=true;
+			}
+		}
+		//user is maker then allow for that case
+		if(null != caseStatus && !caseStatus .isEmpty()&&  caseStatus.equals(WorkQueueServiceImpl.ASSIGN_TO_MAKER)){
+			if(String.valueOf(user.getUserId()).equalsIgnoreCase(String.valueOf(workQueue.getMaker()))){
+				if(workQueue.getMakerStartedOn() == null){
+					updateStartedOnForMakerChecker1Checker2(workQueue.getWqId(),WorkQueueServiceImpl.MAKER);
+				}
+				result=true;
+			}
+		}
+		//check for use is Admin or super Admin then allow
+		if( null != user.getUserAccess() && (user.getUserAccess()== 1||user.getUserAccess()== 2)){
+			result=true;
+			
+		}
+	}catch(Exception e){
+		result=false;
+		return result;
+		}
+		
+		logger.info("end allowUserToAccessWorkQueue()");
+		return result;
+	}
+
+
+	// added By Naveed.Khan
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public int updateMakerCheckerStatus(Integer makerOrCheckerId,
+			Integer filingId, String makerOrCheckerFlag) {
+		logger.info("start updateMakerCheckerStatus()");
+		int res=0;		
+		Map<String, Object> parameter = new HashMap<String, Object>();
+		parameter.put("filingId", filingId);
+		
+		WorkQueue workQueue=getWorkQueueDetailsUsingFilingId(filingId);
+		String caseStatus=workQueue.getCaseStatus();
+		
+		if(makerOrCheckerFlag.equalsIgnoreCase(WorkQueueServiceImpl.MAKER)){
+			
+			parameter.put("makerAssignedOn", new Date());
+			parameter.put("caseStatus", WorkQueueServiceImpl.ASSIGN_TO_MAKER);
+			parameter.put("maker", makerOrCheckerId);	
+			if(makerOrCheckerId== null){
+				parameter.put("caseStatus", WorkQueueServiceImpl.UNASSIGNED);
+			}else{
+				parameter.put("caseStatus", WorkQueueServiceImpl.ASSIGN_TO_MAKER);
+			}
+			res= genericDaoImpl.updateByNamedQuery(NamedQueryName.assignMakerByFillingId,WorkQueue.class, parameter);
+			
+			logger.info("end updateMakerCheckerStatus()");
+			return res;
+			
+		}else if(makerOrCheckerFlag.equalsIgnoreCase(WorkQueueServiceImpl.CHECKER1)){
+			
+			if(caseStatus.equalsIgnoreCase(WorkQueueServiceImpl.ASSIGN_TO_MAKER)){
+				parameter.put("caseStatus", WorkQueueServiceImpl.ASSIGN_TO_MAKER);
+			}else{
+				parameter.put("caseStatus", WorkQueueServiceImpl.ASSIGN_TO_CHECKER1);
+			}
+			parameter.put("checkerAssignedOn", new Date());
+			parameter.put("checker", makerOrCheckerId);
+			
+			res= genericDaoImpl.updateByNamedQuery(NamedQueryName.assignCheckerByFillingId,WorkQueue.class, parameter);
+			logger.info("end updateMakerCheckerStatus()");
+			return res;
+			
+		}else if(makerOrCheckerFlag.equalsIgnoreCase(WorkQueueServiceImpl.CHECKER2)){
+			
+			parameter.put("checker2AssignedOn", new Date());
+			parameter.put("checker2", makerOrCheckerId);
+			
+			res= genericDaoImpl.updateByNamedQuery(NamedQueryName.assignChecker2ByFillingId,WorkQueue.class, parameter);
+			logger.info("end updateMakerCheckerStatus()");
+			return res;
+			
+		}else{
+			logger.info("end updateMakerCheckerStatus()");
+			return 0;
+		}
+	}//updateMakerCheckerStatus()
+	
+
+	// added By Naveed.Khan
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	@Override
+	public int updateStartedOnForMakerChecker1Checker2(Integer wqId,String makerOrCheckerFlag){
+		
+		logger.info("start updateStartedOnForMakerChecker1Checker2()");
+		int res=0;		
+		try{
+		Map<String, Object> parameter = new HashMap<String, Object>();
+		parameter.put("wqId", wqId);
+		
+		if(makerOrCheckerFlag.equalsIgnoreCase(WorkQueueServiceImpl.MAKER)){
+			parameter.put("makerStartedOn", new Date());
+			res= genericDaoImpl.updateByNamedQuery(NamedQueryName.updateMakerStartedOn,WorkQueue.class, parameter);
+			
+		}else if(makerOrCheckerFlag.equalsIgnoreCase(WorkQueueServiceImpl.CHECKER1)){
+			
+			parameter.put("checkerStartedOn", new Date());
+			res= genericDaoImpl.updateByNamedQuery(NamedQueryName.updateCheckerStartedOn,WorkQueue.class, parameter);
+
+		}else if(makerOrCheckerFlag.equalsIgnoreCase(WorkQueueServiceImpl.CHECKER2)){
+			
+			parameter.put("checker2StartedOn", new Date());
+			res= genericDaoImpl.updateByNamedQuery(NamedQueryName.updateChecker2StartedOn,WorkQueue.class, parameter);
+
+		}else{
+			res= 0;
+		}
+		logger.info("end updateStartedOnForMakerChecker1Checker2()");
+		}catch(Exception e){
+			//e.printStackTrace();
+			return res;
+		}
+		return res;
+	}//updateStartedOnForMakerChecker1Checker2()
+
+
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	@Override
+	public boolean updateWorkque(WorkQueue workQueue) {
+		try{
+			Map<String, Object> parameter = new HashMap<String, Object>();
+			parameter.put("wqId", workQueue.getWqId());
+			parameter.put("wqStatus", workQueue.getWqStatus());
+			parameter.put("rerunStatus", workQueue.getRerunStatus());
+			genericDaoImpl.updateByNamedQuery(NamedQueryName.updateWqStatusByWqId,WorkQueue.class, parameter);
+			
+		}catch(Exception e){
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
+	private Integer callRageTimeStatsProcess(Integer filingId,String processName) 
+	{	
+		String parameters = "<Parameters><Parameter><Name>FILING_ID</Name><Value>"+filingId+"</Value></Parameter></Parameters>";
+		Integer requestId =normalizationService.rageProcessRequestQueue(processName.trim(), parameters);
+		return requestId;
+	}	
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<WorkQueue> f_getWorkQueueByTranactionId(Integer userGroupId) throws DataAccessException {
+
+		Map<String, Object> parameter = new HashMap<String, Object>();
+		parameter.put("userGroupId", userGroupId);
+		List<WorkQueue> workQueueList=(List<WorkQueue>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.findWorkQueueByTransactionId, WorkQueue.class,parameter);
+		
+		return workQueueList;
+	}
+
+	@Override
+	public List<WorkQueue> f_getWorkQueueByTranactionIdAndStatus(Integer transactionId,String wqStatus,Integer userGroupId) throws DataAccessException {
+
+	logger.info("**start  f_getWorkQueueByTranactionIdAndStatus methode transactionId="+transactionId+",wqStatus="+wqStatus);
+	String sql = null;
+	if(transactionId!=null && wqStatus!=null)
+	{
+	 sql = "select workQueue FROM WorkQueue workQueue where workQueue.transactionId =:transactionId and workQueue.wqStatus =:wqStatus and workQueue.userGroupId=:userGroupId order by workQueue.transactionId desc,workQueue.filingId desc";
+	 TypedQuery<WorkQueue> query = entityManager.createQuery(sql, WorkQueue.class);
+	 query.setParameter("transactionId", transactionId);
+	 query.setParameter("wqStatus", wqStatus);
+	 query.setParameter("userGroupId", userGroupId);
+	 return query.getResultList();
+	}else if(transactionId!=null){
+	sql = "select workQueue FROM WorkQueue workQueue where workQueue.transactionId =:transactionId and workQueue.userGroupId=:userGroupId order by workQueue.transactionId desc,workQueue.filingId desc";
+	TypedQuery<WorkQueue> query = entityManager.createQuery(sql, WorkQueue.class);
+	query.setParameter("transactionId", transactionId);
+	query.setParameter("userGroupId", userGroupId);
+	return query.getResultList();
+	}else{
+	sql = "select workQueue FROM WorkQueue workQueue where workQueue.wqStatus =:wqStatus and workQueue.transactionId is not null and workQueue.userGroupId=:userGroupId order by workQueue.transactionId desc,workQueue.filingId desc";
+	TypedQuery<WorkQueue> query = entityManager.createQuery(sql, WorkQueue.class);
+	query.setParameter("wqStatus", wqStatus);
+	query.setParameter("userGroupId", userGroupId);
+	
+	return query.getResultList();
+	}
+ }//end f_getWorkQueueByTranactionIdAndStatus
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Integer> f_getAllTransIdList(Integer userGroupId) throws DataAccessException {
+
+		Map<String, Object> parameter = new HashMap<String, Object>();
+		parameter.put("userGroupId", userGroupId);
+		List<Integer> transIdList=(List<Integer>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.findAllTransIds, WorkQueue.class,parameter);
+		return transIdList;
+	}
+
+	@Override
+	public List<String> isEnableFlag(String screenName, Integer userGroupId) {		
+		List<String> listOfMappingsFlag=null;
+		try{
+			Map<String,String> userGroupsAttributeMap =bulkUploadService.getUserGrpAttrMappingList(userGroupId,screenName);
+				if(!CollectionUtils.isEmpty(userGroupsAttributeMap)){	
+					listOfMappingsFlag=new ArrayList<String>();
+					for (String key  : userGroupsAttributeMap.keySet()) {
+						listOfMappingsFlag.add(key);
+					}
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		return listOfMappingsFlag;
+	}
+
+	@Override
+	public String caseStatus(WorkQueue workQueue, User user) {
+		String caseStatus=null;
+	     if (workQueue != null && workQueue.getCaseStatus().equalsIgnoreCase(WorkQueueServiceImpl.ASSIGN_TO_MAKER)) {
+	     	if((workQueue.getMaker()!=null &&  user.getUserId()!=null) && (workQueue.getMaker().intValue()==user.getUserId().intValue())){
+	     		 caseStatus=WorkQueueServiceImpl.MAKER;		 
+	     	}else{
+	     		 caseStatus=WorkQueueServiceImpl.ASSIGN_ADMIN;		 
+	     	}		
+	     }else  if (workQueue != null && workQueue.getCaseStatus().equalsIgnoreCase(WorkQueueServiceImpl.ASSIGN_TO_CHECKER1)) {
+	     	if((workQueue.getChecker()!=null &&  user.getUserId()!=null) && (workQueue.getChecker().intValue()==user.getUserId().intValue())){
+	     		 caseStatus=WorkQueueServiceImpl.CHECKER1;		 
+	     	}else{
+	     		 caseStatus=WorkQueueServiceImpl.ASSIGN_ADMIN;			 
+	     	}
+	     }else  if (workQueue != null && workQueue.getCaseStatus().equalsIgnoreCase(WorkQueueServiceImpl.ASSIGN_TO_CHECKER2)) {
+	     	if((workQueue.getChecker2()!=null &&  user.getUserId()!=null) && (workQueue.getChecker2().intValue()==user.getUserId().intValue())){
+	     		 caseStatus=WorkQueueServiceImpl.ASSIGN_QA;				 
+	     	}else{
+	     		 caseStatus=WorkQueueServiceImpl.ASSIGN_ADMIN;			 
+	     	}
+	     }else{
+	             caseStatus=WorkQueueServiceImpl.ASSIGN_ADMIN;		
+	     }
+	     return caseStatus;
+	     } 
+	
+@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public Integer f_getEntityIdByFilingId(Integer filingId){
+		logger.info("** start find Entity Id by filingId");
+		int entityId=0;
+		try{
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("filingId", filingId);
+		List<Object> entityList = genericDaoImpl.findByNamedQuery(NamedQueryName.findEIDByFilingId, WorkQueue.class,parameters);
+		logger.info("** end find Entity Id by filing");
+		if(!CollectionUtils.isEmpty(entityList)){
+			if(entityList.get(0)!=null){
+				entityId=Integer.parseInt(entityList.get(0).toString());
+			}
+		}
+
+		}catch(Exception e){
+			e.printStackTrace();
+			logger.error(e);
+		}
+		return entityId;
+	}
+
+@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public Integer f_getTemplateIdByFilingId(Integer filingId){
+		logger.info("** start find Template Id by filingId");
+		int templateId=0;
+		try{
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("filingId", filingId);
+		List<Object> templateIdList = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.findTemplateIdByFilingId, WorkQueue.class,parameters);
+		logger.info("** end find Template Id by filing");
+		if(!CollectionUtils.isEmpty(templateIdList)){
+			if(templateIdList.get(0)!=null){
+				try{
+				templateId=Integer.parseInt(templateIdList.get(0).toString());
+				}catch(NumberFormatException nfe){
+					
+				}
+			}
+		}
+		}catch(Exception e){
+			e.printStackTrace();
+			logger.error(e);
+		}
+		return templateId;
+	}
+@SuppressWarnings("unchecked")
+@Override
+@Transactional(propagation = Propagation.REQUIRED, value = ReusableConstant.APPLICATION_TX_MANAGER)
+public String f_getParserNameByFilingId(Integer filingId) {
+	logger.info("** start f_getParserNameByFilingId Id by filingId");
+	String parserName = "";
+	try {
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("filingId", filingId);
+		List<String> parserNameObj = (List<String>) (Object) genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getParserNameByFilingId, ParserMaster.class, parameters);
+		logger.info("** end  f_getParserNameByFilingId Id by filing");
+		if (!CollectionUtils.isEmpty(parserNameObj)) {
+			if (parserNameObj.get(0) != null) {
+			parserName = parserNameObj.get(0).toString();
+			}
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+		logger.error(e);
+	}
+	return parserName;
+}
+
+@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+public Integer f_getParserIdFromWorkQueueByFilingId(Integer filingId)
+{
+		logger.info("start f_etParserIdFromWorkQueueByFilingId function");
+		Integer parserId=null;
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("filingId", filingId);
+		List<Object> objList =  genericDaoImpl.findByNamedQuery(NamedQueryName.findParserByFilingId, WorkQueue.class, parameters);
+		if(!objList.isEmpty())
+		{
+		for(Object object:objList)
+		{
+		//Object[] obj = (Object[]) object;
+		parserId=(Integer) (object == null ? 0 : object);
+		}
+		}
+		logger.info("end getParserIdFromWorkQueue function");
+		return parserId;
+	}
+
+@Override
+public List<String> getTransactionsIdsList(String transactionId) {
+	try{
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		List<String> transactionIdsList=null;
+		parameters.put("transactionId", transactionId+"%");
+		List<Object> keywords=genericDaoImpl.findByNamedQuery(NamedQueryName.getTransactionIdsList,WorkQueue.class,parameters);
+		if (keywords != null) {
+			transactionIdsList = new ArrayList<String>();
+			for (Object object : keywords) {
+				transactionIdsList.add(object.toString()!=null?object.toString():"");
+			}
+			return	transactionIdsList;
+		}
+	}catch(Exception e){
+		e.printStackTrace();
+	}
+	return null;
+}
+
+
+@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+public int updateTransactionId(List<Integer> caseIds, Integer batchId) {
+	int updatedFlag=0;
+	Map<String, Object> parameters = new HashMap<String, Object>();
+	parameters.put("transactionId", batchId);
+	parameters.put("caseIds", caseIds);
+	updatedFlag=genericDaoImpl.updateByNamedQuery(NamedQueryName.updateWorkQueueByTransactionId,WorkQueue.class, parameters);
+	return updatedFlag;
+}
+
+@SuppressWarnings("unchecked")
+@Override
+public String getIndustryTypeIdByFilingId(Integer filingId) 
+{
+	String industryTypeId=null;
+	Map<String, Object> parameters = new HashMap<String, Object>();
+	parameters.put("filingId", filingId);
+	List<Integer> objList = (List<Integer>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getIndustryTypeIdByFilingId, WorkQueue.class, parameters);
+	if(!CollectionUtils.isEmpty(objList))
+	{
+		industryTypeId = objList.get(0).toString();
+	}
+	return industryTypeId;
+}
+
+@SuppressWarnings("unchecked")
+@Override
+public Integer getRageApplicationIdByRageApplicationName(String rageApplicationName) throws Exception 
+{
+	Integer applicartionId=null;
+	Map<String, Object> parameters = new HashMap<String, Object>();
+	parameters.put("applicationName", rageApplicationName);
+	List<Integer> objList = (List<Integer>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getRageApplicationIdByRageApplicationName, Applications.class, parameters);
+	if(!CollectionUtils.isEmpty(objList))
+	{
+		applicartionId = objList.get(0);
+	}
+	return applicartionId;
+}
+
+@SuppressWarnings("unchecked")
+@Override
+public String getJbossCategory() throws Exception 
+{
+	String jbossCategory=null;
+	List<String> objList = (List<String>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getJbossCategory, ServerListMetadata.class);
+	if(!objList.isEmpty())
+	{
+		jbossCategory = objList.get(0);
+	}
+	return jbossCategory;
+}
+@Override
+public Integer f_getMaxBatchIdWorkQueue() {
+	logger.info("** Start-f_getMaxCaseIdWorkQueue methode");
+	Integer maxCaseId = 1;
+
+	try {
+		List<Object> list = genericDaoImpl.findByNamedQuery(NamedQueryName.getMaxBatchIdWorkQueue,WorkQueue.class);
+		List<Integer> maxTempleVal = new ArrayList<Integer>();
+		for (Object object : list) {
+			maxTempleVal.add(object != null ? Integer.parseInt(object
+					.toString()) : 0);
+			maxCaseId = maxTempleVal.get(0) + 1;
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+		logger.error("Error:", e);
+	}
+	logger.info("** End-f_getMaxCaseIdWorkQueue methode");
+	return maxCaseId;
+
+}
+
+@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+public int f_updateGoldenCaseDataByFilingIds(List<Integer> filingIdList) {
+	logger.info("** Start-f_updateGoldenCaseDataByFilingIds methode");
+
+	int updatedFlag=0;
+	int maxBatchId=f_getMaxBatchIdWorkQueue();
+	Map<String, Object> parameters = new HashMap<String, Object>();
+	parameters.put("filingIdList", filingIdList);
+	parameters.put("goldenBatchId", maxBatchId);
+	parameters.put("goldenFlag", "Y");
+	updatedFlag=genericDaoImpl.updateByNamedQuery(NamedQueryName.updateGoldenCaseDataByFilingId,WorkQueue.class, parameters);
+	
+	/**
+     * Save request in request_queue table
+    */
+	String processParameters = "<Parameters><Parameter><Name>BATCH</Name><Value>"+maxBatchId+"</Value></Parameter></Parameters>";
+	normalizationService.rageProcessRequestQueue("Golden set Test",processParameters);
+	logger.info("** End-f_updateGoldenCaseDataByFilingIds methode");
+	return updatedFlag;
+
+}
+
+@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+public String f_getXBRLDocStatus(Integer filingId) throws DataAccessException {
+	String xbrlDocStatus=null;
+	logger.info("**start--f_getXBRLDocStatus function");
+	Map<String, Object> parameters = new HashMap<String, Object>();
+	parameters.put("filingId", filingId);
+	try{
+	List<Object> objList= genericDaoImpl.findByNamedQuery(NamedQueryName.getisXBRLGenerateCol, WorkQueue.class,parameters);
+	for(Object object:objList){
+		if(object!=null)
+	  xbrlDocStatus=object.toString() == null ? "" :(object.toString());
+
+	}
+
+	}catch(Exception e){
+		e.printStackTrace();
+	}
+	logger.info("**end--f_getisXMLGenerateColValue function");
+	return xbrlDocStatus;
+	
+	
+}
+
+@Transactional(propagation = Propagation.REQUIRED, value = ReusableConstant.APPLICATION_TX_MANAGER)
+public boolean updateWqStatusAndOcrTypeByFilingId(Integer filingId,String wqStatus, String ocrType) {
+	logger.info("** start updateOcrType method");
+	boolean flag=false;
+	int updateFlag=0;
+	Map<String, Object> parameters = new HashMap<String, Object>();
+	parameters.put("ocrType", ocrType);
+	parameters.put("wqStatus", wqStatus);
+	parameters.put("filingId", filingId);
+	String updateOcrTypeQuery ="update WorkQueue set CHANNEL= :ocrType,wqStatus= :wqStatus where filingId=:filingId";		
+	updateFlag=genericDaoImpl.updateByHQL(updateOcrTypeQuery, parameters);
+	if(updateFlag>0){
+		flag=true;
+	}	
+	logger.info("** end updateOcrType method");
+	return flag;
+}
+
+}

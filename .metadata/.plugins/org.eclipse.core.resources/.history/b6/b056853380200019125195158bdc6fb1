@@ -1,0 +1,50 @@
+package com.livespread.service;
+
+import java.io.IOException;
+import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
+
+import com.livespread.domain.FileUploadModel;
+
+public interface FileUploadService {
+
+	String UploadTempDocument(MultipartFile File, String customerId)
+			throws IllegalStateException, IOException;
+
+	boolean deleteUploadedDocument(String filepath)
+			throws IllegalStateException, IOException, Exception;
+
+	boolean saveFileDetails(FileUploadModel fileUploadModel);
+
+	boolean UploadPermanantDocument(String file, String customerId,
+			String parserName, String userName) throws IllegalStateException, IOException;
+
+	String getFileUpload(String customerId, String wqId, int flag);
+
+	String getFilePath(Integer customerId, Integer fillingId, int flag);
+
+	String getParsserTypeByCustId(Integer customerId) ;
+
+	String getFileUploadByFilingId(String filingId, int flag);
+
+	List<FileUploadModel> getUploadDetailsList(Integer filingId,
+			Integer parserId);
+
+	/*
+	 * This methode used for get file name list
+	 */
+	List<String> getConvertedFileNames(String customerId, String wqId,
+			Integer parserId);
+/**
+ * This methode used for get processed_file_path based on filing id and file_upload_id
+ */
+	 String f_getProcessedFilePath(Integer filingId,Integer uploadId);
+
+	 /**
+	  * This methode used for get processed_file_path based on filing id 
+	  */
+	String f_getProcessedFilePathByFilingId(Integer filingId);
+	FileUploadModel getFileUploadModelToShowClickBackByFillingId(Integer filingId) throws Exception;
+
+}

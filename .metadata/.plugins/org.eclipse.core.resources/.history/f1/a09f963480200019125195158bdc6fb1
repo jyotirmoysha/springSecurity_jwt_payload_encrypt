@@ -1,0 +1,67 @@
+package com.livespread.command;
+
+import java.util.Date;
+
+import com.livespread.domain.ArsPoMapping;
+
+public class ArsPoMappingCommand {
+
+	private ArsPoMapping arsPoMapping;
+	private String section;
+	private String asRepLabel;
+	private Integer statementPeriod;
+	private Integer statementYear;
+	private Integer createdBy;
+	private Date createdDate;
+	private String userRole;
+	
+	public ArsPoMapping getArsPoMapping() {
+		return arsPoMapping;
+	}
+	public void setArsPoMapping(ArsPoMapping arsPoMapping) {
+		this.arsPoMapping = arsPoMapping;
+	}
+	public String getSection() {
+		return section;
+	}
+	public void setSection(String section) {
+		this.section = section;
+	}
+	public String getAsRepLabel() {
+		return asRepLabel;
+	}
+	public void setAsRepLabel(String asRepLabel) {
+		this.asRepLabel = asRepLabel;
+	}
+	public Integer getStatementPeriod() {
+		return statementPeriod;
+	}
+	public void setStatementPeriod(Integer statementPeriod) {
+		this.statementPeriod = statementPeriod;
+	}
+	public Integer getStatementYear() {
+		return statementYear;
+	}
+	public void setStatementYear(Integer statementYear) {
+		this.statementYear = statementYear;
+	}
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+	public String getUserRole() {
+		return userRole;
+	}
+	public void setUserRole(String userRole) {
+		this.userRole = userRole;
+	}
+	
+}

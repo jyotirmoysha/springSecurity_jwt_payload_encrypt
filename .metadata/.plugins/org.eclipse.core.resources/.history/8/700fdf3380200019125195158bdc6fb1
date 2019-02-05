@@ -1,0 +1,308 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.rage.reusable.dao.RageEntity;
+
+@Entity
+@Table(name = "LS_REPROCESS_AUDIT")
+@NamedQueries({ @NamedQuery(name = "getMaxTransactionIdFromPdfExtraction", query = "select max(raTransactionId) From ReprocessAudit"),
+				@NamedQuery(name = "getReprocessAuditListByFilingId", query = "select RA.poaFilingId,RA.userName,RA.createdDate,RA.raDocumentStatusOld,RA.ra_DocumentStatusNew,RA.raCrudStatus,RA.raPemBeginPageno,RA.raPemBeginKeyword,RA.raPemEndPageno,RA.raPemEndKeyword From ReprocessAudit RA where RA.poaFilingId=:filingId"),
+				@NamedQuery(name = "getReprocessAuditListByFilingId_StartDate_EndDate", query = "select RA.poaFilingId,RA.userName,RA.createdDate,RA.raDocumentStatusOld,RA.ra_DocumentStatusNew,RA.raCrudStatus,RA.raPemBeginPageno,RA.raPemBeginKeyword,RA.raPemEndPageno,RA.raPemEndKeyword from ReprocessAudit RA where RA.poaFilingId=:filingId and RA.createdDate BETWEEN :startDate AND :endDate"),
+				@NamedQuery(name = "getReprocessAuditListByStartDate_EndDate", query = "select RA.poaFilingId,RA.userName,RA.createdDate,RA.raDocumentStatusOld,RA.ra_DocumentStatusNew,RA.raCrudStatus,RA.raPemBeginPageno,RA.raPemBeginKeyword,RA.raPemEndPageno,RA.raPemEndKeyword From ReprocessAudit RA where RA.createdDate BETWEEN :startDate AND :endDate"),
+				@NamedQuery(name = "findAllFilingIdFromReprocessAudit", query = "select RA.poaFilingId From ReprocessAudit RA group by RA.poaFilingId"),
+})
+public class ReprocessAudit extends RageEntity implements Serializable{
+	
+	@Id
+//	@GeneratedValue(generator = "sequence")
+//	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_REPROCESSAUDIT_ID") })
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "RA_ID")
+	private Integer raId;
+
+	@Column(name = "RA_FILING_ID")
+	private Integer poaFilingId;
+
+	@Column(name = "RA_TRANSACTION_ID")
+	private Integer raTransactionId;
+
+	@Column(name = "RA_PARSER_ID")
+	private Integer parserId;
+	
+	@Column(name = "RA_CRUD_STATUS")
+	private String raCrudStatus;
+	
+	@Column(name = "RA_DOCUMENT_STATUS_OLD")
+	private String raDocumentStatusOld;
+
+	@Column(name = "RA_DOCUMENT_STATUS_NEW")
+	private String ra_DocumentStatusNew;
+	
+	@Column(name = "RA_PROCESSED_STATUS", insertable=false, updatable = false, nullable = false, columnDefinition = "CHAR(1) default 'N'")
+	private String raProcessedStatus;
+
+	@Column(name = "RA_SECTION")
+	private String raSection;
+	
+	@Column(name = "RA_PEM_BEGIN_PAGENO")
+	private Integer raPemBeginPageno;
+	
+	@Column(name = "RA_PEM_BEGIN_KEYWORD")
+	private String raPemBeginKeyword;
+	
+	@Column(name = "RA_PEM_END_PAGENO")
+	private Integer raPemEndPageno;
+	
+	@Column(name = "RA_PEM_END_KEYWORD")
+	private String raPemEndKeyword;
+	
+	@Column(name = "RA_ETRBC_TAG")
+	private String raEtrbcTag;
+	
+	@Column(name = "RA_ETRBC_VALUE")
+	private String raEtrbcValue;
+	
+	@Column(name = "RA_ETRBC_INCLUSIVE")
+	private String raEtrbcInclusive;
+	
+	@Column(name = "RA_ETRBC_ACTION")
+	private String raEtrbcAction;
+	
+	@Column(name = "RA_ETRBC_SRCHTYPE")
+	private String raEtrbcSrchtype;
+	
+	@Column(name = "CREATED_BY", updatable = false)
+	private Integer createdBy;
+
+	@Column(name = "MODIFIED_BY")
+	private Integer modifiedBy;
+
+	@Column(name = "CREATED_DATE", updatable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date createdDate;
+
+	@Column(name = "MODIFIED_DATE")
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date modifiedDate;
+
+	@Column(name = "userName")
+	private String userName;
+
+	
+	
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public Integer getParserId() {
+		return parserId;
+	}
+
+	public void setParserId(Integer parserId) {
+		this.parserId = parserId;
+	}
+
+	public Integer getRaId() {
+		return raId;
+	}
+
+	public void setRaId(Integer raId) {
+		this.raId = raId;
+	}
+
+	public Integer getPoaFilingId() {
+		return poaFilingId;
+	}
+
+	public void setPoaFilingId(Integer poaFilingId) {
+		this.poaFilingId = poaFilingId;
+	}
+
+	public Integer getRaTransactionId() {
+		return raTransactionId;
+	}
+
+	public void setRaTransactionId(Integer raTransactionId) {
+		this.raTransactionId = raTransactionId;
+	}
+
+	public String getRaCrudStatus() {
+		return raCrudStatus;
+	}
+
+	public void setRaCrudStatus(String raCrudStatus) {
+		this.raCrudStatus = raCrudStatus;
+	}
+
+	public String getRaDocumentStatusOld() {
+		return raDocumentStatusOld;
+	}
+
+	public void setRaDocumentStatusOld(String raDocumentStatusOld) {
+		this.raDocumentStatusOld = raDocumentStatusOld;
+	}
+
+	public String getRa_DocumentStatusNew() {
+		return ra_DocumentStatusNew;
+	}
+
+	public void setRa_DocumentStatusNew(String ra_DocumentStatusNew) {
+		this.ra_DocumentStatusNew = ra_DocumentStatusNew;
+	}
+
+	public String getRaProcessedStatus() {
+		return raProcessedStatus;
+	}
+
+	public void setRaProcessedStatus(String raProcessedStatus) {
+		this.raProcessedStatus = raProcessedStatus;
+	}
+
+	public String getRaSection() {
+		return raSection;
+	}
+
+	public void setRaSection(String raSection) {
+		this.raSection = raSection;
+	}
+
+	public Integer getRaPemBeginPageno() {
+		return raPemBeginPageno;
+	}
+
+	public void setRaPemBeginPageno(Integer raPemBeginPageno) {
+		this.raPemBeginPageno = raPemBeginPageno;
+	}
+
+	public String getRaPemBeginKeyword() {
+		return raPemBeginKeyword;
+	}
+
+	public void setRaPemBeginKeyword(String raPemBeginKeyword) {
+		this.raPemBeginKeyword = raPemBeginKeyword;
+	}
+
+	public Integer getRaPemEndPageno() {
+		return raPemEndPageno;
+	}
+
+	public void setRaPemEndPageno(Integer raPemEndPageno) {
+		this.raPemEndPageno = raPemEndPageno;
+	}
+
+	public String getRaPemEndKeyword() {
+		return raPemEndKeyword;
+	}
+
+	public void setRaPemEndKeyword(String raPemEndKeyword) {
+		this.raPemEndKeyword = raPemEndKeyword;
+	}
+
+	public String getRaEtrbcTag() {
+		return raEtrbcTag;
+	}
+
+	public void setRaEtrbcTag(String raEtrbcTag) {
+		this.raEtrbcTag = raEtrbcTag;
+	}
+
+	public String getRaEtrbcValue() {
+		return raEtrbcValue;
+	}
+
+	public void setRaEtrbcValue(String raEtrbcValue) {
+		this.raEtrbcValue = raEtrbcValue;
+	}
+
+	public String getRaEtrbcInclusive() {
+		return raEtrbcInclusive;
+	}
+
+	public void setRaEtrbcInclusive(String raEtrbcInclusive) {
+		this.raEtrbcInclusive = raEtrbcInclusive;
+	}
+
+	public String getRaEtrbcAction() {
+		return raEtrbcAction;
+	}
+
+	public void setRaEtrbcAction(String raEtrbcAction) {
+		this.raEtrbcAction = raEtrbcAction;
+	}
+
+	public String getRaEtrbcSrchtype() {
+		return raEtrbcSrchtype;
+	}
+
+	public void setRaEtrbcSrchtype(String raEtrbcSrchtype) {
+		this.raEtrbcSrchtype = raEtrbcSrchtype;
+	}
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Integer getModifiedBy() {
+		return modifiedBy;
+	}
+
+	public void setModifiedBy(Integer modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public Date getModifiedDate() {
+		return modifiedDate;
+	}
+
+	public void setModifiedDate(Date modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+	@PrePersist
+	public void onCreate() {
+		this.createdDate = new java.util.Date();
+		this.createdBy = createdBy;
+	}
+
+	@PreUpdate
+	public void onUpdate() {
+		this.modifiedDate = new java.util.Date();
+		this.modifiedBy = modifiedBy;
+	}
+	
+}

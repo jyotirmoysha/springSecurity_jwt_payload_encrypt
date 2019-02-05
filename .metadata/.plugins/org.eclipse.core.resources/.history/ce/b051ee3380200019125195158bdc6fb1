@@ -1,0 +1,88 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author KP0e1301
+ *
+ */
+
+@Entity
+@Table(name = "LEAD_BANK")
+@NamedQueries({
+	@NamedQuery(name = "getLeadBankList", query = "select leadBank from LeadBank leadBank where leadBankName is not null AND leadBankName!=''"),
+	@NamedQuery(name = "getLeadBankByLeadBankId", query = "select leadBank from LeadBank leadBank where leadBank.leadBankId=:leadBankId "),
+	@NamedQuery(name = "getLeadBankByName", query = "select leadBank from LeadBank leadBank where leadBankName is not null AND Upper(leadBankName) =Upper(:leadBankName)")
+})
+public class LeadBank implements Serializable, BaseEntity{
+	
+	
+	
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	/*@GeneratedValue(generator = "sequence")
+	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_ARS_PO_MAPPING_ID") })*/
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "LEAD_BANK_ID")
+	private Integer leadBankId;
+	
+	@Column(name = "LEAD_BANK_NAME")
+	private String leadBankName;
+	
+	
+	
+
+	public Integer getLeadBankId() {
+		return leadBankId;
+	}
+
+
+
+
+	public void setLeadBankId(Integer leadBankId) {
+		this.leadBankId = leadBankId;
+	}
+
+
+
+
+	public String getLeadBankName() {
+		return leadBankName;
+	}
+
+
+
+
+	public void setLeadBankName(String leadBankName) {
+		this.leadBankName = leadBankName;
+	}
+
+
+
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

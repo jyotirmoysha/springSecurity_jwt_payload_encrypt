@@ -1,0 +1,54 @@
+.fancyTable thead tr th, .fancyTable thead tr td, .fancyTable tfoot tr th, .fancyTable tfoot tr td{color:#fff !important; font:0.7em/18px Helvetica Neue, Helvetica, Arial, sans-serif !important}
+.ui-multiselect{background:#00adcf url(../../images/down_arrow.png) no-repeat right; border:1px solid #00adcf;}
+.ui-widget-header {border: 1px solid #074156 !important; background: #074156 !important;}
+@media screen and (min-width: 768px){
+  #maindiv{height:67% !important; overflow:auto !important; position:absolute;}
+}
+
+@media screen and (min-width: 800px) and (min-height: 600px){
+  #maindiv {height:56% !important; overflow: auto !important; position:absolute;}
+}
+
+@media screen and (min-width: 1024px) and (min-height: 768px){
+ #maindiv {height:65% !important; overflow: auto !important; position:absolute;}
+}
+
+@media screen and (min-width: 1024px) and (min-height: 1366px){
+ #maindiv {height:81% !important; overflow: auto !important; position:absolute;}
+}
+
+@media screen and (min-width: 1152px){
+ #maindiv {height:73% !important; overflow: auto !important; position:absolute;}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 600px){
+ #maindiv {height:62% !important; overflow: auto !important; position:absolute;}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 720px){
+ #maindiv {height:68% !important; overflow: auto !important; position:absolute;}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 768px){
+ #maindiv{height:69% !important; overflow:auto !important; position:absolute;}
+}
+
+@media screen and (min-width: 1360px) and (min-height: 637px){
+ #maindiv{height:64% !important; overflow:auto !important; position:absolute;}
+}
+
+@media screen and (min-width: 1360px) and (min-height: 662px){
+ #maindiv{height:66% !important; overflow:auto !important; position:absolute;}
+}
+
+@media screen and (min-width: 1440px) and (min-height: 900px){
+ #maindiv{height:73% !important; overflow:auto !important; position:absolute;}
+}
+
+@media screen and (min-width: 1600px){
+ #maindiv{height:73% !important; overflow:auto !important; position:absolute;}
+}
+
+@media screen and (min-width: 1680px) and (min-height: 1050px){
+ #maindiv{height:77% !important; overflow:auto !important; position:absolute;}
+}

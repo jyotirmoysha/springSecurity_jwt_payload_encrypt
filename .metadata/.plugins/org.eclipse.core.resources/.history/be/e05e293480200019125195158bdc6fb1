@@ -1,0 +1,144 @@
+package com.livespread.dao;
+import java.util.List;
+import java.util.Map;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+
+import org.springframework.stereotype.Repository;
+
+import com.livespread.domain.AccountingStandard;
+import com.livespread.domain.Country;
+import com.livespread.domain.LeadBank;
+import com.livespread.domain.NormItemLabels;
+import com.livespread.domain.NormQaChecksAggregates;
+import com.livespread.domain.NormQaChecksMeta;
+/*import com.livespread.domain.Sector;*/
+import com.livespread.domain.UltimateParent;
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.GenericDaoImpl;
+import com.rage.reusable.dao.QueryName;
+
+@Repository("extendedGenericDaoImpl")
+public class ExtendedGenericDaoImpl extends GenericDaoImpl{
+	
+	@SuppressWarnings("unchecked")
+	public List<Object> findFirstRecordByNamedQuery(QueryName queryName, Class<? extends BaseEntity> entity, Map<String, Object> parameters){
+		Query query = getQuery(queryName, entity);
+		query.setFirstResult(0);
+		query.setMaxResults(1);
+		setParameters(query, parameters);
+		return query.getResultList();
+	}
+	
+	public int saveNormLabelList(List<NormItemLabels> normItemLabelList) {
+		
+		EntityManager localEntityManger = this.getMyEntityManager(new NormItemLabels().getEntityType());
+		int i=1;
+		for(NormItemLabels normItemLabels :normItemLabelList){
+			  localEntityManger.persist(normItemLabels);
+			  i++;
+			  if ( i % 15 == 0 ){
+				  localEntityManger.flush();
+				  localEntityManger.clear();
+			  }
+			
+		}
+		return i;
+		
+	}
+	
+	
+public int saveNormLabelChecksMetaList(List<NormQaChecksMeta> normQaChecksDerivedMetaList) {
+		
+		EntityManager localEntityManger = this.getMyEntityManager(new NormQaChecksMeta().getEntityType());
+		EntityManager localEntityManger1 = this.getMyEntityManager(new NormQaChecksAggregates().getEntityType());
+		int i=1;
+		for(NormQaChecksMeta normQaChecksMeta :normQaChecksDerivedMetaList){
+			  localEntityManger.persist(normQaChecksMeta);
+			  int j=1;
+			  if(normQaChecksMeta.getNormQaChecksAggregateList()!=null && normQaChecksMeta.getNormQaChecksAggregateList().size()>0){
+				  for(NormQaChecksAggregates normQaChecksAggregates :normQaChecksMeta.getNormQaChecksAggregateList()){
+					  normQaChecksAggregates.setCheckId(normQaChecksMeta.getCheckId());
+					  localEntityManger1.persist(normQaChecksAggregates);
+					  if ( j % 15 == 0 ){
+						  localEntityManger1.flush();
+						  localEntityManger1.clear();
+					  }
+				  }
+			  }
+			  i++;
+			  if ( i % 15 == 0 ){
+				  localEntityManger.flush();
+				  localEntityManger.clear();
+			  }
+		}
+		return i;
+	}
+
+public int saveNormQaCheckSubTotalMetaList(	List<NormQaChecksMeta> normQaChecksSubTotalMetaList) {
+	
+	EntityManager localEntityManger = this.getMyEntityManager(new NormQaChecksMeta().getEntityType());
+	int i=1;
+	for(NormQaChecksMeta normQaChecksMeta :normQaChecksSubTotalMetaList){
+		  localEntityManger.persist(normQaChecksMeta);
+		  i++;
+		  if ( i % 15 == 0 ){
+			  localEntityManger.flush();
+			  localEntityManger.clear();
+		  }
+	}
+	return i;
+}
+
+public Integer saveUltimateParent(UltimateParent ultimateParent){
+	Integer ultimateParentId=0;
+	try{
+		EntityManager localEntityManger = this.getMyEntityManager(new UltimateParent().getEntityType());
+		localEntityManger.persist(ultimateParent);
+		ultimateParentId=ultimateParent.getUltimateParentId();
+		
+	}catch(Exception e){
+		e.printStackTrace();
+	}
+	return ultimateParentId;
+}
+
+public Integer saveLeadBank(LeadBank leadBank){
+	Integer leadBankId=0;
+	try{
+		EntityManager localEntityManger = this.getMyEntityManager(new LeadBank().getEntityType());
+		localEntityManger.persist(leadBank);
+		leadBankId=leadBank.getLeadBankId();
+		
+	}catch(Exception e){
+		e.printStackTrace();
+	}
+	return leadBankId;
+}
+
+public Integer saveAccountingStandard(AccountingStandard accountingStandard){
+	Integer accountingStandardId=0;
+	try{
+		EntityManager localEntityManger = this.getMyEntityManager(new AccountingStandard().getEntityType());
+		localEntityManger.persist(accountingStandard);
+		accountingStandardId=accountingStandard.getAccountingStandardId();
+		
+	}catch(Exception e){
+		e.printStackTrace();
+	}
+	return accountingStandardId;
+}
+public Integer saveCountry(Country country){
+	Integer countryId=0;
+	try{
+		EntityManager localEntityManger = this.getMyEntityManager(new Country().getEntityType());
+		localEntityManger.persist(country);
+		countryId=country.getCountryId();
+		
+	}catch(Exception e){
+		e.printStackTrace();
+	}
+	return countryId;
+}
+}

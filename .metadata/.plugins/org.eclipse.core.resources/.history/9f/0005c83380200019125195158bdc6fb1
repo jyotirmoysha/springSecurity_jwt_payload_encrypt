@@ -1,0 +1,114 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.PrePersist;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "USER_ACTIVATION_DETAILS")
+@NamedQueries({
+		@NamedQuery(name = "getUserActivationDetails", query = "SELECT o FROM UserActivationDetails AS o WHERE o.encActivationId = :encActivationId and o.emailId = :emailId"),
+		@NamedQuery(name = "getUserActivationDetailsByActId", query = "FROM UserActivationDetails WHERE userActivationId = :userActivationId"), })
+public class UserActivationDetails implements Serializable, BaseEntity {
+
+	@Id
+//	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_USER_ACTIVATION_ID")
+//	@SequenceGenerator(name = "SEQ_USER_ACTIVATION_ID", sequenceName = "SEQ_USER_ACTIVATION_ID", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "USER_ACTIVATION_ID")
+	private Long userActivationId;
+
+	@Column(name = "USER_ID", nullable = false)
+	private Long userId;
+
+	@Column(name = "ACTIVATION_DATE", updatable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date activationDate;
+
+	@Column(name = "ACTIVATION_EXPIRE_DATE")
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date activationExpireDate;
+
+	@Column(name = "EMAIL_ID")
+	private String emailId;
+
+	@Column(name = "ENC_ACTIVATION_ID")
+	private String encActivationId;
+
+	@PrePersist
+	public void setActivationDateTime() {
+		this.activationDate = new java.util.Date();
+	}
+
+	public Long getUserActivationId() {
+		return userActivationId;
+	}
+
+	public void setUserActivationId(Long userActivationId) {
+		this.userActivationId = userActivationId;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+
+	public Date getActivationDate() {
+		return activationDate;
+	}
+
+	public void setActivationDate(Date activationDate) {
+		this.activationDate = activationDate;
+	}
+
+	public Date getActivationExpireDate() {
+		return activationExpireDate;
+	}
+
+	public void setActivationExpireDate(Date activationExpireDate) {
+		this.activationExpireDate = activationExpireDate;
+	}
+
+	public String getEmailId() {
+		return emailId;
+	}
+
+	public void setEmailId(String emailId) {
+		this.emailId = emailId;
+	}
+
+	public String getEncActivationId() {
+		return encActivationId;
+	}
+
+	public void setEncActivationId(String encActivationId) {
+		this.encActivationId = encActivationId;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+}

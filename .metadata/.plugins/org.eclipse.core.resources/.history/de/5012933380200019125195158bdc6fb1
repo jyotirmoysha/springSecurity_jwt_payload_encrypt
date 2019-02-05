@@ -1,0 +1,13 @@
+package com.livespread.service;
+
+import java.util.List;
+
+import com.livespread.domain.StatusMaster;
+
+public interface StatusMasterService {
+	/*
+	 * This function used for fetch all record from status_master table
+	 */
+	List<StatusMaster> getAllStatusList() ;
+
+}

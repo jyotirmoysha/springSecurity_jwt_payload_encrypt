@@ -1,0 +1,82 @@
+/**
+ * 
+ */
+package com.livespread.rage.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author sd0e482
+ *
+ */
+@Entity
+@Table(name = "RAGE_SEQUENCE_MASTER")
+@NamedQueries({
+	@NamedQuery(name = "updateRequestQueueSequencer", query = "update RageSequenceMaster set sequenceNumber = sequenceNumber+1 where sequenceName=:sequenceName"),
+	@NamedQuery(name = "getRequestQueueSequencer", query = "select sequenceNumber from RageSequenceMaster where sequenceName=:sequenceName")
+	
+	})	
+public class RageSequenceMaster implements BaseEntity,Serializable 
+{
+/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+
+	@Id
+	@Column(name = "SEQUENCE_NAME", nullable = false, unique = true)
+	private String sequenceName;
+	
+	@Column(name = "SEQUENCE_NUMBER")
+	private Integer sequenceNumber;
+
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.RAGE;
+	}
+
+
+	/**
+	 * @return the sequenceName
+	 */
+	public String getSequenceName() {
+		return sequenceName;
+	}
+
+
+	/**
+	 * @param sequenceName the sequenceName to set
+	 */
+	public void setSequenceName(String sequenceName) {
+		this.sequenceName = sequenceName;
+	}
+
+
+	/**
+	 * @return the sequenceNumber
+	 */
+	public Integer getSequenceNumber() {
+		return sequenceNumber;
+	}
+
+
+	/**
+	 * @param sequenceNumber the sequenceNumber to set
+	 */
+	public void setSequenceNumber(Integer sequenceNumber) {
+		this.sequenceNumber = sequenceNumber;
+	}
+	
+}

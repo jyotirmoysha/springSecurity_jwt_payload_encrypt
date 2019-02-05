@@ -1,0 +1,22 @@
+package com.livespread.service;
+
+import com.livespread.domain.AutoCaseData;
+
+/**
+ * 
+ * @author Ganesh.Dudhade
+ *
+ */
+public interface BatchProcessingService {
+/**
+ * This method used for insert records in auto_case_data table
+ */
+public boolean f_saveInAutoCaseData(AutoCaseData autoCaseData);
+
+/**
+ * This method called for save batch processing data in request_queue table. 
+ * @param processName 
+ */
+Integer f_saveToRequestQueueForBatchProcessing(String userId,String userGroupId, String processName);
+	
+}

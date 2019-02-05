@@ -1,0 +1,156 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.PrePersist;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "USER_AUDIT")
+@NamedQueries({
+	/*@NamedQuery(name = "getUserAuditByUserId", query = "select au,u.login from UserAuditModel au,User u where au.userId=:userId and au.userId=u.userId order by au.auId desc"),
+	@NamedQuery(name = "getUserAuditByUserIdStartDateEndDate", query = "select au,u.login from UserAuditModel au,User u where au.userId=:userId and au.userId=u.userId and au.createdDate  BETWEEN  :startDate AND :endDate order by au.auId desc"),
+	@NamedQuery(name = "getUserAuditByStartDate_EndDate", query = "select au,u.login from UserAuditModel au,User u where au.userId=u.userId and au.createdDate BETWEEN  :startDate AND :endDate order by au.auId desc")
+*/	
+})
+
+
+public class UserAuditModel implements Serializable, BaseEntity {
+	@Id
+	@GeneratedValue
+	@Column(name = "AU_ID")
+	private Integer auId;
+	
+	@Column(name = "USER_ID")
+	private Integer userId;
+
+	@Column(name = "USER_IP_ADDRESS")
+	private String User_IPAddress;
+	
+	@Column(name = "LOGIN_TIME")
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date loginTime;
+	
+	@Column(name = "LOGOUT_TIME")
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date logoutTime;
+	
+	@Column(name = "CREATED_DATE")
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date createdDate;
+	
+	@Column(name="USER_AUDIT_FILE")
+	private String userAuditFile;
+
+	@Transient
+	private String userName;
+	
+	
+	
+	
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public String getUserAuditFile() {
+		return userAuditFile;
+	}
+/*
+	public String getLogin() {
+		return login;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}*/
+
+	public void setUserAuditFile(String userAuditFile) {
+		this.userAuditFile = userAuditFile;
+	}
+
+	public Integer getAuId() {
+		return auId;
+	}
+
+	public void setAuId(Integer auId) {
+		this.auId = auId;
+	}
+
+	public Integer getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Integer userId) {
+		this.userId = userId;
+	}
+
+	public String getUser_IPAddress() {
+		return User_IPAddress;
+	}
+
+	public void setUser_IPAddress(String user_IPAddress) {
+		User_IPAddress = user_IPAddress;
+	}
+
+	public Date getLoginTime() {
+		return loginTime;
+	}
+
+	public void setLoginTime(Date loginTime) {
+		this.loginTime = loginTime;
+	}
+
+	public Date getLogoutTime() {
+		return logoutTime;
+	}
+
+	public void setLogoutTime(Date logoutTime) {
+		this.logoutTime = logoutTime;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+
+	
+
+	@PrePersist
+	public void onCreate() {
+		this.createdDate = new java.util.Date();
+		this.userId = userId;
+	}
+
+	
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+
+}

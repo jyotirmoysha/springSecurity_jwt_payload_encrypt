@@ -1,0 +1,163 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author KP0e1301
+ *
+ */
+@Entity
+@Table(name = "USER_GROUPS_ATTRIBUTE_MAPPING")
+@NamedNativeQueries({
+	@NamedNativeQuery(name="findUserGroupsAttributeMappingByUserGroupName", query="SELECT APSCOMP.COMPONENT_NAME FROM USER_GROUPS_ATTRIBUTE_MAPPING UGA, APPLICATION_SCREEN_COMPONENTS APSCOMP "
+			+ "WHERE UGA.SCREEN_ID=APSCOMP.SCREEN_ID AND UGA.USERS_GROUP_ID =:userGroupId  and upper(APSCOMP.SCREEN_NAME)=upper(:screenName)"),
+	@NamedNativeQuery(name="findScreenComponentMappingByTemplateName", query="select ASCO.COMPONENT_NAME from USER_GROUPS_ATTRIBUTE_MAPPING LPD left join APPLICATION_SCREEN_COMPONENTS ASCO ON (LPD.SCREEN_ID = ASCO.SCREEN_ID) "
+			+ "WHERE ASCO.SCREEN_NAME =:screenName AND LPD.TEMPATE_ID = :templateId")
+})
+@NamedQueries({
+	@NamedQuery(name="findAllMappingRecords",query="from UserGroupsAttributeMapping order by usersGroupId,screenId"),
+	@NamedQuery(name="findAllDataByGroupId",query="select screenId from UserGroupsAttributeMapping where  usersGroupId=:usersGroupId"),
+	@NamedQuery(name="findAllTemplateDataByGroupId",query="select screenId from UserGroupsAttributeMapping where  templateId=:templateId"),
+	@NamedQuery(name="deleteDataByScreenIdAndGroupId",query="delete from UserGroupsAttributeMapping where usersGroupId=:usergroupId and screenId in(:deletedIdsListId)"),
+	@NamedQuery(name="deleteDataByScreenIdAndTemplateId",query="delete from UserGroupsAttributeMapping where templateId=:templateId and screenId in(:deletedIdsListId)"),
+	@NamedQuery(name="findAllMappingRecordsGrpAdmin",query="from UserGroupsAttributeMapping order by usersGroupId,screenId"),
+
+	
+})
+public class UserGroupsAttributeMapping  implements Serializable, BaseEntity {
+
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+//	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence")
+//	@SequenceGenerator(name = "sequence", sequenceName = "SEQ_USER_GROUPS_ATTR_MAPPING", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "USR_GROUP_ATTR_MAPPING_ID", unique = true, nullable = false, precision = 38)
+	private Integer userGroupsAttributeMappingId;
+	
+	@Column(name = "CREATED_BY")
+	private Integer createdBy;
+
+	@Column(name = "CREATED_DATE", updatable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date createdDate;
+
+	@Column(name = "USERS_GROUP_ID")
+	private Integer usersGroupId;
+	
+	@Column(name = "SCREEN_ID")
+	private Integer screenId;
+	
+	@Column(name = "TEMPATE_ID")
+	private Integer templateId;
+	
+	/**
+	 * @return the userGroupsAttributeMappingId
+	 */
+	public Integer getUserGroupsAttributeMappingId() {
+		return userGroupsAttributeMappingId;
+	}
+
+	/**
+	 * @param userGroupsAttributeMappingId the userGroupsAttributeMappingId to set
+	 */
+	public void setUserGroupsAttributeMappingId(Integer userGroupsAttributeMappingId) {
+		this.userGroupsAttributeMappingId = userGroupsAttributeMappingId;
+	}
+
+	/**
+	 * @return the createdBy
+	 */
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	/**
+	 * @param createdBy the createdBy to set
+	 */
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	/**
+	 * @return the createdDate
+	 */
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	/**
+	 * @param createdDate the createdDate to set
+	 */
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	/**
+	 * @return the usersGroupId
+	 */
+	public Integer getUsersGroupId() {
+		return usersGroupId;
+	}
+
+	/**
+	 * @param usersGroupId the usersGroupId to set
+	 */
+	public void setUsersGroupId(Integer usersGroupId) {
+		this.usersGroupId = usersGroupId;
+	}
+
+	/**
+	 * @return the screenId
+	 */
+	public Integer getScreenId() {
+		return screenId;
+	}
+
+	/**
+	 * @param screenId the screenId to set
+	 */
+	public void setScreenId(Integer screenId) {
+		this.screenId = screenId;
+	}
+	
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+	/**
+	 * @return the templateId
+	 */
+	public Integer getTemplateId() {
+		return templateId;
+	}
+
+	/**
+	 * @param templateId the templateId to set
+	 */
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+
+}

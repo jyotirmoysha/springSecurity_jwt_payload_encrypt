@@ -1,0 +1,58 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * The persistent class for the "LS_Financial_Meta_Row_Data" database table.
+ * 
+ */
+@Entity
+@Table(name = "LS_FINANCIAL_META_ROW_DATA")
+@NamedQueries({
+	@NamedQuery(name = "deleteMetaRowValuesByMetaDataId", query ="delete  from LsFinancialMetaRowData rowData where  rowData.lsFinancialMetaRowDataCompositKey.metadataId in :deleteMetadataIds"),
+	@NamedQuery(name = "getMetaDataValuesByMetaDataId", query ="from LsFinancialMetaRowData rowData where  rowData.lsFinancialMetaRowDataCompositKey.metadataId =:metadataId"),
+})
+public class LsFinancialMetaRowData implements Serializable,BaseEntity {
+
+	private static final long serialVersionUID = 1L;
+
+	@EmbeddedId
+	private LsFinancialMetaRowDataCompositKey lsFinancialMetaRowDataCompositKey;
+	
+	@Column(name = "COLUMNVALUE")
+	private String columnValue;
+
+	
+	public LsFinancialMetaRowDataCompositKey getLsFinancialMetaRowDataCompositKey() {
+		return lsFinancialMetaRowDataCompositKey;
+	}
+
+	public void setLsFinancialMetaRowDataCompositKey(LsFinancialMetaRowDataCompositKey lsFinancialMetaRowDataCompositKey) {
+		this.lsFinancialMetaRowDataCompositKey = lsFinancialMetaRowDataCompositKey;
+	}
+
+	public String getColumnValue() {
+		return columnValue;
+	}
+
+	public void setColumnValue(String columnValue) {
+		this.columnValue = columnValue;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+	
+	
+}

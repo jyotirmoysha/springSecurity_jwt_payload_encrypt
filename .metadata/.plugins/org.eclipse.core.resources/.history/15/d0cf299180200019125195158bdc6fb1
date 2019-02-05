@@ -1,0 +1,114 @@
+body{overflow-x:hidden !important}
+
+.bg-blue{background:#006995 !important;  border:none !important;}
+.lbl-wht{color:#fff;}
+.lbl-wht1{color:#fff; z-index:2}
+.wdt250{width:250px}
+.custom-map-btn{height:auto; width:100%; overflow:hiddden; text-align:right; margin-top:15px;}
+.custom-select{padding:2px; color:#000 !important; width:150px !important;}
+.pad-lt12{padding-left:12px}
+.context-menu-lbl{display:none; height:200px; overflow:auto; left:37px !important; font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;}
+.context-menu-val{display: none; z-index:999999 !important;}
+.context-menu-value{display: none; position: relative; z-index: 999;}
+.custom-blue-bg{background:#074156 !important}
+
+.selected{background:#fde9d9; color:#000;}
+#normalizationPochild div.modal-dialog {
+    width: 100% !important;
+    height: 300px;
+    margin-top: 36px !important;
+}
+#normalizationPochild div.modal-body {
+	height: 370px;
+	/* overflow: auto; */
+}
+#normalizationPochild div.modal-content {
+  top: 63px !important;
+}
+#pdfshow div.modal-dialog {
+    width: 98% !important;
+}
+#htmlShow div.modal-dialog {
+    width: 98% !important;
+}
+#pdfshow div.modal-content {
+  top: 100px !important;
+}
+#htmlShow div.modal-content {
+  top: 100px !important;
+}
+.selectedTD {
+	background-color: #baf0f2 !important;
+}
+.dropdown-menu {
+	z-index: 9999 !important;
+}
+
+.chosen-container-single .chosen-single{background:#fff !important; border-radius:2px !important}
+
+.arsMappingDate {
+    float: left;
+    padding: 5px;
+    text-align: center;
+    margin-right: 15px;
+    font-size:11px;
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+.fancyTable td, .fancyTable th{color:#333 !important}
+
+
+.highlight td{background:#e4fbff !important;} 
+.bdr-bottom{border-bottom:1px solid #ccc; padding:3px}
+.nav-tabs li a{background:#fff !important}
+.nav-tabs > li.active > a{background: #005d95  !important; color:#fff !important}
+.custom-select{background:#fff !important; border:1px solid #ccc !important; width:100%; font:1.0em/18px Helvetica Neue, Helvetica, Arial, sans-serif !important; height:25px; border-radius:2px !important; padding:0px 0px 0px 4px !important;}
+.custom-select a{padding:2px 2px !important; color:#000 !important; width:100% !important}
+.custom-select div ul{color:#000 !important}
+.custom-select input{color:#000 !important; width:97% !important; padding:2px 0px 2px 5px; border:1px solid #ccc; font-size:11px !important}
+.trDublicate td {background: #b0c5c5 !important;}
+
+.btn .caret{float:right; margin:8px 5px 0 0}
+.multiselect-selected-text{float:left}
+.btn-default:hover{background:#fff}
+.multiselect-container>li>a>label {padding: 0px 20px 0px 28px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important; font-size: 11px !important; font-weight:normal}
+default.active:focus, .btn-default.active:hover, .btn-default:active.focus, .btn-default:active:focus, .btn-default:active:hover, .open>.dropdown-toggle.btn-default.focus, .open>.dropdown-toggle.btn-default:focus, .open>.dropdown-toggle.btn-default:hover {
+color: #333;
+background-color: #fff;
+border-color: #8c8c8c;
+}
+
+.multiselect-container>li>a>label > li > a { white-space: normal !improtant; }
+.multiselect-container>li>a>label>input[type=checkbox]{visibility: hidden !important;}
+.multiselect-container {width: 390px;}
+.multiselect-container>li>a>label{white-space:normal;}
+.boldClass{font-style:italic; background:#80ccff !important; color:#fff !important;}
+.headerClass{font-weight:bold; font-style:italic; color:#fff;}
+.boldText{font-weight:bold !important; font-size:11px !important;}
+.basicTextFont{font-size:11px !important}
+.dropdown-menu>li>a{line-height:11px !important}
+.wrapAsRepLable{width: 326px !important;}
+
+/*---------- New Css -------------- */
+body{overflow:hidden !important}
+.btn-group, .btn-group-vertical{z-index:1}
+
+.open>.dropdown-menu{z-index:999 !important}
+
+#maindiv{height:350px; overflow:auto !important;}
+.displayNone{display: none !important;}
+.custom-pad-seq{padding:4px 5px !important}
+.checkbox, .radio{margin-top:0px !important; margin-bottom:0px !important;}
+
+/* inline page style include in css ---*/
+.jconfirm-box.jconfirm-hilight-shake.jconfirm-type-default.jconfirm-type-animated{margin-top:250px !important}
+.top-strip{padding:1px;  margin:0 0 5px 0; position:absolute; z-index:3; top:140px !important; right:325px;} 
+#grpChkBox{border:1px solid #ccc; background:#fafafa; width:200px; float:right; display:none;height: auto;max-height: 400px;overflow: auto;}
+#grpChkBox ul{list-style:none; display:inline;}
+#grpChkBox li{border-bottom:1px solid #ccc; padding:6px 0px 6px 6px; font-size:11px; font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;}
+.ft-right{float:right}
+.context-menu-lbl{position:fixed !important; font-family:"Helvetica Neue",Helvetica,Arial,sans-serif !important}
+.context-menu-val{position:fixed !important; font-family:"Helvetica Neue",Helvetica,Arial,sans-serif !important}
+.btn-group.open .dropdown-toggle { -webkit-box-shadow:none !important; box-shadow:none !important }
+.btn-default:hover{color: #333; background-color:#fff !important; border-color: #ccc !important;}
+.btn-default.active, .btn-default:active, .open>.dropdown-toggle.btn-default {color: #333; background-color:#fff !important; border-color: #ccc !important;}
+.btn-info {padding:3px 8px !important;}

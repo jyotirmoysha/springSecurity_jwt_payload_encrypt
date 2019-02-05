@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Delete resource &apos;jwt-security-example&apos;" deleteContents="true" description="Delete resource &apos;jwt-security-example&apos;" element1="/jwt-security-example" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1549358731884"/>
+</session>

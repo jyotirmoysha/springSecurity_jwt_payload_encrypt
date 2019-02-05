@@ -1,0 +1,9 @@
+package com.livespread.excel;
+
+import java.io.Serializable; 
+
+public interface ValueType<T> extends Serializable { 
+ 
+    T value(); 
+ 
+}

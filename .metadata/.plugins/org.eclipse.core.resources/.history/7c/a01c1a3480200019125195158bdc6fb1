@@ -1,0 +1,168 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.sql.Timestamp;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "user_groups")
+@NamedNativeQueries({
+		@NamedNativeQuery(name = "findAllGroupNamesWithParsers", query = "with t1 as (select * from user_groups where PARENT_USER_GROUP=:parentUserGroup) SELECT ug.users_group_id, ug.users_group_name, ugp.parser_id, pm.parser_name , ug.created_date,ug.flag FROM t1 ug LEFT OUTER JOIN ugroup_parser_mapping ugp ON ug.users_group_id = ugp.user_group_id AND ugp.flag  ='A' LEFT JOIN parser_master pm ON ugp.parser_id = pm.parser_master_id ORDER BY ug.users_group_id, pm.parser_master_id asc"),
+		@NamedNativeQuery(name = "findAllGroupNamesWithParsersByGroupId", query = "with t1 as (select * from user_groups) SELECT ug.users_group_id, ug.users_group_name, ugp.parser_id, pm.parser_name , ug.created_date,ug.flag FROM t1 ug LEFT OUTER JOIN ugroup_parser_mapping ugp ON ug.users_group_id = ugp.user_group_id AND ugp.flag  ='A' LEFT JOIN parser_master pm ON ugp.parser_id = pm.parser_master_id where ug.users_group_id=:groupId ORDER BY ug.users_group_id, pm.parser_master_id asc"), })
+@NamedQueries({
+//		@NamedQuery(name = "findUserGroupsForDropdown", query = "select distinct usersGroupName, usersGroupId from UsersGroup order by upper(usersGroupName) asc"),
+	@NamedQuery(name = "findUserGroupsForDropdown", query = "select distinct usersGroupName, usersGroupId from UsersGroup where parentUserGroup=:userGroupId and flag <> 'D' order by usersGroupName asc"),
+	@NamedQuery(name = "getAllUserGroups", query = "from UsersGroup ug  where ug.usersGroupId=:usersGroupId or ug.parentUserGroup=:usersGroupId order by upper(usersGroupName) asc"),
+		@NamedQuery(name = "getOnlyGroupNames", query = "select usersGroupName from UsersGroup"),
+		@NamedQuery(name = "getGroupNamesforAdmin", query = "select usersGroupId,usersGroupName from UsersGroup"),
+		@NamedQuery(name = "getAddedGroupId", query = "select usersGroupId from UsersGroup where usersGroupName=:usersGroupName"),
+		@NamedQuery(name = "removeGroupId", query = "update  UsersGroup set flag=:flag, modifiedBy=:modifiedBy,modifiedDate=:modifiedDate  where usersGroupId=:removegroupId or parentUserGroup=:removegroupId"),
+		@NamedQuery(name = "updateGroupName", query = "update UsersGroup set usersGroupName=:usersGroupName, modifiedDate=:modifiedDate, modifiedBy=:modifiedBy,flag=:flag where usersGroupId=:userGroupId"),
+		@NamedQuery(name = "getGroupNameByGroupId", query = "select usersGroupName from UsersGroup where usersGroupId=:userGroupId"),
+		@NamedQuery(name="checkActiveOrInActiveUserGroup",query="select count(*) from UsersGroup where usersGroupId=:usersGroupId and flag=:flag"),
+		@NamedQuery(name="getUserGroupbyGroupId",query="select ug from UsersGroup ug where ug.usersGroupId=:usersGroupId and ug.flag=:flag")
+		})		
+
+public class UsersGroup implements Serializable, BaseEntity {
+	private static final long serialVersionUID = 1L;
+
+	@Id
+//	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence")
+//	@SequenceGenerator(name = "sequence", sequenceName = "SEQ_USER_GROUPS", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "USERS_GROUP_ID", unique = true, nullable = false, precision = 38)
+	private long usersGroupId;
+
+	@Column(name = "CREATED_BY", length = 20)
+	private String createdBy;
+
+	@Column(name = "CREATED_DATE", nullable = false)
+	private Timestamp createdDate;
+
+	@Column(name = "MODIFIED_BY", length = 20)
+	private String modifiedBy;
+
+	@Column(name = "MODIFIED_DATE")
+	private Timestamp modifiedDate;
+
+	@Column(name = "USERS_GROUP_NAME")
+	private String usersGroupName;
+
+	@Column(name = "USERS_GROUP_DESC")
+	private String usersGroupDesc;
+
+	@Column(name = "FLAG")
+	private String flag;
+	
+	@Column(name = "PARENT_USER_GROUP")
+	private Integer parentUserGroup;
+	
+	@Column(name = "GOLDEN_SET_GROUP", columnDefinition = "CHAR(1) default 'N'")
+	private String goldenSetGroup;
+	
+	public String getFlag() {
+		return flag;
+	}
+
+	public void setFlag(String flag) {
+		this.flag = flag;
+	}
+
+	public UsersGroup() {
+	}
+
+	public long getUsersGroupId() {
+		return this.usersGroupId;
+	}
+
+	public void setUsersGroupId(long usersGroupId) {
+		this.usersGroupId = usersGroupId;
+	}
+
+	public String getCreatedBy() {
+		return this.createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Timestamp getCreatedDate() {
+		return this.createdDate;
+	}
+
+	public void setCreatedDate(Timestamp createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public String getModifiedBy() {
+		return this.modifiedBy;
+	}
+
+	public void setModifiedBy(String modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
+	public Timestamp getModifiedDate() {
+		return this.modifiedDate;
+	}
+
+	public void setModifiedDate(Timestamp modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+	public String getUsersGroupName() {
+		return usersGroupName;
+	}
+
+	public void setUsersGroupName(String usersGroupName) {
+		this.usersGroupName = usersGroupName;
+	}
+
+	public String getUsersGroupDesc() {
+		return usersGroupDesc;
+	}
+
+	public void setUsersGroupDesc(String usersGroupDesc) {
+		this.usersGroupDesc = usersGroupDesc;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+	public Integer getParentUserGroup() {
+		return parentUserGroup;
+	}
+
+	public void setParentUserGroup(Integer parentUserGroup) {
+		this.parentUserGroup = parentUserGroup;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	public String getGoldenSetGroup() {
+		return goldenSetGroup;
+	}
+
+	public void setGoldenSetGroup(String goldenSetGroup) {
+		this.goldenSetGroup = goldenSetGroup;
+	}
+
+}

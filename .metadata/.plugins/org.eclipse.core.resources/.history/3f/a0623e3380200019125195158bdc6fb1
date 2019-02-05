@@ -1,0 +1,164 @@
+package com.livespread.util;
+
+import java.sql.DriverManager;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
+
+import com.livespread.domain.ParserOutput;
+
+public class ExcelImportJDBCBatchUpdate {
+
+	private static Logger LOGGER = Logger.getLogger(ExcelImportJDBCBatchUpdate.class);
+	
+
+	public static void batchInsertRecordsIntoTable(List<ParserOutput> poList) throws SQLException {
+		LOGGER.info(" **start- batchInsertRecordsIntoTable method ");
+		Connection dbConnection = null;
+		PreparedStatement preparedStatement = null;
+
+		String insertTableSQLQuery = "insert into PARSER_OUTPUT (ACCOUNT_NUMBER, CUSTODIAN_NAME, FI_ID, filing_id, IS_DUPLICATE, MAPPING_NAME, MAPPING_TYPE, "
+				+ "MODIFIED_BY, NI_ITEM, NI_ITEM_SUGGESTIVE, NIL_LABEL, NON_ENGLISH_LABEL, PO_NOTE, page_no, PO_ANCHOR, PO_AS_REP_LABEL, PO_VAL1, PO_VAL2, "
+				+ "PO_VAL3, PO_VAL4, PO_VAL5, PO_VAL6, PO_VAL7, PO_VAL8, PO_VAL9, PO_VAL10, PO_VAL11, PO_VAL12, PO_VAL13, PO_VAL14, PO_VAL15, PO_VAL16, "
+				+ "PO_VAL17, PO_VAL18, PO_VAL19,PO_VAL20,PO_BREAKUP, PO_CRUD_ACCOUNT, PO_INDEX_ORDER, PO_MERGE, PO_MODIFIED_BY, PO_SECTION, PO_SUBSECTION, "
+				+ "PO_SUBTOTAL1, PO_TABLE_ID, PO_YCOORDINATES, REF_PO_ID, TEMPLATE_ID, TIME_PERIOD, UPLOAD_ID, WQ_ID) "
+				+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,"
+				+ " ?, ?, ?, ?, ?, ?, ?, ?)";
+
+	
+		try {
+			dbConnection = JDBCConnection.getDBConnection();
+ 			preparedStatement = dbConnection.prepareStatement(insertTableSQLQuery);
+
+			dbConnection.setAutoCommit(false);
+
+			for(ParserOutput parserOutput:poList){
+				preparedStatement.setString(1, parserOutput.getAccountNumber());
+				preparedStatement.setString(2, parserOutput.getCustodianName());
+				
+				if(parserOutput.getFiId()!=null)
+				preparedStatement.setInt(3, parserOutput.getFiId());
+				else
+				preparedStatement.setNull(3, java.sql.Types.INTEGER); 
+				
+				if(parserOutput.getFillingId()!=null)
+				preparedStatement.setInt(4, parserOutput.getFillingId());
+				else
+				preparedStatement.setNull(4, java.sql.Types.INTEGER);
+				
+				preparedStatement.setString(5, parserOutput.getIsDuplicate());
+				preparedStatement.setString(6, parserOutput.getMappingName());
+				preparedStatement.setString(7, parserOutput.getMappingType());
+				preparedStatement.setString(8, parserOutput.getPoModifiedBy());
+				
+				if(parserOutput.getNiItem()!=null)
+				preparedStatement.setInt(9, parserOutput.getNiItem());
+				else
+				preparedStatement.setNull(9, java.sql.Types.INTEGER);
+				
+				preparedStatement.setString(10, parserOutput.getNiItemSuggstive());
+				preparedStatement.setString(11, parserOutput.getNilLabel());
+				preparedStatement.setString(12, parserOutput.getNonEnglishLable());
+				preparedStatement.setString(13, parserOutput.getNote());
+				preparedStatement.setString(14, parserOutput.getPageNo());
+				preparedStatement.setString(15, parserOutput.getPoAnchor());
+				preparedStatement.setString(16, parserOutput.getPoAsRepLabel());
+				preparedStatement.setString(17, parserOutput.getPoAsRepVal1());
+				preparedStatement.setString(18, parserOutput.getPoAsRepVal2());
+				preparedStatement.setString(19, parserOutput.getPoAsRepVal3());
+				preparedStatement.setString(20, parserOutput.getPoAsRepVal4());
+				preparedStatement.setString(21, parserOutput.getPoAsRepVal5());
+				preparedStatement.setString(22, parserOutput.getPoAsRepVal6());
+				preparedStatement.setString(23, parserOutput.getPoAsRepVal7());
+				preparedStatement.setString(24, parserOutput.getPoAsRepVal8());
+				preparedStatement.setString(25, parserOutput.getPoAsRepVal9());
+				preparedStatement.setString(26, parserOutput.getPoAsRepVal10());
+				preparedStatement.setString(27, parserOutput.getPoAsRepVal11());
+				preparedStatement.setString(28, parserOutput.getPoAsRepVal12());
+				preparedStatement.setString(29, parserOutput.getPoAsRepVal13());
+				preparedStatement.setString(30, parserOutput.getPoAsRepVal14());
+				preparedStatement.setString(31, parserOutput.getPoAsRepVal15());
+				preparedStatement.setString(32, parserOutput.getPoAsRepVal16());
+				preparedStatement.setString(33, parserOutput.getPoAsRepVal17());
+				preparedStatement.setString(34, parserOutput.getPoAsRepVal18());
+				preparedStatement.setString(35, parserOutput.getPoAsRepVal19());
+				preparedStatement.setString(36, parserOutput.getPoAsRepVal20());
+				
+				preparedStatement.setString(37, parserOutput.getPoBreakup());
+				preparedStatement.setString(38, parserOutput.getPoCrudAccount());
+				
+				if(parserOutput.getPoIndexOrder()!=null)
+				preparedStatement.setInt(39, parserOutput.getPoIndexOrder());
+				else
+				preparedStatement.setNull(39, java.sql.Types.INTEGER);
+
+				
+				preparedStatement.setString(40, parserOutput.getPoMerge());
+				preparedStatement.setString(41, parserOutput.getPoModifiedBy());
+				preparedStatement.setString(42, parserOutput.getPoSection());
+				preparedStatement.setString(43, parserOutput.getPoSubSection());
+				preparedStatement.setString(44, parserOutput.getPoSubTotal());
+				preparedStatement.setString(45, parserOutput.getPoTableId());
+				preparedStatement.setString(46, parserOutput.getPoYcoordinates());
+				
+				if(parserOutput.getRefPoId()!=null)
+				preparedStatement.setInt(47, parserOutput.getRefPoId());
+				else
+				preparedStatement.setInt(47, java.sql.Types.INTEGER);
+				
+				if(parserOutput.getTemplateId()!=null)
+				preparedStatement.setInt(48, parserOutput.getTemplateId());
+				else
+				preparedStatement.setInt(48, java.sql.Types.INTEGER);
+				
+				preparedStatement.setString(49, parserOutput.getTimePeriod());
+				
+				if(parserOutput.getUploadId()!=null)
+				preparedStatement.setInt(50, parserOutput.getUploadId());
+				else			
+				preparedStatement.setNull(50, java.sql.Types.INTEGER);
+
+				if(parserOutput.getWqId()!=null)
+				preparedStatement.setInt(51, parserOutput.getWqId());
+				else
+				preparedStatement.setNull(51, java.sql.Types.INTEGER);
+				
+				preparedStatement.addBatch();
+			}
+			LOGGER.info(" batch size= "+preparedStatement.getFetchSize());
+
+			preparedStatement.executeBatch();
+
+			dbConnection.commit();
+			LOGGER.info("Records are inserted into PARSER_OUTPUT table");
+			
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:"+e.getMessage());
+			dbConnection.rollback();
+
+		} finally {
+
+			if (preparedStatement != null) {
+				preparedStatement.close();
+			}
+
+			if (dbConnection != null) {
+				dbConnection.close();
+			
+			}
+
+		}
+
+	}
+
+
+
+
+
+}

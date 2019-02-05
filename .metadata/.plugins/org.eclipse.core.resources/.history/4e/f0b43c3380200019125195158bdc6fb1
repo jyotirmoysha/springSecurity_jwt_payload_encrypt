@@ -1,0 +1,327 @@
+package com.livespread.util;
+
+import java.util.List;
+import java.util.Map;
+
+import com.livespread.domain.ProcessingReportTracker;
+
+import jxl.write.Label;
+import jxl.write.Number;
+import jxl.write.WritableCellFormat;
+import jxl.write.WritableSheet;
+
+public class ProcessingReportTrackerSheet {
+	 private static WritableCellFormat times;
+	 
+	 @SuppressWarnings("unchecked")
+	public static WritableSheet f_createSheetForStatementAndRoleSummary(WritableSheet processingReportTrackerSheet,WritableCellFormat headcellFormat,Map<String,List<Object>> processingReportTrackermap,WritableCellFormat cellFormatWithBorder,WritableCellFormat cellFormat1) throws Exception{
+		  int rowCounter=0;
+		  for (Map.Entry<String, List<Object>> entry : processingReportTrackermap.entrySet())
+		  {
+			  String tableTitle=entry.getKey();
+			  
+			  processingReportTrackerSheet.addCell(new Label(0,rowCounter,"COMPANY ID", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(1,rowCounter,"WQ STATUS", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(2,rowCounter,"FILENAME", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(3,rowCounter,"FILING ID", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(4,rowCounter,"PAGE SIZE", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(5,rowCounter,"PERIODS", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(6,rowCounter,"CREATE DATE", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(7,rowCounter,"CUSTOMER NAME", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(8,rowCounter,"STATUS", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(9,rowCounter,"SEARCHER", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(10,rowCounter,"MAKER", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(11,rowCounter,"CHECKER", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(12,rowCounter,"FILE INDF STARTED", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(13,rowCounter,"EXTRACTION STARTED", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(14,rowCounter,"NORMALIZATION STARTED", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(15,rowCounter,"NORMALIZATION COMPLETED", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(16,rowCounter,"MAKER ASSIGNED", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(17,rowCounter,"MAKER STARTED", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(18,rowCounter,"MAKER COMPLETED", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(19,rowCounter,"CHECKER ASSIGNED", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(20,rowCounter,"CHECKER STARTED", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(21,rowCounter,"CHECKER COMPLETED", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(22,rowCounter,"QA ASSIGNED", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(23,rowCounter,"QA STARTED", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(24,rowCounter,"QA COMPLETED", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(25,rowCounter,"FILE INDF PROCESSING TIME", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(26,rowCounter,"EXTRACTION PROCESSING TIME", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(27,rowCounter,"NORMALIZATION PROCESSING TIME", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(28,rowCounter,"NORMALIZATION COMPLETE TO MAKER ASSINGED", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(29,rowCounter,"MAKER ASSINGED T0 START TIME", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(30,rowCounter,"MAKER START TO COMPLETE TIME", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(31,rowCounter,"MAKER TOTAL PROCESSING TIME", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(32,rowCounter,"CHECKER ASSINGED T0_START TIME", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(33,rowCounter,"CHECKER START TO COMPLETE TIME", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(34,rowCounter,"CHECKER TOTAL PROCESSING TIME", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(35,rowCounter,"QA ASSINGED T0 START TIME", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(36,rowCounter,"QA START TO COMPLETE TIME", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(37,rowCounter,"QA TOTAL PROCESSING TIME", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(38,rowCounter,"TOTAL TIME BY LS", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(39,rowCounter,"TOTAL TIME BY ANALYST", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(40,rowCounter,"TOTAL E2E TIME", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(41,rowCounter,"Page Size", headcellFormat));
+			  processingReportTrackerSheet.addCell(new Label(42,rowCounter,"Audit Trail", headcellFormat));
+			  
+	          rowCounter=rowCounter+1;
+	          
+	          int blankcell = 0;
+	           List<ProcessingReportTracker> processingReportTracker=(List<ProcessingReportTracker>)(Object)processingReportTrackermap.get("PROCESSING_REPORT_TRACKER");
+	           	for(ProcessingReportTracker reportTracker:processingReportTracker){
+	            if(reportTracker.getCompanyId()!=null){
+	            processingReportTrackerSheet.addCell(new Label(0,rowCounter,reportTracker.getCompanyId(),cellFormatWithBorder));
+	            }else{	
+	            processingReportTrackerSheet.addCell(new Label(0,rowCounter,"",cellFormatWithBorder));
+	            } 
+	           	if(reportTracker.getWqStatus()!=null){
+		        processingReportTrackerSheet.addCell(new Label(1,rowCounter,reportTracker.getWqStatus(),cellFormatWithBorder));
+	           	}else{	
+		        processingReportTrackerSheet.addCell(new Label(1,rowCounter,"",cellFormatWithBorder));
+	           	}
+	         	if(reportTracker.getFileName()!=null){
+		        processingReportTrackerSheet.addCell(new Label(2,rowCounter,reportTracker.getFileName(),cellFormatWithBorder));
+	         	}else{	
+		        processingReportTrackerSheet.addCell(new Label(2,rowCounter,"",cellFormatWithBorder));
+	         	}
+                if(reportTracker.getFilingId()!=null){
+		        processingReportTrackerSheet.addCell(new Number(3,rowCounter,reportTracker.getFilingId(),cellFormatWithBorder));
+                }else{	
+		        processingReportTrackerSheet.addCell(new Number(3,rowCounter,blankcell,cellFormatWithBorder));
+                }
+              
+                if(reportTracker.getPageSize()!=null){
+        		processingReportTrackerSheet.addCell(new Number(4,rowCounter,reportTracker.getPageSize(),cellFormatWithBorder));
+                }else{	
+        		processingReportTrackerSheet.addCell(new Number(4,rowCounter,blankcell,cellFormatWithBorder));
+                }
+                if(reportTracker.getNumberOfPeriods()!=null){
+            	processingReportTrackerSheet.addCell(new Number(5,rowCounter,reportTracker.getNumberOfPeriods(),cellFormatWithBorder));
+                }else{	
+            	processingReportTrackerSheet.addCell(new Number(5,rowCounter,blankcell,cellFormatWithBorder));
+                }
+                if(reportTracker.getCreateDate()!=null){
+                processingReportTrackerSheet.addCell(new Label(6,rowCounter,reportTracker.getCreateDate().toLocaleString(),cellFormatWithBorder));
+                }else{	
+                processingReportTrackerSheet.addCell(new Label(6,rowCounter,"",cellFormatWithBorder));
+                }
+               if(reportTracker.getCustomerName()!=null){
+               processingReportTrackerSheet.addCell(new Label(7,rowCounter,reportTracker.getCustomerName(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(7,rowCounter,"",cellFormatWithBorder));
+               }
+               if(reportTracker.getCaseStatus()!=null){
+               processingReportTrackerSheet.addCell(new Label(8,rowCounter,reportTracker.getCaseStatus(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(8,rowCounter,"",cellFormatWithBorder));
+               }                
+               if(reportTracker.getSearcher()!=null){
+               processingReportTrackerSheet.addCell(new Label(9,rowCounter,reportTracker.getSearcher(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(9,rowCounter,"",cellFormatWithBorder));
+               }   
+               if(reportTracker.getMaker()!=null){
+               processingReportTrackerSheet.addCell(new Label(10,rowCounter,reportTracker.getMaker(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(10,rowCounter,"",cellFormatWithBorder));
+               }   
+               if(reportTracker.getChecker()!=null){
+               processingReportTrackerSheet.addCell(new Label(11,rowCounter,reportTracker.getChecker(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(11,rowCounter,"",cellFormatWithBorder));
+               }   	   
+			  
+               if(reportTracker.getFileIdentificationSt()!=null){
+               processingReportTrackerSheet.addCell(new Label(12,rowCounter,reportTracker.getFileIdentificationSt(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(12,rowCounter,"",cellFormatWithBorder));
+               }   
+               
+               if(reportTracker.getExtractionProcessSt()!=null){
+               processingReportTrackerSheet.addCell(new Label(13,rowCounter,reportTracker.getExtractionProcessSt(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(13,rowCounter,"",cellFormatWithBorder));
+               }    
+             
+               if(reportTracker.getNormProcessSt()!=null){
+               processingReportTrackerSheet.addCell(new Label(14,rowCounter,reportTracker.getNormProcessSt(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(14,rowCounter,"",cellFormatWithBorder));
+               }   
+               
+               if(reportTracker.getNormProcessEt()!=null){
+               processingReportTrackerSheet.addCell(new Label(15,rowCounter,reportTracker.getNormProcessEt(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(15,rowCounter,"",cellFormatWithBorder));
+               }   
+               
+               if(reportTracker.getMakerAssignedOn()!=null){
+               processingReportTrackerSheet.addCell(new Label(16,rowCounter,reportTracker.getMakerAssignedOn(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(16,rowCounter,"",cellFormatWithBorder));
+               }  
+               
+               if(reportTracker.getMakerStartedOn()!=null){
+               processingReportTrackerSheet.addCell(new Label(17,rowCounter,reportTracker.getMakerStartedOn(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(17,rowCounter,"",cellFormatWithBorder));
+               }  
+               
+               if(reportTracker.getMakerCompleted()!=null){
+               processingReportTrackerSheet.addCell(new Label(18,rowCounter,reportTracker.getMakerCompleted(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(18,rowCounter,"",cellFormatWithBorder));
+               }  
+               
+               if(reportTracker.getCheckerAssignedOn()!=null){
+               processingReportTrackerSheet.addCell(new Label(19,rowCounter,reportTracker.getCheckerAssignedOn(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(19,rowCounter,"",cellFormatWithBorder));
+               }  
+               
+               if(reportTracker.getCheckerStartedOn()!=null){
+               processingReportTrackerSheet.addCell(new Label(20,rowCounter,reportTracker.getCheckerStartedOn(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(20,rowCounter,"",cellFormatWithBorder));
+               }  
+               
+               if(reportTracker.getCheckerCompleted()!=null){
+               processingReportTrackerSheet.addCell(new Label(21,rowCounter,reportTracker.getCheckerCompleted(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(21,rowCounter,"",cellFormatWithBorder));
+               }  
+               
+
+               if(reportTracker.getQaAssignedOn()!=null){
+               processingReportTrackerSheet.addCell(new Label(22,rowCounter,reportTracker.getQaAssignedOn(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(22,rowCounter,"",cellFormatWithBorder));
+               }  
+               
+               if(reportTracker.getQaStartedOn()!=null){
+               processingReportTrackerSheet.addCell(new Label(23,rowCounter,reportTracker.getQaStartedOn(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(23,rowCounter,"",cellFormatWithBorder));
+               }  
+               
+               
+               if(reportTracker.getQaCompleted()!=null){
+               processingReportTrackerSheet.addCell(new Label(24,rowCounter,reportTracker.getQaCompleted(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(24,rowCounter,"",cellFormatWithBorder));
+               }  
+               
+               if(reportTracker.getFileIdentificationPt()!=null){
+               processingReportTrackerSheet.addCell(new Number(25,rowCounter,reportTracker.getFileIdentificationPt(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(25,rowCounter,"",cellFormatWithBorder));
+               }  
+               
+               if(reportTracker.getExtractionProcessSt()!=null){
+               processingReportTrackerSheet.addCell(new Label(26,rowCounter,reportTracker.getExtractionProcessSt(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(26,rowCounter,"",cellFormatWithBorder));
+               }   
+               if(reportTracker.getNormProcessingTime()!=null){
+               processingReportTrackerSheet.addCell(new Number(27,rowCounter,reportTracker.getNormProcessingTime(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(27,rowCounter,"",cellFormatWithBorder));
+               }  
+               
+               if(reportTracker.getNormCompleteToMakerAsgn()!=null){
+               processingReportTrackerSheet.addCell(new Number(28,rowCounter,reportTracker.getNormCompleteToMakerAsgn(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(28,rowCounter,"",cellFormatWithBorder));
+               }  
+               
+               if(reportTracker.getMakerAssingedT0St()!=null){
+               processingReportTrackerSheet.addCell(new Number(29,rowCounter,reportTracker.getMakerAssingedT0St(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(29,rowCounter,"",cellFormatWithBorder));
+               }  
+               
+               if(reportTracker.getMakerStartToCompleteTime()!=null){
+               processingReportTrackerSheet.addCell(new Number(30,rowCounter,reportTracker.getMakerStartToCompleteTime(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(30,rowCounter,"",cellFormatWithBorder));
+               }  
+               
+               if(reportTracker.getMakerTotalProcessingTime()!=null){
+               processingReportTrackerSheet.addCell(new Number(31,rowCounter,reportTracker.getMakerTotalProcessingTime(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(31,rowCounter,"",cellFormatWithBorder));
+               }  
+               
+               if(reportTracker.getCheckerAssingedT0St()!=null){
+               processingReportTrackerSheet.addCell(new Number(32,rowCounter,reportTracker.getCheckerAssingedT0St(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(32,rowCounter,"",cellFormatWithBorder));
+               }  
+               
+               if(reportTracker.getCheckerStToCt()!=null){
+               processingReportTrackerSheet.addCell(new Number(33,rowCounter,reportTracker.getCheckerStToCt(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(33,rowCounter,"",cellFormatWithBorder));
+               } 
+               
+               if(reportTracker.getCheckerStToCt()!=null){
+               processingReportTrackerSheet.addCell(new Number(34,rowCounter,reportTracker.getCheckerStToCt(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(34,rowCounter,"",cellFormatWithBorder));
+               } 
+               
+               if(reportTracker.getQaAssingedT0St()!=null){
+               processingReportTrackerSheet.addCell(new Number(35,rowCounter,reportTracker.getQaAssingedT0St(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(35,rowCounter,"",cellFormatWithBorder));
+               } 
+               
+               if(reportTracker.getQaStartToCt()!=null){
+               processingReportTrackerSheet.addCell(new Number(36,rowCounter,reportTracker.getQaStartToCt(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(36,rowCounter,"",cellFormatWithBorder));
+               } 
+               
+               if(reportTracker.getQaTotalPt()!=null){
+               processingReportTrackerSheet.addCell(new Number(37,rowCounter,reportTracker.getQaTotalPt(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(37,rowCounter,"",cellFormatWithBorder));
+               } 
+               
+               if(reportTracker.getTotalProcessingLs()!=null){
+               processingReportTrackerSheet.addCell(new Number(38,rowCounter,reportTracker.getTotalProcessingLs(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(38,rowCounter,"",cellFormatWithBorder));
+               } 
+               
+               if(reportTracker.getTotalProcessingAnalyst()!=null){
+               processingReportTrackerSheet.addCell(new Number(39,rowCounter,reportTracker.getTotalProcessingAnalyst(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(39,rowCounter,"",cellFormatWithBorder));
+               } 
+               
+               if(reportTracker.getTotalProcessingE2e()!=null){
+               processingReportTrackerSheet.addCell(new Number(40,rowCounter,reportTracker.getTotalProcessingE2e(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(40,rowCounter,"",cellFormatWithBorder));
+               } 
+               
+               if(reportTracker.getPageSize()!=null){
+               processingReportTrackerSheet.addCell(new Number(41,rowCounter,reportTracker.getPageSize(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(41,rowCounter,"",cellFormatWithBorder));
+               } 
+               
+               if(reportTracker.getAuditTrail()!=null){
+               processingReportTrackerSheet.addCell(new Label(42,rowCounter,reportTracker.getAuditTrail(),cellFormatWithBorder));
+               }else{	
+               processingReportTrackerSheet.addCell(new Label(42,rowCounter,"",cellFormatWithBorder));
+               } 
+               rowCounter++;
+
+		  }
+	           
+	 }
+		return processingReportTrackerSheet;
+  }
+}

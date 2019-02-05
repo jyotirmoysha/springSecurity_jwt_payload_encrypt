@@ -1,0 +1,248 @@
+package com.livespread.common.service;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Properties;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+
+public class PropertiesFileWriterUtility {
+    static Log log = LogFactory.getLog(PropertiesFileWriterUtility.class);
+
+	public static void f_writeJDBCPropertiesFile(String fileName,Properties properties,String destinFilePath)
+	{
+		try{
+    /**
+    *1: Start writing jdbc.properties file code
+    */
+  	FileInputStream jdbcin = new FileInputStream(destinFilePath+"/"+fileName);
+  	Properties jdbcproperties = new Properties();
+  	jdbcproperties.load(jdbcin);
+  	jdbcin.close();
+  	String relationDatabaseType="";
+    if(properties.getProperty("relationDatabaseType")!=null)
+    relationDatabaseType=properties.getProperty("relationDatabaseType");
+    String appDatabaseURL="";
+    String uicDatabaseURL="";
+    String rageDatabaseURL="";
+    String isWindowsAuthentication=properties.getProperty("windowsAuthentication");
+    String windowsAuthenticationString = "";
+    if(isWindowsAuthentication!=null  && isWindowsAuthentication.equalsIgnoreCase("Y"))
+    {
+    	windowsAuthenticationString=";integratedSecurity=true";
+    }
+    if(relationDatabaseType.equalsIgnoreCase("ORACLE")){
+    appDatabaseURL="jdbc:oracle:thin:@"+properties.getProperty("appDatabaseServerIp")+":"+properties.getProperty("appDatabaseServerPort")+":"+properties.getProperty("appDatabaseName")+windowsAuthenticationString;
+    uicDatabaseURL="jdbc:oracle:thin:@"+properties.getProperty("uicDatabaseServerIp")+":"+properties.getProperty("uicDatabaseServerPort")+":"+properties.getProperty("uicDatabaseName")+windowsAuthenticationString;
+    rageDatabaseURL="jdbc:oracle:thin:@"+properties.getProperty("rageDatabaseServerIp")+":"+properties.getProperty("rageDatabaseServerPort")+":"+properties.getProperty("rageDatabaseName")+windowsAuthenticationString;
+    }else if(relationDatabaseType.equalsIgnoreCase("SQL_SERVER")){
+    appDatabaseURL="jdbc:sqlserver://"+properties.getProperty("appDatabaseServerIp")+":"+properties.getProperty("appDatabaseServerPort")+";DatabaseName="+properties.getProperty("appDatabaseName")+windowsAuthenticationString;
+    uicDatabaseURL="jdbc:sqlserver://"+properties.getProperty("uicDatabaseServerIp")+":"+properties.getProperty("uicDatabaseServerPort")+";DatabaseName="+properties.getProperty("uicDatabaseName")+windowsAuthenticationString;
+    rageDatabaseURL="jdbc:sqlserver://"+properties.getProperty("rageDatabaseServerIp")+":"+properties.getProperty("rageDatabaseServerPort")+";DatabaseName="+properties.getProperty("rageDatabaseName")+windowsAuthenticationString;
+    }
+    jdbcproperties.setProperty("app.jdbc.url", appDatabaseURL);
+    jdbcproperties.setProperty("uic.jdbc.url", uicDatabaseURL);
+    jdbcproperties.setProperty("rage.jdbc.url", rageDatabaseURL);
+    jdbcproperties.setProperty("app.jdbc.driverClassName", properties.getProperty("jdbcDriver"));
+    jdbcproperties.setProperty("uic.jdbc.driverClassName", properties.getProperty("jdbcDriver"));
+    jdbcproperties.setProperty("rage.jdbc.driverClassName", properties.getProperty("jdbcDriver"));
+    
+    jdbcproperties.setProperty("app.jdbc.databasePlatform", properties.getProperty("hibernatedialect"));
+    jdbcproperties.setProperty("uic.jdbc.databasePlatform", properties.getProperty("hibernatedialect"));
+    jdbcproperties.setProperty("rage.jdbc.databasePlatform", properties.getProperty("hibernatedialect"));
+
+    jdbcproperties.setProperty("app.jdbc.database", relationDatabaseType);
+    jdbcproperties.setProperty("uic.jdbc.database", relationDatabaseType);
+    jdbcproperties.setProperty("rage.jdbc.database", relationDatabaseType);
+
+    jdbcproperties.setProperty("app.jdbc.username", properties.getProperty("appDatabaseUserName"));
+    jdbcproperties.setProperty("uic.jdbc.username", properties.getProperty("uicDatabaseUserName"));
+    jdbcproperties.setProperty("rage.jdbc.username", properties.getProperty("rageDatabaseUserName"));
+
+    jdbcproperties.setProperty("app.jdbc.password", properties.getProperty("appDatabasePassword"));
+    jdbcproperties.setProperty("uic.jdbc.password", properties.getProperty("uicDatabasePassword"));
+    jdbcproperties.setProperty("rage.jdbc.password", properties.getProperty("rageDatabasePassword"));
+
+  	FileOutputStream out = new FileOutputStream(destinFilePath+"/"+fileName);
+  	jdbcproperties.store(out, null);
+  	out.close();
+    
+     /**
+      * End Jdbc Properties code
+      */
+		}catch(Exception e){
+			e.printStackTrace();
+			log.error("Error:",e);
+		}
+	}//end function  
+	
+	public static void f_writeApplicationPropertiesFile(String fileName,Properties properties,String destinFilePath,String homeResourcePath, String homePath)
+	{
+	 FileOutputStream out=null;
+	 FileInputStream applicationIn=null;
+	 FileInputStream updatedApplicationIn=null;
+
+		try{
+     Properties applicationProperties = new Properties();
+
+    /**
+    *1: Start writing application.properties file code
+    */
+    
+   	applicationIn = new FileInputStream(destinFilePath+"/"+fileName);
+   	applicationProperties.load(applicationIn);
+
+    String uploadedFilePath=applicationProperties.getProperty("uploadTempDirectory.path");
+    if(uploadedFilePath!=null && !uploadedFilePath.isEmpty() && uploadedFilePath!=""){
+        Path ouputFile = Paths.get(destinFilePath+"/"+fileName);
+        String fileContent = new String(Files.readAllBytes(ouputFile));
+        fileContent = fileContent.replaceAll("HOME_RESOURCE_PATH", homeResourcePath);
+        fileContent = fileContent.replaceAll("HOME_PATH", homePath);
+        Files.write(ouputFile, fileContent.getBytes());
+        updatedApplicationIn=new FileInputStream(destinFilePath+"/"+fileName);
+        applicationProperties.load(updatedApplicationIn);
+       out = new FileOutputStream(destinFilePath+"/"+fileName);
+      	if(properties.getProperty("secureFlag")!=null)
+      	applicationProperties.setProperty("secureFlag", properties.getProperty("secureFlag"));
+      	
+      	if(properties.getProperty("cssType")!=null)
+        applicationProperties.setProperty("cssType", properties.getProperty("cssType"));
+      	
+      	if(properties.getProperty("homePath.path")!=null)
+        applicationProperties.setProperty("homePath.path", properties.getProperty("homePath.path"));
+
+      	if(properties.getProperty("homePath.path")!=null)
+        applicationProperties.setProperty("homePath.path", properties.getProperty("homePath.path"));
+
+      	if(properties.getProperty("APPLICATION_URLS")!=null)
+      	applicationProperties.setProperty("APPLICATION_URLS", properties.getProperty("APPLICATION_URLS"));
+      	
+      	if(properties.getProperty("rageApplicationName")!=null)
+      	applicationProperties.setProperty("rageApplicationName", properties.getProperty("rageApplicationName"));
+      	
+      	if(properties.getProperty("rageAuditTrailCallProcessName")!=null)
+      	applicationProperties.setProperty("rageAuditTrailCallProcessName", properties.getProperty("rageAuditTrailCallProcessName"));
+
+      	if(properties.getProperty("timeStatRageCallProcessName")!=null)
+      	applicationProperties.setProperty("timeStatRageCallProcessName", properties.getProperty("timeStatRageCallProcessName"));
+
+      	if(properties.getProperty("mappingStats")!=null)
+      	applicationProperties.setProperty("mappingStats", properties.getProperty("mappingStats"));
+
+      	if(properties.getProperty("columnMerge")!=null)
+      	applicationProperties.setProperty("columnMerge", properties.getProperty("columnMerge"));
+
+      	if(properties.getProperty("modifyStatus")!=null)
+      	applicationProperties.setProperty("modifyStatus", properties.getProperty("modifyStatus"));
+
+      	if(properties.getProperty("mappingNormalizationMaster")!=null)
+      	applicationProperties.setProperty("mappingNormalizationMaster", properties.getProperty("mappingNormalizationMaster"));
+      	
+      	if(properties.getProperty("forcedOCR")!=null)
+      	applicationProperties.setProperty("forcedOCR", properties.getProperty("forcedOCR"));
+      	if(properties.getProperty("batchExecution")!=null)
+      	applicationProperties.setProperty("batchExecution", properties.getProperty("batchExecution"));
+      	if(properties.getProperty("autoCaseGeneration")!=null)
+      	applicationProperties.setProperty("autoCaseGeneration", properties.getProperty("autoCaseGeneration"));
+      	if(properties.getProperty("masterProcessBank")!=null)
+      	applicationProperties.setProperty("masterProcessBank", properties.getProperty("masterProcessBank"));
+      	if(properties.getProperty("reprocess")!=null)
+      	applicationProperties.setProperty("reprocess", properties.getProperty("reprocess"));
+      	if(properties.getProperty("achDebitCalculation")!=null)
+      	applicationProperties.setProperty("achDebitCalculation", properties.getProperty("achDebitCalculation"));
+      	
+
+      	applicationProperties.store(out, null);
+      	
+
+    }
+  }catch(Exception e){
+			e.printStackTrace();
+			log.error("Error:",e);
+		}
+		finally 
+		{
+		try {
+		out.close();
+		applicationIn.close();
+		updatedApplicationIn.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}	
+			
+			
+		}
+	}//end function
+
+	public static void f_writeLogPropertiesFile(String fileName,String filePath,String loggerFilePath)
+	{
+		InputStream loggerIn=null;
+	    Properties loggerProperties =null;
+
+		try{
+		//load email.properties file
+		loggerProperties=new Properties();
+		loggerIn = PropertiesFileWriterUtility.class.getClassLoader().getResourceAsStream(fileName);
+		loggerProperties.load(loggerIn);
+		loggerProperties.setProperty("log4j.appender.appLogger.File", loggerFilePath);
+	  	FileOutputStream out = new FileOutputStream(filePath+"/"+fileName);
+	  	loggerProperties.store(out, null);
+	  	out.close();
+
+		
+		}catch(Exception e){
+			e.printStackTrace();
+			log.error("Error:",e);
+			
+		}
+	}//end function
+
+
+	public static void f_writeEmailPropertiesFile(String fileName,Properties inputProperties,String strDirectory)
+	{
+		try{
+	      	FileInputStream in = new FileInputStream(strDirectory+"/"+fileName);
+	      	Properties props = new Properties();
+	      	props.load(in);
+	      	in.close();
+
+	      	FileOutputStream out = new FileOutputStream(strDirectory+"/"+fileName);
+	      	props.setProperty("clientSignUpLink", inputProperties.getProperty("APPLICATION_URLS") +"/changePasswordByMail.htm");
+	      	
+	      	if(inputProperties.getProperty("mail.smtp.from")!=null)
+	      	props.setProperty("mail.smtp.from", inputProperties.getProperty("mail.smtp.from"));
+	      	
+	      	if(inputProperties.getProperty("mail.smtp.cc")!=null)
+	      	props.setProperty("mail.smtp.cc", inputProperties.getProperty("mail.smtp.cc"));
+	      	
+	      	if(inputProperties.getProperty("mail.smtp.port")!=null)
+	      	props.setProperty("mail.smtp.port", inputProperties.getProperty("mail.smtp.port"));
+	      	
+	      	if(inputProperties.getProperty("mail.smtp.ssl.trust")!=null)
+	      	props.setProperty("mail.smtp.ssl.trust", inputProperties.getProperty("mail.smtp.ssl.trust"));
+	      	
+	      	if(inputProperties.getProperty("mail.smtp.host")!=null)
+	      	props.setProperty("mail.smtp.host", inputProperties.getProperty("mail.smtp.host"));
+	      	
+	      	if(inputProperties.getProperty("mail.smtp.password")!=null)
+		    props.setProperty("mail.smtp.password", inputProperties.getProperty("mail.smtp.password"));
+
+	      	
+	      	props.store(out, null);
+	      	out.close();
+
+
+		}catch(Exception e){
+			e.printStackTrace();
+			log.error("Error:",e);
+			
+		}
+	}//end function
+}

@@ -1,0 +1,130 @@
+/**
+ * 
+ */
+package com.livespread.aspect;
+
+import java.net.InetAddress;
+import java.util.Date;
+
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.AfterThrowing;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import com.livespread.domain.User;
+
+/**
+ * @author Sainath.Dekate
+ *
+ */
+@Aspect
+@Component
+public class LoggerAspect
+{
+	final static Logger logger = Logger.getLogger(LoggerAspect.class);
+
+	HttpSession session = null;
+
+	@Before("within(com.livespread..*)")
+	public void methodStart(JoinPoint joinPoint) throws Throwable 
+	{
+		session =session();
+		try {
+			if(session!=null)
+			{
+				User user =(User) session.getAttribute("user");
+				if(user!=null)
+				{
+					logger.info("AOP: Inside Method " + joinPoint.getSignature().getName() + " on " + new Date() + " for User " + user.getLogin() +" And Session Id = " +session.getId() + " On IP " + InetAddress.getLocalHost());
+				}
+				else
+				{
+					logger.info("AOP: Inside Method " + joinPoint.getSignature().getName() + " on " + new Date() + " for anonymous user And Session Id = " +session.getId() + " On IP " + InetAddress.getLocalHost());	
+				}
+			}
+			else
+			{
+				logger.info("AOP: Inside Method " + joinPoint.getSignature().getName() + " on " + new Date() + " for anonymous user" + " On IP " + InetAddress.getLocalHost());
+			}
+		} catch (Exception e) {
+			logger.error("Error in methodStart aspect");
+		}
+	}
+	
+	@AfterReturning("within(com.livespread..*)")
+	public void methodEnd(JoinPoint joinPoint) throws Throwable 
+	{
+		session =session();
+		if(joinPoint!=null && joinPoint.getSignature()!=null)
+		{
+			try {
+				if(session!=null)
+				{
+					User user =(User) session.getAttribute("user");
+					if(user!=null)
+					{
+						logger.info("AOP: outside Method " + joinPoint.getSignature().getName() + " on " + new Date() + " for User " + user.getLogin() +" And Session Id = " +session.getId() + " On IP " + InetAddress.getLocalHost());
+					}
+					else
+					{
+						logger.info("AOP: outside Method " + joinPoint.getSignature().getName() + " on " + new Date() + " for anonymous user And Session Id = " +session.getId() + " On IP " + InetAddress.getLocalHost());	
+					}
+				}
+				else
+				{
+					logger.info("AOP: outside Method " + joinPoint.getSignature().getName() + " on " + new Date() + " for anonymous user" + " On IP " + InetAddress.getLocalHost());
+				}
+			} catch (Exception e) {
+				logger.error("Error in methodEnd aspect");
+			}
+		}
+	}
+	
+	@AfterThrowing(pointcut =  "within(com.livespread..*)", throwing = "e")
+	public void methodException(JoinPoint joinPoint,Throwable e) throws Throwable 
+	{
+		session =session();
+		try {
+			if(session!=null)
+			{
+				User user =(User) session.getAttribute("user");
+				if(user!=null)
+				{
+					logger.error("AOP: outside Method with Exception " + joinPoint.getSignature().getName() + " on " + new Date() + " for User " + user.getLogin() +" And Session Id = " +session.getId() + " On IP " + InetAddress.getLocalHost() ,e);
+				}
+				else
+				{
+					logger.error("AOP: outside Method with Exception " + joinPoint.getSignature().getName() + " on " + new Date() + " for anonymous user And Session Id = " +session.getId() + " On IP " + InetAddress.getLocalHost() ,e);	
+				}
+			}
+			else
+			{
+				logger.error("AOP: outside Method with Exception " + joinPoint.getSignature().getName() + " on " + new Date() + " for anonymous user" + " On IP " + InetAddress.getLocalHost(),e);
+			}
+			logger.error(e.getMessage());
+		} catch (Exception e1) {
+			logger.error("Error in methodException aspect");
+		}
+	}
+	
+	@Pointcut("execution(* *(..))")
+	public void runtimeException() {}
+	
+	
+	public static HttpSession session() {
+	    try {
+			ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+			return attr.getRequest().getSession(false);
+		} catch (IllegalStateException e) {
+			return null;
+		} 
+	}
+}

@@ -1,0 +1,9 @@
+package com.livespread.dao;
+
+import com.livespread.rage.domain.RequestQueue;
+
+public interface RageDAO {
+
+	Integer generatePkForRequestQueue(String sequenceName) throws Exception;
+	void saveRequestQueue(RequestQueue requestQueue) throws Exception;
+}

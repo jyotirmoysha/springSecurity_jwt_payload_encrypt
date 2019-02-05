@@ -1,0 +1,123 @@
+package com.livespread.controller;
+
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.livespread.command.DocumentModelCommand;
+import com.livespread.domain.DocumentModel;
+import com.livespread.domain.StatusMaster;
+import com.livespread.service.ExtractionService;
+import com.livespread.service.StatusMasterService;
+import com.livespread.util.CipherUtils;
+
+@Controller
+public class ExtractionItrController {
+
+	private Logger LOGGER = Logger.getLogger(ExtractionItrController.class);
+
+	@Autowired
+	private StatusMasterService statusMasterService;
+
+	@Autowired
+	ExtractionService extractionService;
+
+	/**** rules_management_itr jsp View page when GET Request **************/
+	@RequestMapping(value = "/rules_management_itr.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public String showExtractionItrPage(
+			@RequestParam("fillingId") String fillingId, Model map) {
+		LOGGER.info("--- showExtractionItrPage request Mapping started--------");
+		try {
+
+			String decryptedFillingId = CipherUtils.decrypt(fillingId);
+
+			map.addAttribute("caseId", fillingId);
+			map.addAttribute("fillingId", fillingId);
+			/*
+			 * This function used for get all status list from status master
+			 */
+			List<StatusMaster> statusList = statusMasterService
+					.getAllStatusList();
+			map.addAttribute("statusList", statusList);
+			/*
+			 * This function used for fetch record from document table using
+			 * filing id
+			 */
+			List<DocumentModel> documentList = extractionService
+					.getDocumentListByFilingID(Integer
+							.parseInt(decryptedFillingId));
+			map.addAttribute("documentList", documentList);
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:",e);
+		}
+		LOGGER.info("--- showExtractionItrPage request Mapping end--------");
+		return "rules_management_itr";
+	}
+
+	/**
+	 * This function called when click on save or refresh button on
+	 * rules_management_extraction.jsp page
+	 **/
+	@RequestMapping(value = "/update_rules_management_ITR.htm", method = RequestMethod.POST)
+	public String updateRulesManagementITR(
+			@ModelAttribute DocumentModelCommand modelCommand, Model map) {
+		LOGGER.info("** START-updateRulesManagementITR function");
+
+		boolean flag = false;
+		try {
+			/*
+			 * Here Update Document table using filingId
+			 */
+			modelCommand.setFilingId(Integer.parseInt(CipherUtils
+					.decrypt(modelCommand.getEncryptedFilingId())));
+
+			flag = extractionService.saveUpadateDocument_Table(modelCommand);
+
+			/*
+			 * This function used for fetch record from document table using
+			 * filing id
+			 */
+
+			List<DocumentModel> documentList = extractionService
+					.getDocumentListByFilingID(modelCommand.getFilingId());
+			map.addAttribute("documentList", documentList);
+		} catch (Exception e) {
+			LOGGER.error("Error:",e);
+			e.printStackTrace();
+		}
+		map.addAttribute("flag", flag);
+		map.addAttribute("caseId", modelCommand.getFilingId());
+		LOGGER.info("** END-updateRulesManagementITR function");
+		return "rules_management_itr";
+	}
+	@RequestMapping(value = "/deleteExtractionITRRules.htm", method = RequestMethod.POST)
+	public @ResponseBody boolean deleteExtractionRules(@RequestParam("param") Integer[] param)
+	{
+    	LOGGER.info("** Start updatecustomeConfiguration Controller");
+		boolean flag = false;
+		if(param!=null && param.length!=0){
+		try {
+		
+		List<Integer> idList = Arrays.asList(param);
+		flag=extractionService.deleteExtractionITRRules(idList);
+		
+		} catch (Exception e) {
+		LOGGER.error("Error:",e);
+		e.printStackTrace();
+		}
+    	LOGGER.info("** End updatecustomeConfiguration Controller");
+		}
+		return flag;
+	}
+}

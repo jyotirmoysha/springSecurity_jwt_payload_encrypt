@@ -1,0 +1,41 @@
+package com.livespread.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.livespread.domain.NamedQueryName;
+import com.livespread.rage.domain.ProcessesModel;
+import com.rage.extendeddao.ExtendedGenericDao;
+
+@Service("lsRageProcessesService")
+public class LSRageProcessesServiceImpl implements LSRageProcessesService {
+
+	private Logger LOGGER = Logger.getLogger(LSRageProcessesServiceImpl.class);
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String, Integer> f_getAllLSRageProcesses(Integer rageApplicationId){
+		LOGGER.info(" ** Start- LSRageProcessesServiceImpl methode -------------------");
+		Map<String, Integer> processMap = new HashMap<String, Integer>();
+		
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("applicationSeqId", rageApplicationId);
+		
+		List<ProcessesModel> processList = (ArrayList<ProcessesModel>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getAllRageProcess,ProcessesModel.class,parameterMap);
+		for (ProcessesModel processesModel : processList) {
+			processMap.put(processesModel.getProcessName(),processesModel.getProcessSeqId());
+		}
+		LOGGER.info(" ** End- LSRageProcessesServiceImpl methode -------------------");
+		return processMap;
+	}
+
+}

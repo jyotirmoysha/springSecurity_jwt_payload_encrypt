@@ -1,0 +1,43 @@
+body{overflow:auto !important}
+.newTable td{padding:5px !important; color:#333 !important; font-size:13px !important;}
+.UicTblCaptionH2{background:#00aecf !important}
+.fixTable_casesubmissiontable thead th{background:#074156 !important; color:#fff !important; font-size:11.5px;  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;}
+.fixTable_caseuploadedtable thead th{background:#074156 !important; color:#fff !important; font-size:11.5px;  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;}
+.fixTable_documentprocessingtable thead th{background:#074156 !important; color:#fff !important; font-size:11.5px;  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;}
+.fixTable_caseinventorytable thead th{background:#074156 !important; color:#fff !important; font-size:11.5px;  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;}
+.bg-green{background:#00aecf  !important; color:#fff; font-weight:bold; padding:5px !important; margin-bottom:10px !important;}
+.bdr{border:1px solid #ccc; padding:0px; margin-bottom:10px}
+#uicTotalRow_caseinventorytable{font-weight:bold !important}
+.nav-new {background:#096b90;  width: 100%; height: 35px; margin: 0px 0px; line-height:35px !important;}
+.nav-new a{color:#fff !important; padding:10px 20px 10px 5px !important;  font:1.3em/18px Helvetica Neue, Helvetica, Arial, sans-serif !important; text-decoration:none}    
+.nav-new a:hover{background:#fff;  color:#005f98 !important}
+.nav-new a.active{background:#fff;  color:#005f98 !important}
+#uic_chart_container_casesubmissionchart{height:245px !important; border:1px solid #ccc; margin-bottom:12px; margin-right:-14px}
+#uic_chart_container_caseinventorydonut{height:365px !important; border:1px solid #ccc}
+#uic_chart_container_documentprocessingchart{height:350px !important; border:1px solid #ccc} 
+#uicParentDiv_casesubmissiontable{height:245px !important; overflow:auto !important}
+#uicParentDiv_caseuploadedtable{height:69px !important; margin-left:-15px}
+#uicParentDiv_caseinventorytable{margin-top:10px !important; height:244px !important; margin-left:-15px}
+#uicParentDiv_documentprocessingtable{height:280px !important;}
+#uic_chart_container_audittrailatstatementlevelchart{height:250px !important}
+#uicParentDiv_audittrailtable{height:275px !important}
+#uic_chart_container_audittrailchart{height:275px !important; border:1px solid #ccc}
+.col-lg-12{padding-left:15px !important}
+#uicParentDiv_audittrailatstatementleveltable{height:220px !important; margin-bottom:80px !important}
+.col-md-6{padding-left:0px !important; }
+.uic_whitebg {padding-left:15px !important}
+#uicParentDiv_analystproductivitytrackertable{margin:0 -15px 0 -15px}
+#uic_chart_container_audittrailatstatementlevelchart{border:1px solid #ccc}
+#UicPaginationContainer{margin-bottom:0px !important; padding: 63px; }
+#uicParentDiv_caseinventorytable{border:0px !important}
+#uicParentDiv_casesubmissiontable{border:0px !important; }
+#uicParentDiv_documentprocessingtable{border:0px !important; height:350px !important}
+#accordianMainDiv_casesubmissiontable #UicPaginationContainer{margin-top:-50px !important}
+#accordianMainDiv_documentprocessingtable #UicPaginationContainer{margin-top:-80px !important}
+#accordianMainDiv_caseinventorytable #UicPaginationContainer{margin-top:0px !important}
+  /* for multi select css */
+  .open>.dropdown-menu{width:100% !important}
+  button.multiselect {padding:1px 10px 1px 10px !important; line-height:20px !important} 
+  #btnSearch{width:62px !important}
+  #uicParentDiv_analystproductivitytrackertable{height:260px !important}
+  .uicHeaderSpan{color:#fff !important}

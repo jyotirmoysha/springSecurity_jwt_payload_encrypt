@@ -1,0 +1,19 @@
+package com.livespread.common;
+
+import java.util.Comparator;
+import java.util.List;
+
+public class NormalzedLabelsDetailsComparator implements Comparator<String> {
+
+	private List<String> sortOrder;
+
+	public NormalzedLabelsDetailsComparator(List<String> sortOrder) {
+		this.sortOrder = sortOrder;
+	}
+
+	@Override
+	public int compare(String arg0, String arg1) {
+		return sortOrder.indexOf(arg0) - sortOrder.indexOf(arg1);
+	}
+
+}

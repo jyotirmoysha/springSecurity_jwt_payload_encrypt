@@ -1,0 +1,601 @@
+package com.livespread.rage.domain;
+
+import java.io.Serializable;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.List;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author Ganesh.Dudhade
+ */
+@Entity
+@Table(name = "LS_PDF_EXTRACTION_METADATA")
+@NamedQueries({
+		@NamedQuery(name = "findPdfExtractionMetadata", query = "SELECT EM FROM PdfExtractionMetadata EM where pemFilingId=:filingId and (isActive not like 'N' OR isActive is null) order by pemeValueOrder ASC"),
+		@NamedQuery(name = "deletefromPdfExtrMetaByFillingId", query = "DELETE FROM PdfExtractionMetadata WHERE pemPid=:pemPid"),
+		@NamedQuery(name = "deletefromPdfExtrMetaBy_FillingIdAndTableId", query = "DELETE FROM PdfExtractionMetadata WHERE pemFilingId=:filingId and pemTableId=:tableId"),
+		@NamedQuery(name = "updateGlobalValueColumnBypemPid", query = "update PdfExtractionMetadata set globalLevel=:globalLevelValue, pemStatus=:pemStatus where pemPid in (:pemPid)"),
+		@NamedQuery(name = "findPdfExtractionMetadataByPemPid", query = "SELECT EM FROM PdfExtractionMetadata EM where pemPid in(:pemIdList)"),
+		@NamedQuery(name = "findPdfExtractionMetadataBySection", query = "SELECT EM FROM PdfExtractionMetadata EM where pemFilingId=:filingId and (isActive not like 'N' OR isActive is null) and pemSection=:section order by pemeValueOrder ASC"),
+		@NamedQuery(name="deleteExtractorRuleById",query="DELETE from PdfExtractionMetadata where pemPid in (:pemPidList)"),
+		@NamedQuery(name = "updatePDFEXtractionMetdataByFilingId",query = "UPDATE PdfExtractionMetadata set pemBeginPageNo=:PEM_BEGIN_PAGENO,pemBeginKeyword=:PEM_BEGIN_KEYWORD,"
+				+ "pemendPageNo=:PEM_END_PAGENO,pemendKeyword=:PEM_END_KEYWORD,pemRowSegmentationType=:PEM_ROW_SEGMENTATION_TYPE,"
+				+ "pemColumnNumberToSplit=:PEM_COLUMN_NUMBER_TO_SPLIT,pemFilingId=:PEM_FILINGID,pemSection=:PEM_SECTION,"
+				+ "pemeValueOrder=:PEM_VALUE_ORDER,modifiedBy=:MODIFIED_BY,modifiedDate=:MODIFY_DATE,extractionType=:EXTRACTION_TYPE,extractionArea=:EXTRACTION_AREA,rank=:Rank,topic=:TOPIC where pemPid=:PEM_PID")
+		})
+
+public class PdfExtractionMetadata implements BaseEntity,Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+//	@GeneratedValue(generator = "sequence")
+//	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "seq_pem_pid") })
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "PEM_PID")
+	private Integer pemPid;
+
+	@Column(name = "PEM_FILINGID")
+	private Integer pemFilingId;
+
+	@Column(name = "PEM_SECTION")
+	private String pemSection;
+
+	@Column(name = "PEM_BEGIN_PAGENO")
+	private Integer pemBeginPageNo;
+
+	@Column(name = "PEM_BEGIN_KEYWORD")
+	private String pemBeginKeyword;
+
+	@Column(name = "PEM_END_PAGENO")
+	private Integer pemendPageNo;
+
+	@Column(name = "PEM_END_KEYWORD")
+	private String pemendKeyword;
+
+	@Column(name = "PEM_VALUE_ORDER")
+	private Integer pemeValueOrder;
+	
+	@Column(name = "PEM_TABLE_ID")
+	private Integer pemTableId;
+	    
+	@Column(name = "PEM_EID")
+	private String pemEid;
+	
+	@Column(name = "PEM_SCOPE")
+	private String pemScope;
+
+	@Column(name = "PEM_SUBSECTION")
+	private String pemSubsection;
+	
+	@Column(name = "GLOBAL_LEVEL")
+	private String globalLevel;
+	
+	@Column(name = "PEM_ROW_SEGMENTATION_TYPE")
+	private String pemRowSegmentationType;
+
+	@Column(name = "PEM_COLUMN_NUMBER_TO_SPLIT")
+	private String pemColumnNumberToSplit;
+	
+	@Column(name = "CREATED_BY", updatable = false)
+	private String createdBy;
+
+	@Column(name = "MODIFIED_BY")
+	private String modifiedBy;
+	
+	@Column(name = "CREATE_DATE", updatable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date createdDate;
+
+	@Column(name = "MODIFY_DATE")
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date modifiedDate;
+	
+	@Column(name = "NOTES_SECTION")
+	private String noteSection;
+	
+	@Column(name = "PO_ID_PO_AS_REP_LABEL")
+	private String poIdPoAsRepLabel;
+	  
+	@Column(name = "TOPIC")
+	private String topic;
+
+	@Column(name = "EXTRACTION_TYPE")
+	private String extractionType;
+
+	@Column(name = "EXTRACTION_AREA")
+	private String extractionArea;
+	
+	@Column(name = "IS_ACTIVE", insertable=false, updatable = false, nullable = false, columnDefinition = "char(1) default 'Y'") 
+	private String isActive;
+	
+	
+	@Column(name = "Rank")
+	private Integer rank;
+	
+	@Column(name = "STATUS")
+	private String pemStatus;
+	
+	@Column(name = "LANGUAGE")
+	private String language;
+	
+	@Transient 
+	private String operation;
+	@Transient 
+	private String status;
+	@Transient 
+	private Integer parserId;  
+	@Transient 
+	private Integer transactionId;
+	
+	@Transient 
+	private List<Integer> poIdPoAsRepLabelList;  
+	@Transient 
+	private List<String> noteSectionList;
+
+	
+	
+	public String getPemStatus() {
+		return pemStatus;
+	}
+
+	public void setPemStatus(String pemStatus) {
+		this.pemStatus = pemStatus;
+	}
+
+	public Integer getRank() {
+		return rank;
+	}
+
+	public void setRank(Integer rank) {
+		this.rank = rank;
+	}
+
+	public String getIsActive() {
+		return isActive;
+	}
+
+	public void setIsActive(String isActive) {
+		this.isActive = isActive;
+	}
+
+	public String getTopic() {
+		return topic;
+	}
+
+	public void setTopic(String topic) {
+		this.topic = topic;
+	}
+
+	public String getExtractionType() {
+		return extractionType;
+	}
+
+	public void setExtractionType(String extractionType) {
+		this.extractionType = extractionType;
+	}
+
+	public String getExtractionArea() {
+		return extractionArea;
+	}
+
+	public void setExtractionArea(String extractionArea) {
+		this.extractionArea = extractionArea;
+	}
+
+	public Integer getTransactionId() {
+		return transactionId;
+	}
+
+	public void setTransactionId(Integer transactionId) {
+		this.transactionId = transactionId;
+	}
+
+	public Integer getParserId() {
+		return parserId;
+	}
+
+	public void setParserId(Integer parserId) {
+		this.parserId = parserId;
+	}
+
+	@PrePersist
+	public void onCreate() {
+		this.createdDate = new java.util.Date();
+	}
+
+	@PreUpdate
+	public void onUpdate() {
+		this.modifiedDate = new java.util.Date();
+	}
+
+	public Integer getPemeValueOrder() {
+		return pemeValueOrder;
+	}
+
+	public void setPemeValueOrder(Integer pemeValueOrder) {
+		this.pemeValueOrder = pemeValueOrder;
+	}
+
+	public Integer getPemPid() {
+		return pemPid;
+	}
+
+	public String getPemendKeyword() {
+		return pemendKeyword;
+	}
+
+	public void setPemendKeyword(String pemendKeyword) {
+		this.pemendKeyword = pemendKeyword;
+	}
+
+	public void setPemPid(Integer pemPid) {
+		this.pemPid = pemPid;
+	}
+
+	public Integer getPemFilingId() {
+		return pemFilingId;
+	}
+
+	public void setPemFilingId(Integer pemFilingId) {
+		this.pemFilingId = pemFilingId;
+	}
+
+	public String getPemSection() {
+		return pemSection;
+	}
+
+	public void setPemSection(String pemSection) {
+		this.pemSection = pemSection;
+	}
+
+	public Integer getPemBeginPageNo() {
+		return pemBeginPageNo;
+	}
+
+	public void setPemBeginPageNo(Integer pemBeginPageNo) {
+		this.pemBeginPageNo = pemBeginPageNo;
+	}
+
+	public String getPemBeginKeyword() {
+		return pemBeginKeyword;
+	}
+
+	public void setPemBeginKeyword(String pemBeginKeyword) {
+		this.pemBeginKeyword = pemBeginKeyword;
+	}
+
+	public Integer getPemendPageNo() {
+		return pemendPageNo;
+	}
+
+	public void setPemendPageNo(Integer pemendPageNo) {
+		this.pemendPageNo = pemendPageNo;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public String getModifiedBy() {
+		return modifiedBy;
+	}
+
+	public void setModifiedBy(String modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public Date getModifiedDate() {
+		return modifiedDate;
+	}
+
+	public void setModifiedDate(Date modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+	public void setModifiedDate(Timestamp modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+	
+	
+	public Integer getPemTableId() {
+		return pemTableId;
+	}
+
+	public void setPemTableId(Integer pemTableId) {
+		this.pemTableId = pemTableId;
+	}
+
+	public String getPemEid() {
+		return pemEid;
+	}
+
+	public void setPemEid(String pemEid) {
+		this.pemEid = pemEid;
+	}
+	public String getOperation() {
+		return operation;
+	}
+
+	public void setOperation(String operation) {
+		this.operation = operation;
+	}
+	
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	
+	public String getPemScope() {
+		return pemScope;
+	}
+
+	public void setPemScope(String pemScope) {
+		this.pemScope = pemScope;
+	}
+
+	public String getPemSubsection() {
+		return pemSubsection;
+	}
+
+	public void setPemSubsection(String pemSubsection) {
+		this.pemSubsection = pemSubsection;
+	}
+
+	public String getGlobalLevel() {
+		return globalLevel;
+	}
+
+	public void setGlobalLevel(String globalLevel) {
+		this.globalLevel = globalLevel;
+	}
+
+	public String getPemRowSegmentationType() {
+		return pemRowSegmentationType;
+	}
+
+	public void setPemRowSegmentationType(String pemRowSegmentationType) {
+		this.pemRowSegmentationType = pemRowSegmentationType;
+	}
+
+	public String getPemColumnNumberToSplit() {
+		return pemColumnNumberToSplit;
+	}
+
+	public void setPemColumnNumberToSplit(String pemColumnNumberToSplit) {
+		this.pemColumnNumberToSplit = pemColumnNumberToSplit;
+	}
+
+	
+	public String getNoteSection() {
+		return noteSection;
+	}
+
+	public void setNoteSection(String noteSection) {
+		this.noteSection = noteSection;
+	}
+
+	public String getPoIdPoAsRepLabel() {
+		return poIdPoAsRepLabel;
+	}
+
+	public void setPoIdPoAsRepLabel(String poIdPoAsRepLabel) {
+		this.poIdPoAsRepLabel = poIdPoAsRepLabel;
+	}
+
+	public List<Integer> getPoIdPoAsRepLabelList() {
+		return poIdPoAsRepLabelList;
+	}
+
+	public void setPoIdPoAsRepLabelList(List<Integer> poIdPoAsRepLabelList) {
+		this.poIdPoAsRepLabelList = poIdPoAsRepLabelList;
+	}
+
+	public List<String> getNoteSectionList() {
+		return noteSectionList;
+	}
+
+	public void setNoteSectionList(List<String> noteSectionList) {
+		this.noteSectionList = noteSectionList;
+	}
+	
+	
+	public String getLanguage() {
+		return language;
+	}
+
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+	
+	/*@Override
+	public String toString() {
+		
+		return "PdfExtractionMetadata [pemPid=" + pemPid + ", pemFilingId="
+				+ pemFilingId + ", pemSection=" + pemSection
+				+ ", pemBeginPageNo=" + pemBeginPageNo + ", pemBeginKeyword="
+				+ pemBeginKeyword + ", pemendPageNo=" + pemendPageNo
+				+ ", pemendKeyword=" + pemendKeyword + ", pemeValueOrder="
+				+ pemeValueOrder + ", pemTableId=" + pemTableId
+				+ ", createdBy=" + createdBy + ", modifiedBy=" + modifiedBy
+				+ ", createdDate=" + createdDate + ", modifiedDate="
+				+ modifiedDate + "]";
+	}*/
+
+	
+	
+	
+
+	
+
+	@Override
+	public boolean equals(Object obj) {
+		
+		PdfExtractionMetadata other = (PdfExtractionMetadata) obj;
+		if (pemBeginKeyword == null) {
+			if (other.pemBeginKeyword != null)
+				return false;
+		} else if (!pemBeginKeyword.equals(other.pemBeginKeyword))
+			return false;
+		if (pemBeginPageNo == null) {
+			if (other.pemBeginPageNo != null)
+				return false;
+		} else if (!pemBeginPageNo.equals(other.pemBeginPageNo))
+			return false;
+	
+		if (pemendKeyword == null) {
+			if (other.pemendKeyword != null)
+				return false;
+		} else if (!pemendKeyword.equals(other.pemendKeyword))
+			return false;
+		if (pemendPageNo == null) {
+			if (other.pemendPageNo != null)
+				return false;
+		} else if (!pemendPageNo.equals(other.pemendPageNo))
+			return false;
+	
+		
+		if (pemScope == null) {
+			if (other.pemScope != null)
+				return false;
+		} else if (!pemScope.equals(other.pemScope))
+			return false;
+	
+		
+		if (pemSubsection == null) {
+			if (other.pemSubsection != null)
+				return false;
+		} else if (!pemSubsection.equals(other.pemSubsection))
+			return false;
+	
+		
+		if (pemRowSegmentationType == null) {
+			if (other.pemRowSegmentationType != null)
+				return false;
+		} else if (!pemRowSegmentationType.equals(other.pemRowSegmentationType))
+			return false;
+	
+		
+		if (pemColumnNumberToSplit == null) {
+			if (other.pemColumnNumberToSplit != null)
+				return false;
+		} else if (!pemColumnNumberToSplit.equals(other.pemColumnNumberToSplit))
+			return false;
+		
+		if (noteSection == null) {
+			if (other.noteSection != null)
+				return false;
+		} else if (!noteSection.equals(other.noteSection))
+			return false;
+		
+		if (poIdPoAsRepLabel == null) {
+			if (other.poIdPoAsRepLabel != null)
+				return false;
+		} else if (!poIdPoAsRepLabel.equals(other.poIdPoAsRepLabel))
+			return false;
+		
+		if (topic == null) {
+			if (other.topic != null)
+				return false;
+		} else if (!topic.equals(other.topic))
+			return false;
+		
+		if (extractionType == null) {
+			if (other.extractionType != null)
+				return false;
+		} else if (!extractionType.equals(other.extractionType))
+			return false;
+		
+		
+		if (extractionArea == null) {
+			if (other.extractionArea != null)
+				return false;
+		} else if (!extractionArea.equals(other.extractionArea))
+			return false;
+		
+		if (rank == null) {
+			if (other.rank != null)
+				return false;
+		} else if (!rank.equals(other.rank))
+			return false;
+		
+		
+		
+		return true;
+	
+	}
+	
+	
+	@Override
+	public String toString() {
+		return "PdfExtractionMetadata [pemPid=" + pemPid + ", pemFilingId="
+				+ pemFilingId + ", pemSection=" + pemSection
+				+ ", pemBeginPageNo=" + pemBeginPageNo + ", pemBeginKeyword="
+				+ pemBeginKeyword + ", pemendPageNo=" + pemendPageNo
+				+ ", pemendKeyword=" + pemendKeyword + ", pemeValueOrder="
+				+ pemeValueOrder + ", pemTableId=" + pemTableId + ", pemEid="
+				+ pemEid + ", pemScope=" + pemScope + ", pemSubsection="
+				+ pemSubsection + ", globalLevel=" + globalLevel
+				+ ", pemRowSegmentationType=" + pemRowSegmentationType
+				+ ", pemColumnNumberToSplit=" + pemColumnNumberToSplit
+				+ ", createdBy=" + createdBy + ", modifiedBy=" + modifiedBy
+				+ ", createdDate=" + createdDate + ", modifiedDate="
+				+ modifiedDate + ", noteSection=" + noteSection
+				+ ", poIdPoAsRepLabel=" + poIdPoAsRepLabel + ", operation="
+				+ operation + ", status=" + status + ", parserId=" + parserId
+				+ ", transactionId=" + transactionId
+				+ ", topic=" + topic
+				+ ", extractionType=" + extractionType
+				+ ", extractionArea=" + extractionArea
+				+ ", rank=" + rank
+				+ "]";
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.RAGE;
+	}
+
+}

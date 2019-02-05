@@ -1,0 +1,259 @@
+package com.livespread.command;
+
+import java.io.Serializable;
+import java.util.List;
+
+/**
+ * @author Ganesh.Dudhade
+ *
+ */
+public class NormalisedLabelAndValues implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private List<NormalizedDetails> list;
+	private String label;
+	private String displayFormat;
+	private String header;
+	private Integer ni_item;
+	/* added by Sai for clickback and normalization value breakups*/
+	private String isRefPoId;
+	private String isMultiRefPoId;
+	private Integer nivId;
+	private String clickbackExists;
+	private Integer poId;
+	private String coordinateColumn;
+	private String accountId;
+	private String accountDisplayLongDs;
+	private String labelHierarchy;
+	private String coordinates;
+	private String asRepLabel;
+	private String isValueMatch;
+	private Integer uploadId;
+	private Integer period;
+	private Integer templateId;
+	private String category;
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+	public Integer getTemplateId() {
+		return templateId;
+	}
+
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+
+	public Integer getPeriod() {
+		return period;
+	}
+
+	public void setPeriod(Integer period) {
+		this.period = period;
+	}
+
+	public Integer getNi_item() {
+		return ni_item;
+	}
+
+	public void setNi_item(Integer ni_item) {
+		this.ni_item = ni_item;
+	}
+
+	public List<NormalizedDetails> getList() {
+		return list;
+	}
+
+	public void setList(List<NormalizedDetails> list) {
+		this.list = list;
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+	public String getDisplayFormat() {
+		return displayFormat;
+	}
+
+	public void setDisplayFormat(String displayFormat) {
+		this.displayFormat = displayFormat;
+	}
+
+	public String getHeader() {
+		return header;
+	}
+
+	public void setHeader(String header) {
+		this.header = header;
+	}
+
+	/**
+	 * @return the isRefPoId
+	 */
+	public String getIsRefPoId() {
+		return isRefPoId;
+	}
+
+	/**
+	 * @param isRefPoId the isRefPoId to set
+	 */
+	public void setIsRefPoId(String isRefPoId) {
+		this.isRefPoId = isRefPoId;
+	}
+
+	/**
+	 * @return the isMultiRefPoId
+	 */
+	public String getIsMultiRefPoId() {
+		return isMultiRefPoId;
+	}
+
+	/**
+	 * @param isMultiRefPoId the isMultiRefPoId to set
+	 */
+	public void setIsMultiRefPoId(String isMultiRefPoId) {
+		this.isMultiRefPoId = isMultiRefPoId;
+	}
+
+	/**
+	 * @return the nivId
+	 */
+	public Integer getNivId() {
+		return nivId;
+	}
+
+	/**
+	 * @param nivId the nivId to set
+	 */
+	public void setNivId(Integer nivId) {
+		this.nivId = nivId;
+	}
+
+	/**
+	 * @return the clickbackExists
+	 */
+	public String getClickbackExists() {
+		return clickbackExists;
+	}
+
+	/**
+	 * @param clickbackExists the clickbackExists to set
+	 */
+	public void setClickbackExists(String clickbackExists) {
+		this.clickbackExists = clickbackExists;
+	}
+
+	/**
+	 * @return the poId
+	 */
+	public Integer getPoId() {
+		return poId;
+	}
+
+	/**
+	 * @param poId the poId to set
+	 */
+	public void setPoId(Integer poId) {
+		this.poId = poId;
+	}
+
+	/**
+	 * @return the coordinateColumn
+	 */
+	public String getCoordinateColumn() {
+		return coordinateColumn;
+	}
+
+	/**
+	 * @param coordinateColumn the coordinateColumn to set
+	 */
+	public void setCoordinateColumn(String coordinateColumn) {
+		this.coordinateColumn = coordinateColumn;
+	}
+
+	public String getAccountId() {
+		return accountId;
+	}
+
+	public void setAccountId(String accountId) {
+		this.accountId = accountId;
+	}
+
+	public String getAccountDisplayLongDs() {
+		return accountDisplayLongDs;
+	}
+
+	public void setAccountDisplayLongDs(String accountDisplayLongDs) {
+		this.accountDisplayLongDs = accountDisplayLongDs;
+	}
+
+	public String getLabelHierarchy() {
+		return labelHierarchy;
+	}
+
+	public void setLabelHierarchy(String labelHierarchy) {
+		this.labelHierarchy = labelHierarchy;
+	}
+
+	/**
+	 * @return the coordinates
+	 */
+	public String getCoordinates() {
+		return coordinates;
+	}
+
+	/**
+	 * @param coordinates the coordinates to set
+	 */
+	public void setCoordinates(String coordinates) {
+		this.coordinates = coordinates;
+	}
+	
+	public String getAsRepLabel() {
+		return asRepLabel;
+	}
+
+	public void setAsRepLabel(String asRepLabel) {
+		this.asRepLabel = asRepLabel;
+	}
+
+	/**
+	 * @return the isValueMatch
+	 */
+	public String getIsValueMatch() {
+		return isValueMatch;
+	}
+
+	/**
+	 * @param isValueMatch the isValueMatch to set
+	 */
+	public void setIsValueMatch(String isValueMatch) {
+		this.isValueMatch = isValueMatch;
+	}
+
+	/**
+	 * @return the uploadId
+	 */
+	public Integer getUploadId() {
+		return uploadId;
+	}
+
+	/**
+	 * @param uploadId the uploadId to set
+	 */
+	public void setUploadId(Integer uploadId) {
+		this.uploadId = uploadId;
+	}
+}

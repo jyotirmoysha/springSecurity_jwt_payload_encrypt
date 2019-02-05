@@ -1,0 +1,1092 @@
+2019-01-29 10:25:21,829 [Worker-212] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.livespread:livespread:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\LSAPI_FOR_TD\pom.xml.
+2019-01-29 10:25:26,356 [Worker-212] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/org/apache/derby/derby/10.14.2.0/derby-10.14.2.0.pom
+2019-01-29 10:26:12,688 [Worker-212] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /LSAPI_FOR_TD/src/main/java
+2019-01-29 10:26:12,692 [Worker-212] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /LSAPI_FOR_TD/src/main/resources
+2019-01-29 10:26:12,772 [Worker-212] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /LSAPI_FOR_TD/src/main/resources
+2019-01-29 10:26:12,838 [Worker-212] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /LSAPI_FOR_TD/src/test/java
+2019-01-29 10:26:18,702 [Worker-212] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Imported and configured 1 project(s) in 89 sec
+2019-01-29 10:26:18,707 [Worker-212] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update started
+2019-01-29 10:26:20,822 [Worker-212] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.livespread:livespread:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\LSAPI_FOR_TD\pom.xml.
+2019-01-29 10:26:24,848 [Worker-212] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /LSAPI_FOR_TD/src/main/java
+2019-01-29 10:26:24,848 [Worker-212] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /LSAPI_FOR_TD/src/main/resources
+2019-01-29 10:26:24,852 [Worker-212] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /LSAPI_FOR_TD/src/main/resources
+2019-01-29 10:26:24,858 [Worker-212] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /LSAPI_FOR_TD/src/test/java
+2019-01-29 10:26:26,559 [Worker-212] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update completed: 7 sec
+2019-01-29 10:26:42,289 [Worker-244] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:26:42,311 [Worker-244] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 10:26:42,359 [Worker-244] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:26:42,365 [Worker-244] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:26:42,365 [Worker-244] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 10:31:16,324 [Worker-225] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\LSAPI_FOR_TD
+2019-01-29 10:31:16,329 [Worker-225] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-01-29 10:32:49,451 [Worker-261] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\LSAPI_FOR_TD
+2019-01-29 10:32:49,451 [Worker-261] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-01-29 10:33:24,803 [Worker-263] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:33:24,808 [Worker-263] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 10:33:24,811 [Worker-263] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:33:24,814 [Worker-263] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:33:24,814 [Worker-263] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 10:33:51,827 [Worker-263] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update started
+2019-01-29 10:33:52,796 [Worker-263] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.livespread:livespread:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\LSAPI_FOR_TD\pom.xml.
+2019-01-29 10:33:53,334 [Worker-263] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /LSAPI_FOR_TD/src/main/java
+2019-01-29 10:33:53,335 [Worker-263] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /LSAPI_FOR_TD/src/main/resources
+2019-01-29 10:33:53,335 [Worker-263] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /LSAPI_FOR_TD/src/main/resources
+2019-01-29 10:33:53,336 [Worker-263] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /LSAPI_FOR_TD/src/test/java
+2019-01-29 10:33:53,608 [Worker-263] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update completed: 1 sec
+2019-01-29 10:33:54,354 [Worker-225] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:33:54,355 [Worker-225] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 10:33:54,374 [Worker-225] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:33:54,378 [Worker-225] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:33:54,379 [Worker-225] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 10:34:07,487 [Worker-263] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\LSAPI_FOR_TD
+2019-01-29 10:34:07,487 [Worker-263] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-01-29 10:34:11,854 [Worker-263] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:34:11,857 [Worker-263] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 10:34:11,860 [Worker-263] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:34:11,862 [Worker-263] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:34:11,862 [Worker-263] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 10:35:39,163 [Worker-249] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:35:39,164 [Worker-249] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:35:39,165 [Worker-249] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:35:39,170 [Worker-249] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:35:39,171 [Worker-249] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 10:35:51,004 [Worker-266] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\LSAPI_FOR_TD
+2019-01-29 10:35:51,004 [Worker-266] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-01-29 10:36:26,523 [Worker-266] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:36:26,525 [Worker-266] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 10:36:26,530 [Worker-266] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:36:26,535 [Worker-266] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:36:26,536 [Worker-266] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 10:41:52,245 [Worker-267] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:41:52,246 [Worker-267] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 10:41:52,249 [Worker-267] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:41:52,252 [Worker-267] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:41:52,252 [Worker-267] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 10:44:07,386 [Worker-269] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.example:course-api-data:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\course-api-data\pom.xml.
+2019-01-29 10:44:12,453 [Worker-269] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar
+2019-01-29 10:44:12,865 [Worker-269] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar
+2019-01-29 10:44:17,566 [Worker-269] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:44:17,567 [Worker-269] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 10:44:17,577 [Worker-269] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:44:17,580 [Worker-269] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:44:17,580 [Worker-269] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\course-api-data\src\test\resources
+2019-01-29 10:44:25,289 [Worker-269] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:44:25,291 [Worker-269] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 10:44:25,294 [Worker-269] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:44:25,296 [Worker-269] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:44:25,297 [Worker-269] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\course-api-data\src\test\resources
+2019-01-29 10:46:25,631 [Worker-261] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:46:25,632 [Worker-261] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 10:46:25,636 [Worker-261] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:46:25,639 [Worker-261] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:46:25,639 [Worker-261] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 10:48:28,359 [Worker-272] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:48:28,361 [Worker-272] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 10:48:28,364 [Worker-272] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:48:28,367 [Worker-272] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:48:28,367 [Worker-272] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 10:48:59,574 [Worker-274] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:48:59,576 [Worker-274] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 10:48:59,579 [Worker-274] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:48:59,583 [Worker-274] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:48:59,583 [Worker-274] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 10:49:24,872 [Worker-272] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:49:24,873 [Worker-272] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 10:49:24,876 [Worker-272] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:49:24,879 [Worker-272] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:49:24,879 [Worker-272] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 10:49:35,230 [Worker-274] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:49:35,230 [Worker-274] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 10:49:35,233 [Worker-274] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:49:35,235 [Worker-274] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:49:35,235 [Worker-274] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 10:49:56,526 [Worker-269] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:49:56,527 [Worker-269] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 10:49:56,530 [Worker-269] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:49:56,532 [Worker-269] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:49:56,533 [Worker-269] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\course-api-data\src\test\resources
+2019-01-29 10:57:17,062 [Worker-279] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.livespread:livespread:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\LSAPI_FOR_TD\pom.xml.
+2019-01-29 10:57:17,488 [Worker-279] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:57:17,489 [Worker-279] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:57:17,490 [Worker-279] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:57:17,492 [Worker-279] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:57:17,493 [Worker-279] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 10:57:19,395 [Worker-281] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:57:19,397 [Worker-281] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 10:57:19,399 [Worker-281] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:57:19,401 [Worker-281] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:57:19,401 [Worker-281] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 10:57:43,553 [Worker-274] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\LSAPI_FOR_TD
+2019-01-29 10:57:43,554 [Worker-274] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-01-29 10:57:47,813 [Worker-277] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:57:47,818 [Worker-277] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 10:57:47,826 [Worker-277] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:57:47,829 [Worker-277] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:57:47,829 [Worker-277] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 10:58:01,328 [Worker-282] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:58:01,330 [Worker-282] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:58:01,332 [Worker-282] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:58:01,338 [Worker-282] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:58:01,340 [Worker-282] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 10:58:01,390 [Worker-282] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:58:01,391 [Worker-282] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:58:01,392 [Worker-282] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:58:01,397 [Worker-282] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:58:01,397 [Worker-282] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\course-api-data\src\test\resources
+2019-01-29 10:58:16,487 [Worker-282] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update started
+2019-01-29 10:58:16,775 [Worker-282] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.livespread:livespread:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\LSAPI_FOR_TD\pom.xml.
+2019-01-29 10:58:17,080 [Worker-282] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /LSAPI_FOR_TD/src/main/java
+2019-01-29 10:58:17,081 [Worker-282] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /LSAPI_FOR_TD/src/main/resources
+2019-01-29 10:58:17,082 [Worker-282] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /LSAPI_FOR_TD/src/main/resources
+2019-01-29 10:58:17,083 [Worker-282] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /LSAPI_FOR_TD/src/test/java
+2019-01-29 10:58:17,302 [Worker-282] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update completed: 0 sec
+2019-01-29 10:58:17,702 [Worker-274] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:58:17,702 [Worker-274] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 10:58:17,704 [Worker-274] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:58:17,707 [Worker-274] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:58:17,707 [Worker-274] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 10:58:26,954 [Worker-279] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\LSAPI_FOR_TD
+2019-01-29 10:58:26,954 [Worker-279] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B clean
+2019-01-29 10:58:30,184 [Worker-283] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:58:30,188 [Worker-283] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 10:58:30,196 [Worker-283] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 10:58:30,201 [Worker-283] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 10:58:30,202 [Worker-283] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 11:05:22,046 [Worker-287] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:05:22,047 [Worker-287] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 11:05:22,049 [Worker-287] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 11:05:22,051 [Worker-287] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:05:22,052 [Worker-287] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 11:06:46,601 [Worker-288] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update started
+2019-01-29 11:06:46,902 [Worker-288] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.livespread:livespread:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\LSAPI_FOR_TD\pom.xml.
+2019-01-29 11:06:47,517 [Worker-288] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /LSAPI_FOR_TD/src/main/java
+2019-01-29 11:06:47,517 [Worker-288] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /LSAPI_FOR_TD/src/main/resources
+2019-01-29 11:06:47,517 [Worker-288] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /LSAPI_FOR_TD/src/main/resources
+2019-01-29 11:06:47,518 [Worker-288] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /LSAPI_FOR_TD/src/test/java
+2019-01-29 11:06:47,679 [Worker-288] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update completed: 1 sec
+2019-01-29 11:06:48,193 [Worker-291] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:06:48,193 [Worker-291] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 11:06:48,195 [Worker-291] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 11:06:48,197 [Worker-291] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:06:48,197 [Worker-291] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 11:10:22,701 [Worker-296] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.livespread:livespread:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\LSAPI_FOR_TD\pom.xml.
+2019-01-29 11:10:23,076 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:10:23,077 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 11:10:23,077 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 11:10:23,079 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:10:23,080 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 11:10:37,319 [Worker-296] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.livespread:livespread:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\LSAPI_FOR_TD\pom.xml.
+2019-01-29 11:10:37,659 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:10:37,659 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 11:10:37,660 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 11:10:37,662 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:10:37,662 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 11:10:39,394 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:10:39,395 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 11:10:39,398 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 11:10:39,401 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:10:39,401 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 11:10:43,127 [Worker-298] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.livespread:livespread:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\LSAPI_FOR_TD\pom.xml.
+2019-01-29 11:10:43,404 [Worker-298] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:10:43,404 [Worker-298] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 11:10:43,404 [Worker-298] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 11:10:43,407 [Worker-298] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:10:43,407 [Worker-298] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 11:10:56,076 [Worker-290] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\LSAPI_FOR_TD
+2019-01-29 11:10:56,076 [Worker-290] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-01-29 11:11:00,171 [Worker-290] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:11:00,173 [Worker-290] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 11:11:00,178 [Worker-290] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 11:11:00,181 [Worker-290] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:11:00,182 [Worker-290] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 11:11:20,048 [Worker-296] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\LSAPI_FOR_TD
+2019-01-29 11:11:20,048 [Worker-296] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-01-29 11:11:24,534 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:11:24,537 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 11:11:24,544 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 11:11:24,615 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:11:24,615 [Worker-296] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 11:11:51,108 [Worker-290] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update started
+2019-01-29 11:11:51,385 [Worker-290] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.livespread:livespread:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\LSAPI_FOR_TD\pom.xml.
+2019-01-29 11:11:51,767 [Worker-290] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /LSAPI_FOR_TD/src/main/java
+2019-01-29 11:11:51,767 [Worker-290] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /LSAPI_FOR_TD/src/main/resources
+2019-01-29 11:11:51,768 [Worker-290] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /LSAPI_FOR_TD/src/main/resources
+2019-01-29 11:11:51,768 [Worker-290] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /LSAPI_FOR_TD/src/test/java
+2019-01-29 11:11:51,932 [Worker-290] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update completed: 0 sec
+2019-01-29 11:11:52,361 [Worker-299] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:11:52,362 [Worker-299] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 11:11:52,364 [Worker-299] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 11:11:52,366 [Worker-299] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:11:52,366 [Worker-299] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 11:12:04,130 [Worker-296] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\LSAPI_FOR_TD
+2019-01-29 11:12:04,130 [Worker-296] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-01-29 11:12:32,930 [Worker-290] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:12:32,933 [Worker-290] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 11:12:32,940 [Worker-290] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 11:12:32,944 [Worker-290] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:12:32,945 [Worker-290] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 11:13:01,703 [Worker-297] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:13:01,704 [Worker-297] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 11:13:01,707 [Worker-297] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 11:13:01,710 [Worker-297] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:13:01,710 [Worker-297] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 11:23:24,254 [Worker-303] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:23:24,287 [Worker-303] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 11:23:24,290 [Worker-303] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 11:23:24,293 [Worker-303] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:23:24,293 [Worker-303] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 11:28:21,481 [Worker-307] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:28:21,483 [Worker-307] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 11:28:21,486 [Worker-307] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 11:28:21,489 [Worker-307] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 11:28:21,489 [Worker-307] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 14:34:48,923 [Worker-344] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 14:34:49,494 [Worker-344] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 14:34:49,545 [Worker-344] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 14:34:49,552 [Worker-344] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 14:34:49,554 [Worker-344] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 14:40:20,148 [Worker-4] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.livespread:livespread:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\LSAPI_FOR_TD\pom.xml.
+2019-01-29 14:40:31,796 [Worker-4] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.example:course-api-data:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\course-api-data\pom.xml.
+2019-01-29 14:42:18,208 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 14:42:18,214 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 14:42:18,229 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 14:42:18,234 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 14:42:18,234 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-01-29 14:42:30,690 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 14:42:30,691 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-29 14:42:30,698 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-29 14:42:30,705 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-29 14:42:30,705 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\course-api-data\src\test\resources
+2019-01-30 15:57:52,451 [Worker-302] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 15:57:53,018 [Worker-302] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 15:57:53,019 [Worker-302] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 15:57:53,022 [Worker-302] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 15:57:53,041 [Worker-302] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\course-api-data\src\test\resources
+2019-01-30 16:28:06,408 [Worker-317] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\jwt-security-example
+2019-01-30 16:28:06,463 [Worker-317] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -B install
+2019-01-30 22:35:39,810 [Worker-438] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-01-30 22:35:42,123 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-security/2.1.2.RELEASE/spring-boot-starter-security-2.1.2.RELEASE.pom
+2019-01-30 22:35:42,417 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-security/2.1.2.RELEASE/spring-boot-starter-security-2.1.2.RELEASE.pom
+2019-01-30 22:35:43,224 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/springframework/security/spring-security-config/5.1.3.RELEASE/spring-security-config-5.1.3.RELEASE.pom
+2019-01-30 22:35:43,629 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/security/spring-security-config/5.1.3.RELEASE/spring-security-config-5.1.3.RELEASE.pom
+2019-01-30 22:35:44,067 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/springframework/security/spring-security-core/5.1.3.RELEASE/spring-security-core-5.1.3.RELEASE.pom
+2019-01-30 22:35:44,552 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/security/spring-security-core/5.1.3.RELEASE/spring-security-core-5.1.3.RELEASE.pom
+2019-01-30 22:35:44,740 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/springframework/security/spring-security-web/5.1.3.RELEASE/spring-security-web-5.1.3.RELEASE.pom
+2019-01-30 22:35:44,881 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/security/spring-security-web/5.1.3.RELEASE/spring-security-web-5.1.3.RELEASE.pom
+2019-01-30 22:35:45,271 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-web/2.1.2.RELEASE/spring-boot-starter-web-2.1.2.RELEASE.pom
+2019-01-30 22:35:45,486 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-web/2.1.2.RELEASE/spring-boot-starter-web-2.1.2.RELEASE.pom
+2019-01-30 22:35:45,681 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-json/2.1.2.RELEASE/spring-boot-starter-json-2.1.2.RELEASE.pom
+2019-01-30 22:35:45,892 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-json/2.1.2.RELEASE/spring-boot-starter-json-2.1.2.RELEASE.pom
+2019-01-30 22:35:46,090 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.9.8/jackson-databind-2.9.8.pom
+2019-01-30 22:35:46,302 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.9.8/jackson-databind-2.9.8.pom
+2019-01-30 22:35:46,500 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/com/fasterxml/jackson/jackson-base/2.9.8/jackson-base-2.9.8.pom
+2019-01-30 22:35:46,712 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/com/fasterxml/jackson/jackson-base/2.9.8/jackson-base-2.9.8.pom
+2019-01-30 22:35:47,115 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/com/fasterxml/jackson/core/jackson-core/2.9.8/jackson-core-2.9.8.pom
+2019-01-30 22:35:47,356 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/com/fasterxml/jackson/core/jackson-core/2.9.8/jackson-core-2.9.8.pom
+2019-01-30 22:35:47,523 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.9.8/jackson-datatype-jdk8-2.9.8.pom
+2019-01-30 22:35:47,746 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.9.8/jackson-datatype-jdk8-2.9.8.pom
+2019-01-30 22:35:47,921 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/com/fasterxml/jackson/module/jackson-modules-java8/2.9.8/jackson-modules-java8-2.9.8.pom
+2019-01-30 22:35:48,147 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/com/fasterxml/jackson/module/jackson-modules-java8/2.9.8/jackson-modules-java8-2.9.8.pom
+2019-01-30 22:35:48,343 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.9.8/jackson-datatype-jsr310-2.9.8.pom
+2019-01-30 22:35:48,489 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.9.8/jackson-datatype-jsr310-2.9.8.pom
+2019-01-30 22:35:48,650 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/com/fasterxml/jackson/module/jackson-module-parameter-names/2.9.8/jackson-module-parameter-names-2.9.8.pom
+2019-01-30 22:35:48,861 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/com/fasterxml/jackson/module/jackson-module-parameter-names/2.9.8/jackson-module-parameter-names-2.9.8.pom
+2019-01-30 22:35:49,059 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-tomcat/2.1.2.RELEASE/spring-boot-starter-tomcat-2.1.2.RELEASE.pom
+2019-01-30 22:35:49,294 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-tomcat/2.1.2.RELEASE/spring-boot-starter-tomcat-2.1.2.RELEASE.pom
+2019-01-30 22:35:49,474 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/apache/tomcat/embed/tomcat-embed-core/9.0.14/tomcat-embed-core-9.0.14.pom
+2019-01-30 22:35:49,627 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/apache/tomcat/embed/tomcat-embed-core/9.0.14/tomcat-embed-core-9.0.14.pom
+2019-01-30 22:35:49,878 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/apache/tomcat/embed/tomcat-embed-el/9.0.14/tomcat-embed-el-9.0.14.pom
+2019-01-30 22:35:50,020 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/apache/tomcat/embed/tomcat-embed-el/9.0.14/tomcat-embed-el-9.0.14.pom
+2019-01-30 22:35:50,289 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/apache/tomcat/embed/tomcat-embed-websocket/9.0.14/tomcat-embed-websocket-9.0.14.pom
+2019-01-30 22:35:50,441 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/apache/tomcat/embed/tomcat-embed-websocket/9.0.14/tomcat-embed-websocket-9.0.14.pom
+2019-01-30 22:35:50,596 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/apache/tomcat/tomcat-annotations-api/9.0.14/tomcat-annotations-api-9.0.14.pom
+2019-01-30 22:35:50,807 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/apache/tomcat/tomcat-annotations-api/9.0.14/tomcat-annotations-api-9.0.14.pom
+2019-01-30 22:35:50,942 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/hibernate/validator/hibernate-validator/6.0.14.Final/hibernate-validator-6.0.14.Final.pom
+2019-01-30 22:35:51,114 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/hibernate/validator/hibernate-validator/6.0.14.Final/hibernate-validator-6.0.14.Final.pom
+2019-01-30 22:35:51,252 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/hibernate/validator/hibernate-validator-parent/6.0.14.Final/hibernate-validator-parent-6.0.14.Final.pom
+2019-01-30 22:35:51,637 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/hibernate/validator/hibernate-validator-parent/6.0.14.Final/hibernate-validator-parent-6.0.14.Final.pom
+2019-01-30 22:35:52,031 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/com/fasterxml/classmate/1.4.0/classmate-1.4.0.pom
+2019-01-30 22:35:52,242 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/com/fasterxml/classmate/1.4.0/classmate-1.4.0.pom
+2019-01-30 22:35:52,426 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/springframework/spring-webmvc/5.1.4.RELEASE/spring-webmvc-5.1.4.RELEASE.pom
+2019-01-30 22:35:52,583 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/spring-webmvc/5.1.4.RELEASE/spring-webmvc-5.1.4.RELEASE.pom
+2019-01-30 22:35:53,362 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/springframework/security/spring-security-test/5.1.3.RELEASE/spring-security-test-5.1.3.RELEASE.pom
+2019-01-30 22:35:53,578 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/security/spring-security-test/5.1.3.RELEASE/spring-security-test-5.1.3.RELEASE.pom
+2019-01-30 22:35:53,974 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-security/2.1.2.RELEASE/spring-boot-starter-security-2.1.2.RELEASE.jar
+2019-01-30 22:35:54,186 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-security/2.1.2.RELEASE/spring-boot-starter-security-2.1.2.RELEASE.jar
+2019-01-30 22:35:54,399 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/springframework/security/spring-security-config/5.1.3.RELEASE/spring-security-config-5.1.3.RELEASE.jar
+2019-01-30 22:36:00,279 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/security/spring-security-config/5.1.3.RELEASE/spring-security-config-5.1.3.RELEASE.jar
+2019-01-30 22:36:00,430 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/springframework/security/spring-security-web/5.1.3.RELEASE/spring-security-web-5.1.3.RELEASE.jar
+2019-01-30 22:36:02,172 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/security/spring-security-web/5.1.3.RELEASE/spring-security-web-5.1.3.RELEASE.jar
+2019-01-30 22:36:02,299 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-web/2.1.2.RELEASE/spring-boot-starter-web-2.1.2.RELEASE.jar
+2019-01-30 22:36:02,487 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-web/2.1.2.RELEASE/spring-boot-starter-web-2.1.2.RELEASE.jar
+2019-01-30 22:36:02,683 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-json/2.1.2.RELEASE/spring-boot-starter-json-2.1.2.RELEASE.jar
+2019-01-30 22:36:02,892 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-json/2.1.2.RELEASE/spring-boot-starter-json-2.1.2.RELEASE.jar
+2019-01-30 22:36:03,089 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.9.8/jackson-databind-2.9.8.jar
+2019-01-30 22:36:06,577 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.9.8/jackson-databind-2.9.8.jar
+2019-01-30 22:36:06,777 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/com/fasterxml/jackson/core/jackson-core/2.9.8/jackson-core-2.9.8.jar
+2019-01-30 22:36:07,907 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/com/fasterxml/jackson/core/jackson-core/2.9.8/jackson-core-2.9.8.jar
+2019-01-30 22:36:08,111 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.9.8/jackson-datatype-jdk8-2.9.8.jar
+2019-01-30 22:36:08,349 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.9.8/jackson-datatype-jdk8-2.9.8.jar
+2019-01-30 22:36:08,483 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.9.8/jackson-datatype-jsr310-2.9.8.jar
+2019-01-30 22:36:09,035 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.9.8/jackson-datatype-jsr310-2.9.8.jar
+2019-01-30 22:36:09,234 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/com/fasterxml/jackson/module/jackson-module-parameter-names/2.9.8/jackson-module-parameter-names-2.9.8.jar
+2019-01-30 22:36:09,442 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/com/fasterxml/jackson/module/jackson-module-parameter-names/2.9.8/jackson-module-parameter-names-2.9.8.jar
+2019-01-30 22:36:09,642 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-tomcat/2.1.2.RELEASE/spring-boot-starter-tomcat-2.1.2.RELEASE.jar
+2019-01-30 22:36:09,858 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-tomcat/2.1.2.RELEASE/spring-boot-starter-tomcat-2.1.2.RELEASE.jar
+2019-01-30 22:36:10,053 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/apache/tomcat/embed/tomcat-embed-core/9.0.14/tomcat-embed-core-9.0.14.jar
+2019-01-30 22:36:19,376 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/apache/tomcat/embed/tomcat-embed-core/9.0.14/tomcat-embed-core-9.0.14.jar
+2019-01-30 22:36:19,578 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/apache/tomcat/embed/tomcat-embed-el/9.0.14/tomcat-embed-el-9.0.14.jar
+2019-01-30 22:36:20,170 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/apache/tomcat/embed/tomcat-embed-el/9.0.14/tomcat-embed-el-9.0.14.jar
+2019-01-30 22:36:20,324 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/apache/tomcat/embed/tomcat-embed-websocket/9.0.14/tomcat-embed-websocket-9.0.14.jar
+2019-01-30 22:36:20,811 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/apache/tomcat/embed/tomcat-embed-websocket/9.0.14/tomcat-embed-websocket-9.0.14.jar
+2019-01-30 22:36:21,010 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/hibernate/validator/hibernate-validator/6.0.14.Final/hibernate-validator-6.0.14.Final.jar
+2019-01-30 22:36:22,767 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/hibernate/validator/hibernate-validator/6.0.14.Final/hibernate-validator-6.0.14.Final.jar
+2019-01-30 22:36:22,956 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/com/fasterxml/classmate/1.4.0/classmate-1.4.0.jar
+2019-01-30 22:36:23,169 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/com/fasterxml/classmate/1.4.0/classmate-1.4.0.jar
+2019-01-30 22:36:23,307 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/springframework/spring-webmvc/5.1.4.RELEASE/spring-webmvc-5.1.4.RELEASE.jar
+2019-01-30 22:36:25,025 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/spring-webmvc/5.1.4.RELEASE/spring-webmvc-5.1.4.RELEASE.jar
+2019-01-30 22:36:25,208 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/springframework/security/spring-security-test/5.1.3.RELEASE/spring-security-test-5.1.3.RELEASE.jar
+2019-01-30 22:36:25,529 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/security/spring-security-test/5.1.3.RELEASE/spring-security-test-5.1.3.RELEASE.jar
+2019-01-30 22:36:25,721 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/org/springframework/security/spring-security-core/5.1.3.RELEASE/spring-security-core-5.1.3.RELEASE.jar
+2019-01-30 22:36:27,362 [Worker-438] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/security/spring-security-core/5.1.3.RELEASE/spring-security-core-5.1.3.RELEASE.jar
+2019-01-30 22:36:37,530 [Worker-438] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /jwt-security-example-sts/src/main/java
+2019-01-30 22:36:37,532 [Worker-438] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /jwt-security-example-sts/src/main/resources
+2019-01-30 22:36:37,652 [Worker-438] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /jwt-security-example-sts/src/main/resources
+2019-01-30 22:36:37,783 [Worker-438] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /jwt-security-example-sts/src/test/java
+2019-01-30 22:36:41,167 [Worker-438] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Imported and configured 1 project(s) in 77 sec
+2019-01-30 22:36:41,223 [Worker-438] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update started
+2019-01-30 22:36:42,535 [Worker-438] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-01-30 22:36:44,811 [Worker-438] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /jwt-security-example-sts/src/main/java
+2019-01-30 22:36:44,812 [Worker-438] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /jwt-security-example-sts/src/main/resources
+2019-01-30 22:36:44,884 [Worker-438] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /jwt-security-example-sts/src/main/resources
+2019-01-30 22:36:44,933 [Worker-438] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /jwt-security-example-sts/src/test/java
+2019-01-30 22:36:45,901 [Worker-438] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update completed: 4 sec
+2019-01-30 22:36:58,046 [Worker-442] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:36:58,049 [Worker-442] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 22:36:58,070 [Worker-442] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:36:58,074 [Worker-442] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:36:58,074 [Worker-442] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 22:37:51,561 [Worker-440] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\jwt-security-example-sts
+2019-01-30 22:37:51,562 [Worker-440] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-01-30 22:38:01,059 [Worker-438] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:38:01,093 [Worker-438] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 22:38:01,106 [Worker-438] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:38:01,112 [Worker-438] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:38:01,113 [Worker-438] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 22:39:11,137 [Worker-438] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\jwt-security-example-sts
+2019-01-30 22:39:11,138 [Worker-438] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-01-30 22:39:17,914 [Worker-447] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:39:17,916 [Worker-447] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 22:39:17,920 [Worker-447] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:39:17,923 [Worker-447] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:39:17,923 [Worker-447] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 22:39:31,769 [Worker-446] ERROR o.e.m.c.i.p.r.ProjectRegistryManager - Failed to read Maven project: 1 problem was encountered while building the effective model for com.techprimers.security:jwt-security:0.0.1-SNAPSHOT
+[FATAL] Non-resolvable parent POM for com.techprimers.security:jwt-security:0.0.1-SNAPSHOT: Failure to transfer org.springframework.boot:spring-boot-starter-parent:pom:1.5.6.RELEASE from https://repo.maven.apache.org/maven2 was cached in the local repository, resolution will not be reattempted until the update interval of central has elapsed or updates are forced. Original error: Could not transfer artifact org.springframework.boot:spring-boot-starter-parent:pom:1.5.6.RELEASE from/to central (https://repo.maven.apache.org/maven2): connect timed out and 'parent.relativePath' points at no local POM @ line 14, column 10
+ for project com.techprimers.security:jwt-security:0.0.1-SNAPSHOT at C:\Workspaces\LSTEST4\jwt-security-example\pom.xml
+org.apache.maven.project.ProjectBuildingException: 1 problem was encountered while building the effective model for com.techprimers.security:jwt-security:0.0.1-SNAPSHOT
+[FATAL] Non-resolvable parent POM for com.techprimers.security:jwt-security:0.0.1-SNAPSHOT: Failure to transfer org.springframework.boot:spring-boot-starter-parent:pom:1.5.6.RELEASE from https://repo.maven.apache.org/maven2 was cached in the local repository, resolution will not be reattempted until the update interval of central has elapsed or updates are forced. Original error: Could not transfer artifact org.springframework.boot:spring-boot-starter-parent:pom:1.5.6.RELEASE from/to central (https://repo.maven.apache.org/maven2): connect timed out and 'parent.relativePath' points at no local POM @ line 14, column 10
+ for project com.techprimers.security:jwt-security:0.0.1-SNAPSHOT at C:\Workspaces\LSTEST4\jwt-security-example\pom.xml
+	at org.apache.maven.project.DefaultProjectBuilder.build(DefaultProjectBuilder.java:168) ~[maven-core-3.3.9.jar:3.3.9]
+	at org.apache.maven.project.DefaultProjectBuilder.build(DefaultProjectBuilder.java:119) ~[maven-core-3.3.9.jar:3.3.9]
+	at org.eclipse.m2e.core.internal.embedder.MavenImpl.readMavenProject(MavenImpl.java:636) ~[org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.project.registry.ProjectRegistryManager$5.call(ProjectRegistryManager.java:816) ~[org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.project.registry.ProjectRegistryManager$5.call(ProjectRegistryManager.java:1) ~[org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.embedder.MavenExecutionContext.executeBare(MavenExecutionContext.java:176) ~[org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.embedder.MavenExecutionContext.execute(MavenExecutionContext.java:151) ~[org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.embedder.MavenExecutionContext.execute(MavenExecutionContext.java:99) ~[org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.project.registry.ProjectRegistryManager.execute(ProjectRegistryManager.java:967) ~[org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.project.registry.ProjectRegistryManager.readProjectWithDependencies(ProjectRegistryManager.java:811) ~[org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.project.registry.ProjectRegistryManager.create(ProjectRegistryManager.java:192) ~[org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.project.registry.MavenProjectManager.create(MavenProjectManager.java:80) [org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.ui.internal.actions.SelectionUtil.getMavenProject(SelectionUtil.java:259) [org.eclipse.m2e.core.ui_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.editor.pom.MavenPomEditor.readMavenProject(MavenPomEditor.java:732) [org.eclipse.m2e.editor_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.editor.pom.MavenPomEditor$5.run(MavenPomEditor.java:1053) [org.eclipse.m2e.editor_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55) [org.eclipse.core.jobs_3.8.0.v20160509-0411.jar:na]
+Caused by: org.apache.maven.model.building.ModelBuildingException: 1 problem was encountered while building the effective model for com.techprimers.security:jwt-security:0.0.1-SNAPSHOT
+[FATAL] Non-resolvable parent POM for com.techprimers.security:jwt-security:0.0.1-SNAPSHOT: Failure to transfer org.springframework.boot:spring-boot-starter-parent:pom:1.5.6.RELEASE from https://repo.maven.apache.org/maven2 was cached in the local repository, resolution will not be reattempted until the update interval of central has elapsed or updates are forced. Original error: Could not transfer artifact org.springframework.boot:spring-boot-starter-parent:pom:1.5.6.RELEASE from/to central (https://repo.maven.apache.org/maven2): connect timed out and 'parent.relativePath' points at no local POM @ line 14, column 10
+
+	at org.apache.maven.model.building.DefaultModelProblemCollector.newModelBuildingException(DefaultModelProblemCollector.java:197) ~[maven-model-builder-3.3.9.jar:3.3.9]
+	at org.apache.maven.model.building.DefaultModelBuilder.readParentExternally(DefaultModelBuilder.java:1029) ~[maven-model-builder-3.3.9.jar:3.3.9]
+	at org.apache.maven.model.building.DefaultModelBuilder.readParent(DefaultModelBuilder.java:800) ~[maven-model-builder-3.3.9.jar:3.3.9]
+	at org.apache.maven.model.building.DefaultModelBuilder.build(DefaultModelBuilder.java:329) ~[maven-model-builder-3.3.9.jar:3.3.9]
+	at org.apache.maven.project.DefaultProjectBuilder.build(DefaultProjectBuilder.java:161) ~[maven-core-3.3.9.jar:3.3.9]
+	... 15 common frames omitted
+2019-01-30 22:40:57,561 [Worker-449] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-01-30 22:40:59,367 [Worker-449] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:40:59,368 [Worker-449] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:40:59,368 [Worker-449] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:40:59,370 [Worker-449] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:40:59,370 [Worker-449] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 22:41:03,163 [Worker-449] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:41:03,167 [Worker-449] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 22:41:03,181 [Worker-449] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:41:03,183 [Worker-449] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:41:03,184 [Worker-449] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 22:41:06,610 [Worker-438] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\jwt-security-example-sts
+2019-01-30 22:41:06,611 [Worker-438] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-01-30 22:41:42,771 [Worker-450] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:41:42,797 [Worker-450] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 22:41:42,818 [Worker-450] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:41:42,828 [Worker-450] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:41:42,829 [Worker-450] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 22:42:15,585 [Worker-449] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update started
+2019-01-30 22:42:15,866 [Worker-449] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-01-30 22:42:16,688 [Worker-449] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /jwt-security-example-sts/src/main/java
+2019-01-30 22:42:16,688 [Worker-449] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /jwt-security-example-sts/src/main/resources
+2019-01-30 22:42:16,689 [Worker-449] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /jwt-security-example-sts/src/main/resources
+2019-01-30 22:42:16,689 [Worker-449] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /jwt-security-example-sts/src/test/java
+2019-01-30 22:42:17,342 [Worker-449] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update completed: 1 sec
+2019-01-30 22:42:20,333 [Worker-450] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:42:20,334 [Worker-450] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 22:42:20,336 [Worker-450] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:42:20,337 [Worker-450] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:42:20,338 [Worker-450] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 22:46:52,840 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:46:52,843 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 22:46:52,846 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:46:52,855 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:46:52,856 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 22:47:02,023 [Worker-450] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\jwt-security-example-sts
+2019-01-30 22:47:02,024 [Worker-450] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-01-30 22:47:14,939 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:47:14,944 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 22:47:14,952 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:47:14,957 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:47:14,958 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 22:48:37,084 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:48:37,088 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 22:48:37,107 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:48:37,149 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:48:37,150 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 22:49:22,922 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:49:22,925 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 22:49:22,928 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:49:22,950 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:49:22,950 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 22:50:05,582 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:50:05,586 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 22:50:05,594 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:50:05,597 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:50:05,600 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 22:51:16,849 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:51:16,852 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 22:51:16,857 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:51:16,860 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:51:16,861 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 22:51:31,493 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:51:31,511 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 22:51:31,515 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:51:31,526 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:51:31,526 [Worker-455] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 22:54:07,638 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:54:07,640 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 22:54:07,646 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:54:07,649 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:54:07,649 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 22:54:33,240 [Worker-450] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:54:33,244 [Worker-450] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 22:54:33,249 [Worker-450] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:54:33,252 [Worker-450] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:54:33,252 [Worker-450] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 22:55:14,578 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:55:14,581 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 22:55:14,590 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:55:14,600 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:55:14,600 [Worker-454] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 22:56:10,254 [Worker-456] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:56:10,258 [Worker-456] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 22:56:10,262 [Worker-456] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 22:56:10,266 [Worker-456] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 22:56:10,267 [Worker-456] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 23:07:05,682 [Worker-451] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:07:05,687 [Worker-451] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 23:07:05,690 [Worker-451] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 23:07:05,692 [Worker-451] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:07:05,692 [Worker-451] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 23:07:27,103 [Worker-446] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:07:27,106 [Worker-446] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 23:07:27,110 [Worker-446] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 23:07:27,112 [Worker-446] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:07:27,113 [Worker-446] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 23:12:02,794 [Worker-456] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:12:02,797 [Worker-456] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 23:12:02,802 [Worker-456] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 23:12:02,807 [Worker-456] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:12:02,807 [Worker-456] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 23:14:32,440 [Worker-468] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:14:32,442 [Worker-468] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 23:14:32,445 [Worker-468] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 23:14:32,448 [Worker-468] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:14:32,449 [Worker-468] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 23:14:59,750 [Worker-471] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:14:59,753 [Worker-471] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 23:14:59,755 [Worker-471] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 23:14:59,757 [Worker-471] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:14:59,757 [Worker-471] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 23:35:08,247 [Worker-477] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\jwt-security-example-sts
+2019-01-30 23:35:08,247 [Worker-477] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-01-30 23:35:13,983 [Worker-480] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:35:13,985 [Worker-480] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 23:35:13,988 [Worker-480] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 23:35:13,990 [Worker-480] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:35:13,990 [Worker-480] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 23:35:52,482 [Worker-478] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:35:52,486 [Worker-478] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 23:35:52,503 [Worker-478] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 23:35:52,506 [Worker-478] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:35:52,507 [Worker-478] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 23:36:25,472 [Worker-479] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\jwt-security-example-sts
+2019-01-30 23:36:25,473 [Worker-479] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B clean
+2019-01-30 23:36:28,786 [Worker-477] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:36:28,788 [Worker-477] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 23:36:28,792 [Worker-477] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 23:36:28,793 [Worker-477] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:36:28,794 [Worker-477] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 23:36:41,891 [Worker-478] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update started
+2019-01-30 23:36:42,714 [Worker-478] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-01-30 23:36:43,556 [Worker-478] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /jwt-security-example-sts/src/main/java
+2019-01-30 23:36:43,556 [Worker-478] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /jwt-security-example-sts/src/main/resources
+2019-01-30 23:36:43,557 [Worker-478] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /jwt-security-example-sts/src/main/resources
+2019-01-30 23:36:43,557 [Worker-478] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /jwt-security-example-sts/src/test/java
+2019-01-30 23:36:43,854 [Worker-478] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update completed: 1 sec
+2019-01-30 23:37:18,563 [Worker-486] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:37:18,565 [Worker-486] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 23:37:18,570 [Worker-486] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 23:37:18,573 [Worker-486] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:37:18,573 [Worker-486] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 23:38:26,307 [Worker-477] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-01-30 23:38:27,635 [Worker-477] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/io/jsonwebtoken/jjwt/0.6.0/jjwt-0.6.0.pom
+2019-01-30 23:38:28,125 [Worker-477] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/io/jsonwebtoken/jjwt/0.6.0/jjwt-0.6.0.pom
+2019-01-30 23:38:28,456 [Worker-477] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading https://repo.maven.apache.org/maven2/io/jsonwebtoken/jjwt/0.6.0/jjwt-0.6.0.jar
+2019-01-30 23:38:29,079 [Worker-477] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/io/jsonwebtoken/jjwt/0.6.0/jjwt-0.6.0.jar
+2019-01-30 23:38:29,904 [Worker-477] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:38:29,905 [Worker-477] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 23:38:29,907 [Worker-477] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 23:38:29,909 [Worker-477] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:38:29,909 [Worker-477] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 23:38:34,094 [Worker-479] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:38:34,096 [Worker-479] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 23:38:34,099 [Worker-479] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 23:38:34,101 [Worker-479] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:38:34,101 [Worker-479] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 23:38:49,492 [Worker-477] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\jwt-security-example-sts
+2019-01-30 23:38:49,492 [Worker-477] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-01-30 23:38:54,655 [Worker-486] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:38:54,657 [Worker-486] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 23:38:54,660 [Worker-486] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 23:38:54,662 [Worker-486] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:38:54,662 [Worker-486] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 23:39:26,944 [Worker-481] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\jwt-security-example-sts
+2019-01-30 23:39:26,944 [Worker-481] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-01-30 23:39:31,735 [Worker-483] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:39:31,737 [Worker-483] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 23:39:31,740 [Worker-483] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 23:39:31,741 [Worker-483] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:39:31,742 [Worker-483] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 23:41:18,523 [Worker-477] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:41:18,526 [Worker-477] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 23:41:18,529 [Worker-477] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 23:41:18,531 [Worker-477] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:41:18,532 [Worker-477] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 23:42:00,272 [Worker-480] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\jwt-security-example-sts
+2019-01-30 23:42:00,273 [Worker-480] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-01-30 23:42:19,977 [Worker-476] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:42:19,980 [Worker-476] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 23:42:19,984 [Worker-476] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 23:42:19,986 [Worker-476] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:42:19,987 [Worker-476] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 23:47:46,047 [Worker-481] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:47:46,061 [Worker-481] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 23:47:46,063 [Worker-481] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 23:47:46,065 [Worker-481] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:47:46,065 [Worker-481] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-30 23:52:47,240 [Worker-491] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:52:47,241 [Worker-491] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-30 23:52:47,249 [Worker-491] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-30 23:52:47,254 [Worker-491] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-30 23:52:47,255 [Worker-491] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-31 00:15:39,931 [Worker-501] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 00:15:39,937 [Worker-501] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-01-31 00:15:39,945 [Worker-501] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-31 00:15:39,948 [Worker-501] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 00:15:39,949 [Worker-501] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-31 00:15:46,697 [Worker-505] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 00:15:46,700 [Worker-505] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-01-31 00:15:46,705 [Worker-505] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-31 00:15:46,707 [Worker-505] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 00:15:46,707 [Worker-505] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-31 00:18:41,380 [Worker-501] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 00:18:41,381 [Worker-501] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-31 00:18:41,384 [Worker-501] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-31 00:18:41,386 [Worker-501] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 00:18:41,387 [Worker-501] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-31 12:12:26,038 [Worker-575] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 12:12:26,117 [Worker-575] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-31 12:12:26,145 [Worker-575] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-31 12:12:26,202 [Worker-575] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 12:12:26,203 [Worker-575] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-31 12:19:44,779 [Worker-581] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 12:19:44,780 [Worker-581] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-31 12:19:44,817 [Worker-581] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-31 12:19:44,820 [Worker-581] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 12:19:44,820 [Worker-581] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-31 19:30:01,264 [Worker-725] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 19:30:01,406 [Worker-725] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-01-31 19:30:01,470 [Worker-725] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-31 19:30:01,490 [Worker-725] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 19:30:01,490 [Worker-725] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-31 20:28:23,118 [Worker-749] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 20:28:23,166 [Worker-749] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-01-31 20:28:23,171 [Worker-749] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-31 20:28:23,193 [Worker-749] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 20:28:23,193 [Worker-749] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-31 20:29:21,830 [Worker-751] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\jwt-security-example-sts
+2019-01-31 20:29:21,831 [Worker-751] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-01-31 20:30:16,877 [Worker-746] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 20:30:16,888 [Worker-746] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-01-31 20:30:16,903 [Worker-746] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-31 20:30:16,919 [Worker-746] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 20:30:16,919 [Worker-746] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-31 20:30:38,581 [Worker-753] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update started
+2019-01-31 20:30:50,010 [Worker-753] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-01-31 20:30:53,704 [Worker-753] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /jwt-security-example-sts/src/main/java
+2019-01-31 20:30:53,706 [Worker-753] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /jwt-security-example-sts/src/main/resources
+2019-01-31 20:30:53,707 [Worker-753] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /jwt-security-example-sts/src/main/resources
+2019-01-31 20:30:53,709 [Worker-753] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /jwt-security-example-sts/src/test/java
+2019-01-31 20:30:55,950 [Worker-753] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update completed: 17 sec
+2019-01-31 20:31:05,168 [Worker-751] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 20:31:05,170 [Worker-751] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-01-31 20:31:05,366 [Worker-751] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-31 20:31:05,370 [Worker-751] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 20:31:05,370 [Worker-751] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-31 21:02:43,143 [Worker-777] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 21:02:43,165 [Worker-777] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-01-31 21:02:43,170 [Worker-777] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-31 21:02:43,172 [Worker-777] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 21:02:43,172 [Worker-777] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-31 21:12:21,520 [Worker-785] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 21:12:21,522 [Worker-785] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-01-31 21:12:21,528 [Worker-785] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-31 21:12:21,531 [Worker-785] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 21:12:21,531 [Worker-785] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-31 21:12:43,368 [Worker-791] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 21:12:43,370 [Worker-791] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-01-31 21:12:43,376 [Worker-791] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-31 21:12:43,379 [Worker-791] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 21:12:43,380 [Worker-791] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-31 21:12:59,149 [Worker-778] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 21:12:59,152 [Worker-778] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-01-31 21:12:59,159 [Worker-778] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-31 21:12:59,162 [Worker-778] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 21:12:59,163 [Worker-778] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-31 21:13:30,693 [Worker-778] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 21:13:30,695 [Worker-778] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-01-31 21:13:30,699 [Worker-778] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-31 21:13:30,701 [Worker-778] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 21:13:30,702 [Worker-778] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-31 21:13:39,107 [Worker-786] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 21:13:39,109 [Worker-786] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-01-31 21:13:39,116 [Worker-786] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-31 21:13:39,119 [Worker-786] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 21:13:39,119 [Worker-786] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-31 21:13:48,214 [Worker-791] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 21:13:48,217 [Worker-791] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-01-31 21:13:48,222 [Worker-791] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-31 21:13:48,235 [Worker-791] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 21:13:48,235 [Worker-791] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-01-31 21:15:55,034 [Worker-789] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 21:15:55,036 [Worker-789] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-01-31 21:15:55,042 [Worker-789] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-01-31 21:15:55,044 [Worker-789] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-01-31 21:15:55,045 [Worker-789] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 10:56:40,473 [Worker-792] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 10:56:40,848 [Worker-792] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-02-01 10:56:40,933 [Worker-792] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 10:56:40,952 [Worker-792] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 10:56:40,954 [Worker-792] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 11:12:45,170 [Worker-808] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:12:45,183 [Worker-808] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-01 11:12:45,188 [Worker-808] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 11:12:45,190 [Worker-808] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:12:45,191 [Worker-808] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 11:12:51,093 [Worker-810] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:12:51,102 [Worker-810] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-01 11:12:51,119 [Worker-810] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 11:12:51,133 [Worker-810] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:12:51,133 [Worker-810] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 11:13:34,939 [Worker-807] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:13:34,941 [Worker-807] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-02-01 11:13:34,991 [Worker-807] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 11:13:34,997 [Worker-807] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:13:34,998 [Worker-807] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 11:18:40,236 [Worker-799] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:18:40,238 [Worker-799] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-01 11:18:40,248 [Worker-799] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 11:18:40,250 [Worker-799] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:18:40,251 [Worker-799] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 11:19:17,486 [Worker-811] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:19:17,488 [Worker-811] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-01 11:19:17,494 [Worker-811] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 11:19:17,503 [Worker-811] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:19:17,503 [Worker-811] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 11:20:17,405 [Worker-812] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:20:17,407 [Worker-812] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-01 11:20:17,412 [Worker-812] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 11:20:17,414 [Worker-812] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:20:17,414 [Worker-812] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 11:20:24,224 [Worker-807] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:20:24,226 [Worker-807] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-01 11:20:24,230 [Worker-807] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 11:20:24,232 [Worker-807] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:20:24,232 [Worker-807] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 11:21:11,495 [Worker-809] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:21:11,496 [Worker-809] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-02-01 11:21:11,498 [Worker-809] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 11:21:11,571 [Worker-809] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:21:11,572 [Worker-809] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 11:24:00,242 [Worker-799] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:24:00,245 [Worker-799] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-02-01 11:24:00,318 [Worker-799] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 11:24:00,341 [Worker-799] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:24:00,342 [Worker-799] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-02-01 11:24:05,845 [Worker-815] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:24:05,846 [Worker-815] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-02-01 11:24:05,859 [Worker-815] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 11:24:05,861 [Worker-815] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:24:05,862 [Worker-815] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\course-api-data\src\test\resources
+2019-02-01 11:24:06,895 [Worker-818] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:24:06,896 [Worker-818] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-01 11:24:06,901 [Worker-818] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 11:24:06,904 [Worker-818] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:24:06,904 [Worker-818] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 11:27:56,387 [Worker-818] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update started
+2019-02-01 11:27:58,957 [Worker-818] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-02-01 11:28:02,004 [Worker-818] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /jwt-security-example-sts/src/main/java
+2019-02-01 11:28:02,004 [Worker-818] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /jwt-security-example-sts/src/main/resources
+2019-02-01 11:28:02,004 [Worker-818] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /jwt-security-example-sts/src/main/resources
+2019-02-01 11:28:02,005 [Worker-818] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /jwt-security-example-sts/src/test/java
+2019-02-01 11:28:03,062 [Worker-818] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update completed: 6 sec
+2019-02-01 11:28:04,251 [Worker-813] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:28:04,252 [Worker-813] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-01 11:28:04,256 [Worker-813] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 11:28:04,258 [Worker-813] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:28:04,258 [Worker-813] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 11:37:47,073 [Worker-820] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:37:47,076 [Worker-820] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-02-01 11:37:47,083 [Worker-820] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 11:37:47,095 [Worker-820] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:37:47,095 [Worker-820] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 11:37:55,256 [Worker-790] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:37:55,257 [Worker-790] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-02-01 11:37:55,259 [Worker-790] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 11:37:55,260 [Worker-790] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:37:55,261 [Worker-790] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 11:38:51,071 [Worker-820] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:38:51,073 [Worker-820] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-02-01 11:38:51,081 [Worker-820] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 11:38:51,088 [Worker-820] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:38:51,089 [Worker-820] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 11:43:55,512 [Worker-821] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:43:55,513 [Worker-821] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-02-01 11:43:55,516 [Worker-821] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 11:43:55,518 [Worker-821] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:43:55,519 [Worker-821] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 11:44:03,224 [Worker-825] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:44:03,225 [Worker-825] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-02-01 11:44:03,227 [Worker-825] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 11:44:03,229 [Worker-825] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:44:03,229 [Worker-825] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 11:59:44,796 [Worker-833] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:59:44,799 [Worker-833] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-01 11:59:44,805 [Worker-833] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 11:59:44,808 [Worker-833] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 11:59:44,808 [Worker-833] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 12:00:28,241 [Worker-835] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 12:00:28,243 [Worker-835] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-01 12:00:28,248 [Worker-835] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 12:00:28,250 [Worker-835] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 12:00:28,250 [Worker-835] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 14:32:46,123 [Worker-857] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded https://repo.maven.apache.org/maven2/org/springframework/security/spring-security-core/4.2.3.RELEASE/spring-security-core-4.2.3.RELEASE-sources.jar
+2019-02-01 14:32:46,944 [Worker-857] ERROR o.e.m.j.internal.DownloadSourcesJob - Could not download sources for org.springframework.security:spring-security-core:4.2.3.RELEASE
+org.eclipse.core.runtime.CoreException: Could not resolve artifact org.springframework.security:spring-security-core:jar:sources:4.2.3.RELEASE
+	at org.eclipse.m2e.core.internal.embedder.MavenImpl$5.call(MavenImpl.java:776) ~[org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.embedder.MavenImpl$5.call(MavenImpl.java:1) ~[org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.embedder.MavenExecutionContext.executeBare(MavenExecutionContext.java:176) [org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.embedder.MavenExecutionContext.execute(MavenExecutionContext.java:112) [org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.embedder.MavenExecutionContext.execute(MavenExecutionContext.java:99) [org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.embedder.MavenImpl.resolve(MavenImpl.java:743) [org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.embedder.MavenImpl.resolve(MavenImpl.java:720) [org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.jdt.internal.DownloadSourcesJob.download(DownloadSourcesJob.java:249) [org.eclipse.m2e.jdt_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.jdt.internal.DownloadSourcesJob.downloadAttachments(DownloadSourcesJob.java:228) [org.eclipse.m2e.jdt_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.jdt.internal.DownloadSourcesJob.downloadMaven(DownloadSourcesJob.java:202) [org.eclipse.m2e.jdt_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.jdt.internal.DownloadSourcesJob.run(DownloadSourcesJob.java:153) [org.eclipse.m2e.jdt_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.jdt.internal.DownloadSourcesJob$1.call(DownloadSourcesJob.java:136) [org.eclipse.m2e.jdt_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.jdt.internal.DownloadSourcesJob$1.call(DownloadSourcesJob.java:1) [org.eclipse.m2e.jdt_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.embedder.MavenExecutionContext.executeBare(MavenExecutionContext.java:176) [org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.embedder.MavenExecutionContext.execute(MavenExecutionContext.java:151) [org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.embedder.MavenExecutionContext.execute(MavenExecutionContext.java:99) [org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.core.internal.embedder.MavenImpl.execute(MavenImpl.java:1355) [org.eclipse.m2e.core_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.m2e.jdt.internal.DownloadSourcesJob.run(DownloadSourcesJob.java:134) [org.eclipse.m2e.jdt_1.7.0.20160603-1933.jar:na]
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55) [org.eclipse.core.jobs_3.8.0.v20160509-0411.jar:na]
+2019-02-01 14:32:50,747 [Worker-859] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 14:32:50,749 [Worker-859] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 14:32:50,750 [Worker-859] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 14:32:50,799 [Worker-859] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 14:32:50,800 [Worker-859] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 18:12:21,853 [Worker-965] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 18:12:22,195 [Worker-965] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-01 18:12:22,319 [Worker-965] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 18:12:22,488 [Worker-965] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 18:12:22,511 [Worker-965] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 18:38:46,296 [Worker-975] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 18:38:46,309 [Worker-975] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-01 18:38:46,331 [Worker-975] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 18:38:46,370 [Worker-975] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 18:38:46,371 [Worker-975] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 20:54:56,120 [Worker-1020] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 20:54:56,223 [Worker-1020] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-01 20:54:56,272 [Worker-1020] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 20:54:56,325 [Worker-1020] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 20:54:56,368 [Worker-1020] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-01 20:56:39,674 [Worker-1026] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 20:56:39,680 [Worker-1026] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-01 20:56:39,696 [Worker-1026] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-01 20:56:39,703 [Worker-1026] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-01 20:56:39,703 [Worker-1026] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 14:33:21,301 [Worker-5] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.livespread:livespread:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\LSAPI_FOR_TD\pom.xml.
+2019-02-04 14:33:26,073 [Worker-5] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.example:course-api-data:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\course-api-data\pom.xml.
+2019-02-04 14:33:35,961 [Worker-5] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-02-04 14:36:03,893 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 14:36:03,937 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-02-04 14:36:03,973 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 14:36:03,977 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 14:36:03,977 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\LSAPI_FOR_TD\src\test\resources
+2019-02-04 14:36:11,581 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 14:36:11,582 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2019-02-04 14:36:11,585 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 14:36:11,597 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 14:36:11,598 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\course-api-data\src\test\resources
+2019-02-04 14:36:13,696 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 14:36:13,697 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-04 14:36:13,722 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 14:36:13,724 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 14:36:13,725 [Worker-17] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 15:12:48,241 [Worker-33] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 15:12:48,278 [Worker-33] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-04 15:12:48,285 [Worker-33] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 15:12:48,288 [Worker-33] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 15:12:48,289 [Worker-33] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:30:57,429 [Worker-149] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-02-04 20:34:23,548 [Worker-152] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-02-04 20:34:25,602 [Worker-152] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/${nimbus-jwt-version}/nimbus-jose-jwt-${nimbus-jwt-version}.pom
+2019-02-04 20:34:25,602 [Worker-149] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/${nimbus-jwt-version}/nimbus-jose-jwt-${nimbus-jwt-version}.pom
+2019-02-04 20:34:25,672 [Worker-149] WARN  o.e.m.c.i.embedder.EclipseLogger - The POM for com.nimbusds:nimbus-jose-jwt:jar:${nimbus-jwt-version} is missing, no dependency information available
+2019-02-04 20:34:25,672 [Worker-152] WARN  o.e.m.c.i.embedder.EclipseLogger - The POM for com.nimbusds:nimbus-jose-jwt:jar:${nimbus-jwt-version} is missing, no dependency information available
+2019-02-04 20:34:26,237 [Worker-149] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/${nimbus-jwt-version}/nimbus-jose-jwt-${nimbus-jwt-version}.jar
+2019-02-04 20:34:26,237 [Worker-152] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/${nimbus-jwt-version}/nimbus-jose-jwt-${nimbus-jwt-version}.jar
+2019-02-04 20:34:26,591 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:34:26,591 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:34:26,592 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:34:26,594 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:34:26,594 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:35:15,099 [Worker-154] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-02-04 20:35:15,140 [Worker-149] WARN  o.e.m.c.i.embedder.EclipseLogger - The POM for com.nimbusds:nimbus-jose-jwt:jar:${nimbus-jwt-version} is missing, no dependency information available
+2019-02-04 20:35:15,336 [Worker-154] WARN  o.e.m.c.i.embedder.EclipseLogger - The POM for com.nimbusds:nimbus-jose-jwt:jar:${nimbus-jwt-version} is missing, no dependency information available
+2019-02-04 20:35:15,681 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:35:15,682 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:35:15,682 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:35:15,684 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:35:15,684 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:35:35,835 [Worker-149] WARN  o.e.m.c.i.embedder.EclipseLogger - The POM for com.nimbusds:nimbus-jose-jwt:jar:${nimbus-jwt-version} is missing, no dependency information available
+2019-02-04 20:35:36,140 [Worker-153] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-02-04 20:35:36,510 [Worker-153] WARN  o.e.m.c.i.embedder.EclipseLogger - The POM for com.nimbusds:nimbus-jose-jwt:jar:${nimbus-jwt-version} is missing, no dependency information available
+2019-02-04 20:35:36,703 [Worker-153] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:35:36,703 [Worker-153] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:35:36,704 [Worker-153] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:35:36,706 [Worker-153] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:35:36,706 [Worker-153] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:35:50,472 [Worker-154] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-02-04 20:35:51,239 [Worker-154] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/3.1.2/nimbus-jose-jwt-3.1.2.pom
+2019-02-04 20:35:51,244 [Worker-149] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/3.1.2/nimbus-jose-jwt-3.1.2.pom
+2019-02-04 20:35:51,537 [Worker-149] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/3.1.2/nimbus-jose-jwt-3.1.2.pom
+2019-02-04 20:35:51,553 [Worker-154] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/3.1.2/nimbus-jose-jwt-3.1.2.pom
+2019-02-04 20:35:51,860 [Worker-154] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/net/minidev/json-smart/1.1.1/json-smart-1.1.1.pom
+2019-02-04 20:35:51,880 [Worker-149] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/net/minidev/json-smart/1.1.1/json-smart-1.1.1.pom
+2019-02-04 20:35:52,135 [Worker-154] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/net/minidev/json-smart/1.1.1/json-smart-1.1.1.pom
+2019-02-04 20:35:52,165 [Worker-149] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/net/minidev/json-smart/1.1.1/json-smart-1.1.1.pom
+2019-02-04 20:35:52,416 [Worker-154] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/net/minidev/parent/1.1.1/parent-1.1.1.pom
+2019-02-04 20:35:52,424 [Worker-149] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/net/minidev/parent/1.1.1/parent-1.1.1.pom
+2019-02-04 20:35:52,681 [Worker-154] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/net/minidev/parent/1.1.1/parent-1.1.1.pom
+2019-02-04 20:35:52,733 [Worker-149] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/net/minidev/parent/1.1.1/parent-1.1.1.pom
+2019-02-04 20:35:54,182 [Worker-154] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/3.1.2/nimbus-jose-jwt-3.1.2.jar
+2019-02-04 20:35:54,196 [Worker-149] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/3.1.2/nimbus-jose-jwt-3.1.2.jar
+2019-02-04 20:35:54,609 [Worker-154] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/3.1.2/nimbus-jose-jwt-3.1.2.jar
+2019-02-04 20:35:54,650 [Worker-149] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/3.1.2/nimbus-jose-jwt-3.1.2.jar
+2019-02-04 20:35:55,003 [Worker-149] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/net/minidev/json-smart/1.1.1/json-smart-1.1.1.jar
+2019-02-04 20:35:55,005 [Worker-154] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/net/minidev/json-smart/1.1.1/json-smart-1.1.1.jar
+2019-02-04 20:35:55,303 [Worker-154] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/net/minidev/json-smart/1.1.1/json-smart-1.1.1.jar
+2019-02-04 20:35:55,353 [Worker-149] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/net/minidev/json-smart/1.1.1/json-smart-1.1.1.jar
+2019-02-04 20:35:56,657 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:35:56,657 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:35:56,658 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:35:56,661 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:35:56,661 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:36:02,840 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:36:02,880 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-04 20:36:02,910 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:36:02,912 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:36:02,913 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:36:50,270 [Worker-148] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\jwt-security-example-sts
+2019-02-04 20:36:50,535 [Worker-148] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-02-04 20:37:32,163 [Worker-156] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:37:32,165 [Worker-156] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-04 20:37:32,172 [Worker-156] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:37:32,174 [Worker-156] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:37:32,175 [Worker-156] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:38:07,834 [Worker-156] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-02-04 20:38:08,459 [Worker-156] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/4.23/nimbus-jose-jwt-4.23.pom
+2019-02-04 20:38:08,759 [Worker-156] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/4.23/nimbus-jose-jwt-4.23.pom
+2019-02-04 20:38:09,088 [Worker-156] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/com/github/stephenc/jcip/jcip-annotations/1.0-1/jcip-annotations-1.0-1.pom
+2019-02-04 20:38:09,388 [Worker-156] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/com/github/stephenc/jcip/jcip-annotations/1.0-1/jcip-annotations-1.0-1.pom
+2019-02-04 20:38:09,688 [Worker-156] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/net/minidev/json-smart/1.3.1/json-smart-1.3.1.pom
+2019-02-04 20:38:09,989 [Worker-156] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/net/minidev/json-smart/1.3.1/json-smart-1.3.1.pom
+2019-02-04 20:38:10,263 [Worker-156] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/net/minidev/parent/1.3.1/parent-1.3.1.pom
+2019-02-04 20:38:11,367 [Worker-156] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/net/minidev/parent/1.3.1/parent-1.3.1.pom
+2019-02-04 20:38:11,669 [Worker-156] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/commons-io/commons-io/maven-metadata.xml
+2019-02-04 20:38:11,931 [Worker-156] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/commons-io/commons-io/maven-metadata.xml
+2019-02-04 20:38:14,445 [Worker-156] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/4.23/nimbus-jose-jwt-4.23.jar
+2019-02-04 20:38:14,535 [JavaFX Application Thread] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/4.23/nimbus-jose-jwt-4.23.jar
+2019-02-04 20:38:14,821 [Worker-156] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/4.23/nimbus-jose-jwt-4.23.jar
+2019-02-04 20:38:15,099 [Worker-156] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/com/github/stephenc/jcip/jcip-annotations/1.0-1/jcip-annotations-1.0-1.jar
+2019-02-04 20:38:15,161 [JavaFX Application Thread] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/4.23/nimbus-jose-jwt-4.23.jar
+2019-02-04 20:38:15,415 [Worker-156] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/com/github/stephenc/jcip/jcip-annotations/1.0-1/jcip-annotations-1.0-1.jar
+2019-02-04 20:38:15,416 [JavaFX Application Thread] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/com/github/stephenc/jcip/jcip-annotations/1.0-1/jcip-annotations-1.0-1.jar
+2019-02-04 20:38:15,686 [JavaFX Application Thread] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/com/github/stephenc/jcip/jcip-annotations/1.0-1/jcip-annotations-1.0-1.jar
+2019-02-04 20:38:15,869 [Worker-156] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/net/minidev/json-smart/1.3.1/json-smart-1.3.1.jar
+2019-02-04 20:38:16,211 [Worker-156] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/net/minidev/json-smart/1.3.1/json-smart-1.3.1.jar
+2019-02-04 20:38:16,400 [JavaFX Application Thread] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/net/minidev/json-smart/1.3.1/json-smart-1.3.1.jar
+2019-02-04 20:38:16,724 [JavaFX Application Thread] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/net/minidev/json-smart/1.3.1/json-smart-1.3.1.jar
+2019-02-04 20:38:17,217 [Worker-156] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/commons-io/commons-io/2.6/commons-io-2.6.jar
+2019-02-04 20:38:17,239 [JavaFX Application Thread] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/commons-io/commons-io/2.6/commons-io-2.6.jar
+2019-02-04 20:38:17,736 [Worker-156] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/commons-io/commons-io/2.6/commons-io-2.6.jar
+2019-02-04 20:38:17,753 [JavaFX Application Thread] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/commons-io/commons-io/2.6/commons-io-2.6.jar
+2019-02-04 20:38:19,774 [Worker-156] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:38:19,775 [Worker-156] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:38:19,775 [Worker-156] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:38:19,777 [Worker-156] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:38:19,777 [Worker-156] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:38:22,665 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:38:22,667 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-04 20:38:22,672 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:38:22,675 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:38:22,675 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:38:24,362 [Worker-154] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\jwt-security-example-sts
+2019-02-04 20:38:24,363 [Worker-154] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-02-04 20:38:38,125 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:38:38,128 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-04 20:38:38,134 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:38:38,137 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:38:38,137 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:39:33,703 [Worker-153] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update started
+2019-02-04 20:39:34,167 [Worker-153] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-02-04 20:39:35,594 [Worker-153] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /jwt-security-example-sts/src/main/java
+2019-02-04 20:39:35,595 [Worker-153] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /jwt-security-example-sts/src/main/resources
+2019-02-04 20:39:35,595 [Worker-153] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /jwt-security-example-sts/src/main/resources
+2019-02-04 20:39:35,596 [Worker-153] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /jwt-security-example-sts/src/test/java
+2019-02-04 20:39:36,211 [Worker-153] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update completed: 2 sec
+2019-02-04 20:39:37,963 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:39:37,963 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-04 20:39:37,968 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:39:37,971 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:39:37,973 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:39:45,047 [Worker-160] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\jwt-security-example-sts
+2019-02-04 20:39:45,047 [Worker-160] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-02-04 20:39:55,643 [Worker-149] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:39:55,645 [Worker-149] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-04 20:39:55,650 [Worker-149] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:39:55,652 [Worker-149] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:39:55,653 [Worker-149] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:40:07,706 [Worker-160] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-02-04 20:40:08,319 [Worker-160] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:40:08,320 [Worker-160] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:40:08,320 [Worker-160] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:40:08,324 [Worker-160] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:40:08,324 [Worker-160] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:40:12,770 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:40:12,773 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-04 20:40:12,779 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:40:12,781 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:40:12,781 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:40:19,291 [Worker-161] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Workspaces\LSTEST4\jwt-security-example-sts
+2019-02-04 20:40:19,291 [Worker-161] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install
+2019-02-04 20:40:27,059 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:40:27,062 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-04 20:40:27,067 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:40:27,069 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:40:27,070 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:41:44,386 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:41:44,389 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-04 20:41:44,394 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:41:44,396 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:41:44,397 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:42:33,344 [Worker-159] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:42:33,359 [Worker-159] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-04 20:42:33,365 [Worker-159] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:42:33,368 [Worker-159] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:42:33,369 [Worker-159] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:42:53,553 [Worker-153] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:42:53,556 [Worker-153] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-04 20:42:53,562 [Worker-153] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:42:53,564 [Worker-153] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:42:53,565 [Worker-153] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:43:12,072 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:43:12,075 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-04 20:43:12,080 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:43:12,083 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:43:12,083 [Worker-154] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:43:54,018 [Worker-161] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:43:54,021 [Worker-161] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-04 20:43:54,027 [Worker-161] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:43:54,029 [Worker-161] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:43:54,029 [Worker-161] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:44:05,419 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:44:05,426 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-04 20:44:05,433 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:44:05,435 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:44:05,436 [Worker-152] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:48:03,241 [Worker-160] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:48:03,258 [Worker-160] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-04 20:48:03,265 [Worker-160] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:48:03,267 [Worker-160] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:48:03,267 [Worker-160] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:51:26,881 [Worker-148] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-02-04 20:51:28,647 [Worker-148] WARN  o.e.m.c.i.embedder.EclipseLogger - The POM for com.nimbusds:nimbus-jose-jwt:jar:${nimbus-jwt-version} is missing, no dependency information available
+2019-02-04 20:51:29,145 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:51:29,146 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:51:29,146 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:51:29,147 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:51:29,147 [Worker-148] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:52:03,883 [Worker-164] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.techprimers.security:jwt-security:0.0.1-SNAPSHOT @ C:\Workspaces\LSTEST4\jwt-security-example-sts\pom.xml.
+2019-02-04 20:52:04,739 [Worker-165] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/4.2/nimbus-jose-jwt-4.2.pom
+2019-02-04 20:52:04,990 [Worker-164] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/4.2/nimbus-jose-jwt-4.2.pom
+2019-02-04 20:52:05,052 [Worker-165] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/4.2/nimbus-jose-jwt-4.2.pom
+2019-02-04 20:52:05,336 [Worker-164] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/4.2/nimbus-jose-jwt-4.2.pom
+2019-02-04 20:52:07,330 [Worker-164] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/4.2/nimbus-jose-jwt-4.2.jar
+2019-02-04 20:52:07,334 [Worker-165] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloading http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/4.2/nimbus-jose-jwt-4.2.jar
+2019-02-04 20:52:07,802 [Worker-164] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/4.2/nimbus-jose-jwt-4.2.jar
+2019-02-04 20:52:07,839 [Worker-165] INFO  o.e.m.c.i.e.AbstractTransferListenerAdapter - Downloaded http://repo1.maven.org/maven2/com/nimbusds/nimbus-jose-jwt/4.2/nimbus-jose-jwt-4.2.jar
+2019-02-04 20:52:08,556 [Worker-164] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:52:08,557 [Worker-164] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:52:08,557 [Worker-164] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:52:08,560 [Worker-164] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:52:08,561 [Worker-164] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-04 20:52:12,071 [Worker-166] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:52:12,074 [Worker-166] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 2 resources
+2019-02-04 20:52:12,146 [Worker-166] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-04 20:52:12,148 [Worker-166] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-04 20:52:12,148 [Worker-166] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\jwt-security-example-sts\src\test\resources
+2019-02-05 14:55:53,547 [Worker-339] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-05 14:55:53,694 [Worker-339] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-05 14:55:53,694 [Worker-339] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2019-02-05 14:55:53,770 [Worker-339] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2019-02-05 14:55:53,770 [Worker-339] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Workspaces\LSTEST4\course-api-data\src\test\resources

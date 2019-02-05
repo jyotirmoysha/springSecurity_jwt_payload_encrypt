@@ -1,0 +1,62 @@
+package com.livespread.command;
+
+import java.util.List;
+
+public class UserGroupCommand {
+
+	String user_Group_Name;
+	List<String> parserName;
+	List<String> parseId;
+	Long user_Group_Id;
+	String createDate;
+	String flag;
+
+	public String getFlag() {
+		return flag;
+	}
+
+	public void setFlag(String flag) {
+		this.flag = flag;
+	}
+
+	public String getUser_Group_Name() {
+		return user_Group_Name;
+	}
+
+	public void setUser_Group_Name(String user_Group_Name) {
+		this.user_Group_Name = user_Group_Name;
+	}
+
+	public List<String> getParserName() {
+		return parserName;
+	}
+
+	public void setParserName(List<String> parserName) {
+		this.parserName = parserName;
+	}
+
+	public List<String> getParseId() {
+		return parseId;
+	}
+
+	public void setParseId(List<String> parseId) {
+		this.parseId = parseId;
+	}
+
+	public Long getUser_Group_Id() {
+		return user_Group_Id;
+	}
+
+	public void setUser_Group_Id(Long user_Group_Id) {
+		this.user_Group_Id = user_Group_Id;
+	}
+
+	public String getCreateDate() {
+		return createDate;
+	}
+
+	public void setCreateDate(String createDate) {
+		this.createDate = createDate;
+	}
+
+}

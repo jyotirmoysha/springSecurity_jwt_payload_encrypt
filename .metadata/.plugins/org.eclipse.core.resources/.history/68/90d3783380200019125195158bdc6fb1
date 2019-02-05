@@ -1,0 +1,48 @@
+package com.livespread.service;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.livespread.domain.AutoCaseData;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Service("BatchProcessingService")
+public class BatchProcessingServiceImpl implements BatchProcessingService {
+
+	/**
+	 * 
+	 */
+	private Logger LOGGER = Logger.getLogger(BatchProcessingServiceImpl.class);
+	
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+	
+	@Autowired
+	private NormalizationService normalizationService;
+	
+	@Value("${autoCaseGeneration}")
+	private String autoCaseGeneration;
+	
+	
+	@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean f_saveInAutoCaseData(AutoCaseData autoCaseData) {
+		LOGGER.info("**start--f_saveInAutoCaseData() methode");
+		genericDaoImpl.persist(autoCaseData);
+		LOGGER.info("**End--f_saveInAutoCaseData() methode");
+		return true;
+	}
+
+	@Override
+	public Integer f_saveToRequestQueueForBatchProcessing(String userId,String userGroupId,String processName) {
+		String parameters = "<Parameters><Parameter><Name>User_ID</Name><Value>"+userId+"</Value></Parameter><Parameter><Name>User_Group_ID</Name><Value>"+userGroupId+"</Value></Parameter></Parameters>";
+		Integer requestId = normalizationService.rageProcessRequestQueue(processName, parameters);
+		return requestId;
+	}
+	
+}

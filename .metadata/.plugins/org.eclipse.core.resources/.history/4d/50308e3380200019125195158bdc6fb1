@@ -1,0 +1,1332 @@
+/**
+ * 
+ */
+package com.livespread.service;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import com.livespread.command.DocumentModelCommand;
+import com.livespread.command.SectionIdentificationCommand;
+import com.livespread.common.RulesManagementComparator;
+import com.livespread.dao.NormalizationViewDAO;
+import com.livespread.domain.BankMaster;
+import com.livespread.domain.CustomerDetails;
+import com.livespread.domain.DocumentModel;
+import com.livespread.domain.NamedNativeQueryName;
+import com.livespread.domain.NamedQueryName;
+import com.livespread.domain.ParserOutput;
+import com.livespread.domain.ParserSectionMapping;
+import com.livespread.domain.ProcessLogTracker;
+import com.livespread.domain.ReprocessAudit;
+import com.livespread.domain.SectionMappingModel;
+import com.livespread.domain.User;
+import com.livespread.rage.domain.ExtractionMetadata;
+import com.livespread.rage.domain.ExtractorRunProperties;
+import com.livespread.rage.domain.ExtractorTableCommand;
+import com.livespread.rage.domain.ExtractorTableidRouteByCik;
+import com.livespread.rage.domain.PdfExtractionMetadata;
+import com.livespread.rage.domain.RageSequenceMaster;
+import com.livespread.rage.domain.SectionIdentification;
+import com.livespread.util.ExtractionUtil;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.rage.reusable.constants.ReusableConstant;
+
+/**
+ * @author Ganesh.Holage
+ * 
+ */
+
+@Service("extractionServ")
+public class ExtractionServiceImpl implements ExtractionService {
+
+	/**
+	 * 
+	 */
+	private Logger LOGGER = Logger.getLogger(ExtractionServiceImpl.class);
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+	
+	@Autowired
+	private WorkQueueService workQueueService;
+	
+	@Autowired
+	private NormalizationService normalizationService;
+	
+	@Autowired
+	private NormalizationViewDAO normalizationViewDAO;
+	
+
+	
+
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.livespread.service.ExtractionService#getStatusList()
+	 */
+	@Override
+	public List<Object> getStatusList() {
+		LOGGER.info("------------------ getStatusList service Started --------------");
+		/****************** Mock Object of Status ****************/
+		List<Object> statusList = new ArrayList<Object>();
+		statusList.add("Document Closed");
+		statusList.add("Extraction Failure");
+		statusList.add("Extraction Success");
+		statusList.add("Document Arrived");
+		statusList.add("Mapping Failure");
+		statusList.add("Mapping Success");
+		statusList.add("Mapping Failure");
+		LOGGER.info("------------------ getStatusList service Completed with --------------");
+		return statusList;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean updateStatus(String wqId, String status) {
+		LOGGER.info("------------------ updateStatus service Started --------------");
+		/*** update Status from db using namedquery of given id ***************/
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		int res = genericDaoImpl
+				.updateByNamedQuery(NamedQueryName.updateWQStaus,
+						CustomerDetails.class, parameters);
+		if (res == 1)
+			return true;
+		else
+			return false;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean addNewRules(String clientId) {
+		LOGGER.info("------------------ updateStatus service Started --------------");
+		/******** add new rules in Master Rule File **********/
+		/*** add new rules in db using namedquery of given clientid ***************/
+		CustomerDetails cd = new CustomerDetails();
+		genericDaoImpl.persist(cd);
+		return true;
+
+	}
+
+	public List<Object> getGeneralInformation() {
+		LOGGER.info("------------------ getGeneralInformation service Started --------------");
+		/*** get General information from db using namedquery ***************/
+		List<Object> statusList = genericDaoImpl.findByNamedQuery(
+				NamedQueryName.getWQGeneralInfo, CustomerDetails.class);
+		LOGGER.info("------------------ getGeneralInformation service Completed --------------");
+		return statusList;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+	public boolean saveUpadateRulesInExtractor_Table(
+			ExtractorTableCommand extractorTableCommand) {
+		LOGGER.info("---Started- saveUpdateRulesInExtractor_Table methode in  ExtractionServiceImpl class---");
+		List<ExtractorTableidRouteByCik> extractortableList = new ArrayList<ExtractorTableidRouteByCik>();
+		if (extractorTableCommand.getTag() != null
+				&& extractorTableCommand.getTag().size() > 0) {
+			for (int i = 0; i < extractorTableCommand.getTag().size(); i++) {
+				ExtractorTableidRouteByCik extractoertableObject = new ExtractorTableidRouteByCik();
+				if (extractorTableCommand.getEtrbc_Id().get(i).intValue() != 0) {
+					extractoertableObject.setEtrbc_Id(extractorTableCommand
+							.getEtrbc_Id().get(i));
+				} 
+				extractoertableObject.setEtrbc_valueOrder(i + 1);
+				extractoertableObject.setEtrbc_filingId(extractorTableCommand
+						.getFilingId());
+				extractoertableObject.setEtrbc_tableType(extractorTableCommand
+						.getTableType().get(i));
+				extractoertableObject.setEtrbc_tag(extractorTableCommand
+						.getTag().get(i));
+				extractoertableObject.setEtrbc_value(extractorTableCommand
+						.getXvalue().get(i));
+				extractoertableObject.setEtrbc_action(extractorTableCommand
+						.getAction().get(i));
+				extractoertableObject.setEtrbc_searchType(extractorTableCommand
+						.getSrchType().get(i));
+				extractoertableObject.setEtrbc_inclusive(extractorTableCommand
+						.getInclusive().get(i));
+				extractoertableObject.setEtrbc_cIK(extractorTableCommand
+						.getEtrbc_cik());
+				extractoertableObject.setEtrbc_cID(extractorTableCommand
+						.getEtrbc_cid());
+				extractoertableObject.setEtrbc_industry(extractorTableCommand
+						.getEtrbc_industry());
+				extractoertableObject.setEtrbc_language(extractorTableCommand
+						.getEtrbc_language());
+				if (extractorTableCommand.getDeleteFlag().get(i)
+						.equalsIgnoreCase("no")) {
+					extractortableList.add(extractoertableObject);
+				} else {
+					if (extractorTableCommand.getEtrbc_Id().get(i) != null) {
+						Map<String, Object> parameters = new HashMap<String, Object>();
+						boolean deleteFlagVal = false;
+						parameters.put("filingId",
+								extractorTableCommand.getFilingId());
+						int deleteFlag = genericDaoImpl.removeByNamedQuery(
+								NamedQueryName.deleteRecordByFillingId,
+								ExtractorTableidRouteByCik.class, parameters);
+						if (deleteFlag > 0) {
+							deleteFlagVal = true;
+						} else {
+							LOGGER.error("not deleted successfully"
+									+ deleteFlagVal);
+						}
+
+					}
+				}
+			}
+
+			// insert record in OR update record in
+			// LS_EXTRACTOR_TABLEID_BY_ENTITY table;
+			genericDaoImpl.merge(extractortableList);
+
+			/*
+			 * If nay record has delete flag "yes" then remove from database.
+			 */
+
+		}// End if
+
+		/*
+		 * Insert record in LS_EXTRACTOR_RUN_PROPERTIES table
+		 */
+		List<ExtractorRunProperties> runPropertiesList = new ArrayList<ExtractorRunProperties>();
+
+		for (int i = 0; i < extractorTableCommand.getPropertyValue().size(); i++) {
+			ExtractorRunProperties runPropertiesObject = new ExtractorRunProperties();
+			runPropertiesObject.setErpId(extractorTableCommand.getErp_Id().get(
+					i));
+			runPropertiesObject
+					.setFilingId(extractorTableCommand.getFilingId());
+			runPropertiesObject.setErp_propertyName(extractorTableCommand
+					.getPropertyName().get(i));
+			runPropertiesObject.setErp_propertyValue(extractorTableCommand
+					.getPropertyValue().get(i));
+			runPropertiesObject.setErp_sortOrder(extractorTableCommand
+					.getOrderValue().get(i));
+			runPropertiesObject.setErp_Date(new java.sql.Date(System
+					.currentTimeMillis()));
+			runPropertiesList.add(runPropertiesObject);
+		}
+		genericDaoImpl.merge(runPropertiesList);
+		/*
+		 * End Insert record in LS_EXTRACTOR_RUN_PROPERTIES table
+		 */
+		LOGGER.info("---End- saveUpdateRulesInExtractor_Table methode in  ExtractionServiceImpl class  ---");
+		return true;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+	public List<ExtractorTableidRouteByCik> getExtractionRuleByFilingId(
+			Integer filingId){
+		LOGGER.info("Starts get Extraction Rules ");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("filingId", filingId);
+		List<String> sortOrder = new ArrayList<String>();
+		sortOrder.add("Algorithm");
+		sortOrder.add("ALGORITHM");
+		sortOrder.add("TableIdentifier");
+		sortOrder.add("ID");
+		sortOrder.add("Instance");
+		sortOrder.add("INSTANCE");
+		sortOrder.add("Begin");
+		sortOrder.add("BEGIN");
+		sortOrder.add("Progress");
+		sortOrder.add("PROGRESS");
+		sortOrder.add("End");
+		sortOrder.add("END");
+		List<ExtractorTableidRouteByCik> extractor_rule_list = (ArrayList<ExtractorTableidRouteByCik>) (Object) genericDaoImpl
+				.findByNamedQuery(NamedQueryName.findExtractionRules,
+						ExtractorTableidRouteByCik.class, parameters);
+		Collections.sort(extractor_rule_list, new RulesManagementComparator(
+				sortOrder));
+		LOGGER.info("End get Extraction Rules ");
+		return extractor_rule_list;
+	}
+
+@SuppressWarnings("unchecked")
+@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+public Map<String,Map<String,Map<String,List<String>>>> getExtractionRunPropertiesByFilingId(Integer filingId,Integer parserId)
+{
+LOGGER.info("Starts get Extraction Run Properties ");
+Map<String, Object> parameters = new HashMap<String, Object>();
+parameters.put("filingId", filingId);
+List<ExtractorRunProperties> extractor_runproperties_list = (ArrayList<ExtractorRunProperties>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.findExtractiorRuleProperties,ExtractorRunProperties.class, parameters);
+
+parameters.put("parserId",  parserId);
+List<String> sectionList=(ArrayList<String>)(Object) genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getSectionListByParserId,ParserSectionMapping.class,parameters);
+
+Map<String,Map<String,Map<String,List<String>>>> dataMap=ExtractionUtil.f_getCustomConfigScreenData(extractor_runproperties_list,sectionList);
+		
+LOGGER.info("End get Extraction Rules ");
+return dataMap;
+}
+
+	/**
+	 * This method will save data in request queue
+	 * 
+	 * @return
+	 */
+	@Override
+	public Integer saveToRequestQueue(Integer customerId, String companyID,int userId, Integer userGroupId, Integer entityId, String processName) {
+
+			// Additional param to process in Year/Month/Date/Cust_ID format
+			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+			Date date = new Date();
+			String dateParam = dateFormat.format(date);
+			dateParam = dateParam + "/" + customerId;
+			dateParam = "\"" + dateParam + "\"";
+			String parameters = "<Parameters><Parameter><Name>Customer_ID</Name><Value>"
+					+ customerId
+					+ "</Value></Parameter>"
+					+ "<Parameter><Name>Date_Param</Name><Value>"
+					+ dateParam
+					+ "</Value></Parameter>"
+					+ "<Parameter><Name>Company_ID</Name><Value>\""
+					+ companyID
+					+ "\"</Value></Parameter>"
+					+ "<Parameter><Name>User_ID</Name><Value>"
+					+ userId
+					+ "</Value></Parameter>"
+					+ "<Parameter><Name>User_Group_ID</Name><Value>"
+					+ userGroupId
+					+ "</Value></Parameter>"
+					+ "<Parameter><Name>E_ID</Name><Value>"
+					+ entityId
+					+ "</Value></Parameter>" + "</Parameters>";
+			Integer requestId =normalizationService.rageProcessRequestQueue(processName, parameters);
+			return requestId;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public List<DocumentModel> getDocumentListByFilingID(Integer filingId){
+		LOGGER.info("** start getDocumentListByFilingID function");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("filingId", filingId);
+		List<DocumentModel> document_list = (ArrayList<DocumentModel>) (Object) genericDaoImpl
+				.findByNamedQuery(NamedQueryName.findDocumentByFilingId,
+						DocumentModel.class, parameters);
+		LOGGER.info("** End getDocumentListByFilingID function");
+		return document_list;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean saveUpadateDocument_Table(DocumentModelCommand modelCommand) {
+		LOGGER.info(" ** Start- saveUpadateDocument_Table function");
+		List<DocumentModel> documentList = new ArrayList<DocumentModel>();
+		for (int i = 0; i < modelCommand.getDcId().size(); i++) {
+			DocumentModel documentModel = new DocumentModel();
+			if(modelCommand.getDcId().get(i)!=0){
+			documentModel.setDcId(modelCommand.getDcId().get(i));
+			}
+			
+			documentModel.setFilingId(modelCommand.getFilingId());
+			
+			//here if null pointer exception occured means no data from UI side
+			try{
+			documentModel.setPageNo(modelCommand.getPageNo().get(i));
+			}catch(NullPointerException npe){
+			}catch (IndexOutOfBoundsException  aioe) {
+			}
+
+			try{
+			documentModel.setType(modelCommand.getType().get(i));
+			}catch(NullPointerException npe){
+			}catch (IndexOutOfBoundsException  aioe) {
+			}
+			try{
+			documentModel.setTemplateID(modelCommand.getTemplateID().get(i));				
+			}catch(NullPointerException npe){
+			}catch (IndexOutOfBoundsException  aioe) {
+			}
+			try{
+			documentModel.setTemplate_PageNo(modelCommand.getTemplate_PageNo().get(i));
+			}catch(NullPointerException npe){
+			}catch (IndexOutOfBoundsException  aioe) {
+			}
+			try{
+			documentModel.setYear(modelCommand.getYear().get(i));
+			}catch(NullPointerException npe){
+			}catch (IndexOutOfBoundsException  aioe) {
+			}
+			try {
+			documentModel.setCompanyName(modelCommand.getCompanyName().get(i));
+			} catch (NullPointerException npe) {
+			}catch (IndexOutOfBoundsException  aioe) {
+			}
+			
+			
+			documentList.add(documentModel);
+		}
+		genericDaoImpl.merge(documentList);
+		LOGGER.info(" ** End- saveUpadateDocument_Table function");
+		return true;
+	}
+
+	@Override
+	public Integer saveToRequestQueueForModifyStatus(String fillingId,String textFilePath, String status,String processName) {
+			String parameters = "<Parameters><Parameter><Name>MESSAGE</Name><Value>"
+							+ status
+							+ "</Value></Parameter><Parameter><Name>FILING_ID_Str</Name><Value>"
+							+ fillingId
+							+ "</Value></Parameter><Parameter><Name>TextFilePath</Name><Value>"
+							+ textFilePath
+							+ "</Value></Parameter></Parameters>";
+			Integer requestId = normalizationService.rageProcessRequestQueue(processName, parameters);
+			return requestId;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+	public boolean saveUpadateExtractionRunProperties(
+			ExtractorTableCommand extractorTableCommand){
+
+		LOGGER.info("--- ** start- saveUpadateExtractionRunProperties method--------");
+		List<ExtractorRunProperties> runPropertiesList = new ArrayList<ExtractorRunProperties>();
+		for (int i = 0; i < extractorTableCommand.getPropertyValue().size(); i++) {
+			ExtractorRunProperties runPropertiesObject = new ExtractorRunProperties();
+			if (extractorTableCommand.getErp_Id() != null) {
+				runPropertiesObject.setErpId(extractorTableCommand.getErp_Id()
+						.get(i));
+			}
+			runPropertiesObject
+					.setUploadId(extractorTableCommand.getUploadId());
+			runPropertiesObject
+					.setFilingId(extractorTableCommand.getFilingId());
+			runPropertiesObject.setErp_propertyName(extractorTableCommand
+					.getPropertyName().get(i));
+			runPropertiesObject.setErp_propertyValue(extractorTableCommand
+					.getPropertyValue().get(i));
+			runPropertiesObject.setErp_Date(new java.sql.Date(System
+					.currentTimeMillis()));
+			runPropertiesList.add(runPropertiesObject);
+		}
+		genericDaoImpl.merge(runPropertiesList);
+		LOGGER.info("--- ** End- saveUpadateExtractionRunProperties method--------");
+		return true;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+	public List<ExtractorRunProperties> getExtractionRunPropertiesByFilingIdAndUploadId(
+			Integer filingId, Integer uploadId){
+		LOGGER.info("** Starts  getExtractionRunPropertiesByFilingIdAndUploadId methode in ExtractionServiceImpl class ");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("filingId", filingId);
+		parameters.put("uploadId", uploadId);
+		List<ExtractorRunProperties> extractor_runproperties_list = (ArrayList<ExtractorRunProperties>) (Object) genericDaoImpl
+				.findByNamedQuery(
+						NamedQueryName.findExtractiorRulePropertiesByUploadId,
+						ExtractorRunProperties.class, parameters);
+		LOGGER.info("** End getExtractionRunPropertiesByFilingIdAndUploadId methode in ExtractionServiceImpl class ");
+		return extractor_runproperties_list;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+	public Integer getFirstUploadId(Integer filingId) {
+		LOGGER.info("** Starts  getExtractionRunPropertiesByFilingIdAndUploadId methode in ExtractionServiceImpl class ");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		Integer intValue = 0;
+		parameters.put("filingId", filingId);
+		List<Object> uploadIdList = genericDaoImpl.findByNativeNamedQuery(
+				NamedNativeQueryName.getFirstFileUploadId,
+				ExtractionMetadata.class, parameters);
+		LOGGER.info("** End getExtractionRunPropertiesByFilingIdAndUploadId methode in ExtractionServiceImpl class ");
+		if (!uploadIdList.isEmpty()) {
+			String value = uploadIdList.get(0).toString();
+			intValue = Integer.valueOf(value);
+		}
+		return intValue;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+	public boolean deleteExtractiorRulePropertiesByFilingId(Integer fillingId) {
+		LOGGER.info("--- ** start- deleteExtractiorRulePropertiesByFilingId method--------");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("filingId", fillingId);
+		boolean flag = false;
+		int count = genericDaoImpl.removeByNamedQuery(
+				NamedQueryName.deleteExtractiorRulePropertiesByFilingId,
+				ExtractorRunProperties.class, parameters);
+		if (count > 0) {
+			flag = true;
+		}
+		LOGGER.info("--- ** End- deleteExtractiorRulePropertiesByFilingId method--------");
+		return flag;
+	}
+
+	@Override
+	public Integer saveToRequestQueueFordebitACHMapping(String fillingId, String processName) {
+		LOGGER.info("--- ** Start- saveToRequestQueueFordebitACHMapping method--------");
+				String parameters = "<Parameters><Parameter><Name>Filing_ID</Name><Value>"
+								+ fillingId + "</Value></Parameter></Parameters>";
+				Integer requestId = normalizationService.rageProcessRequestQueue(processName, parameters);
+				
+				return requestId;
+				
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+	public List<ExtractionMetadata> getExtractionMetadatByFilingId(
+			Integer filingId, Integer uploadId) {
+		LOGGER.info("--- ** Start- getExtractionMetadatByFilingId method--------");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("filingId", filingId);
+		parameters.put("uploadId", uploadId);
+		List<ExtractionMetadata> extractionMetadataList = (ArrayList<ExtractionMetadata>) (Object) genericDaoImpl
+				.findByNamedQuery(NamedQueryName.findExtractionMetadata,
+						ExtractionMetadata.class, parameters);
+		LOGGER.info("--- ** End- getExtractionMetadatByFilingId method--------");
+		return extractionMetadataList;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+	public List<ExtractionMetadata> getDistinctSubSection()  {
+		LOGGER.info("--- ** Start- getDistinctSubSection method--------");
+		List<ExtractionMetadata> distinctSubsectionList = new ArrayList<ExtractionMetadata>();
+		List<Object> subsectionList = (ArrayList<Object>) (Object) genericDaoImpl
+				.findByNativeNamedQuery(
+						NamedNativeQueryName.findDistinctSubsectionFromExtMetadata,
+						ExtractionMetadata.class);
+		if (!subsectionList.isEmpty()) {
+			for (Object object : subsectionList) {
+				ExtractionMetadata extractionMetadata = new ExtractionMetadata();
+				Object[] objIn = (Object[]) object;
+				extractionMetadata.setSubSection(objIn[0].toString());
+				extractionMetadata.setSection(objIn[1].toString());
+				distinctSubsectionList.add(extractionMetadata);
+			}
+		}
+		LOGGER.info("--- ** End- getDistinctSubSection method--------");
+		return distinctSubsectionList;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+	public List<ExtractionMetadata> saveUpadateExtractiorMetaData(
+			ExtractorTableCommand extractorTableCommand) {
+		LOGGER.info("--- ** Start- saveUpadateExtractiorMetaData method--------"
+				+ extractorTableCommand.getUploadId());
+		List<ExtractionMetadata> extractorMetadataList = new ArrayList<ExtractionMetadata>();
+		for (int i = 0; i < extractorTableCommand.getSectionList().size(); i++) {
+			ExtractionMetadata extractorMetadataObject = new ExtractionMetadata();
+			if (extractorTableCommand.getExtMetadataIdList() != null) {
+				extractorMetadataObject.setExtMetadataId(extractorTableCommand
+						.getExtMetadataIdList().get(i));
+			}
+			extractorMetadataObject.setUploadId(extractorTableCommand
+					.getUploadId());
+			extractorMetadataObject.setFilingId(extractorTableCommand
+					.getFilingId());
+			if(extractorTableCommand.getSectionList().get(i)!=null)
+			extractorMetadataObject.setSection(extractorTableCommand.getSectionList().get(i));
+			if(extractorTableCommand.getSub_sectionList()!=null)
+			extractorMetadataObject.setSubSection(extractorTableCommand.getSub_sectionList().get(i));
+			
+			extractorMetadataObject.setKeyWords(extractorTableCommand
+					.getKeywordsList().get(i));
+			extractorMetadataList.add(extractorMetadataObject);
+		}
+		List<ExtractionMetadata> extractionMetadataList = (List<ExtractionMetadata>) genericDaoImpl
+				.merge(extractorMetadataList);
+		LOGGER.info("--- ** - saveUpadateExtractiorMetaData method--------"
+				+ extractorTableCommand.getUploadId());
+		return extractionMetadataList;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<PdfExtractionMetadata> getPdfBasedExtractionRuleByFilingId(Integer filingId,String flag) {
+		LOGGER.info("** Starts get getPdfBasedExtractionRuleByFilingId Rules ");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("filingId", filingId);
+		List<PdfExtractionMetadata> extractorRuleList = (ArrayList<PdfExtractionMetadata>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.findPdfExtractionMetadata,PdfExtractionMetadata.class, parameters);
+		
+		LOGGER.info("** End get Extraction Rules ");
+		return extractorRuleList;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value = ReusableConstant.RAGE_TX_MANAGER)
+	public boolean saveUpadateRulesIn_Pdf_Extractor_Table(List<PdfExtractionMetadata> pdfExtractionMetadataList)
+	{
+		boolean flag=false;
+		LOGGER.info("** Started- saveUpdateRulesInExtractor_Table methode in  ExtractionServiceImpl class---");
+		/** Here we insert or update values in PdfExtractionMetadata. **/
+		/** Here if pempid=0 then insert new record or update record. **/
+		Map<String, Object> parameters=null;
+		List<Object> sectionIdentificationListNySectionKeyWord=null;
+		if(!CollectionUtils.isEmpty(pdfExtractionMetadataList)){
+			String languageName=workQueueService.findLanguageByFilingId(pdfExtractionMetadataList.get(0).getPemFilingId());
+			for(PdfExtractionMetadata extractionMetadata:pdfExtractionMetadataList)
+			 {
+			 if(extractionMetadata.getPemPid()!=null && extractionMetadata.getPemPid()!=0)
+			 {
+				parameters = new HashMap<String, Object>();
+				parameters.put("PEM_BEGIN_PAGENO", extractionMetadata.getPemBeginPageNo());
+				parameters.put("PEM_BEGIN_KEYWORD", extractionMetadata.getPemBeginKeyword());
+				parameters.put("PEM_END_PAGENO", extractionMetadata.getPemendPageNo());
+				parameters.put("PEM_END_KEYWORD", extractionMetadata.getPemendKeyword());
+				parameters.put("PEM_ROW_SEGMENTATION_TYPE", extractionMetadata.getPemRowSegmentationType());
+				parameters.put("PEM_COLUMN_NUMBER_TO_SPLIT", extractionMetadata.getPemColumnNumberToSplit());
+				
+				parameters.put("PEM_FILINGID", extractionMetadata.getPemFilingId());
+				parameters.put("PEM_SECTION", extractionMetadata.getPemSection());
+				parameters.put("PEM_VALUE_ORDER", extractionMetadata.getPemeValueOrder());
+			
+				parameters.put("EXTRACTION_TYPE",extractionMetadata.getExtractionType());
+				parameters.put("EXTRACTION_AREA",extractionMetadata.getExtractionArea());
+				parameters.put("Rank",extractionMetadata.getRank());
+				parameters.put("TOPIC",extractionMetadata.getTopic());
+				
+				parameters.put("MODIFIED_BY",extractionMetadata.getCreatedBy());
+				parameters.put("MODIFY_DATE",new Date());
+				parameters.put("PEM_PID",extractionMetadata.getPemPid());
+				//Audit functionality for Update
+				f_saveUpdNewRecDelInReprocessAudit(extractionMetadata);
+				
+				genericDaoImpl.updateByNamedQuery(NamedQueryName.updatePDFEXtractionMetdataByFilingId, PdfExtractionMetadata.class,parameters);
+				flag=true;
+			 }else{
+				extractionMetadata.setLanguage(languageName);
+				parameters = new HashMap<String, Object>();
+				parameters.put("sectionName", extractionMetadata.getPemSection().trim());
+				parameters.put("keyWord", extractionMetadata.getPemBeginKeyword().trim());
+				sectionIdentificationListNySectionKeyWord=genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.SectionIdentificationBySectionKeyWord, SectionIdentification.class, parameters);
+				if(!CollectionUtils.isEmpty(sectionIdentificationListNySectionKeyWord)){
+					extractionMetadata.setPemStatus("Approved");
+				}else{
+					extractionMetadata.setPemStatus("Pending");
+				}
+				
+				f_saveUpdNewRecDelInReprocessAudit(extractionMetadata);
+			genericDaoImpl.persist(extractionMetadata);
+			 flag=true;
+			}
+			}
+		}
+		LOGGER.info("** End- saveUpdateRulesInExtractor_Table methode in  ExtractionServiceImpl class---");
+		return flag;
+	}
+	
+
+	@Override
+	public Integer saveToRequestQueueByFilingId(Integer fillingId,String processName) {
+				String parameters = "<Parameters><Parameter><Name>Filing_ID</Name><Value>"
+								+ fillingId + "</Value></Parameter></Parameters>";
+				Integer requestId =normalizationService.rageProcessRequestQueue(processName, parameters);
+			return requestId;
+	}
+
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+	public boolean f_deletePdfExtractionMetataDataByfilingId(Integer filingId,Integer tableId){
+		LOGGER.info("--- ** Start- f_deletePdfExtractionMetataDataByfilingId method--="+filingId);
+		boolean flag=false;
+		try{
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("filingId",filingId);
+		parameters.put("tableId", tableId);
+		genericDaoImpl.removeByNamedQuery(NamedQueryName.deletefromPdfExtrMetaBy_FillingIdAndTableId,PdfExtractionMetadata.class, parameters);
+		flag=true;
+		}catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error", e);
+			LOGGER.info("--- ** End- saveToRequestQueueByFilingId method--------");
+		}
+		LOGGER.info("--- ** End- f_deletePdfExtractionMetataDataByfilingId method--="+filingId);
+		return flag;
+	}
+	
+/**
+ * This method used for check changes from UI
+ */
+ @Override
+ @Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+ public boolean f_checkAnyChangeFromUI(PdfExtractionMetadata extractionMetadata,Map<Integer,PdfExtractionMetadata> existingRecordsMap){
+	boolean isAnyChangeFromUi=false;
+	try{
+	if(extractionMetadata.getOperation().equalsIgnoreCase("U")){
+		/**
+		* Here we get PdfExtractionMetadata object based on new Object pem_id
+		*/
+		PdfExtractionMetadata extractionMetadataNewOld=existingRecordsMap.get(extractionMetadata.getPemPid());
+		extractionMetadataNewOld.setParserId(extractionMetadata.getParserId());
+		extractionMetadataNewOld.setTransactionId(extractionMetadata.getTransactionId());
+		extractionMetadataNewOld.setStatus(extractionMetadata.getStatus());
+		extractionMetadataNewOld.setOperation("O");
+		/**
+		 * Equal method return true when no change from UI in existing record
+		 */
+		boolean flag=extractionMetadata.equals(extractionMetadataNewOld);
+		if(!flag){
+			
+		   ReprocessAudit reprocessAuditOld=f_getReprocessAuditObject(extractionMetadataNewOld);
+		   genericDaoImpl.persist(reprocessAuditOld);
+		//here save data in LS_REPROCESS_AUDIT table
+		   ReprocessAudit reprocessAuditNew=f_getReprocessAuditObject(extractionMetadata);
+	       genericDaoImpl.persist(reprocessAuditNew);
+	       isAnyChangeFromUi=true;
+	       
+		}
+	}else if(extractionMetadata.getOperation().equalsIgnoreCase("D") || extractionMetadata.getOperation().equalsIgnoreCase("N")){
+		ReprocessAudit audit=f_getReprocessAuditObject(extractionMetadata);
+        genericDaoImpl.persist(audit);
+        isAnyChangeFromUi=true;
+	}
+		
+	}catch (Exception e){
+	 LOGGER.error(e);
+	 e.printStackTrace();	
+	}	
+	return isAnyChangeFromUi;
+}
+
+public ReprocessAudit f_getReprocessAuditObject(PdfExtractionMetadata extractionMetadata){
+	ReprocessAudit reprocessAudit=new ReprocessAudit();
+	
+	try{
+		if(extractionMetadata!=null)
+		{
+			if(extractionMetadata.getCreatedBy()!=null)
+			{
+				reprocessAudit.setCreatedBy(Integer.valueOf(extractionMetadata.getCreatedBy()));
+			}
+			reprocessAudit.setCreatedDate(extractionMetadata.getCreatedDate());
+			if(extractionMetadata.getPemFilingId()!=null){
+			reprocessAudit.setPoaFilingId(extractionMetadata.getPemFilingId());	
+			}else{
+			reprocessAudit.setPoaFilingId(0);
+			}
+			reprocessAudit.setRaCrudStatus(extractionMetadata.getOperation());
+			reprocessAudit.setRaDocumentStatusOld(extractionMetadata.getStatus());
+			reprocessAudit.setRaPemBeginKeyword(extractionMetadata.getPemBeginKeyword());
+			reprocessAudit.setRaPemBeginPageno(extractionMetadata.getPemendPageNo());
+			reprocessAudit.setRaPemEndKeyword(extractionMetadata.getPemendKeyword());
+			reprocessAudit.setRaPemEndPageno(extractionMetadata.getPemendPageNo());
+			reprocessAudit.setRaSection(extractionMetadata.getPemSection());
+			reprocessAudit.setParserId(0);
+			reprocessAudit.setRaTransactionId(0);
+			
+		}
+	
+	}catch (Exception e) {
+	LOGGER.error(e);
+	e.printStackTrace();
+	}
+	return reprocessAudit;
+}
+
+
+@Override
+public Integer f_getMaxTransactionIdPdfExtraction() {
+
+	Integer maxTransationId = 1;
+
+	try {
+		List<Object> list = genericDaoImpl
+				.findByNamedQuery(NamedQueryName.getMaxTransactionIdFromPdfExtraction,
+						ReprocessAudit.class);
+		List<Integer> maxTempleVal = new ArrayList<Integer>();
+		for (Object object : list) {
+			maxTempleVal.add(object != null ? Integer.parseInt(object
+					.toString()) : 0);
+			maxTransationId = maxTempleVal.get(0) + 1;
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+		LOGGER.error("Error:", e);
+	}
+	return maxTransationId;
+
+}
+
+
+
+
+@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+public String f_updateRulesAtGlobalLevel(String pemIdArray,User user) {
+	LOGGER.info("**start--f_updateRulesAtGlobalLevel() methode");
+	
+	String msgUpdated = null;
+	List<String> existKey=null;
+	List<String> notExistKey=null;
+	 String mes1="";
+     String mes2="";
+	List<Object> sectionIdentificationListNySectionKeyWord=null;
+	String[] PemIdarray = pemIdArray.split(",");
+	try {
+		Set<Integer> pemIdSet = new HashSet<Integer>();
+		HashMap<String, Object> parameters = new HashMap<String, Object>();
+		if(null!=PemIdarray && PemIdarray.length>0){
+			for(String PemIdStr :PemIdarray){
+				pemIdSet.add(new Integer(PemIdStr));
+			}
+		}
+		if(!CollectionUtils.isEmpty(pemIdSet)){
+			existKey=new ArrayList<String>();
+			notExistKey=new ArrayList<String>();
+			parameters.put("pemPid", pemIdSet);
+			parameters.put("globalLevelValue", "Y");
+			parameters.put("pemStatus", "Approved");
+			List<SectionIdentification> sectionIdentificationList = new LinkedList<SectionIdentification>();
+			SectionIdentification sectionIdentification =null;
+			int updated=genericDaoImpl.updateByNamedQuery(NamedQueryName.updateGlobalValueColumnBypemPid, PdfExtractionMetadata.class,parameters);
+			if(updated>0){
+				parameters = new HashMap<String, Object>();
+				parameters.put("pemIdList", pemIdSet);
+				List<PdfExtractionMetadata> ruleList=genericDaoImpl.findByTypedNamedQuery(NamedQueryName.findPdfExtractionMetadataByPemPid, PdfExtractionMetadata.class, parameters);
+				String languageName=workQueueService.findLanguageByFilingId(ruleList.get(0).getPemFilingId());
+				if(!CollectionUtils.isEmpty(ruleList)){
+					for(PdfExtractionMetadata pdfExtractionMetadata:ruleList){
+						if((null!=pdfExtractionMetadata.getPemSection() && !"".equalsIgnoreCase(pdfExtractionMetadata.getPemSection().trim())) 
+								&& (null!=pdfExtractionMetadata.getPemBeginKeyword() && !"".equalsIgnoreCase(pdfExtractionMetadata.getPemBeginKeyword().trim()))){
+							sectionIdentification = new SectionIdentification();
+							sectionIdentification.setCreatedDate(new Date());
+							sectionIdentification.setCreatedBy(user.getLogin());
+							sectionIdentification.setLanguage(languageName);
+							sectionIdentification.setIsReviewed("Y");
+							sectionIdentification.setRowSegmentationType(pdfExtractionMetadata.getPemRowSegmentationType());
+							sectionIdentification.setColumnSplit((pdfExtractionMetadata.getPemColumnNumberToSplit()!=null && pdfExtractionMetadata.getPemColumnNumberToSplit().trim().length()>0)?new Integer(pdfExtractionMetadata.getPemColumnNumberToSplit().trim()):0);
+							sectionIdentification.setSectionName(pdfExtractionMetadata.getPemSection());
+							sectionIdentification.setKeyWord(pdfExtractionMetadata.getPemBeginKeyword());
+							parameters = new HashMap<String, Object>();
+							parameters.put("sectionName", sectionIdentification.getSectionName().trim());
+							parameters.put("keyWord", sectionIdentification.getKeyWord().trim());
+							sectionIdentificationListNySectionKeyWord=genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.SectionIdentificationBySectionKeyWord, SectionIdentification.class, parameters);
+				
+							if(CollectionUtils.isEmpty(sectionIdentificationListNySectionKeyWord)){
+								 notExistKey.add(sectionIdentification.getKeyWord().trim());
+								sectionIdentificationList.add(sectionIdentification);
+							}else{
+								 existKey.add(sectionIdentification.getKeyWord().trim());
+							}
+							
+						}
+					 }
+					if(!CollectionUtils.isEmpty(sectionIdentificationList)){
+						genericDaoImpl.persist(sectionIdentificationList);
+					}
+				//final message	
+			        String result1 = String.join(",",existKey);
+			        String result2= String.join(",",notExistKey);
+			        if(result1!=null && !result1.isEmpty()){
+			        	mes1="Exists rows :</br>"+"<b>"+result1+"</b>";
+			        }
+			        if(result2!=null && !result2.isEmpty()){
+			        	mes2="Updated rows :</br>"+"<b>"+result2+"</b>";
+			        }
+					msgUpdated=mes1 +"</br>"+mes2;	
+				}
+			}else{
+				msgUpdated="no rows are selected.";
+			}
+		}
+		
+	} catch (ArrayIndexOutOfBoundsException aioe) {
+		aioe.printStackTrace();
+		LOGGER.error("ArrayIndexOutOfBoundsException:", aioe);
+	} catch (NullPointerException npe) {
+		npe.printStackTrace();
+		LOGGER.error("NullPointerException:", npe);
+	} catch (IllegalArgumentException iae) {
+		iae.printStackTrace();
+		LOGGER.error("IllegalArgumentException:", iae);
+	} catch (Exception e) {
+
+		e.printStackTrace();
+		LOGGER.error("Error:", e);
+	}
+	LOGGER.info("**end--f_mergePdfBasedParser() methode");
+
+	return msgUpdated;
+}
+
+  
+  
+  @Override
+  @Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+  public Integer generatePkForRequestQueue()
+  {
+  	Map<String, Object> parameterMap = new HashMap<String, Object>();
+  	parameterMap.put("sequenceName", "RD_SEQUENCE");
+  	Integer id = null;
+  	synchronized (parameterMap) {
+  		genericDaoImpl.updateByNamedQuery(NamedQueryName.updateRequestQueueSequencer, RageSequenceMaster.class, parameterMap);	
+		List<Object> reqQueueSeq = genericDaoImpl.findByNamedQuery(NamedQueryName.getRequestQueueSequencer,RageSequenceMaster.class, parameterMap);
+		id = Integer.parseInt(reqQueueSeq.get(0).toString());
+  	}
+  	return id;
+  }
+
+  @SuppressWarnings("unchecked")
+@Override
+	public Map<Integer,String> getPOAsRepLabelMap(int filingId) {
+		LOGGER.info("getPOAsRepLabelMap started");
+		
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("filingId", filingId);
+		Map<Integer, String> poAsRepLabelMap = new HashMap<Integer, String>();
+		
+		List<ParserOutput> parserOutputList = (ArrayList<ParserOutput>) (Object)genericDaoImpl.findByNamedQuery(
+				NamedQueryName.getParserOutputListByFilingId,
+				ParserOutput.class, parameterMap);
+		StringBuilder sb= null;
+		if(!CollectionUtils.isEmpty(parserOutputList)){
+			for(ParserOutput parserOutput : parserOutputList){
+				if(parserOutput.getPoAsRepLabel()!=null && !parserOutput.getPoAsRepLabel().equalsIgnoreCase("")){
+					sb= new StringBuilder("");
+					sb.append(parserOutput.getPoSection())
+					  .append("-")
+					  .append(parserOutput.getPoIndexOrder())
+					  .append("-")
+					  .append(parserOutput.getPoAsRepLabel().replaceAll("'", "\""));
+					poAsRepLabelMap.put(parserOutput.getPoId(), sb.toString());
+				}
+			}
+			
+		}
+
+		LOGGER.info("getPOAsRepLabelMap ends");
+		return poAsRepLabelMap;
+	}
+
+@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+public boolean saveMOdifyStaus(String fillingId, String userRole, String status,Long userId,String buttonStatus) {
+	ProcessLogTracker plt=null;
+	boolean flag=false;
+	try{
+if(fillingId!=null && !fillingId.isEmpty()){
+	plt=new ProcessLogTracker();
+	plt.setUserId(userId.intValue());
+	plt.setUserRole(userRole);
+	plt.setFillingId(Integer.parseInt(fillingId));
+	plt.setInsertedTime(new Date());
+	plt.setSelectedStatus(status);
+	plt.setActivity(buttonStatus);
+	genericDaoImpl.persist(plt);
+	flag=true;
+}
+	}
+	catch(Exception e){
+		 LOGGER.error("Error In saveMOdifyStaus file:"+e);
+	}
+	return flag;
+}
+
+@SuppressWarnings("unchecked")
+@Override
+public List<String> findSetionListByCategory(String sectionName) {
+	LOGGER.info("**start findSetionListByCategory started");
+	Map<String, Object> parameters = new HashMap<String, Object>();
+	parameters.put("sectionName", sectionName);
+	List<String> sectionList=(List<String>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getSectionListByCategoty, SectionMappingModel.class, parameters);
+	LOGGER.info("**end sectionList size="+sectionList.size());
+	return sectionList;
+}
+
+@Override
+public Integer saveToRequestQueueForColumnMerge(Integer filling, String section,String processName) {
+		String parameters = "<Parameters><Parameter><Name>Filing_Id</Name><Value>"
+						+ filling.toString()
+						+ "</Value></Parameter>"
+						+ "<Parameter><Name>Flag</Name><Value>"
+						+ "Y"
+						+ "</Value></Parameter>" + "</Parameters>";
+		Integer requestId = normalizationService.rageProcessRequestQueue(processName, parameters);
+		return requestId;
+}
+
+@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+public boolean saveColumnMerge(Integer fillingId, String userRole, String status, Long userId, String string) {
+	ProcessLogTracker plt=null;
+	boolean flag=false;
+	try{
+if(fillingId!=null){
+	plt=new ProcessLogTracker();
+	plt.setUserId(userId.intValue());
+	plt.setUserRole(userRole);
+	plt.setFillingId(fillingId);
+	plt.setInsertedTime(new Date());
+	plt.setSelectedStatus(status);
+	plt.setActivity("");
+	genericDaoImpl.persist(plt);
+	flag=true;
+}
+	}
+	catch(Exception e){
+		 LOGGER.error("Error In saveMOdifyStaus file:"+e);
+	}
+	return flag;
+}
+
+
+@SuppressWarnings({ "rawtypes", "unchecked" })
+@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+public Map<Integer, Map<String, List<PdfExtractionMetadata>>> f_getPdfExtractionDataBySectionWise(Integer filingId,Integer parserId) {
+LOGGER.info("**Start-f_getPdfExtractionDataBySectionWise methode");
+Map<Integer,Map<String,List<PdfExtractionMetadata>>> extractionDataMapBySection=new LinkedHashMap<>();
+try{
+Map<String, Object> parameters = new HashMap<String, Object>();
+parameters.put("parserId",  parserId);
+List<String> sectionList=(ArrayList<String>)(Object) genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getSectionListByParserId,ParserSectionMapping.class,parameters);
+parameters.put("filingId",  filingId);
+Map<String,List<PdfExtractionMetadata>> sectionMapTable1=new LinkedHashMap();
+Map<String,List<PdfExtractionMetadata>> sectionMapTable2=new LinkedHashMap();
+for(String section:sectionList){
+	parameters.put("section", section);
+	List<PdfExtractionMetadata> pdfExtractionMetadataList=(ArrayList<PdfExtractionMetadata>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.findPdfExtractionMetadataBySection,PdfExtractionMetadata.class,parameters);
+	if(section.equalsIgnoreCase("DIOF"))
+	{
+		sectionMapTable2.put(section,pdfExtractionMetadataList);
+	}else{
+		sectionMapTable1.put(section,pdfExtractionMetadataList);
+	}
+}
+extractionDataMapBySection.put(1,sectionMapTable1);
+extractionDataMapBySection.put(2,sectionMapTable2);
+
+LOGGER.info("**End-f_getPdfExtractionDataBySectionWise methode");
+}catch(Exception e){
+	e.printStackTrace();
+	LOGGER.error("Error:",e);
+}
+return extractionDataMapBySection;
+}
+
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value = ReusableConstant.RAGE_TX_MANAGER)
+	public boolean updateSaveExtractorRunProperties(ExtractorRunProperties extractorRunProperties) {
+		LOGGER.info("** start-updateSaveExtractorRunProperties methode");
+
+		boolean flag = false;
+		Number rowCount=0;
+		try {
+//Here check property values is exist or not 
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("filingId", extractorRunProperties.getFilingId());
+			parameters.put("propertyName",extractorRunProperties.getErp_propertyName());
+			 List<Object> countTotalRows=genericDaoImpl.findByNamedQuery(NamedQueryName.countExtractiorRulePropertiesByPropName,ExtractorRunProperties.class,parameters);
+			  if (!countTotalRows.isEmpty()) {
+				 rowCount= (Number) countTotalRows.get(0);
+			  }
+			  //here row is exist need to update
+			if (rowCount.intValue() != 0) {
+				parameters.put("propertyValue", extractorRunProperties.getErp_propertyValue());
+				parameters.put("createdBy", extractorRunProperties.getCreatedBy());
+				parameters.put("createdDate", extractorRunProperties.getCreatedDate());
+				genericDaoImpl.updateByNamedQuery(NamedQueryName.updateExtractiorRulePropertiesByFilingId, ExtractorRunProperties.class,parameters);
+			
+			}else{
+			genericDaoImpl.persist(extractorRunProperties);
+			}
+		   flag = true;
+	       LOGGER.info("** End-updateSaveExtractorRunProperties methode");
+		} catch (Exception e) {
+			LOGGER.error("Error In updateSaveExtractorRunProperties file:" + e);
+			e.printStackTrace();
+		}
+		return flag;
+	}
+
+	
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value = ReusableConstant.RAGE_TX_MANAGER)
+	public boolean deleteExtractionRules(List<Integer> pemPidList) {
+		LOGGER.info("** start-deleteExtractionRules methode");
+
+		boolean flag = false;
+		try {
+			f_saveDeleteRecInReprocessAudit(pemPidList);
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("pemPidList", pemPidList);
+			genericDaoImpl.removeByNamedQuery(NamedQueryName.deleteExtractorRuleById,PdfExtractionMetadata.class, parameters);
+		   flag = true;
+	       LOGGER.info("** End-updateSaveExtractorRunProperties methode");
+		} catch (Exception e) {
+			LOGGER.error("Error In updateSaveExtractorRunProperties file:" + e);
+			e.printStackTrace();
+		}
+		return flag;
+	}
+	
+	public boolean f_saveUpdNewRecDelInReprocessAudit(PdfExtractionMetadata pdfExtractionMetadata) {
+		boolean flag = false;
+		try{
+		List<ReprocessAudit> reprocessAuditList = new ArrayList<>();
+		if (pdfExtractionMetadata.getPemPid() != null) {
+		ReprocessAudit reprocessAuditNew = f_getReprocessAuditObject(pdfExtractionMetadata);
+		reprocessAuditNew.setRaCrudStatus("N");
+		reprocessAuditList.add(reprocessAuditNew);
+		Map<String,Object> paramMap=new HashMap<>();
+		paramMap.put("pemIdList", pdfExtractionMetadata.getPemPid());
+		List<PdfExtractionMetadata> ruleList=genericDaoImpl.findByTypedNamedQuery(NamedQueryName.findPdfExtractionMetadataByPemPid, PdfExtractionMetadata.class, paramMap);
+		if(!ruleList.isEmpty() && ruleList!=null && ruleList.size()!=0){
+			PdfExtractionMetadata pdfExtMetaOld=ruleList.get(0);
+			ReprocessAudit reprocessAuditOld=f_getReprocessAuditObject(pdfExtMetaOld);
+			reprocessAuditOld.setRaCrudStatus("O");
+			reprocessAuditList.add(reprocessAuditOld);
+		}
+		}else {
+		ReprocessAudit reprocessAuditNew=f_getReprocessAuditObject(pdfExtractionMetadata);
+		reprocessAuditNew.setRaCrudStatus("N");
+		reprocessAuditList.add(reprocessAuditNew);
+		}
+		if (!reprocessAuditList.isEmpty()) {
+			genericDaoImpl.persist(reprocessAuditList);
+			flag = true;
+		}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return flag;
+	}
+	public boolean f_saveDeleteRecInReprocessAudit(List<Integer> pemIdList ) {
+		boolean flag = false;
+		try
+		{
+		Map<String,Object> paramMap=new HashMap<>();
+		paramMap.put("pemIdList", pemIdList);
+		List<PdfExtractionMetadata> ruleList=genericDaoImpl.findByTypedNamedQuery(NamedQueryName.findPdfExtractionMetadataByPemPid, PdfExtractionMetadata.class, paramMap);
+		for(PdfExtractionMetadata extractionMetadata: ruleList){
+			ReprocessAudit audit=f_getReprocessAuditObject(extractionMetadata);
+			audit.setRaCrudStatus("D");
+			genericDaoImpl.persist(audit);
+		}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return flag;
+	}
+	
+	@Override
+	public Integer forcedOCR(String filingId, String processName,String oldStatus) throws Exception 
+	{
+		String requestParam="<Parameters><Parameter><Name>FilingID</Name><Value>"+filingId+"</Value></Parameter><Parameter><Name>status</Name><Value>"+oldStatus+"</Value></Parameter></Parameters>";
+		Integer requestId = normalizationService.rageProcessRequestQueue(processName,requestParam);
+		return requestId;
+	}
+	
+
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+	public Long getTotalRecordsOfGlobalData(SectionIdentificationCommand cmd) {
+	    Long totalRecords=0l;
+	   	    String dynamic="";
+		    String sqlCountQuery=null;
+		    boolean whFlag=false;
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			if(cmd!=null){
+				if (cmd.getKeyword()!=null && !cmd.getKeyword().isEmpty()) {
+					parameters.put("keyword", cmd.getKeyword()+"%");
+					dynamic=dynamic+"keyword like :keyword "; 
+					whFlag=true;
+				}
+				if (cmd.getLanguage()!=null && !cmd.getLanguage().isEmpty()&& !cmd.getLanguage().equalsIgnoreCase("ALL")) {
+					parameters.put("language", cmd.getLanguage());
+					if(whFlag){
+						dynamic=dynamic+" and ";
+					}
+					dynamic=dynamic+"language = :language "; 
+					whFlag=true;
+				}
+				
+				if (cmd.getSectionName()!=null && !cmd.getSectionName().isEmpty() && !cmd.getSectionName().equalsIgnoreCase("ALL")){
+					if(whFlag){
+						dynamic=dynamic+" and ";
+					}
+					parameters.put("section", cmd.getSectionName());
+					dynamic=dynamic+"sectionname =:section"; 
+					whFlag=true;
+				}
+				if(whFlag){
+					dynamic=" where "+dynamic;
+				}
+				}
+
+		        sqlCountQuery="select  count(ID) from LS_SECTION_IDENTIFICATION"+dynamic;
+				totalRecords =normalizationViewDAO.getCountResult(sqlCountQuery,parameters);
+			   return totalRecords.longValue();	
+	}
+	
+	
+	@Override
+	public List<SectionIdentification> getGloblaMetaData(SectionIdentificationCommand cmd) {
+		LOGGER.info("get getGloblaMetaData  List starts");
+		List<SectionIdentification> siObjectsList=null;
+		SectionIdentification siObject=null;
+		String  dynamic="";
+		String  dynamicPage="";
+		boolean whFlag=false;
+		boolean pageFlag=false;
+
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		if(cmd!=null){
+			if (cmd.getKeyword()!=null && !cmd.getKeyword().isEmpty()) {
+				parameters.put("keyword", cmd.getKeyword()+"%");
+				dynamic=dynamic+"keyword Like :keyword "; 
+				whFlag=true;
+		
+			}
+			if (cmd.getLanguage()!=null && !cmd.getLanguage().isEmpty()&& !cmd.getLanguage().equalsIgnoreCase("ALL")) {
+				parameters.put("language", cmd.getLanguage());
+				if(whFlag){
+					dynamic=dynamic+" and ";
+				}
+				dynamic=dynamic+"language = :language "; 
+				whFlag=true;
+				
+			}
+			if (cmd.getSectionName()!=null && !cmd.getSectionName().isEmpty() && !cmd.getSectionName().equalsIgnoreCase("ALL")){
+				parameters.put("section", cmd.getSectionName());
+				if(whFlag){
+					dynamic=dynamic+" and ";
+				}
+				dynamic=dynamic+"sectionname =:section "; 
+				whFlag=true;
+			
+			}
+			
+			if (cmd.getStartPageNo()!=null && cmd.getStartPageNo()!=0) {
+				parameters.put("startNum", cmd.getStartPageNo());
+				dynamicPage=dynamicPage+"Num >= :startNum "; 
+				pageFlag=true;
+			}
+			if (cmd.getEndPageNo()!=null && cmd.getEndPageNo()!=0){
+				parameters.put("endNum", cmd.getEndPageNo());
+				if(pageFlag){
+				dynamicPage=dynamicPage+" and ";
+				}
+				dynamicPage=dynamicPage+"Num < =:endNum "; 
+			}
+			}
+			if(whFlag){
+				dynamic=" where "+dynamic;
+			}
+			if(pageFlag){
+				dynamicPage=" where "+dynamicPage;
+			}	
+		String dynamicQuery="select * from (Select row_number() over(order by ID desc) as Num,ID,SECTIONNAME,LANGUAGE,KEYWORD  from LS_SECTION_IDENTIFICATION"+dynamic+") si  "+dynamicPage;
+		List<Object> globalMeata =normalizationViewDAO.getListOfObjects(dynamicQuery,parameters);
+		if(globalMeata!=null && globalMeata.size()>0){
+			siObjectsList=new ArrayList<SectionIdentification>();
+			for(Object object:globalMeata){
+				Object[] obj = (Object[]) object;
+				siObject=new SectionIdentification();
+				siObject.setSectionIdentificationId(obj[1] == null ? 0 : Integer.parseInt(obj[1].toString()));
+				siObject.setSectionName(obj[2] == null ? "" : obj[2].toString());
+				siObject.setLanguage(obj[3] == null ? "" : obj[3].toString());
+				siObject.setKeyWord(obj[4] == null ? "" : obj[4].toString());
+				siObjectsList.add(siObject);
+			 }
+		}
+		return siObjectsList;
+	}
+
+	@Override
+	public List<String> getKeywordList(String keyword) {
+		
+			List<String> keywordList=null;
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("keyword", keyword+"%");
+			List<Object> keywords=genericDaoImpl.findByNamedQuery(NamedQueryName.getAutoCompleteKeywordMetaDataList,SectionIdentification.class,parameters);
+			if (keywords != null) {
+				keywordList = new ArrayList<String>();
+				for (Object object : keywords) {
+				keywordList.add(object.toString()!=null?object.toString():"");
+				}
+			}
+		return keywordList;
+	}
+
+
+	@Override
+	public Map<String, List<String>> getGlobalDropDwnList() {
+		List<String> sectionList=null;
+		List<String> languageList=null;
+		Map<String, List<String>>   addDropDwnMap=new HashMap<String, List<String>>();
+		List<Object> sections=genericDaoImpl.findByNamedQuery(NamedQueryName.getSectionMetaDataList,SectionIdentification.class);
+		List<Object> languages=genericDaoImpl.findByNamedQuery(NamedQueryName.getLanguageMetaDataList,SectionIdentification.class);
+		//keyword List	
+		if (sections != null) {
+			sectionList = new ArrayList<String>();
+			for (Object object : sections) {
+				sectionList.add(object.toString() != null ? object.toString() : "");
+			}
+		}
+		 //Language List
+		if (languages != null) {
+			languageList = new ArrayList<String>();
+			for (Object object : languages) {
+				languageList.add(object.toString() != null ? object.toString() : "");
+			}
+		}
+		addDropDwnMap.put("sectionList", sectionList);
+		addDropDwnMap.put("languageList", languageList);
+		return addDropDwnMap;
+	}
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value = ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean deleteExtractionITRRules(List<Integer> dcIdList) {
+		LOGGER.info("** start-deleteExtractionRules methode");
+
+		boolean flag = false;
+		try {
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("dcIdIdList", dcIdList);
+			genericDaoImpl.removeByNamedQuery(NamedQueryName.deleteExtractorITRRuleById,DocumentModel.class, parameters);
+		   flag = true;
+	       LOGGER.info("** End-deleteExtractionITRRules methode");
+		} catch (Exception e) {
+			LOGGER.error("Error In deleteExtractionITRRules file:" + e);
+			e.printStackTrace();
+		}
+		return flag;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value = ReusableConstant.APPLICATION_TX_MANAGER)
+	public List<BankMaster> getBankNameList() {
+		LOGGER.info("** Start-getBankNameList methode");
+		List<BankMaster> bankNameList=(List<BankMaster>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getBankNameList, BankMaster.class);
+		LOGGER.info("** End-getBankNameList methode");
+		return bankNameList;
+	}
+}

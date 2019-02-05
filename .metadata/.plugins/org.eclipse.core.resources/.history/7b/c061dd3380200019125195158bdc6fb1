@@ -1,0 +1,91 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author KP0e1301
+ *
+ */
+
+@Entity
+@Table(name = "ULTIMATE_PARENT")
+@NamedQueries({
+	@NamedQuery(name = "getUltimateParentList", query = "select ultimateParent from UltimateParent ultimateParent where ultimateParentName is not null and ultimateParentName !=''"),
+	@NamedQuery(name = "getUltimateParentUltimateParentId", query = "select ultimateParent from UltimateParent ultimateParent where ultimateParentId.ultimateParentId=:ultimateParentId "),
+	@NamedQuery(name = "getUltimateParentByName", query = "select ultimateParent from UltimateParent ultimateParent where ultimateParentName is not null and Upper(ultimateParentName) =Upper(:ultimateParentName)")
+})
+public class UltimateParent implements Serializable, BaseEntity{
+	
+	
+	
+	
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	
+	@Id
+	/*@GeneratedValue(generator = "sequence")
+	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_ARS_PO_MAPPING_ID") })*/
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ULTIMATE_PARENT_ID")
+	private Integer ultimateParentId;
+	
+	
+	@Column(name = "ULTIMATE_PARENT_NAME")
+	private String ultimateParentName;
+
+	
+	
+	
+	public Integer getUltimateParentId() {
+		return ultimateParentId;
+	}
+
+
+
+
+	public void setUltimateParentId(Integer ultimateParentId) {
+		this.ultimateParentId = ultimateParentId;
+	}
+
+
+
+
+	public String getUltimateParentName() {
+		return ultimateParentName;
+	}
+
+
+
+
+	public void setUltimateParentName(String ultimateParentName) {
+		this.ultimateParentName = ultimateParentName;
+	}
+
+
+
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

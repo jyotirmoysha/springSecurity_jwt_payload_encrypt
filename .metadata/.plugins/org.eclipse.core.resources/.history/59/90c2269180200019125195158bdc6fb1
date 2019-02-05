@@ -1,0 +1,30 @@
+.right-panel{float:right; margin:-15px 0 0 0;}
+.logout{margin:-2px 0 0 10px; color:#fff; font-size:11px; width:100%;}
+.menu-wrap{background:none !important; float:left; margin:-10px 0 0 0;}
+.menu {background:none !important; margin:0 atuo 0 0;}
+.menu li {background:none !important; margin:0; list-style:none; font-family:'arial'; font-size:13px;}
+.menu a {transition:all linear 0.15s; color:#fff; font-size:12px; text-align:left;}
+.menu li:hover > a, .menu .current-item > a {text-decoration:none; color:#fcbd2c;}
+.menu .arrow {font-size:11px; line-height:0%; margin:0 0 0 3px;}
+ /*----- Top Level -----*/
+.menu > ul > li {background:none !important; float:left; display:inline-block; position:relative; font-size:19px;}
+.menu > ul > li > a {padding:10px 20px 5px 10px; margin-top:11px; display:inline-block; color:#fff; background:#000; font-weight:normal; font-size:13px; font-family:"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; text-decoration:none;}
+.menu > ul > li:hover > a, .menu > ul > .current-item > a {background:#f2f2f2; color:#666; border-top-left-radius:3px; border-top-right-radius:3px;}
+ /*----- Bottom Level -----*/
+.menu li:hover .sub-menu {z-index:1; opacity:1;}
+.sub-menu {width:100%; padding:3px 0px; position:absolute; top:100%; left:0px; z-index:-1; opacity:0; transition:opacity linear 0.15s; box-shadow:0px 2px 3px rgba(0,0,0,0.2); border-bottom-left-radius:3px; border-bottom-right-radius:3px; background:#f2f2f2;}
+.sub-menu li {display:block; font-size:16px;}
+.sub-menu li a {padding:5px 10px 8px 12px;display:block; text-decoration:none; color:#666;}
+.sub-menu li a:hover, .sub-menu .current-item a {background:#ccc; color:#666;}
+
+.login-container{width:28%; height:auto; overflow:hidden; margin:10px auto;}
+.login-bg1{background:#fff;  border-radius:0px; border-left:1px solid #ccc; border-right:1px solid #ccc; border-bottom:1px solid #ccc;}
+.login-title{background:#004870; border-top-left-radius:0px; border-top-right-radius:0px; padding:0; margin:0;}
+.login-title  h3{color:#fff; font-family:Helvetica Neue, Helvetica, Arial, sans-serif; font-size:16px; font-weight:normal; padding:10px; line-height:20px; border-bottom:1px solid #ccc;}
+.login-body{height:auto; overflow:hidden; margin:0; padding:10px;}
+.label{color:#4D4D4D; font-size:13px; padding:0 0 0 7px; font-weight:normal; font-family:Helvetica Neue, Helvetica, Arial, sans-serif;}
+.input{ border:1px solid #ccc; border-radius:0px; width:93%; height:34px; margin:3px 0 10px 7px; padding:2px 0px 1px 5px; background:#fff; font-size:13px; font-family:arial; color:#2f2f30; }
+.btn-blue {color: #fff; font-family:arial; font-size:12px; background-color: #006695; font-weight:normal; border-color: #006695; border:none; border-radius:0px; padding:6px;}
+.btn-blue:hover{color: #fff; background-color: #3276b1; border-color: #285e8e; border-radius:0px;}
+
+.modal-header .close {margin-top:11px;}

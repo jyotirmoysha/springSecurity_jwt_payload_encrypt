@@ -1,0 +1,176 @@
+package com.livespread.security;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.util.CollectionUtils;
+
+import com.livespread.common.Constant;
+import com.livespread.domain.User;
+import com.livespread.util.CipherUtils;
+
+public class CsrfToken {
+	private static Logger LOGGER = Logger.getLogger(CsrfToken.class);
+	static List<String> urlList =null;
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public synchronized static void generateToken(HttpServletRequest request, HttpServletResponse response,boolean secureCookie) {
+
+		try{
+			HttpSession session = request.getSession(false);
+			List<String> tokenList = null;
+			User userInfo=null;
+			String userLoginName = "--";
+			String generatedSecretToken = getToken( request );
+			String encryptedSecretToken = CipherUtils.encrypt(generatedSecretToken);
+			Cookie cookie = new Cookie("secure_tk", encryptedSecretToken);
+			cookie.setMaxAge(24*60*60);		
+			String absoluteUrl = request.getRequestURL().substring(request.getRequestURL().indexOf(request.getContextPath()), request.getRequestURL().length());
+			if(secureCookie)
+			{
+				cookie.setSecure(true);
+				cookie.setHttpOnly(true);
+			}
+			
+			Cookie[] responseCookie = request.getCookies();
+			String responseCookieName=null;
+			if(responseCookie!=null)
+			{
+				for( Cookie selectedCookie : responseCookie ){
+					responseCookieName = selectedCookie.getName();
+					if(responseCookieName.equalsIgnoreCase("secure_tk"))
+					{
+						selectedCookie.setMaxAge(0);
+					}
+				}
+			}
+
+				response.addCookie( cookie );	
+
+				
+/*			if(secureCookie)
+			{
+			response.addHeader("Set-Cookie", "secure_tk=" + encryptedSecretToken+"; secure; httpOnly");
+			}*/
+			if(session!=null){
+				userInfo = (User) request.getSession().getAttribute("user");
+				if(userInfo != null)
+					userLoginName = userInfo.getLogin();
+				LOGGER.info("Session tracking Token_tracking_for_user_["+userLoginName+"] with session id ["+session.getId()+"] generated token ["+generatedSecretToken+"] encrypted token ["+encryptedSecretToken+"] for request ["+absoluteUrl+" method="+request.getParameter("methodToCall")+"]");
+				if (session.getAttribute("tokenList")==null)
+				{
+					tokenList = new ArrayList<String>();
+					tokenList.add(generatedSecretToken);	
+				} else {
+					tokenList = (List<String>)session.getAttribute("tokenList");
+					/*if(clearCSRFListUrls().contains(request.getServletPath()))
+					{
+						tokenList=new ArrayList<>();
+					}*/
+					int totalSize = 50;
+					if(tokenList.size()== totalSize){  
+                           tokenList = new ArrayList(tokenList.subList(1,totalSize));  
+						if(!tokenList.contains(generatedSecretToken))
+						{
+							tokenList.add(generatedSecretToken);
+						}
+					}else{
+						if(!tokenList.contains(generatedSecretToken))
+						{
+							tokenList.add(generatedSecretToken);
+						}
+					}
+					
+				}
+				session.setAttribute("tokenList", tokenList);
+			}
+		}catch(RuntimeException re){
+			throw re;
+		}
+	}
+	
+	public static String getToken(HttpServletRequest request){
+		String token = Constant.BLANK;
+		String sessionId = request.getSession(false)== null ? Constant.BLANK : request.getSession(false).getId();
+		token = sessionId+System.currentTimeMillis();
+		return token;
+	}
+	
+	
+	@SuppressWarnings("unchecked")
+	public synchronized static boolean isValidToken(HttpServletRequest request, HttpServletResponse response, Map<String, String> cookieValueDetailsMap)throws IOException, ServletException {
+
+		try{
+			HttpSession session = request.getSession(false);
+			Cookie[] cookies = request.getCookies();
+			String cookieName = null;
+			String receivedSecretToken = "";
+			String decryptedSecretToken = "";
+			User userInfo = null;
+			String userLoginName = "--";
+			String absoluteUrl = request.getRequestURL().substring(request.getRequestURL().indexOf(request.getContextPath()), request.getRequestURL().length());
+			
+			if(session == null){
+				LOGGER.info("Token_tracking_for_user_["+userLoginName+"] found null session for request ["+absoluteUrl+" method="+request.getParameter("methodToCall")+"] and work queue id ["+"], returning as invalid token.");
+				return false;
+			}else{
+				userInfo = (User) request.getSession().getAttribute("user");
+				if(userInfo != null)
+					userLoginName = userInfo.getLogin();
+			}
+			receivedSecretToken = request.getSession(false) == null ? null : session.getAttribute("secretToken") == null ? null : ( String )session.getAttribute( "secretToken" );
+			if(StringUtils.isNotEmpty((receivedSecretToken))){				
+				decryptedSecretToken = CipherUtils.decrypt( receivedSecretToken ); 
+				LOGGER.info("Token_tracking_for_user_["+userLoginName+"] with session id ["+session.getId()+"], token received from session attribute is ["+receivedSecretToken+"] after decryption ["+decryptedSecretToken+"] for request ["+absoluteUrl+" method="+request.getParameter("methodToCall")+"] and work queue id .");
+				request.getSession(false).removeAttribute("secretToken");
+			}
+			if(StringUtils.isBlank(receivedSecretToken) && null != cookies){
+				for( Cookie cookie : cookies ){
+					cookieName = cookie.getName();
+					
+					if( StringUtils.isNotBlank( cookieName ) && cookieName.equals("secure_tk") ){
+						receivedSecretToken =  cookie.getValue();
+						decryptedSecretToken = CipherUtils.decrypt( receivedSecretToken ); 						
+						LOGGER.info("Token_tracking_for_user_["+userLoginName+"] with session id ["+session.getId()+"], token received from cookie ["+receivedSecretToken+"] after decryption ["+decryptedSecretToken+"] for request ["+absoluteUrl+" method="+request.getParameter("methodToCall")+"] and work queue id.");
+						break;
+					}
+				}
+			}else{
+				LOGGER.info("Token_tracking_for_user_["+userLoginName+"] with session id ["+session.getId()+"] found null cookies for request ["+absoluteUrl+" method="+request.getParameter("methodToCall")+"] and work queue id .");
+			}
+			List<String> tokenList = (List<String>)session.getAttribute("tokenList");
+			boolean status= false;
+			if(!CollectionUtils.isEmpty(cookieValueDetailsMap))
+			{
+				if(request.getRequestedSessionId().equals(cookieValueDetailsMap.get("id")) && receivedSecretToken.equals(cookieValueDetailsMap.get("secure_tk")))
+				status= true;
+			}
+			if(status && !CollectionUtils.isEmpty(tokenList) && tokenList.contains(decryptedSecretToken)){
+				tokenList.remove(decryptedSecretToken);
+				session.setAttribute("tokenList", tokenList);
+				LOGGER.info("Token_tracking_for_user_["+userLoginName+"] with session id ["+session.getId()+"], received token ["+receivedSecretToken+"] after decryption ["+decryptedSecretToken+"] is present in token list for request ["+absoluteUrl+" method="+request.getParameter("methodToCall")+"] and work queue id , hence returning as valid token.");
+				return true;
+			}else{				
+				Integer tokenListSize = tokenList == null ? -1 : tokenList.size();		
+				LOGGER.info("Token_tracking_for_user_["+userLoginName+"] with session id ["+session.getId()+"], received token ["+receivedSecretToken+"] after decryption ["+decryptedSecretToken+"] is not found in token list with size ["+tokenListSize+"] in "+tokenList+" for request ["+absoluteUrl+" method="+request.getParameter("methodToCall")+"] and work queue id  hence invalidate session.");
+				if(request.getSession(false)!=null){
+					LOGGER.info("Token_tracking_for_user_["+userLoginName+"] invalidating session with session id ["+session.getId()+"] for request ["+absoluteUrl+" method="+request.getParameter("methodToCall")+"]");
+					request.getSession(false).invalidate();
+				}	
+			}	
+		}catch(RuntimeException re){
+			throw re;
+		}
+		return false;
+	}
+	
+}

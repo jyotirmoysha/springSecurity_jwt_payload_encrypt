@@ -1,0 +1,18 @@
+package com.livespread.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.livespread.domain.FinancialItems;
+
+public interface UploadTempletService {
+
+void saveFinancialItemsList(List<FinancialItems> savedFinancialItemsList,List<FinancialItems> failedFinancialItemsList);
+	
+Map<Integer,String> f_findCompanyName(String searchVal);
+
+List<Object> f_getFinancialItemByEid(Integer eId);	
+Map<String, String> findCompanyDetailsByName(String companyNameToExport,String autoCompleteflag);
+
+Map<String, String> findCompanyDetailsById(String companyIdToExport,String autoCompleteflag);
+}

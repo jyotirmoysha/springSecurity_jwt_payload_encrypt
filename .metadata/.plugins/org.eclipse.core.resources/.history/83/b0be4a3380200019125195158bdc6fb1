@@ -1,0 +1,80 @@
+package com.livespread.util;
+
+import java.io.IOException;
+import java.io.StringReader;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+
+public class ParseXMLFile {
+
+	private static Logger LOGGER = Logger.getLogger(PDFPasswordChecker.class);
+
+	  public Multimap<String, String> f_parserXMLFile(String fXmlFile) {
+
+		  LOGGER.info("**Start--f_parserXMLFile methode");
+		  Multimap<String, String> multimap = ArrayListMultimap.create();
+		 
+	        try {
+	        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+	        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+	        Document doc = dBuilder.parse(fXmlFile);
+
+	        doc.getDocumentElement().normalize();
+
+	        NodeList pagenameList = doc.getElementsByTagName("pagename");
+	        NodeList pagenametimeList = doc.getElementsByTagName("pagetime");
+	        for (int i = 0; i < pagenameList.getLength(); i++) {
+	        	multimap.put(pagenameList.item(i).getTextContent(), pagenametimeList.item(i).getTextContent());
+	        }
+	        }catch (Exception e) {
+	        e.printStackTrace();
+	        LOGGER.info("Error:",e);
+	        }
+	        return multimap;
+	      }
+	  
+/**
+ * This function convert string to XML document 	  
+ * @param xmlSource
+ * @return
+ * @throws SAXException
+ * @throws ParserConfigurationException
+ * @throws IOException
+ */
+	    public static Document stringToDom(String xmlSource) 
+	            throws SAXException, ParserConfigurationException, IOException {
+	        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	        DocumentBuilder builder = factory.newDocumentBuilder();
+	        return builder.parse(new InputSource(new StringReader(xmlSource)));
+	    }
+
+	    public static Document convertStringToDocument(String xmlStr) {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();  
+            DocumentBuilder builder;  
+            try  
+            {  
+                builder = factory.newDocumentBuilder();  
+                Document doc = builder.parse( new InputSource( new StringReader( xmlStr ) ) ); 
+                return doc;
+            } catch (Exception e) {  
+                e.printStackTrace();  
+            } 
+            return null;
+    
+
+	    }
+
+	  
+}

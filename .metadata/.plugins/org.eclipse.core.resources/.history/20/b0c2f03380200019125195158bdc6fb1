@@ -1,0 +1,118 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ 
+ * 
+ */
+@Entity
+@Table(name = "PO_ANCHORS")
+@NamedQueries({ @NamedQuery(name = "getPOAnchorId", query = "SELECT po "
+		+ "from ParserOutput po, POAnchors pa "
+		+ "WHERE po.wqId = :WqId AND po.poSection = :statementType AND pa.poId=po.poId "
+		+ "ORDER BY po.poIndexOrder")
+
+})
+public class POAnchors implements Serializable, BaseEntity {
+
+	private static final long serialVersionUID = 1L;
+
+	@Column(name = "FILING_ID")
+	private Integer filingId;
+
+	@Id
+	@Column(name = "PO_ID")
+	private Integer poId;
+
+	@Column(name = "PA_SECTION")
+	private String paSection;
+
+	@Column(name = "Q_ID")
+	private String qId;
+
+	@Column(name = "PA_ANCHOR")
+	private String paAnchor;
+
+	@Column(name = "PA_COLUMN")
+	private Integer paColumn;
+
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public Integer getPoId() {
+		return poId;
+	}
+
+	public void setPoId(Integer poId) {
+		this.poId = poId;
+	}
+
+	public String getPaSection() {
+		return paSection;
+	}
+
+	public void setPaSection(String paSection) {
+		this.paSection = paSection;
+	}
+
+	public String getqId() {
+		return qId;
+	}
+
+	public void setqId(String qId) {
+		this.qId = qId;
+	}
+
+	public String getPaAnchor() {
+		return paAnchor;
+	}
+
+	public void setPaAnchor(String paAnchor) {
+		this.paAnchor = paAnchor;
+	}
+
+	public Integer getPaColumn() {
+		return paColumn;
+	}
+
+	public void setPaColumn(Integer paColumn) {
+		this.paColumn = paColumn;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+
+		return EntityType.APPLICATION;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("POAnchors [filingId=").append(filingId)
+				.append(", poId=").append(poId).append(", paSection=")
+				.append(paSection).append(", qId=").append(qId)
+				.append(paColumn).append(", paColumn=").append(paColumn)
+				.append(", paAnchor=").append(paAnchor).append("]");
+		return builder.toString();
+	}
+
+}

@@ -1,0 +1,31 @@
+/**
+ * 
+ */
+package com.livespread.command;
+
+/**
+ * @author KP0e1301
+ *
+ */
+public class LeadBankCommand {
+	private Integer leadBankId;
+	
+	private String leadBankName;
+
+	public Integer getLeadBankId() {
+		return leadBankId;
+	}
+
+	public void setLeadBankId(Integer leadBankId) {
+		this.leadBankId = leadBankId;
+	}
+
+	public String getLeadBankName() {
+		return leadBankName;
+	}
+
+	public void setLeadBankName(String leadBankName) {
+		this.leadBankName = leadBankName;
+	}
+	
+}

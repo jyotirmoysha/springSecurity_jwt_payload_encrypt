@@ -1,0 +1,110 @@
+package com.livespread.util;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.springframework.web.servlet.view.document.AbstractJExcelView;
+
+import com.livespread.command.NormalizationTemplateCommand;
+
+import jxl.format.Border;
+import jxl.format.BorderLineStyle;
+import jxl.format.Colour;
+import jxl.format.VerticalAlignment;
+import jxl.write.Label;
+import jxl.write.WritableCellFormat;
+import jxl.write.WritableFont;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+
+
+
+public class NormalizationTemplateExcelBuilder extends
+		AbstractJExcelView {
+
+	private WritableCellFormat headcellFormat;
+	private WritableCellFormat cellFormatWithBorder;
+
+	@Override
+	protected void buildExcelDocument(Map<String, Object> model,
+			WritableWorkbook workbook, HttpServletRequest arg2,
+			HttpServletResponse response) throws Exception {
+		WritableSheet sheet = null;
+		String fileName = (String) model.get("fileName");
+		response.reset();
+		response.setContentType("application/vnd.ms-excel");
+		response.setHeader("Content-Disposition", "attachment;filename=\""
+				+ StringEscapeUtils.escapeJava(fileName) + "\"");
+
+		WritableFont headcellFont = new WritableFont(WritableFont.TAHOMA, 10);
+		headcellFont.setBoldStyle(WritableFont.BOLD);
+		headcellFormat = new WritableCellFormat(headcellFont);
+		headcellFormat.setWrap(true);
+		headcellFormat.setAlignment(jxl.format.Alignment.CENTRE);
+		headcellFormat.setVerticalAlignment(VerticalAlignment.TOP);
+		headcellFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
+		headcellFormat.setBackground(Colour.GRAY_25);
+
+		WritableFont cellFont = new WritableFont(WritableFont.TAHOMA, 10);
+		cellFormatWithBorder = new WritableCellFormat(cellFont);
+		cellFormatWithBorder.setWrap(true);
+		cellFormatWithBorder.setAlignment(jxl.format.Alignment.LEFT);
+		cellFormatWithBorder.setVerticalAlignment(VerticalAlignment.TOP);
+		cellFormatWithBorder.setBorder(Border.ALL, BorderLineStyle.THIN);
+
+		sheet = workbook.createSheet("NormalizationTemplate", 0);
+		@SuppressWarnings("unchecked")
+		List<NormalizationTemplateCommand> normalizationTemplate = (List<NormalizationTemplateCommand>) model
+				.get("nilIndustryList");
+		int col = 0;
+		int widthsize = 0;
+		int rowCount = 0;
+		if (normalizationTemplate != null) {
+			widthsize=col;
+			sheet.setColumnView(widthsize, 30);
+			sheet.addCell(new Label(widthsize, rowCount, "Template_ID",headcellFormat));
+			widthsize=++widthsize;
+			sheet.setColumnView(widthsize, 20);
+			sheet.addCell(new Label(widthsize, rowCount, "NIL_Industry",
+					headcellFormat));
+			widthsize=++widthsize;
+			sheet.setColumnView(widthsize, 20);
+			sheet.addCell(new Label(widthsize, rowCount, "NIL_Section",
+					headcellFormat));
+			widthsize=++widthsize;
+			sheet.setColumnView(widthsize, 20);
+			sheet.addCell(new Label(widthsize, rowCount, "NIL_Item",
+					headcellFormat));
+			widthsize=++widthsize;
+			sheet.setColumnView(widthsize, 30);
+			sheet.addCell(new Label(widthsize, rowCount, "NIL_Label",
+					headcellFormat));
+		}
+		
+		
+		if (normalizationTemplate != null) {
+			rowCount = 1;
+			for (int i = 0; i < normalizationTemplate.size(); i++) {
+				NormalizationTemplateCommand cmd = normalizationTemplate.get(i);
+				col = 0;
+				sheet.addCell(new Label(col++, rowCount, cmd.getTemplateId().toString(),cellFormatWithBorder));
+				sheet.addCell(new Label(col++, rowCount, cmd.getNilIndustry().toString(), cellFormatWithBorder));
+				sheet.addCell(new Label(col++, rowCount, cmd.getNilSection().toString(),cellFormatWithBorder));
+				sheet.addCell(new Label(col++, rowCount, cmd.getNiItem().toString(), cellFormatWithBorder));
+				sheet.addCell(new Label(col++, rowCount,cmd.getNil_label().toString(), cellFormatWithBorder));
+				rowCount = rowCount + 1;
+			}
+		}
+
+		response.reset();
+		response.setContentType("application/vnd.ms-excel");
+		response.setHeader("Content-Disposition", "attachment;filename=\""
+				+ StringEscapeUtils.escapeJava(fileName) + "\"");
+
+	}
+}
+

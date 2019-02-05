@@ -1,0 +1,14 @@
+package com.livespread.common;
+
+public enum AdminRequestUrls {
+	showAdminPanel,
+	showUserGroup,
+	showAuditTrail,
+	showReleaseLock,
+	showUserAuditReport,
+	adminTemplate,
+	adminComponentAssocation,
+	adminRageFeatures,
+	importFinancialITemsExcel,
+	exportPdfExtractionMetaDataFilter
+}

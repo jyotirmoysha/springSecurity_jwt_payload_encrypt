@@ -1,0 +1,61 @@
+package com.livespread.util;
+
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+
+import com.livespread.service.WorkQueueService;
+
+public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
+	private Logger LOGGER = Logger.getLogger(CustomLogoutSuccessHandler.class);
+	@Autowired
+	private WorkQueueService workQueueService;
+
+	@Override
+	public void onLogoutSuccess(HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse,
+			Authentication authentication) throws IOException, ServletException {
+		if (authentication != null && authentication.getDetails() != null) {
+			try {
+				/**
+				 * Added code to implement locked by.
+				 */
+
+				try {
+					if (httpServletRequest.getSession().getAttribute(
+							"LockedSession") != null) {
+						Integer loggedSessionwq = (Integer) httpServletRequest
+								.getSession().getAttribute("LockedSession");
+						workQueueService.updateLockCaseForUser(loggedSessionwq,
+								null);
+					}
+				} catch (Exception e) {
+					LOGGER.error("Error in CustomLogoutSuccessHandler :", e);
+				}
+
+				/** Code ends here */
+				LOGGER.info("Session invalidate on onLogoutSuccess methode");
+				httpServletRequest.getSession().invalidate();
+				// you can add more codes here when the user successfully logs
+				// out,
+				// such as updating the database for last active.
+			} catch (Exception e) {
+				e.printStackTrace();
+				e = null;
+				LOGGER.error("Error in CustomLogoutSuccessHandler :", e);
+			}
+		}
+
+		httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+		// redirect to login
+		httpServletResponse.sendRedirect("login.htm");
+
+	}
+}

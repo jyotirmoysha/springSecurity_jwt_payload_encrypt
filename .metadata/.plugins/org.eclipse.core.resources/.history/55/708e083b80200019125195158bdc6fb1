@@ -1,0 +1,8 @@
+# Error Messages
+customer_name_error=Customer Name is Not Valid.
+business_name_error=Business Name is Not Valid
+account_no_error=Customer Account Number is Not Valid
+captcha_error=Validation Code is Not Valid.
+
+company_id_error=Company Id may not be empty.
+

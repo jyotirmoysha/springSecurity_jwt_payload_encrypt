@@ -1,0 +1,89 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.sql.Timestamp;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+@Entity
+@Table(name = "LS_FINANCIAL_META_ROW_DATA_LOGS")
+public class LsFinancialMetaRowDataLogs implements Serializable,BaseEntity{
+
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name="RD_SEQ_ID")
+	private long rdSeqId;
+	
+	@Column(name="RI_SEQ_ID")
+	private long riSeqId;
+	
+	@Column(name="COLUMN_NUMBER")
+	private Integer columnNumber;
+	
+	@Column(name="COLUMN_VALUE")
+	private String columnValue;
+
+	@Column(name="STATUS")
+	private String status;
+	
+
+
+	public long getRdSeqId() {
+		return rdSeqId;
+	}
+
+	public void setRdSeqId(long rdSeqId) {
+		this.rdSeqId = rdSeqId;
+	}
+
+	public long getRiSeqId() {
+		return riSeqId;
+	}
+
+	public void setRiSeqId(long riSeqId) {
+		this.riSeqId = riSeqId;
+	}
+
+	public Integer getColumnNumber() {
+		return columnNumber;
+	}
+
+	public void setColumnNumber(Integer columnNumber) {
+		this.columnNumber = columnNumber;
+	}
+
+	public String getColumnValue() {
+		return columnValue;
+	}
+
+	public void setColumnValue(String columnValue) {
+		this.columnValue = columnValue;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+	
+	
+}

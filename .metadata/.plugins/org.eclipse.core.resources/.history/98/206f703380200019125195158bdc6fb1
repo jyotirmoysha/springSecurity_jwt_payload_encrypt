@@ -1,0 +1,46 @@
+package com.livespread.service;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import javax.persistence.EntityManager;
+
+import org.apache.log4j.Logger;
+import org.hibernate.Session;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.service.jdbc.connections.spi.ConnectionProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.rage.reusable.dao.EntityType;
+
+@Service("JDBCConnectionService")
+public class JDBCConnectionServiceImpl implements JDBCConnectionService {
+	
+	@Autowired
+	private ExtendedGenericDao extendedGenericDao;
+
+	private Logger LOGGER = Logger.getLogger(JDBCConnectionServiceImpl.class);
+	
+	@SuppressWarnings("deprecation")
+	@Override
+	public Connection getJDBCConnection(EntityType entityType){
+		LOGGER.info("** Start--getJDBCConnection methode");
+		EntityManager em = extendedGenericDao.getMyEntityManager(EntityType.APPLICATION);
+		Session session = (Session) em.getDelegate();
+		SessionFactoryImplementor sfi = (SessionFactoryImplementor)session.getSessionFactory();
+		
+		ConnectionProvider cp = sfi.getConnectionProvider();
+		Connection conn = null;
+		try {
+			conn = cp.getConnection();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			LOGGER.error("Error:"+e);
+		}
+		LOGGER.info("** End--getJDBCConnection methode");
+		return conn;
+	}
+
+}

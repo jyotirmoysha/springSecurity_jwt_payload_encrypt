@@ -1,0 +1,447 @@
+package com.livespread.service;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import com.livespread.domain.AccuracyAuditReport;
+import com.livespread.domain.ArsPoMapping;
+import com.livespread.domain.AuditTrailRolesSummary;
+import com.livespread.domain.AuditTrailStatementSummary;
+import com.livespread.domain.MappingStatsModel;
+import com.livespread.domain.NamedNativeQueryName;
+import com.livespread.domain.NamedQueryName;
+import com.livespread.domain.ParserOutputAuditTrail;
+import com.livespread.domain.ProcessingReportTracker;
+import com.livespread.domain.ReprocessAudit;
+import com.livespread.domain.WorkQueue;
+import com.rage.extendeddao.ExtendedGenericDao;
+
+
+@Service("auditReportService")
+public class AuditReportServiceImpl implements AuditReportService{
+	private Logger LOGGER = Logger.getLogger(AuditReportServiceImpl.class);
+	
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+	  SimpleDateFormat sdf;
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Object> f_fetchAuditRecordsByFilingId(
+			Integer filingId,Date startDate,Date endDate) {
+		LOGGER.info("** start--f_fetchAuditRecordsByFilingId() methode");
+		
+		List<Object> objList=null;
+		HashMap<String, Object> parameters = new HashMap<String, Object>();
+		/**
+		 * 1:This condition execute when filing id,start date and end date selected.
+		 * 2:when start date and end date is selected
+		 * 3:only when filing id selected 
+		 */
+	       //SimpleDateFormat sdf1;
+		if(filingId!=null && startDate!=null && endDate!=null){
+		parameters.put("filingId",filingId);
+		parameters.put("startDate",startDate);
+		parameters.put("endDate",endDate);
+		objList=(List<Object>)(Object)genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getAuditRecordsByFilingId_StartDate_EndDate, ParserOutputAuditTrail.class, parameters);
+		}else if(startDate!=null && endDate!=null){
+		parameters.put("startDate", startDate);
+		parameters.put("endDate",endDate);
+		objList=(List<Object>)(Object)genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getAuditRecordsByStartDate_EndDate, ParserOutputAuditTrail.class, parameters);
+		}else if(filingId!=null){
+		parameters.put("filingId",filingId);	
+	   	objList=(List<Object>)genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getAuditRecordsByFilingId, ParserOutputAuditTrail.class, parameters);
+		}
+	   
+	 	LOGGER.info("size of list="+objList.size());
+		LOGGER.info("** End--f_fetchAuditRecordsByFilingId() methode");
+		return objList;
+	}
+
+	
+	
+	@Override
+	public List<Object> f_fetchReporcessAuditRecordsByFilingId(Integer filingId,Date startDate,Date endDate) {
+		LOGGER.info("** start f_fetchReporcessAuditRecordsByFilingId method");
+		List<Object> reprocessAudits=null;
+		HashMap<String, Object> parameters = new HashMap<String, Object>();
+		if(filingId!=null && startDate!=null && endDate!=null){
+		parameters.put("filingId",filingId);
+		parameters.put("startDate",startDate);
+		parameters.put("endDate",endDate);
+		reprocessAudits=genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getReprocessAuditListByFilingId_StartDate_EndDate, ReprocessAudit.class, parameters);
+		}else if(startDate!=null && endDate!=null){
+		parameters.put("startDate",startDate);
+		parameters.put("endDate",endDate);
+		reprocessAudits=genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getReprocessAuditListByStartDate_EndDate, ReprocessAudit.class, parameters);	
+		}else if(filingId!=null){
+	    parameters.put("filingId",filingId);
+		reprocessAudits=genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getReprocessAuditListByFilingId, ReprocessAudit.class, parameters);
+		}
+		LOGGER.info("** End f_fetchReporcessAuditRecordsByFilingId method");
+		return reprocessAudits;
+	}
+
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Integer> f_gerAllFilingIdFromParserOutputAudit() {
+		LOGGER.info("** start f_gerAllFilingIdList method");
+		return (ArrayList<Integer>)(Object) genericDaoImpl.findByNamedQuery(NamedQueryName.findAllFilingIdFromParseroutputAudit, ParserOutputAuditTrail.class);
+	}
+	
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Integer> f_gerAllFilingIdFromParserReprocessAudit() {
+		LOGGER.info("** start f_gerAllFilingIdList method");
+		return (ArrayList<Integer>)(Object) genericDaoImpl.findByNamedQuery(NamedQueryName.findAllFilingIdFromReprocessAudit, ReprocessAudit.class);
+	}
+
+
+
+
+	@Override
+    @Transactional(readOnly = true)
+	public List<Object> f_findArsPoMappingDataByFilingIdList(Integer filingId,Date startDate,Date endDate) throws DataAccessException {
+		LOGGER.info("**start--f_findArsPoMappingDataByFilingIdList methode");
+		HashMap<String, Object> parameters = new HashMap<String, Object>();
+		List<Object> objectList=null;
+		if(filingId!=null && startDate!=null && endDate!=null){
+		parameters.put("filingId",filingId);
+		parameters.put("startDate",startDate);
+		parameters.put("endDate",endDate);
+		objectList=genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.findArsPoMappingStartDateEndDateFilingId, ArsPoMapping.class, parameters);
+		}else if(startDate!=null && endDate!=null){
+		parameters.put("startDate", startDate);
+		parameters.put("endDate",endDate);
+		objectList=genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.findArsPoMappingStartDateEndDate, ArsPoMapping.class, parameters);
+		}else if(filingId!=null){
+		parameters.put("filingId",filingId);	
+		objectList=genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.findArsPoMappingByFilingIdForAuditReport, ArsPoMapping.class, parameters);
+		}
+	   LOGGER.info("**end--f_findArsPoMappingDataByFilingIdList methode");
+		return objectList;
+	}
+
+
+
+	@Override
+    @Transactional(readOnly = true)
+	public Map<String, List<? extends Object>> f_findStatementSummaryRoleSummaryForAudit(Integer filingId,Date startDate,Date endDate) throws DataAccessException {
+		LOGGER.info("**start--f_findStatementSummaryRoleSummaryForAudit methode");
+		List<Object> auditTrailRolesSummaryObjectList=null;
+		List<Object> auditTrailStatementSummaryList=null;
+		Map<String,List<? extends Object>> map = new LinkedHashMap<String,List<?>>();
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		List<Object> auditTrailRolesSummaryFinalList=new LinkedList<Object>();
+		
+		if(filingId!=null && startDate!=null && endDate!=null){
+		parameters.put("filingId",filingId);
+		parameters.put("startDate",startDate);
+		parameters.put("endDate",endDate);
+		auditTrailStatementSummaryList=genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.findAudittrailStatementSummaryByFilingIdStartDateEndDate, AuditTrailStatementSummary.class, parameters);
+		auditTrailRolesSummaryObjectList=genericDaoImpl.findByNamedQuery(NamedQueryName.findAudittrailRoleSummaryByFilingIdStartDateEndDate, AuditTrailRolesSummary.class, parameters);
+		}else if(startDate!=null && endDate!=null){
+		parameters.put("startDate", startDate);
+		parameters.put("endDate",endDate);
+		auditTrailStatementSummaryList=genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.findAudittrailStatementSummaryByStartDateEndDate, AuditTrailStatementSummary.class, parameters);
+		auditTrailRolesSummaryObjectList=genericDaoImpl.findByNamedQuery(NamedQueryName.findAudittrailRoleSummaryByStartDateEndDate, AuditTrailRolesSummary.class, parameters);
+		}else if(filingId!=null){
+		parameters.put("filingId",filingId);	
+		auditTrailStatementSummaryList=genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.findAudittrailStatementSummaryByFilingId, AuditTrailStatementSummary.class, parameters);
+		auditTrailRolesSummaryObjectList=genericDaoImpl.findByNamedQuery(NamedQueryName.findAudittrailRoleSummaryByFilingId, AuditTrailRolesSummary.class, parameters);
+		}
+		//DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		
+		if(!CollectionUtils.isEmpty(auditTrailRolesSummaryObjectList)){
+			
+			Object[] objArray=null;
+			Object[] objArray1=null;
+			objArray =(Object[])auditTrailRolesSummaryObjectList.get(0);
+			Integer caseId=objArray[3]!=null?new Integer(objArray[3].toString()):0;
+			List<Object> auditTrailRolesSummaryTempList=new LinkedList<Object>();
+			List<Object> auditTrailRolesSummaryTempList1=new LinkedList<Object>();
+			int j=1;
+			int i=0;
+			for(Object obj :auditTrailRolesSummaryObjectList){
+				objArray = (Object[]) obj;
+				if(caseId!=null && caseId.equals(objArray[3]!=null?new Integer(objArray[3].toString()):0)){
+					auditTrailRolesSummaryTempList.add(obj);
+					auditTrailRolesSummaryTempList1.add(null);
+				}else{
+
+					i=j-1;
+					for(Object obj1 :auditTrailRolesSummaryTempList){
+						objArray1 = (Object[]) obj1;
+						if(objArray1[6]!=null && objArray1[6].toString().equals("Maker")){
+							auditTrailRolesSummaryTempList1.add(0,obj1);
+							auditTrailRolesSummaryTempList1.remove(1);
+						}else if(objArray1[6]!=null && objArray1[6].toString().equals("Checker")){
+							auditTrailRolesSummaryTempList1.add(1,obj1);
+							auditTrailRolesSummaryTempList1.remove(2);
+						}else if(objArray1[6]!=null && (objArray1[6].toString().equals("QA") || objArray1[6].toString().equals("QC"))){
+							auditTrailRolesSummaryTempList1.add(2,obj1);
+							auditTrailRolesSummaryTempList1.remove(3);
+						}else if(objArray1[6]!=null && objArray1[6].toString().equals("TOTAL")){
+							auditTrailRolesSummaryTempList1.add(auditTrailRolesSummaryTempList.size()-1,obj1);
+							auditTrailRolesSummaryTempList1.remove(auditTrailRolesSummaryTempList.size());
+						}else if(objArray1[6]!=null){
+							i=i-1;
+							auditTrailRolesSummaryTempList1.add(i,obj1);
+							auditTrailRolesSummaryTempList1.remove(i+1);
+						}
+					}
+					auditTrailRolesSummaryFinalList.addAll(auditTrailRolesSummaryTempList1);
+					caseId=objArray[3]!=null?new Integer(objArray[3].toString()):0;
+					auditTrailRolesSummaryTempList=new LinkedList<Object>();
+					auditTrailRolesSummaryTempList1=new LinkedList<Object>();
+					auditTrailRolesSummaryTempList.add(obj);
+					auditTrailRolesSummaryTempList1.add(null);
+				}
+				if(j==auditTrailRolesSummaryObjectList.size()){
+					i=j-1;
+					for(Object obj1 :auditTrailRolesSummaryTempList){
+						objArray1 = (Object[]) obj1;
+						if(objArray1[6]!=null && objArray1[6].toString().equals("Maker")){
+							auditTrailRolesSummaryTempList1.add(0,obj1);
+							auditTrailRolesSummaryTempList1.remove(1);
+						}else if(objArray1[6]!=null && objArray1[6].toString().equals("Checker")){
+							auditTrailRolesSummaryTempList1.add(1,obj1);
+							auditTrailRolesSummaryTempList1.remove(2);
+						}else if(objArray1[6]!=null && objArray1[6].toString().equals("QA")){
+							auditTrailRolesSummaryTempList1.add(2,obj1);
+							auditTrailRolesSummaryTempList1.remove(3);
+						}else if(objArray1[6]!=null && objArray1[6].toString().equals("TOTAL")){
+							auditTrailRolesSummaryTempList1.add(auditTrailRolesSummaryTempList.size()-1,obj1);
+							auditTrailRolesSummaryTempList1.remove(auditTrailRolesSummaryTempList.size());
+						}else if(objArray1[6]!=null){
+							i=i-1;
+							auditTrailRolesSummaryTempList1.add(i,obj1);
+							auditTrailRolesSummaryTempList1.remove(i+1);
+						}
+						
+					}					
+					
+					auditTrailRolesSummaryFinalList.addAll(auditTrailRolesSummaryTempList1);
+				}
+				j++;
+			}
+		
+		}
+		map.put("AUDIT_TRAIL_STATEMENT_SUMMARY", auditTrailStatementSummaryList);
+		map.put("AUDIT_TRAIL_ROLE_SUMMARY", auditTrailRolesSummaryFinalList);
+	
+		LOGGER.info("**start--f_findStatementSummaryRoleSummaryForAudit methode");
+		return map;
+	}
+	
+	
+
+	@Override
+    @Transactional(readOnly = true)
+	public List<Object> f_findProcessingReportTrackerForAudit(Integer filingId,Date startDate,Date endDate) throws DataAccessException {
+		LOGGER.info("**start--f_findProcessingReportTrackerForAudit methode");
+		
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		List<Object> processingReportTrackerList=null;
+		if(filingId!=null && startDate!=null && endDate!=null){
+		parameters.put("filingId",filingId);
+		parameters.put("startDate",startDate);
+		parameters.put("endDate",endDate);
+		processingReportTrackerList=genericDaoImpl.findByNamedQuery(NamedQueryName.getAuditTrailProcessingReportTrackerByStartDateEndDateFilingId,ProcessingReportTracker.class, parameters);
+		}else if(startDate!=null && endDate!=null){
+		parameters.put("startDate", startDate);
+		parameters.put("endDate",endDate);
+		processingReportTrackerList=genericDaoImpl.findByNamedQuery(NamedQueryName.getAuditTrailProcessingReportTrackerByStartDateEndDate,ProcessingReportTracker.class, parameters);
+		}else if(filingId!=null){
+		parameters.put("filingId",filingId);	
+		processingReportTrackerList=genericDaoImpl.findByNamedQuery(NamedQueryName.getAuditTrailProcessingReportTracker,ProcessingReportTracker.class, parameters);
+		}
+		LOGGER.info("**start--f_findStatementSummaryRoleSummaryForAudit methode");
+		return processingReportTrackerList;
+	}
+
+
+
+	/* (non-Javadoc)
+	 * @see com.livespread.service.AuditReportService#f_gerAllFilingIdForAuditTrail()
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Integer> f_gerAllFilingIdForAuditTrail(Integer userGroupId,Integer userAccess) throws Exception 
+	{
+		LOGGER.info("** start f_gerAllFilingIdList method");
+		if(userGroupId!=null && userAccess!=null){
+		//if userAccess is 1 means user is super admin 
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		if(userAccess==1){
+		parameters.put("userGroupId", userGroupId);
+		return (ArrayList<Integer>)(Object) genericDaoImpl.findByNamedQuery(NamedQueryName.findAllFilingIdForAuditTrail, WorkQueue.class,parameters);
+		}else{
+		
+		parameters.put("userGroupId", userGroupId);
+		return (ArrayList<Integer>)(Object) genericDaoImpl.findByNamedQuery(NamedQueryName.findAllFilingIdForAuditTrailForGroupAdmin, WorkQueue.class,parameters);
+		}
+		}else{
+		return null;
+		}
+	}
+
+
+
+	@Override
+	public Map<String,Map<String,List<? extends Object>>> f_createDataValMapForExcel(Map<String,List<Object>> sheetDataMap) throws Exception {
+		LOGGER.info("** Start f_gerAllFilingIdList method");
+		Map<String,Map<String,List<? extends Object>>> dataValMap=new LinkedHashMap<>();
+		Map<String,List<? extends Object>> tableMap=null;
+		List<Object> objectList=null;
+		List<Object> ProcessingReportTrackerList=null;
+		Object[] objIn=null;
+		ProcessingReportTracker processingReportTracker=null;
+		for(String key:sheetDataMap.keySet()){
+			tableMap=new LinkedHashMap<>();
+			if(key.equalsIgnoreCase("Normalization")){
+				tableMap.put("Table1", sheetDataMap.get(key));
+				dataValMap.put(key,tableMap);
+			}else if(key.equalsIgnoreCase("RulesManagement")){
+				tableMap.put("Table1", sheetDataMap.get(key));
+				dataValMap.put(key,tableMap);
+			}else if(key.equalsIgnoreCase("ArsMapping")){
+				tableMap.put("Table1", sheetDataMap.get(key));
+				dataValMap.put(key,tableMap);
+			}else if(key.equalsIgnoreCase("AccuracyOutput")){
+				tableMap.put("Table1", sheetDataMap.get(key));
+				dataValMap.put(key,tableMap);
+			}else if(key.equalsIgnoreCase("mapping_stats")){
+				tableMap.put("mapping_stats", sheetDataMap.get(key));
+				dataValMap.put(key,tableMap);
+			}else if(key.equalsIgnoreCase("TimeStatsTemplate")){
+			ProcessingReportTrackerList=sheetDataMap.get(key);
+			objectList=new ArrayList<Object>();
+			if(!CollectionUtils.isEmpty(ProcessingReportTrackerList))
+			{
+				for(Object object:ProcessingReportTrackerList){
+					objIn= new Object[43];
+					processingReportTracker=(ProcessingReportTracker) object;
+					objIn[0]=processingReportTracker.getCompanyId();
+					objIn[1]=processingReportTracker.getWqStatus();
+					objIn[2]=processingReportTracker.getFileName();
+					objIn[3]=processingReportTracker.getFilingId();
+					objIn[4]=processingReportTracker.getPageSize();
+					objIn[5]=processingReportTracker.getNumberOfPeriods();
+					objIn[6]=processingReportTracker.getCreateDate();
+					objIn[7]=processingReportTracker.getCustomerName();
+					objIn[8]=processingReportTracker.getCaseStatus();
+					objIn[9]=processingReportTracker.getSearcher();
+					objIn[10]=processingReportTracker.getMaker();
+					objIn[11]=processingReportTracker.getChecker();
+					objIn[12]=processingReportTracker.getFileIdentificationSt();
+					objIn[13]=processingReportTracker.getExtractionProcessSt();
+					objIn[14]=processingReportTracker.getNormProcessSt();
+					objIn[15]=processingReportTracker.getNormCompleteToMakerAsgn();
+					objIn[16]=processingReportTracker.getMakerAssignedOn();
+					objIn[17]=processingReportTracker.getMakerStartedOn();
+					objIn[18]=processingReportTracker.getMakerCompleted();
+					objIn[19]=processingReportTracker.getCheckerAssignedOn();
+					objIn[20]=processingReportTracker.getCheckerStartedOn();
+					objIn[21]=processingReportTracker.getCheckerCompleted();
+					objIn[22]=processingReportTracker.getQaAssignedOn();
+					objIn[23]=processingReportTracker.getQaStartedOn();
+					objIn[24]=processingReportTracker.getQaCompleted();
+					objIn[25]=processingReportTracker.getFileIdentificationPt();
+					objIn[26]=processingReportTracker.getExtractionPt();
+					objIn[27]=processingReportTracker.getNormProcessingTime();
+					objIn[28]=processingReportTracker.getNormCompleteToMakerAsgn();
+					objIn[29]=processingReportTracker.getMakerAssingedT0St();
+					objIn[30]=processingReportTracker.getMakerStartToCompleteTime();
+					objIn[31]=processingReportTracker.getMakerTotalProcessingTime();
+					objIn[32]=processingReportTracker.getCheckerAssingedT0St();
+					objIn[33]=processingReportTracker.getCheckerStToCt();
+					objIn[34]=processingReportTracker.getCheckerTotalPt();
+					objIn[35]=processingReportTracker.getQaAssingedT0St();
+					objIn[36]=processingReportTracker.getQaStartToCt();
+					objIn[37]=processingReportTracker.getQaTotalPt();
+					objIn[38]=processingReportTracker.getTotalProcessingLs();
+					objIn[39]=processingReportTracker.getTotalProcessingAnalyst();
+					objIn[40]=processingReportTracker.getTotalProcessingE2e();
+					objIn[41]=processingReportTracker.getPageSize();
+					objIn[42]=processingReportTracker.getAuditTrail();
+					objectList.add(objIn);
+				}
+			}
+			tableMap.put("Table1", objectList);
+			dataValMap.put(key,tableMap);
+			}
+		}//end for 
+		LOGGER.info("** End f_gerAllFilingIdList method");
+		return dataValMap;
+	}
+	
+	@Override
+    @Transactional(readOnly = true)
+	public List<Object> f_findAccuracyReportForAudit(Integer filingId,Date startDate,Date endDate) throws DataAccessException {
+		LOGGER.info("**start--f_findProcessingReportTrackerForAudit methode");
+		
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		List<Object> accuracyAuditReportList=null;
+		if(filingId!=null && startDate!=null && endDate!=null){
+		parameters.put("filingid",filingId);
+		parameters.put("startDate",startDate);
+		parameters.put("endDate",endDate);
+		accuracyAuditReportList=(List<Object>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getAccuracyReportByStartDateEndDateFilingId,AccuracyAuditReport.class, parameters);
+		}else if(startDate!=null && endDate!=null){
+		parameters.put("startDate", startDate);
+		parameters.put("endDate",endDate);
+		List<Integer> filingIdList=(List<Integer>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getDistcintFilingIdList,AccuracyAuditReport.class, parameters);
+		accuracyAuditReportList=new ArrayList<>();
+		for(Integer filingIdObj:filingIdList)
+		{
+		 parameters.put("filingid",filingIdObj);	
+		 accuracyAuditReportList.addAll((List<Object>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getAccuracyReportByFilingId,AccuracyAuditReport.class, parameters));
+		}
+		}else if(filingId!=null){
+		parameters.put("filingid",filingId);	
+		accuracyAuditReportList=(List<Object>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getAccuracyReportByFilingId,AccuracyAuditReport.class, parameters);
+		}
+		LOGGER.info("**start--f_findStatementSummaryRoleSummaryForAudit methode");
+		return accuracyAuditReportList;
+	}
+	
+	@Override
+    @Transactional(readOnly = true)
+	public List<Object> f_findMappingStatsReportForAudit(Integer filingId,Date startDate,Date endDate) throws DataAccessException
+	{
+		LOGGER.info("**start--f_findMappingStatsReportForAudit methode");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		List<Object> statsMapReportList=null;
+		if(filingId!=null && startDate!=null && endDate!=null){
+		parameters.put("filingId",filingId);
+		parameters.put("startDate",startDate);
+		parameters.put("endDate",endDate);
+		statsMapReportList=(List<Object>)(Object)genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getMappingStatsDataByFilingIdStartDateEndDate,MappingStatsModel.class, parameters);
+		}else if(startDate!=null && endDate!=null){
+		parameters.put("startDate", startDate);
+		parameters.put("endDate",endDate);
+		statsMapReportList=(List<Object>)(Object)genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getMappingStatsDataByStartDateEndDate,MappingStatsModel.class, parameters);
+		}else if(filingId!=null){
+		parameters.put("filingId",filingId);	
+		statsMapReportList=(List<Object>)(Object)genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getMappingStatsDataByFilingId,MappingStatsModel.class, parameters);
+		}
+		LOGGER.info("**start--f_findMappingStatsReportForAudit methode");
+		return statsMapReportList;
+	}
+}

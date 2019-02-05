@@ -1,0 +1,171 @@
+package com.livespread.controller;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.livespread.domain.ItrExtractionRules;
+import com.livespread.domain.ItrTemplateSectionMapping;
+import com.livespread.domain.User;
+import com.livespread.service.ExtractionServiceITR;
+import com.livespread.util.CipherUtils;
+
+@Controller
+public class ExtractionPdfBasedItrController {
+
+	private Logger LOGGER = Logger.getLogger(ExtractionPdfBasedItrController.class);
+
+	@Autowired
+	ExtractionServiceITR extractionServiceItr;
+
+	/**** rules_management_itr jsp View page when GET Request **************/
+	@RequestMapping(value = "/rules_management_pdfbased_itr.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public String showExtractionItrPage(@RequestParam("fillingId") String fillingId,@RequestParam("templateId") String templateId, Model map) 
+	{
+		try {
+			String decryptedFillingId = CipherUtils.decrypt(fillingId);
+			map.addAttribute("fillingId", fillingId);
+			// ITR: get rules management data using filing_id and Template Id Same as "viewExtractionSubPage"
+			Map<Integer, Map<String, List<ItrExtractionRules>>> itrExtractionRulesMap = null;
+			List<String> sectionList = null;
+			Map<String, ItrTemplateSectionMapping> sectionNameIdMap = null;
+			List<ItrTemplateSectionMapping> itrTemplateSectionMappings = extractionServiceItr.getITRTemplateSectionMappingsByTemplateFormId(Integer.parseInt(templateId));
+			if(!CollectionUtils.isEmpty(itrTemplateSectionMappings))
+			{
+				sectionList = new ArrayList<>();
+				sectionNameIdMap = new HashMap<>();
+				for (ItrTemplateSectionMapping itrTemplateSectionMapping : itrTemplateSectionMappings) 
+				{
+					sectionList.add(itrTemplateSectionMapping.getSectionName());
+					sectionNameIdMap.put(itrTemplateSectionMapping.getSectionName(), itrTemplateSectionMapping);
+				}
+				itrExtractionRulesMap = extractionServiceItr.getITRExtractionRulesSectionwiseByFilingIdAndTemplateID(Integer.parseInt(decryptedFillingId),Integer.parseInt(templateId),sectionList);	
+			}
+			map.addAttribute("itrExtractionRulesMap", itrExtractionRulesMap);
+			map.addAttribute("sectionNameIdMap", sectionNameIdMap);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "rules_management_pdfbased_itr";
+	}
+
+	/**
+	 * This function called when click on save or refresh button on
+	 * rules_management_extraction.jsp page
+	 **/
+	@RequestMapping(value = "/update_rules_management_pdfbased_ITR.htm", method = RequestMethod.POST)
+	public String updateRulesManagementITR(Model map, HttpSession session, HttpServletRequest request) 
+	{
+		boolean flag = false;
+		try {
+			/** Here we get input parameters from form field **/
+			String[] extractionRuleIdArray = request.getParameterValues("extractionRuleId");
+			String[] sectionIdArray = request.getParameterValues("sectionId");
+			String[] sectionNameArray = request.getParameterValues("sectionName");
+			String[] pageNumberArray = request.getParameterValues("pageNumber");
+			String[] conceptArray = request.getParameterValues("concept");
+			Integer filingId=Integer.parseInt(request.getParameter("filingId"));
+			Integer templateId=Integer.parseInt(request.getParameter("selectedTemplateFormId"));
+			List<String> extractionRuleIdList = null;
+		
+			List<ItrExtractionRules> dataList=new ArrayList<>();
+			if (extractionRuleIdArray != null)
+			{
+				User user = (User) request.getSession().getAttribute("user");
+				extractionRuleIdList = Arrays.asList(extractionRuleIdArray);
+				Integer fileUploadId = extractionServiceItr.getFileUploadIdByFilingId(filingId);
+				for (int rowCounter = 0; rowCounter < extractionRuleIdList.size(); rowCounter++)
+				{
+					ItrExtractionRules itrExtractionRules= new ItrExtractionRules();
+					itrExtractionRules.setFilingId(filingId);
+					itrExtractionRules.setConcept(conceptArray[rowCounter]);
+					itrExtractionRules.setCreatedBy(user.getUserId());
+					itrExtractionRules.setCreatedOn(new Date());
+					itrExtractionRules.setModifiedBy(user.getUserId());
+					itrExtractionRules.setModifiedOn(new Date());
+					itrExtractionRules.setPageNumber(Integer.parseInt(pageNumberArray[rowCounter]));
+					itrExtractionRules.setSectionId(Integer.parseInt(sectionIdArray[rowCounter]));
+					itrExtractionRules.setSectionName(sectionNameArray[rowCounter]);
+					itrExtractionRules.setTemplateId(templateId);
+					itrExtractionRules.setDocId(fileUploadId);
+					if(extractionRuleIdArray[rowCounter]!=null)
+					{
+						Integer selectedExtractionId = (Integer.parseInt(extractionRuleIdArray[rowCounter]));
+						if(selectedExtractionId.intValue()!=0)
+						{
+							itrExtractionRules.setExtractionRuleId(Integer.parseInt(extractionRuleIdArray[rowCounter]));		
+						}
+					}
+					
+					
+				 dataList.add(itrExtractionRules);
+				}//end for
+
+				//Here we save data  in table ITR_EXTRACTION_RULES 
+			 flag=extractionServiceItr.saveUpadateRulesInExtractor_Table(dataList,filingId,templateId);
+			 if(flag){
+		      map.addAttribute("msg", "Rules Added successfully.");
+			 }else{
+			  map.addAttribute("msg", "Error occured while saving rules. Please try again.");  
+			 }
+    	    
+				Map<Integer, Map<String, List<ItrExtractionRules>>> itrExtractionRulesMap = null;
+				List<String> sectionList = null;
+				Map<String, ItrTemplateSectionMapping> sectionNameIdMap = null;
+				List<ItrTemplateSectionMapping> itrTemplateSectionMappings = extractionServiceItr.getITRTemplateSectionMappingsByTemplateFormId(templateId);
+				if(!CollectionUtils.isEmpty(itrTemplateSectionMappings))
+				{
+					sectionList = new ArrayList<>();
+					sectionNameIdMap = new HashMap<>();
+					for (ItrTemplateSectionMapping itrTemplateSectionMapping : itrTemplateSectionMappings) 
+					{
+						sectionList.add(itrTemplateSectionMapping.getSectionName());
+						sectionNameIdMap.put(itrTemplateSectionMapping.getSectionName(), itrTemplateSectionMapping);
+					}
+					itrExtractionRulesMap = extractionServiceItr.getITRExtractionRulesSectionwiseByFilingIdAndTemplateID(filingId,templateId,sectionList);	
+				}
+				map.addAttribute("itrExtractionRulesMap", itrExtractionRulesMap);
+				map.addAttribute("sectionNameIdMap", sectionNameIdMap);
+			} // end extractionRuleIdArray array condition list
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:", e);
+		}
+		return "rules_management_pdfbased_itr";
+	}
+	
+	@RequestMapping(value = "/deleteExtractionPdfbasedITRRules.htm", method = RequestMethod.POST)
+	public @ResponseBody boolean deleteExtractionRules(@RequestParam("param") Integer[] param)
+	{
+		boolean flag = false;
+		if(param!=null && param.length!=0){
+		try {
+		
+		List<Integer> idList = Arrays.asList(param);
+		flag=extractionServiceItr.deleteExtractionRules(idList);
+		
+		} catch (Exception e) {
+		LOGGER.error("Error:",e);
+		e.printStackTrace();
+		}
+		}
+		return flag;
+	}
+}

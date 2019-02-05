@@ -1,0 +1,56 @@
+package com.livespread.util;
+
+import org.apache.log4j.Logger;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
+import org.apache.pdfbox.pdmodel.encryption.StandardDecryptionMaterial;
+
+public class PDFPasswordChecker {
+
+	private static Logger LOGGER = Logger.getLogger(PDFPasswordChecker.class);
+
+	public static boolean isAvailablePWD(String filePath) throws Exception {
+		LOGGER.info("**Start--isAvailablePWD  methode pah=" + filePath);
+		boolean pwdFlag = false;
+		try {
+			PDDocument document = PDDocument.load(filePath);
+
+			if (document.isEncrypted()) {
+				try {
+					document.openProtection(new StandardDecryptionMaterial(""));
+					pwdFlag = false;
+					LOGGER.info("file--is password protected ");
+				} catch (Exception e) {
+					LOGGER.error("PDF file is secured but password protected="
+							+ e);
+					pwdFlag = true;
+
+				}
+			}
+		} catch (Exception e) {
+			LOGGER.error("PDFPasswordChecker error=" + e);
+		}
+		return pwdFlag;
+	}
+
+	public static boolean passwordProtection(String filePath) {
+		try {
+			PDDocument document = PDDocument.load(filePath);
+
+			final AccessPermission ap = document.getCurrentAccessPermission();
+			if (document.isEncrypted() && ap != null && ap.isOwnerPermission()) {
+				try {
+					document.openProtection(new StandardDecryptionMaterial(""));
+					return false;
+				} catch (Exception e) {
+					LOGGER.error("Error=", e);
+					return true;
+				}
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error=", e);
+		}
+		return false;
+	}
+
+}

@@ -1,0 +1,49 @@
+/**
+ * 
+ */
+package com.livespread.command;
+
+
+/**
+ * @author KP0e1301
+ *
+ */
+public class ScaleCommand {
+	
+	private Integer scaleId;
+	
+	private String scaleVal;
+	
+	private String scaleName;
+
+	public Integer getScaleId() {
+		return scaleId;
+	}
+
+	public void setScaleId(Integer scaleId) {
+		this.scaleId = scaleId;
+	}
+
+	public String getScaleVal() {
+		return scaleVal;
+	}
+
+	public void setScaleVal(String scaleVal) {
+		this.scaleVal = scaleVal;
+	}
+
+	/**
+	 * @return the scaleName
+	 */
+	public String getScaleName() {
+		return scaleName;
+	}
+
+	/**
+	 * @param scaleName the scaleName to set
+	 */
+	public void setScaleName(String scaleName) {
+		this.scaleName = scaleName;
+	}
+	
+}

@@ -1,0 +1,97 @@
+#application.properties
+replaceText=ProcessedDocuments/TextDocuments
+DESCRIPTION=DESCRIPTION
+incomeStatement=IS
+textAreaEnd=</textarea>
+norm_DispalyRecords=50
+modifiedByForBreakupQaChecks=20
+
+cssType=product
+secureFlag=true
+clientSpecificHeaderFooterEnable=N
+VAFlag=N
+
+
+#SQL QA
+uploadTempDirectory.path=HOME_RESOURCE_PATH/Datafiles/Temp/
+uploadPermanantDirectory.pathcpsec=HOME_RESOURCE_PATH/SourceDocuments/
+batchProcessingTemplateDownloadPath=HOME_RESOURCE_PATH/Datafiles/Batch Processing Template/batch_processing_file.xlsm
+uploadedTempletedDirectory.path=HOME_RESOURCE_PATH/Datafiles/uploadedTemplates/
+sampleTempletFile.Path=HOME_RESOURCE_PATH/Datafiles/sampleTemplate/
+downloadXMLDocumentPath=HOME_PATH/XML_Output/Normalized/
+uploadPermanantDirectory.path=HOME_RESOURCE_PATH/Datafiles/SourceDocuments
+batchProcessingFileDestinationPath=HOME_RESOURCE_PATH/Datafiles/Auto_Case_Generation/Temp/
+homePath.path=HOME_PATH
+importNormTempletFile.Name=normlizationTemplate_V4.xlsx
+xmlExcelbatchProcessingPath=HOME_PATH/XML_Output/Normalized/
+VERSION_ID=LSV4_b5_07300506
+APPLICATION_URLS=APPLICATION_URL
+clientSpecificCustomTemplateDownloadedPath.path=HOME_RESOURCE_PATH/ClientCustomTemplate/
+clientSpecificCustomTempleteFilePath.path=HOME_RESOURCE_PATH/ClientCustomTemplate/clientSpecificCustomTemplate.xlsx
+UNLOCK_PATH=unlock.jceks
+#start dynamic excel functionality
+ExcelTemplatePath=HOME_RESOURCE_PATH/Excel_Template_Samples/
+CSVFilePath=HOME_RESOURCE_PATH/CSVFiles/
+#download XBRL file path
+XBRLFilePath=HOME_PATH/XBRL/
+rageApplicationName=
+rageMultithreading=N
+
+# Externalize Rage Process
+# for ready for submission
+rageAuditTrailCallProcessName=JSON_Audit_Trail
+# for All submission
+timeStatRageCallProcessName=ATRS
+# Form Maker Submit only
+mappingStats=Mapping_Stats
+columnMerge=Merging_single_year_multicolmn_wrapper
+modifyStatus=Modify_Status_Revised_Master
+mappingNormalizationMaster=Mapping_Normalization_Master
+forcedOCR=Adhoc_OCR_Master_Process
+batchExecution=Batch_Execution
+autoCaseGeneration=Auto Case Generation
+masterProcessBank=Master Process Bank Statm integration
+reprocess=Reprocess
+achDebitCalculation=Debit ACH Calculation
+generateXMLDocument=Select Data
+xbrlProcess=Xbrl_Master_Process
+segmentMerge=EO - Statement Merge
+
+statementPeriod=STATEMENT PERIOD
+formEnd=</form>
+sampleTempletFile.Name=template.xls
+statementDate=STATEMENT DATE
+anchorFileExt=.txt
+sampleFailedTempletFile.Name=failedTemplate.xls
+statementUnits=STATEMENT UNITS
+CSStart=<link rel='stylesheet' type='text/css' href='css/style.css' /><pre>
+statementType=STATEMENT TYPE
+JSStart=<script type="text/javascript" src="js/uic/jquery-2.1.1.min.js"></script><script type="text/javascript" src="js/common.js"></script>
+statementCurrency=STATEMENT CURRENCY
+Description=Description
+statementMonth=STATEMENT MONTH
+JSFindAnchorStart=<script type="text/javascript">function findPos(obj){var curtop = 0;if (obj.offsetParent){do{ curtop += obj.offsetTop;} while (obj= obj.offsetParent);}return [curtop-20];}var SupportDiv = document.getElementsByName('
+statementYear=STATEMENT YEAR
+textAreaStart=<textarea name="textAreaData" id="textAreaData" style="width: 1145px; border: medium none; height: 544px;">
+apliedrulesInitial=rulesApplied_
+statementFor=STATEMENT FOR
+statementQuality=STATEMENT QUALITY
+cashFlowStatement=CF
+
+whitelist=^[\\s\\w\\-\\,\\'\\._@\!/\\$\\(\\)\\{\\}\\[\\]\\\\r&%:\#&\#39;~;&qout;]*$
+CSEnd=</pre>
+searchText=SourceDocuments
+JSEnd=<script type="text/javascript">$(document).ready( function(){ $("\#loadinglayer").hide(); })</script> <script>   function callParent(){ strValue =document.body.innerHTML; window.opener.setAnchorPosition(strValue);} callParent();</script>
+formStart=<form name="edittextFile" id="edittextFile"><div id="button" align="right"><input type="button" name="save" value="Save" onclick="return saveTextFile();" style="background-color:\#005d95;border-color:\#005d95;color:\#fff" align="right"></div>
+JSFindAnchorEnd=')[0]; SupportDiv.style='background:yellow';window.scroll(0,findPos(SupportDiv)); </script>
+balanceSheet=BS
+anchorFileInitial=f_
+
+workque.status=Uploaded
+workque.case.status=Unassigned
+workque.reprocess.status=Ready for reprocess
+workque.descriptive.reprocess.status=Ready for Descriptive reprocess
+checkStageNormValidation=normalization validation 
+checkStage=Mandatory Mapping Validation
+checkStageStmtAttrVal=Statement ATTR Validation
+

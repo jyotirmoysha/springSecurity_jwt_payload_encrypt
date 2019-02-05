@@ -1,0 +1,26 @@
+# logger level
+log4j.rootLogger=CONSOLE,ERROR,stdout
+log4j.logger.appLogger=ERROR
+
+log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender
+log4j.appender.CONSOLE.Threshold=ERROR
+log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout
+log4j.appender.CONSOLE.layout.ConversionPattern=%d{ISO8601} - %-5p [%t:%C{1}@%L] - %m%n
+
+# appender
+log4j.appender.appLogger=org.apache.log4j.DailyRollingFileAppender
+
+# layout
+log4j.appender.appLogger.layout=org.apache.log4j.PatternLayout
+log4j.appender.appLogger.layout.ConversionPattern=[%d{ISO8601}] [%5p] [%X{sessionId}] [%c] : %m%n
+log4j.appender.appLogger.File=
+log4j.appender.appLogger.MaxFileSize=100MB
+log4j.appender.appLogger.MaxBackupIndex=10
+
+log4j.appender.appLogger.Append=false
+log4j.additivity.appLogger=false
+log4j.additivity.org=false
+log4j.logger.org.hibernate=error 
+log4j.additivity.org.hibernate=false
+log4j.logger.org.hibernate.SQL=debug,appLogger
+log4j.logger.org.springframework=error

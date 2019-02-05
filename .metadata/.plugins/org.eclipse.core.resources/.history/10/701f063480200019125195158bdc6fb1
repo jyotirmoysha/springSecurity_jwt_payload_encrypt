@@ -1,0 +1,91 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author SD0e482
+ *
+ */
+@Entity
+@Table(name = "Server_List_Metadata")
+@NamedQueries({
+	@NamedQuery(name = "getJbossCategory", query = "select slm.jbossCategory from ServerListMetadata slm where slm.isActive='Y' and slm.jbossCategory is not null")
+})
+public class ServerListMetadata implements Serializable, BaseEntity{
+	
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	@Column(name = "ServerID")
+	private Integer serverId;
+	
+	@Column(name = "IS_Active")
+	private String isActive;
+	
+	@Column(name = "JBOSS_Category")
+	private String jbossCategory;
+
+	/**
+	 * @return the serverId
+	 */
+	public Integer getServerId() {
+		return serverId;
+	}
+
+	/**
+	 * @param serverId the serverId to set
+	 */
+	public void setServerId(Integer serverId) {
+		this.serverId = serverId;
+	}
+
+	/**
+	 * @return the isActive
+	 */
+	public String getIsActive() {
+		return isActive;
+	}
+
+	/**
+	 * @param isActive the isActive to set
+	 */
+	public void setIsActive(String isActive) {
+		this.isActive = isActive;
+	}
+
+	/**
+	 * @return the jbossCategory
+	 */
+	public String getJbossCategory() {
+		return jbossCategory;
+	}
+
+	/**
+	 * @param jbossCategory the jbossCategory to set
+	 */
+	public void setJbossCategory(String jbossCategory) {
+		this.jbossCategory = jbossCategory;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+}

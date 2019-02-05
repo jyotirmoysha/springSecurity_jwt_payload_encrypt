@@ -1,0 +1,37 @@
+
+package com.livespread.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.livespread.command.ExtractionRuleRowDataCommand;
+import com.livespread.command.ExtractionRulesTagInfoCommand;
+import com.livespread.util.JsonData;
+import com.livespread.util.RecordsData;
+import com.rage.reusable.constants.ReusableConstant;
+
+public interface ExtractionDataRulesService {
+
+    List<String> getFilesListByLanguage(String language);
+	List<ExtractionRulesTagInfoCommand> getTagDetailsListByFileNameAndLanguage(String fileName,String language);
+	List<ExtractionRuleRowDataCommand> getExtractionRulesData(Long tagId, String searchTxt, Integer pageNumber,Integer pageSize);
+    Integer getExtractionRulesTotalRecords(Long tagId, String searchTxt);
+	List<String> getLanguageDetails();
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	int  deletaMetadataIds(List<Long> delMetadataIds,Long userId);
+	
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+    List<RecordsData> updateExtractionRules(JsonData jsonData, Long userId);
+
+	
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	List<RecordsData> insertExtractionRules(JsonData jsonData, Long userId);
+	
+	List<ExtractionRuleRowDataCommand> getExtractionRulesDataForExcel(Long tagId);
+	
+	Map<String, Map<String, List<? extends Object>>> f_createFinancialFileExportData(List<ExtractionRuleRowDataCommand> metaRowInfoList,Integer valuesColCount);
+	
+}

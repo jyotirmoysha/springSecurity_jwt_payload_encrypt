@@ -1,0 +1,31 @@
+package com.livespread.util;
+
+public  class ReplaceSpace {
+
+	//replace space &nbsp;
+	public static String replaceSpac(String test){
+	String finalStringVal = "";
+	String result = "";
+	int count = 0;
+	//step1 empty count spaces
+	if (test.length() > 0) {
+	    for (int j = 0; j < test.length(); j++) {
+	          if (test.charAt(j) == ' ') {
+	                count++;
+	          } else {
+	                break;
+	          }
+	    }
+	}
+	String str = test.trim();
+	//step2 append nbsp dynamically based on count size
+	if (count > 0) {
+	    for (int k = 1; k < count; k++) {
+	          String finalString="&nbsp;";
+	          result =result+""+finalString;
+	    }
+	}
+	finalStringVal = result+""+str;
+	return finalStringVal;
+	}
+}

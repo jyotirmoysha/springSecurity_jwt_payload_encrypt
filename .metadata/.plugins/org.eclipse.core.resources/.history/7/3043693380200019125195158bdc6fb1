@@ -1,0 +1,151 @@
+/**
+ * 
+ */
+package com.livespread.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.livespread.domain.AliasBusinessEntity;
+import com.livespread.domain.BusinessEntity;
+import com.livespread.domain.CustomerDetails;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.livespread.domain.NamedQueryName;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Service("customerDetailsServ")
+public class CustomerDetailsServiceImpl implements CustomerDetailsService {
+
+	private Logger LOGGER = Logger.getLogger(CustomerDetailsServiceImpl.class);
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public int addCustomerDetails(String customerName, String businessName,
+			String accountNo, String userName, String companyId,Integer portfolioId,Integer userGroupId,String language,String industryId,int dealerId) {
+		LOGGER.info("--------------- addCustomerDetails Service Started -------------");
+
+		CustomerDetails cd = new CustomerDetails();
+		cd.setDealerId(dealerId);
+		cd.setCustomerName(customerName);
+		cd.setBusinessName(businessName);
+		if (accountNo != null && !accountNo.isEmpty()) {
+			cd.setAccountNo(Integer.parseInt(accountNo));
+		}
+
+		cd.setCompanyId(companyId);
+		/********* Set current DateTime and User Information ************/
+		cd.setCreateDate(new java.sql.Timestamp(System.currentTimeMillis()));
+		cd.setCreatedBy(userName);
+		cd.setLanguage(language);
+
+		cd.setUserGroupId(userGroupId);
+		cd.setSubPortFolioId(portfolioId);
+		cd.setIndustryId(industryId);
+
+		genericDaoImpl.persist(cd);
+		LOGGER.info("--------------- Customer Destails:" + cd.toString());
+		LOGGER.info("--------------- addCustomerDetails Service Completed with result:"
+				+ cd.getCustomerId() + "-------------");
+		return cd.getCustomerId();
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean updateCustomerDetails(CustomerDetails cd) {
+
+		return false;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean deleteCustomerDetails(int customerId) {
+		LOGGER.info("----------------- deleteCustomerDetails Service Started------------- ");
+		CustomerDetails cd = findCustomerDetailsById(customerId);
+		genericDaoImpl.remove(cd);
+		LOGGER.info("----------------- deleteCustomerDetails Service Completed------------- ");
+		return true;
+	}
+
+
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public ArrayList<CustomerDetails> getAllCustomerDetails() {
+
+		return (ArrayList<CustomerDetails>) (Object) genericDaoImpl
+				.findByNamedQuery(NamedQueryName.getCustomerDetailsList,
+						CustomerDetails.class);
+
+	}
+
+	@Override
+	public CustomerDetails findCustomerDetailsById(int customerId) {
+		return genericDaoImpl.findById(CustomerDetails.class, customerId);
+	}
+
+	@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public BusinessEntity checkEntity(String entityName){
+		LOGGER.info("**Start-- checkEntity methode");
+		HashMap<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("ename", entityName);
+		BusinessEntity businessEntity = genericDaoImpl.findByColumn(
+				NamedQueryName.checkEntityPresent, BusinessEntity.class,
+				parameters);
+		LOGGER.info("**End-- checkEntity methode businessEntity="
+				+ businessEntity);
+		return businessEntity;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public BusinessEntity saveBusinessEntity(BusinessEntity businessEntity) {
+		LOGGER.info("**Start-- saveBusinessEntity methode");
+
+		businessEntity = genericDaoImpl.merge(businessEntity);
+
+		LOGGER.info("**End-- saveBusinessEntity methode");
+		return businessEntity;
+	}
+
+	@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public AliasBusinessEntity getAliasBusinessEntity(
+			AliasBusinessEntity aliasBusinessEntity) {
+		LOGGER.info("**Start-- getAliasBusinessEntity methode"
+				+ aliasBusinessEntity);
+		HashMap<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("eID", aliasBusinessEntity.geteId());
+		parameters.put("companyId", aliasBusinessEntity.getCompanyId());
+		parameters.put("userGroupId", aliasBusinessEntity.getUserGroupId());
+
+		aliasBusinessEntity = genericDaoImpl.findByColumn(
+				NamedQueryName.getAliasBusinessEntity,
+				AliasBusinessEntity.class, parameters);
+
+		return aliasBusinessEntity;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public AliasBusinessEntity saveAliasBusinessEntity(
+			AliasBusinessEntity aliasBusinessEntity) {
+		LOGGER.info("**Start-- saveAliasBusinessEntity methode"
+				+ aliasBusinessEntity);
+		aliasBusinessEntity = genericDaoImpl.merge(aliasBusinessEntity);
+		LOGGER.info("**end-- saveAliasBusinessEntity methode"
+				+ aliasBusinessEntity);
+
+		return aliasBusinessEntity;
+	}
+
+}

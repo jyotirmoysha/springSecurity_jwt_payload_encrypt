@@ -1,0 +1,97 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Map;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+@Entity
+@Table(name = "GOLDEN_SET_BATCH_TRACKER")
+@NamedQueries({
+@NamedQuery(name = "getGoldenSetBatchTracker", query = "from GoldenSetBatchTracker order by batchId desc"),
+@NamedQuery(name = "getFeatureDataReportByBatchId", query = "from GoldenSetBatchTracker where batchId=:batchId order by batchId desc"),
+
+})
+
+public class GoldenSetBatchTracker implements Serializable, BaseEntity{
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "BATCH_ID")
+	private Integer batchId;
+	@Column(name = "CREATED_ON", updatable = false)
+	private Date createdOn;
+	@Column(name = "CREATED_BY",updatable = false)
+	private Integer createdBy;
+	@Column(name = "BATCH_STATUS")
+	private String batchStatus;
+	@Column(name = "DOWNLOAD_PATH")
+	private String downloadPath;
+	@Transient
+	private Map<Integer,String> featuresMap;
+	
+	public Map<Integer, String> getFeaturesMap() {
+		return featuresMap;
+	}
+
+	public void setFeaturesMap(Map<Integer, String> featuresMap) {
+		this.featuresMap = featuresMap;
+	}
+
+	public Integer getBatchId() {
+		return batchId;
+	}
+
+	public void setBatchId(Integer batchId) {
+		this.batchId = batchId;
+	}
+
+	public Date getCreatedOn() {
+		return createdOn;
+	}
+
+	public void setCreatedOn(Date createdOn) {
+		this.createdOn = createdOn;
+	}
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public String getBatchStatus() {
+		return batchStatus;
+	}
+
+	public void setBatchStatus(String batchStatus) {
+		this.batchStatus = batchStatus;
+	}
+
+	public String getDownloadPath() {
+		return downloadPath;
+	}
+
+	public void setDownloadPath(String downloadPath) {
+		this.downloadPath = downloadPath;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

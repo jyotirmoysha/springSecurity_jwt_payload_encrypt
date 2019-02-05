@@ -1,0 +1,53 @@
+package com.livespread.service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.livespread.domain.StatusMaster;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.livespread.domain.NamedQueryName;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Service("statusMasterService")
+public class StatusMasterServiceImpl implements StatusMasterService {
+
+	private Logger LOGGER = Logger.getLogger(StatusMasterServiceImpl.class);
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+
+	@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public List<StatusMaster> getAllStatusList() {
+		LOGGER.info("Starts get StatusList  ");
+		List<StatusMaster> statusList = new ArrayList<StatusMaster>();
+		List<Object> resultSet = genericDaoImpl.findByNamedQuery(
+				NamedQueryName.findAllStatusList, StatusMaster.class);
+		for (Object object : resultSet) {
+			Object[] obj = (Object[]) object;
+			StatusMaster sm = new StatusMaster();
+			sm.setStatusId(obj[0] == null ? 0 : Integer.parseInt(obj[0]
+					.toString()));
+			sm.setStatusName(obj[1] == null ? "" : obj[1].toString());
+			/**
+			 * Here we want only Extraction Success,Mapping Success and Normalization Success in status list
+			 */
+			if((sm.getStatusId()==4 || sm.getStatusName().equalsIgnoreCase("Extraction Success")) ||
+			   (sm.getStatusId()==6 || sm.getStatusName().equalsIgnoreCase("Mapping Success")) ||
+			   (sm.getStatusId()==8 || sm.getStatusName().equalsIgnoreCase("Normalization Success")) 
+			 ){
+			statusList.add(sm);
+			}
+		}
+		
+		LOGGER.info("End get StatusList ");
+		return statusList;
+	}
+
+}

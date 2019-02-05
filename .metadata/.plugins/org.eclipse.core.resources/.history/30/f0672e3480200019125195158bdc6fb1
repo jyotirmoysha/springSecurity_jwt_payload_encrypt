@@ -1,0 +1,397 @@
+package com.livespread.dao;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+
+import org.springframework.stereotype.Repository;
+
+import com.livespread.domain.AccountingStandard;
+import com.livespread.domain.Country;
+import com.livespread.domain.Currency;
+import com.livespread.domain.FinancialItems;
+import com.livespread.domain.LeadBank;
+import com.livespread.domain.NamedQueryName;
+import com.livespread.domain.NormItemLabels;
+import com.livespread.domain.NormQaChecksAggregates;
+import com.livespread.domain.NormQaChecksMeta;
+import com.livespread.domain.UltimateParent;
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.GenericDaoImpl;
+import com.rage.reusable.dao.QueryName;
+
+@Repository("lSExtendedGenericDao")
+public class LSExtendedGenericDao extends GenericDaoImpl{
+
+	@SuppressWarnings("unchecked")
+	public List<Object> findFirstRecordByNamedQuery(QueryName queryName, Class<? extends BaseEntity> entity, Map<String, Object> parameters){
+		Query query = getQuery(queryName, entity);
+		query.setFirstResult(0);
+		query.setMaxResults(1);
+		setParameters(query, parameters);
+		return query.getResultList();
+	}
+	
+	
+	
+	public int saveNormLabelList(List<NormItemLabels> normItemLabelList) {
+		
+		EntityManager localEntityManger = this.getMyEntityManager(new NormItemLabels().getEntityType());
+		int i=1;
+		for(NormItemLabels normItemLabels :normItemLabelList){
+			  localEntityManger.persist(normItemLabels);
+			  i++;
+			  if ( i % 15 == 0 ){
+				  localEntityManger.flush();
+				  localEntityManger.clear();
+			  }
+			
+		}
+		return i;
+		
+	}
+	
+	
+public int saveNormLabelChecksMetaList(List<NormQaChecksMeta> normQaChecksDerivedMetaList) {
+		
+		EntityManager localEntityManger = this.getMyEntityManager(new NormQaChecksMeta().getEntityType());
+		EntityManager localEntityManger1 = this.getMyEntityManager(new NormQaChecksAggregates().getEntityType());
+		int i=1;
+		for(NormQaChecksMeta normQaChecksMeta :normQaChecksDerivedMetaList){
+			  localEntityManger.persist(normQaChecksMeta);
+			  int j=1;
+			  if(normQaChecksMeta.getNormQaChecksAggregateList()!=null && normQaChecksMeta.getNormQaChecksAggregateList().size()>0){
+				  for(NormQaChecksAggregates normQaChecksAggregates :normQaChecksMeta.getNormQaChecksAggregateList()){
+					  normQaChecksAggregates.setCheckId(normQaChecksMeta.getCheckId());
+					  localEntityManger1.persist(normQaChecksAggregates);
+					  if ( j % 15 == 0 ){
+						  localEntityManger1.flush();
+						  localEntityManger1.clear();
+					  }
+				  }
+			  }
+			  i++;
+			  if ( i % 15 == 0 ){
+				  localEntityManger.flush();
+				  localEntityManger.clear();
+			  }
+		}
+		return i;
+	}
+
+public int saveNormQaCheckSubTotalMetaList(	List<NormQaChecksMeta> normQaChecksSubTotalMetaList) {
+	
+	EntityManager localEntityManger = this.getMyEntityManager(new NormQaChecksMeta().getEntityType());
+	int i=1;
+	for(NormQaChecksMeta normQaChecksMeta :normQaChecksSubTotalMetaList){
+		  localEntityManger.persist(normQaChecksMeta);
+		  i++;
+		  if ( i % 15 == 0 ){
+			  localEntityManger.flush();
+			  localEntityManger.clear();
+		  }
+	}
+	return i;
+}
+
+public Integer saveUltimateParent(UltimateParent ultimateParent){
+	Integer ultimateParentId=0;
+	try{
+		EntityManager localEntityManger = this.getMyEntityManager(new UltimateParent().getEntityType());
+		localEntityManger.persist(ultimateParent);
+		ultimateParentId=ultimateParent.getUltimateParentId();
+		
+	}catch(Exception e){
+		e.printStackTrace();
+	}
+	return ultimateParentId;
+}
+
+public Integer saveLeadBank(LeadBank leadBank){
+	Integer leadBankId=0;
+	try{
+		EntityManager localEntityManger = this.getMyEntityManager(new LeadBank().getEntityType());
+		localEntityManger.persist(leadBank);
+		leadBankId=leadBank.getLeadBankId();
+		
+	}catch(Exception e){
+		e.printStackTrace();
+	}
+	return leadBankId;
+}
+
+public Integer saveAccountingStandard(AccountingStandard accountingStandard){
+	Integer accountingStandardId=0;
+	try{
+		EntityManager localEntityManger = this.getMyEntityManager(new AccountingStandard().getEntityType());
+		localEntityManger.persist(accountingStandard);
+		accountingStandardId=accountingStandard.getAccountingStandardId();
+		
+	}catch(Exception e){
+		e.printStackTrace();
+	}
+	return accountingStandardId;
+}
+
+public Integer saveCountry(Country country){
+	Integer countryId=0;
+	try{
+		EntityManager localEntityManger = this.getMyEntityManager(new Country().getEntityType());
+		localEntityManger.persist(country);
+		countryId=country.getCountryId();
+		
+	}catch(Exception e){
+		e.printStackTrace();
+	}
+	return countryId;
+}
+
+public Integer saveCurrency(Currency currency){
+	Integer currencyId=0;
+	try{
+		EntityManager localEntityManger = this.getMyEntityManager(new Country().getEntityType());
+		localEntityManger.persist(currency);
+		currencyId=currency.getCurrencyId();
+		
+	}catch(Exception e){
+		e.printStackTrace();
+	}
+	return currencyId;
+}
+
+@SuppressWarnings("unchecked")
+public List<Object> getFinancialDataByCriteriaByEntityId(Integer entityId,Integer firstRecord,Integer totalRecords,String fiLabel,Integer templateId){
+	EntityManager localEntityManger = this.getMyEntityManager(new FinancialItems().getEntityType());
+	StringBuilder whereString=new StringBuilder("");
+	Map<String, Object> parameters = new HashMap<String, Object>();
+	ResourceBundle jdbcProperties = ResourceBundle.getBundle("jdbc");
+	String dataBase =jdbcProperties.getString("app.jdbc.database");
+	StringBuilder queryString = new StringBuilder("select FI.FI_ID,FI.FI_LABEL,FI.FI_SECTION,FI.FI_SUB_SECTION,NIL.NIL_LABEL,FI.FI_INDUSTRY,FI.CREATED_BY from FINANCIAL_ITEMS FI LEFT JOIN NORM_ITEM_LABELS NIL on FI.NI_ITEM=NIL.NI_ITEM and fi.TEMPLET_ID=nil.TEMPLATE_ID where (FI.E_ID is not null and FI.E_ID <> 0) AND (INDUSTRY_ID=0 or INDUSTRY_ID IS NULL) and FI.E_ID=:companyId and FI.TEMPLET_ID=:templateId");
+	
+	if(fiLabel!=null && !fiLabel.equalsIgnoreCase("") && !fiLabel.isEmpty()){
+		if(!fiLabel.trim().equalsIgnoreCase("")){
+			if(dataBase!=null && dataBase.equalsIgnoreCase("ORACLE"))
+			{
+				whereString.append(" and upper(FI_LABEL) like upper('%'||:fiLabel||'%') ");
+			}else
+			{
+				whereString.append(" and upper(FI_LABEL) like CONCAT('%',upper(:fiLabel),'%') ");
+			}
+			parameters.put("fiLabel", fiLabel);
+		}
+		
+		if(!whereString.toString().equalsIgnoreCase("")){
+			queryString.append(whereString);
+		}
+		queryString.append(" order by FI.FI_SECTION");
+		}//end filable empty
+	
+	parameters.put("companyId", entityId);
+	parameters.put("templateId", templateId);
+	Query query=localEntityManger.createNativeQuery(queryString.toString());
+	setParameters(query, parameters);
+	query.setFirstResult(firstRecord);
+	query.setMaxResults(totalRecords);
+	return query.getResultList();
+}
+
+@SuppressWarnings("unchecked")
+public List<Object> getFinancialDataByCriteriaByTemplateId(Integer templateId,Integer firstRecord,Integer totalRecords,String fiLabel){
+	EntityManager localEntityManger = this.getMyEntityManager(new FinancialItems().getEntityType());
+	ResourceBundle jdbcProperties = ResourceBundle.getBundle("jdbc");
+	String dataBase =jdbcProperties.getString("app.jdbc.database");
+	StringBuilder whereString=new StringBuilder("");
+	Map<String, Object> parameters = new HashMap<String, Object>();
+	StringBuilder queryString = new StringBuilder("select FI.FI_ID,FI.FI_LABEL,FI.FI_SECTION,FI.FI_SUB_SECTION,NIL.NIL_LABEL,FI.FI_INDUSTRY,FI.CREATED_BY from FINANCIAL_ITEMS FI LEFT JOIN NORM_ITEM_LABELS NIL on FI.NI_ITEM=NIL.NI_ITEM and fi.TEMPLET_ID=nil.TEMPLATE_ID where (FI.E_ID is null or FI.E_ID = 0) AND (INDUSTRY_ID=0 or INDUSTRY_ID IS NULL) and FI.TEMPLET_ID=:templateId");
+	if(fiLabel!=null && fiLabel.trim().length()>0)
+	{
+		if(dataBase!=null && dataBase.equalsIgnoreCase("ORACLE"))
+		{
+			whereString.append(" and upper(FI_LABEL) like upper('%'||:fiLabel||'%') ");
+		}else
+		{
+			whereString.append(" and upper(FI_LABEL) like CONCAT('%',upper(:fiLabel),'%') ");
+		}
+		parameters.put("fiLabel", fiLabel);
+		queryString.append(whereString);
+		queryString.append(" order by FI.FI_SECTION");
+	}//end filable empty
+	
+	parameters.put("templateId", templateId);
+	Query query=localEntityManger.createNativeQuery(queryString.toString());
+	setParameters(query, parameters);
+	query.setFirstResult(firstRecord);
+	query.setMaxResults(totalRecords);
+	return query.getResultList();
+}
+
+
+public int countFinancialsItemtByEntityId(Integer entityId,String fiLabel,Integer templateId){
+	EntityManager localEntityManger = this.getMyEntityManager(new FinancialItems().getEntityType());
+	ResourceBundle jdbcProperties = ResourceBundle.getBundle("jdbc");
+	String dataBase =jdbcProperties.getString("app.jdbc.database");
+	StringBuilder whereString=new StringBuilder("");
+	Map<String, Object> parameters = new HashMap<String, Object>();
+	StringBuilder queryString = new StringBuilder("select count(*) from FINANCIAL_ITEMS FI where (FI.E_ID is not null and FI.E_ID != 0) AND (INDUSTRY_ID=0 or INDUSTRY_ID IS NULL) and FI.E_ID=:companyId and FI.TEMPLET_ID=:templateId");
+	if(fiLabel!=null && !fiLabel.equalsIgnoreCase("") && !fiLabel.isEmpty()){
+		if(!fiLabel.trim().equalsIgnoreCase("")){
+			if(dataBase!=null && dataBase.equalsIgnoreCase("ORACLE"))
+			{
+				whereString.append(" and upper(FI_LABEL) like upper('%'||:fiLabel||'%') ");
+			}else
+			{
+				whereString.append(" and upper(FI_LABEL) like CONCAT('%',upper(:fiLabel),'%') ");
+			}
+			parameters.put("fiLabel", fiLabel);
+			queryString.append(whereString);
+		}
+	}
+	parameters.put("templateId", templateId);
+	parameters.put("companyId", entityId);
+	Query query=localEntityManger.createNativeQuery(queryString.toString());
+	setParameters(query, parameters);
+	Object queryResultCount=query.getResultList().get(0);
+	 if(null!=queryResultCount && queryResultCount instanceof BigDecimal){
+			BigDecimal count = (BigDecimal) queryResultCount;
+			return count.intValue();
+		 }
+	return (Integer) queryResultCount;
+}
+
+public int countFinancialsItemtByTemplateId(Integer templateId,String fiLabel){
+	EntityManager localEntityManger = this.getMyEntityManager(new FinancialItems().getEntityType());
+	ResourceBundle jdbcProperties = ResourceBundle.getBundle("jdbc");
+	String dataBase =jdbcProperties.getString("app.jdbc.database");
+	StringBuilder whereString=new StringBuilder("");
+	Map<String, Object> parameters = new HashMap<String, Object>();
+	StringBuilder queryString = new StringBuilder("select count(*) from FINANCIAL_ITEMS FI where (FI.E_ID is null or FI.E_ID = 0) AND (INDUSTRY_ID=0 or INDUSTRY_ID IS NULL) and FI.TEMPLET_ID=:templateId");
+	if(fiLabel!=null && !fiLabel.equalsIgnoreCase("") && !fiLabel.isEmpty()){
+		if(!fiLabel.trim().equalsIgnoreCase("")){
+			if(dataBase!=null && dataBase.equalsIgnoreCase("ORACLE"))
+			{
+				whereString.append(" and upper(FI_LABEL) like upper('%'||:fiLabel||'%') ");
+			}else
+			{
+				whereString.append(" and upper(FI_LABEL) like CONCAT('%',upper(:fiLabel),'%') ");
+			}
+			parameters.put("fiLabel", fiLabel);
+			queryString.append(whereString);
+		}
+	}
+	parameters.put("templateId", templateId);
+	Query query=localEntityManger.createNativeQuery(queryString.toString());
+	setParameters(query, parameters);
+	Object queryResultCount=query.getResultList().get(0);
+	 if(null!=queryResultCount && queryResultCount instanceof BigDecimal){
+			BigDecimal count = (BigDecimal) queryResultCount;
+			return count.intValue();
+		 }
+	return (Integer) queryResultCount;
+}
+
+
+
+public int countFinancialsItemsByIndustryId(String industryId,String fiLabel ,int templateId) 
+{
+	EntityManager localEntityManger = this.getMyEntityManager(new FinancialItems().getEntityType());
+	ResourceBundle jdbcProperties = ResourceBundle.getBundle("jdbc");
+	String dataBase =jdbcProperties.getString("app.jdbc.database");
+	StringBuilder whereString=new StringBuilder("");
+	Map<String, Object> parameters = new HashMap<String, Object>();
+	StringBuilder queryString = new StringBuilder("select count(*) from FINANCIAL_ITEMS FI where FI.E_ID = 0 and FI.INDUSTRY_ID <> 0 and FI.INDUSTRY_ID=:industryId and FI.TEMPLET_ID=:templateId");
+	if(fiLabel!=null && !fiLabel.equalsIgnoreCase("") && !fiLabel.isEmpty()){
+		if(!fiLabel.trim().equalsIgnoreCase("")){
+			if(dataBase!=null && dataBase.equalsIgnoreCase("ORACLE"))
+			{
+				whereString.append(" and upper(FI_LABEL) like upper('%'||:fiLabel||'%') ");
+			}else
+			{
+				whereString.append(" and upper(FI_LABEL) like CONCAT('%',upper(:fiLabel),'%') ");
+			}
+			parameters.put("fiLabel", fiLabel);
+			queryString.append(whereString);
+		}
+	}
+	parameters.put("templateId", templateId);
+	parameters.put("industryId", industryId);
+	Query query=localEntityManger.createNativeQuery(queryString.toString());
+	setParameters(query, parameters);
+	Object queryResultCount=query.getResultList().get(0);
+	 if(null!=queryResultCount && queryResultCount instanceof BigDecimal){
+			BigDecimal count = (BigDecimal) queryResultCount;
+			return count.intValue();
+		 }
+	return (Integer) queryResultCount;
+}
+
+
+
+@SuppressWarnings("unchecked")
+public List<Object> getFinancialDataByCriteriaByIndustryId(String industryId, Integer firstRecord,Integer totalRecords, String fiLabel, Integer templateId) 
+{
+	EntityManager localEntityManger = this.getMyEntityManager(new FinancialItems().getEntityType());
+	ResourceBundle jdbcProperties = ResourceBundle.getBundle("jdbc");
+	String dataBase =jdbcProperties.getString("app.jdbc.database");
+	StringBuilder whereString=new StringBuilder("");
+	Map<String, Object> parameters = new HashMap<String, Object>();
+	
+	StringBuilder queryString = new StringBuilder("select FI.FI_ID,FI.FI_LABEL,FI.FI_SECTION,FI.FI_SUB_SECTION,NIL.NIL_LABEL,FI.FI_INDUSTRY,FI.CREATED_BY from FINANCIAL_ITEMS FI LEFT JOIN NORM_ITEM_LABELS NIL on FI.NI_ITEM=NIL.NI_ITEM and fi.TEMPLET_ID=nil.TEMPLATE_ID where  FI.E_ID = 0 and FI.INDUSTRY_ID <> 0 and FI.INDUSTRY_ID=:industryId and FI.TEMPLET_ID=:templateId");
+	
+	if(fiLabel!=null && !fiLabel.equalsIgnoreCase("") && !fiLabel.isEmpty()){
+		if(!fiLabel.trim().equalsIgnoreCase("")){
+			if(dataBase!=null && dataBase.equalsIgnoreCase("ORACLE"))
+			{
+				whereString.append(" and upper(FI_LABEL) like upper('%'||:fiLabel||'%') ");
+			}else
+			{
+				whereString.append(" and upper(FI_LABEL) like CONCAT('%',upper(:fiLabel),'%') ");
+			}
+			parameters.put("fiLabel", fiLabel);
+		}
+		
+		if(!whereString.toString().equalsIgnoreCase("")){
+			queryString.append(whereString);
+		}
+		queryString.append(" order by FI.FI_SECTION");
+		}//end filable empty
+	
+	parameters.put("industryId", industryId);
+	parameters.put("templateId", templateId);
+	Query query=localEntityManger.createNativeQuery(queryString.toString());
+	setParameters(query, parameters);
+	query.setFirstResult(firstRecord);
+	query.setMaxResults(totalRecords);
+	return query.getResultList();
+}
+
+
+@SuppressWarnings("unchecked")
+public List<Object> findRecordsByNamedQuery(QueryName queryName,  Class<? extends BaseEntity> entity,Map<String, Object> parameters, Integer pageNumber, Integer pageSize) {
+	Query query = getQuery(queryName, entity);
+	query.setFirstResult((pageNumber-1) * pageSize); 
+	query.setMaxResults(pageSize);
+	setParameters(query, parameters);
+	return query.getResultList();
+}
+
+
+
+public Integer findRecordsCountByNamedQuery(NamedQueryName queryName,  Class<? extends BaseEntity> entity,
+	Map<String, Object> parameters) {
+	Long countResult=0l;
+	Query query = getQuery(queryName, entity);
+	setParameters(query, parameters);
+	countResult = (long)query.getSingleResult();
+	return countResult.intValue();
+}
+
+
+
+
+
+
+}

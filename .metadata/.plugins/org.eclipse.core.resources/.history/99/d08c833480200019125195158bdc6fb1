@@ -1,0 +1,225 @@
+/**
+ * 
+ */
+package com.livespread.command;
+
+import java.util.Date;
+
+import com.livespread.domain.User;
+
+/**
+ * @author KP0e1301
+ *
+ */
+public class FinancialItemsCommand {
+
+	private Integer fiId;
+
+	private String fiSubSection;
+
+	private String fiSection;
+
+	private String fiLabel;
+
+	private Integer fiIndexOrder;
+
+	private Integer niItem;
+
+	private Integer templateId;
+
+	private String fiIndustry;
+
+	private String fiLanguage;
+
+	private Integer eId;
+	
+	private String createdBy;
+
+	private Date createdDate;
+
+	private Integer analystId;
+
+	private String fiSearchType;
+	
+	private String headerLabel;
+	
+	private String tableLabel;
+	
+	private String fiStatus;
+
+	private Date stardDate;
+	
+	private Date endDate;
+
+	private String nilLabel;
+	
+	private User user;
+	
+	public Integer getFiId() {
+		return fiId;
+	}
+
+	public void setFiId(Integer fiId) {
+		this.fiId = fiId;
+	}
+
+	public String getFiSubSection() {
+		return fiSubSection;
+	}
+
+	public void setFiSubSection(String fiSubSection) {
+		this.fiSubSection = fiSubSection;
+	}
+
+	public String getFiSection() {
+		return fiSection;
+	}
+
+	public void setFiSection(String fiSection) {
+		this.fiSection = fiSection;
+	}
+
+	public String getFiLabel() {
+		return fiLabel;
+	}
+
+	public void setFiLabel(String fiLabel) {
+		this.fiLabel = fiLabel;
+	}
+
+	public Integer getFiIndexOrder() {
+		return fiIndexOrder;
+	}
+
+	public void setFiIndexOrder(Integer fiIndexOrder) {
+		this.fiIndexOrder = fiIndexOrder;
+	}
+
+	public Integer getNiItem() {
+		return niItem;
+	}
+
+	public void setNiItem(Integer niItem) {
+		this.niItem = niItem;
+	}
+
+	public Integer getTemplateId() {
+		return templateId;
+	}
+
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+
+	public String getFiIndustry() {
+		return fiIndustry;
+	}
+
+	public void setFiIndustry(String fiIndustry) {
+		this.fiIndustry = fiIndustry;
+	}
+
+	public String getFiLanguage() {
+		return fiLanguage;
+	}
+
+	public void setFiLanguage(String fiLanguage) {
+		this.fiLanguage = fiLanguage;
+	}
+
+	public Integer geteId() {
+		return eId;
+	}
+
+	public void seteId(Integer eId) {
+		this.eId = eId;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public Integer getAnalystId() {
+		return analystId;
+	}
+
+	public void setAnalystId(Integer analystId) {
+		this.analystId = analystId;
+	}
+
+	public String getFiSearchType() {
+		return fiSearchType;
+	}
+
+	public void setFiSearchType(String fiSearchType) {
+		this.fiSearchType = fiSearchType;
+	}
+
+	public String getHeaderLabel() {
+		return headerLabel;
+	}
+
+	public void setHeaderLabel(String headerLabel) {
+		this.headerLabel = headerLabel;
+	}
+
+	public String getTableLabel() {
+		return tableLabel;
+	}
+
+	public void setTableLabel(String tableLabel) {
+		this.tableLabel = tableLabel;
+	}
+
+	public String getFiStatus() {
+		return fiStatus;
+	}
+
+	public void setFiStatus(String fiStatus) {
+		this.fiStatus = fiStatus;
+	}
+
+	public Date getStardDate() {
+		return stardDate;
+	}
+
+	public void setStardDate(Date stardDate) {
+		this.stardDate = stardDate;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
+	public String getNilLabel() {
+		return nilLabel;
+	}
+
+	public void setNilLabel(String nilLabel) {
+		this.nilLabel = nilLabel;
+	}
+
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+}

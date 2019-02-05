@@ -1,0 +1,293 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "ARS_PO_MAPPING")
+@NamedNativeQueries({
+			@NamedNativeQuery(name = "findArsPoMappingByFilingIdForAuditReport", query = "select arsPoMapping.ARS_PO_MAPPING_ID,arsPoMapping.FILING_ID,U.login,arsPoMapping.USER_ROLE,arsPoMapping.CREATED_DATE,arsPoMapping.PO_ID,po.PO_SECTION,po.PO_AS_REP_LABEL,arsPoMapping.NIL_LABEL,arsPoMapping.PO_COLUMN_NAME,arsPoMapping.PO_COLUMN_VAL,ars.ARS_PERIOD,ars.ARS_STMT_YEAR from ARS_PO_MAPPING arsPoMapping left outer join PARSER_OUTPUT po on arsPoMapping.PO_ID=po.PO_ID left outer join AS_REP_STATEMENT ars on arsPoMapping.ARS_ID=ars.ARS_ID left outer join users U on U.USER_ID=arsPoMapping.CREATED_BY where arsPoMapping.FILING_ID=:filingId"),
+			@NamedNativeQuery(name = "findArsPoMappingStartDateEndDate", query = "select arsPoMapping.ARS_PO_MAPPING_ID,arsPoMapping.FILING_ID,U.login,arsPoMapping.USER_ROLE,arsPoMapping.CREATED_DATE,arsPoMapping.PO_ID,po.PO_SECTION,po.PO_AS_REP_LABEL,arsPoMapping.NIL_LABEL,arsPoMapping.PO_COLUMN_NAME,arsPoMapping.PO_COLUMN_VAL,ars.ARS_PERIOD,ars.ARS_STMT_YEAR from ARS_PO_MAPPING arsPoMapping left outer join PARSER_OUTPUT po on arsPoMapping.PO_ID=po.PO_ID left outer join AS_REP_STATEMENT ars on arsPoMapping.ARS_ID=ars.ARS_ID left outer join users U on U.USER_ID=arsPoMapping.CREATED_BY where arsPoMapping.CREATED_DATE BETWEEN :startDate AND :endDate"),
+			@NamedNativeQuery(name = "findArsPoMappingStartDateEndDateFilingId", query = "select arsPoMapping.ARS_PO_MAPPING_ID,arsPoMapping.FILING_ID,U.login,arsPoMapping.USER_ROLE,arsPoMapping.CREATED_DATE,arsPoMapping.PO_ID,po.PO_SECTION,po.PO_AS_REP_LABEL,arsPoMapping.NIL_LABEL,arsPoMapping.PO_COLUMN_NAME,arsPoMapping.PO_COLUMN_VAL,ars.ARS_PERIOD,ars.ARS_STMT_YEAR from ARS_PO_MAPPING arsPoMapping left outer join PARSER_OUTPUT po on arsPoMapping.PO_ID=po.PO_ID left outer join AS_REP_STATEMENT ars on arsPoMapping.ARS_ID=ars.ARS_ID left outer join users U on U.USER_ID=arsPoMapping.CREATED_BY where arsPoMapping.FILING_ID=:filingId and arsPoMapping.CREATED_DATE BETWEEN :startDate AND :endDate"),
+			@NamedNativeQuery(name = "getArvValueByNormItemAndArsIdFromArsPoMapping", query = "select sum(PO_COLUMN_VAL) from ars_po_mapping where FILING_ID=:filingId and ars_id=:arsId and ni_item =:niItem "),
+
+})
+
+@NamedQueries({
+	@NamedQuery(name = "getArsPoMappingRecordByPOID", query = "select arsPoMapping from ArsPoMapping arsPoMapping where poId in (:poId) "),
+	@NamedQuery(name = "getArsPoMappingRecordsByFILINGID", query = "select arsPoMapping from ArsPoMapping arsPoMapping where poColumnName like CONCAT('%',:poColumnName) and poId =:poId"),
+	@NamedQuery(name = "updateArsPoMappingRecord", query = "update ArsPoMapping set niItem =:niItem, nilLabel =:nilLabel, arsId =:arsId, headerLabel = :headerLabel,tableLabel = :tableLabel,section = :section, subSection =:subSection where poColumnName like CONCAT('%',:poColumnName) and fillingId=:fillingId AND poId =:poId"),
+	@NamedQuery(name = "getArsPoMappingdByFilingId", query = "select arsPoMapping from ArsPoMapping arsPoMapping where fillingId = :fillingId "),
+	@NamedQuery(name = "updateMappingNameByPoIdandColName", query = "update ArsPoMapping set mappingName =:mappingName where poColumnName like CONCAT('%',:poColumnName) and poId =:poId")
+	
+})
+public class ArsPoMapping  implements Serializable, BaseEntity {
+	private static final long serialVersionUID = 1L;
+
+	
+	@Id
+	/*@GeneratedValue(generator = "sequence")
+	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_ARS_PO_MAPPING_ID") })*/
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ARS_PO_MAPPING_ID")
+	private Integer arsPOMammpingTempId;
+	
+	@Column(name = "PO_ID")
+	private Integer poId;
+	
+	@Column(name = "FILING_ID")
+	private Integer fillingId;
+	
+	@Column(name = "ARS_ID")
+	private Integer arsId;
+	
+	@Column(name = "PO_COLUMN_NAME")
+	private String poColumnName;
+	
+	@Column(name = "PO_COLUMN_VAL")
+	private String poColumnVal;
+	
+	@Column(name = "NIL_LABEL")
+	private String nilLabel;
+
+	@Column(name = "NI_ITEM")
+	private Integer niItem;
+	
+	@Column(name = "CREATED_BY", updatable = false)
+	private Integer createdBy;
+	
+	@Column(name = "CREATED_DATE", updatable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date createdDate;
+	
+	@Column(name = "USER_ROLE")
+	private String userRole;
+	
+	@Column(name = "MAPPING_NAME")
+	private String mappingName;
+	
+	@Column(name = "MAPPING_TYPE")
+	private String mappingType;
+	
+	@Column(name = "HEADER_LABEL")
+	private String headerLabel;
+	
+	@Column(name = "TABLE_LABEL")
+	private String tableLabel;
+	
+	@Column(name = "SECTION")
+	private String section;
+	
+	@Column(name = "SUB_SECTION")
+	private String subSection;
+	
+	
+	@Transient
+	private String normItemSection;
+	
+	
+	public Integer getArsPOMammpingTempId() {
+		return arsPOMammpingTempId;
+	}
+
+	public void setArsPOMammpingTempId(Integer arsPOMammpingTempId) {
+		this.arsPOMammpingTempId = arsPOMammpingTempId;
+	}
+
+	public Integer getPoId() {
+		return poId;
+	}
+
+	public void setPoId(Integer poId) {
+		this.poId = poId;
+	}
+
+	public Integer getFillingId() {
+		return fillingId;
+	}
+
+	public void setFillingId(Integer fillingId) {
+		this.fillingId = fillingId;
+	}
+
+	public Integer getArsId() {
+		return arsId;
+	}
+
+	public void setArsId(Integer arsId) {
+		this.arsId = arsId;
+	}
+
+	public String getPoColumnName() {
+		return poColumnName;
+	}
+
+	public void setPoColumnName(String poColumnName) {
+		this.poColumnName = poColumnName;
+	}
+
+	public String getPoColumnVal() {
+		return poColumnVal;
+	}
+
+	public void setPoColumnVal(String poColumnVal) {
+		this.poColumnVal = poColumnVal;
+	}
+
+	public String getNilLabel() {
+		return nilLabel;
+	}
+
+	public void setNilLabel(String nilLabel) {
+		this.nilLabel = nilLabel;
+	}
+
+	public Integer getNiItem() {
+		return niItem;
+	}
+
+	public void setNiItem(Integer niItem) {
+		this.niItem = niItem;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+	public String getNormItemSection() {
+		return normItemSection;
+	}
+
+	public void setNormItemSection(String normItemSection) {
+		this.normItemSection = normItemSection;
+	}
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public String getUserRole() {
+		return userRole;
+	}
+
+	public void setUserRole(String userRole) {
+		this.userRole = userRole;
+	}
+
+	/**
+	 * @return the mappingName
+	 */
+	public String getMappingName() {
+		return mappingName;
+	}
+
+	/**
+	 * @param mappingName the mappingName to set
+	 */
+	public void setMappingName(String mappingName) {
+		this.mappingName = mappingName;
+	}
+
+	/**
+	 * @return the mappingType
+	 */
+	public String getMappingType() {
+		return mappingType;
+	}
+
+	/**
+	 * @param mappingType the mappingType to set
+	 */
+	public void setMappingType(String mappingType) {
+		this.mappingType = mappingType;
+	}
+
+	/**
+	 * @return the headerLabel
+	 */
+	public String getHeaderLabel() {
+		return headerLabel;
+	}
+
+	/**
+	 * @param headerLabel the headerLabel to set
+	 */
+	public void setHeaderLabel(String headerLabel) {
+		this.headerLabel = headerLabel;
+	}
+
+	/**
+	 * @return the tableLabel
+	 */
+	public String getTableLabel() {
+		return tableLabel;
+	}
+
+	/**
+	 * @param tableLabel the tableLabel to set
+	 */
+	public void setTableLabel(String tableLabel) {
+		this.tableLabel = tableLabel;
+	}
+
+	/**
+	 * @return the subSection
+	 */
+	public String getSubSection() {
+		return subSection;
+	}
+
+	/**
+	 * @param subSection the subSection to set
+	 */
+	public void setSubSection(String subSection) {
+		this.subSection = subSection;
+	}
+
+	/**
+	 * @return the section
+	 */
+	public String getSection() {
+		return section;
+	}
+
+	/**
+	 * @param section the section to set
+	 */
+	public void setSection(String section) {
+		this.section = section;
+	}
+}

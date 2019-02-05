@@ -1,0 +1,1211 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.springframework.util.CollectionUtils;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "PARSER_OUTPUT")
+@NamedNativeQueries({
+		
+	   @NamedNativeQuery(name = "getNormalizedDataForDearlerFormParser", query = "select po.po_id, po.PO_AS_REP_LABEL, po.po_index_order, po.po_val1, po.po_val2, po.po_val3, po.PO_ANCHOR, pa.pa_column, po.po_val4, po.NIL_LABEL,po.PO_SUBSECTION, po.PO_SUBTOTAL1, po.PO_BREAKUP,po.ACCOUNT_NUMBER,po.TIME_PERIOD,po.CUSTODIAN_NAME,po.po_val5,po.po_val6,po.po_val7,po.po_val8,po.page_no,po.upload_id,po.PO_YCOORDINATES,NON_ENGLISH_LABEL,po.REF_PO_ID,po.po_Section,po.PO_NOTE,po.is_duplicate "
+				+ "from parser_output po LEFT JOIN  po_anchors pa ON  pa.po_id = po.po_id and pa.filing_id = po.filing_id  "
+				+ "where po.filing_id = :fillingId and po.po_Section = :statementType and po.po_crud_account not like 'D' "
+				+ " order by po_index_order"),
+
+		@NamedNativeQuery(name = "getNormalizedDataByFilingIdandStatementTypeFor_EnhancedPublicParser", query = "select po.po_id, po.PO_AS_REP_LABEL, po.po_index_order, po.po_val1, po.po_val2, po.po_val3, po.po_anchor, po.upload_id, po.po_val4, po.NIL_LABEL,po.PO_SUBSECTION, po.PO_SUBTOTAL1, po.PO_BREAKUP,po.ACCOUNT_NUMBER,po.TIME_PERIOD,po.CUSTODIAN_NAME,po.po_val5,po.po_val6,po.po_val7,po.po_val8,po.page_no,NON_ENGLISH_LABEL,po.REF_PO_ID,po.po_Section,po.PO_NOTE,po.is_duplicate "
+				+ "from parser_output po where po.filing_id = :fillingId and po.po_Section = :statementType and po.po_crud_account not like 'D' "
+				+ "  order by po.po_index_order"),
+		
+		@NamedNativeQuery(name = "getNormalizedDataForSupplementalInfo", query = "select po.po_id, po.PO_AS_REP_LABEL, po.po_index_order, po.po_val1, po.po_val2, po.po_val3, po.PO_ANCHOR, pa.pa_column, po.po_val4, po.NIL_LABEL,po.PO_SUBSECTION, po.PO_SUBTOTAL1, po.PO_BREAKUP,po.ACCOUNT_NUMBER,po.TIME_PERIOD,po.CUSTODIAN_NAME,po.po_val5,po.po_val6,po.po_val7,po.po_val8,po.page_no,po.upload_id,NON_ENGLISH_LABEL "
+				+ "from parser_output po LEFT JOIN  po_anchors pa ON  pa.po_id = po.po_id and pa.filing_id = po.filing_id  "
+				+ "where po.filing_id = :fillingId and po.po_Section = :statementType and po.po_crud_account not like 'D' "
+				+ "order by po_section,po.po_subsection,po.po_index_order"),
+
+		@NamedNativeQuery(name = "getSearchableNormalizedData", query = "select po.po_id, po.PO_AS_REP_LABEL, po.po_index_order, po.po_val1, po.po_val2, po.po_val3, po.PO_ANCHOR, pa.pa_column, po.po_val4, po.NIL_LABEL,po.PO_SUBSECTION, po.PO_SUBTOTAL1, po.PO_BREAKUP,po.ACCOUNT_NUMBER,po.TIME_PERIOD,po.CUSTODIAN_NAME,po_val5,po.po_val6,po.po_val7,po.po_val8,po.page_no,po.upload_id "
+				+ "from parser_output po LEFT JOIN  po_anchors pa ON  pa.po_id = po.po_id and pa.filing_id = po.filing_id  "
+				+ "where po.filing_id = :fillingId and po.po_Section = :statementType and po.po_crud_account not like 'D' and po.ACCOUNT_NUMBER=:accountNumber and po.TIME_PERIOD=:timePeriod and po.CUSTODIAN_NAME=:custodianName order by po.po_id,po.po_index_order asc"),
+
+		@NamedNativeQuery(name = "getNormalizedDataByFilingIdandStatementTypeForXsl", query = "select po.po_id, po.PO_AS_REP_LABEL, po.po_index_order, po.po_val1, po.po_val2, po.po_val3, po.PO_ANCHOR, pa.pa_column, po.po_val4, po.po_val5, po.po_val6, po.po_val7, po.po_val8, po.po_val9, po.po_val10, po.po_val11, po.po_val12, po.po_val13, po.po_val14, po.po_val15, po.po_val16, po.po_val17, po.po_val18, po.po_val19, po.po_val20 , po.NIL_LABEL, po.PO_SUBSECTION, po.po_Section, po.po_breakup,po.PAGE_NO,po.NON_ENGLISH_LABEL "
+				+ "from parser_output po LEFT JOIN  po_anchors pa ON pa.po_id = po.po_id and pa.filing_id = po.filing_id "
+				+ "where po.filing_id = :fillingId and po.po_Section = :sectionName and po.po_crud_account not like 'D' "
+				+ "order by po.po_index_order asc"),
+				
+				@NamedNativeQuery(name = "getNormalizedDataForDealerFormXsl", query = "select po.po_id, po.PO_AS_REP_LABEL, po.po_index_order, po.po_val1, po.po_val2, po.po_val3, po.PO_ANCHOR, pa.pa_column, po.po_val4, po.po_val5, po.po_val6, po.po_val7, po.po_val8, po.po_val9, po.po_val10, po.po_val11, po.po_val12, po.po_val13, po.po_val14, po.po_val15, po.po_val16, po.po_val17, po.po_val18, po.po_val19, po.po_val20 , po.NIL_LABEL, po.PO_SUBSECTION, po.po_Section, po.po_breakup,po.PAGE_NO,po.NON_ENGLISH_LABEL "
+						+ "from parser_output po LEFT JOIN  po_anchors pa ON pa.po_id = po.po_id and pa.filing_id = po.filing_id "
+						+ "where po.filing_id = :fillingId and po.po_Section = :sectionName and po.po_crud_account not like 'D' "
+						+ "order by po_index_order"),
+
+		@NamedNativeQuery(name = "getNormalizedDataByFilingIdandStatementTypeOfBanksForXsl", query = "select po.po_id, po.PO_AS_REP_LABEL, po.po_index_order, po.ACCOUNT_NUMBER, po.TIME_PERIOD, po.po_val1, po.po_val2, po.po_val3, po.PO_ANCHOR, pa.pa_column, po.po_val4, po.po_val5, po.po_val6, po.po_val7, po.po_val8, po.po_val9, po.po_val10, po.NIL_LABEL, po.po_Section,po.CUSTODIAN_NAME, po.po_val11, po.po_val12, po.po_val13, po.po_val14, po.po_val15, po.po_val16, po.po_val17, po.po_val18, po.po_val19, po.po_val20 "
+				+ "from parser_output po LEFT JOIN  po_anchors pa ON pa.po_id = po.po_id and pa.filing_id = po.filing_id "
+				+ "where po.filing_id = :fillingId and po.po_crud_account not like 'D' "
+				+ "order by po.po_index_order asc"),
+
+		@NamedNativeQuery(name = "getNormalizedDataByFilingIdandStatementTypeForSUPPLXsl", query = "select po.po_id, po.PO_AS_REP_LABEL, po.po_index_order, po.po_val1, po.po_val2, po.po_val3, po.PO_ANCHOR, pa.pa_column, po.po_val4, po.po_val5, po.po_val6, po.po_val7, po.po_val8, po.po_val9, po.po_val10, po.po_val11, po.po_val12, po.po_val13, po.po_val14, po.po_val15, po.po_val16, po.po_val17, po.po_val18, po.po_val19, po.po_val20 , po.NIL_LABEL, po.PO_SUBSECTION, po.po_Section, po.po_breakup,po.NON_ENGLISH_LABEL "
+				+ "from parser_output po LEFT JOIN  po_anchors pa ON pa.po_id = po.po_id and pa.filing_id = po.filing_id "
+				+ "where po.filing_id = :fillingId and po.po_Section IN('SUPPL') and po.po_crud_account not like 'D' "
+				+ "order by po.po_section,po.po_subsection, po.po_index_order asc"),
+
+		@NamedNativeQuery(name = "getDistinctAccountNo", query = "select distinct po.ACCOUNT_NUMBER from parser_output po where po.filing_id=:fillingId and po.po_Section=:po_Section and po.po_crud_account not like 'D' and po.ACCOUNT_NUMBER is not null"),
+		@NamedNativeQuery(name = "getDistinctTimePeriod", query = "select distinct po.TIME_PERIOD from parser_output po where po.filing_id=:fillingId and po.po_Section=:po_Section and po.po_crud_account not like 'D' and po.TIME_PERIOD is not null"),
+		@NamedNativeQuery(name = "getDistinctCustodianName", query = "select distinct po.CUSTODIAN_NAME from parser_output po where po.filing_id=:fillingId and po.po_Section=:po_Section and po.po_crud_account not like 'D' and po.CUSTODIAN_NAME is not null"),
+		@NamedNativeQuery(name = "getDistinctTimePeriodByAccountNumber", query = "select distinct po.TIME_PERIOD from parser_output po where po.filing_id=:fillingId and po.po_Section=:po_Section and po.ACCOUNT_NUMBER=:accountNumber and po.po_crud_account not like 'D' and po.TIME_PERIOD is not null"),
+		@NamedNativeQuery(name = "getDistinctCustodianNameByAccountNumber", query = "select distinct po.CUSTODIAN_NAME from parser_output po where po.filing_id=:fillingId and po.po_Section=:po_Section and po.ACCOUNT_NUMBER=:accountNumber and po.po_crud_account not like 'D' and po.CUSTODIAN_NAME is not null"),
+	
+		@NamedNativeQuery(name = "updateCustodianMapping", query = "update parser_output set NIL_LABEL=:NIL_LABEL,NI_ITEM=:NI_ITEM where filing_id=:filing_id and po_section=:po_section and po_as_rep_label LIKE :po_as_rep_label and NI_ITEM is null"),
+		@NamedNativeQuery(name = "getDistinctSubSection", query = "select  po.PO_SUBSECTION from parser_output po where po.filing_id = :fillingId and po.po_Section =:statementType and po.po_crud_account not like 'D' group by po.PO_SUBSECTION order by MIN(po_section)"),
+		@NamedNativeQuery(name = "getStmtAttrLableList", query ="select po_as_rep_label, po_val1,po_val2,po_val3,po_val4 from parser_output where filing_id=:filingId and po_as_rep_label in('STATEMENT YEAR','STATEMENT MONTH','STATEMENT DATE','STATEMENT PERIOD') and po_section =:section and po_crud_account not like 'D' order by po_index_order"),
+		
+		@NamedNativeQuery(name = "getSupplParserOutputRefIDs", query = "select DISTINCT(po.REF_PO_ID) "
+				+ "from parser_output po "
+				+ "where po.FILING_ID = :fillingId and po.PO_SECTION='SUPPL' and po.po_crud_account not like 'D' "),
+		@NamedNativeQuery(name = "getBreakupsParserOutputRefIDs", query = "select DISTINCT(po.REF_PO_ID) "
+				+ "from parser_output po "
+				+ "where po.FILING_ID = :fillingId and po.PO_SECTION!='SUPPL' and po.PO_BREAKUP='Y' and po.po_crud_account not like 'D' "),
+				
+		@NamedNativeQuery(name = "getChildRecordsforReviewMapping", query =	"SELECT PO.REF_PO_ID,PO.PO_ID,PO.NI_ITEM,PO.NI_ITEM_SUGGESTIVE,PO.PO_SECTION FROM PARSER_OUTPUT PO "
+				+ "WHERE PO.FILING_ID = :filingId and PO.PO_SECTION='SUPPL' AND  PO.PO_CRUD_ACCOUNT <> 'D' AND PO.REF_PO_ID<>-1 AND  PO.REF_PO_ID IS NOT NULL "
+				+ "UNION "
+				+ "SELECT PO.REF_PO_ID,PO.PO_ID,PO.NI_ITEM,PO.NI_ITEM_SUGGESTIVE,PO.PO_SECTION FROM PARSER_OUTPUT PO "
+				+ "WHERE PO.FILING_ID = :filingId AND PO.PO_SECTION!='SUPPL' AND PO.PO_BREAKUP='Y' AND PO.PO_CRUD_ACCOUNT <> 'D' AND PO.REF_PO_ID<>-1 AND  PO.REF_PO_ID IS NOT NULL"),
+		
+	    @NamedNativeQuery(name = "totalRows", query = "select count(*) "+
+	    	       " from parser_output po where po.filing_id = :fillingId and po.po_Section = :statementType and po.po_crud_account not like 'D' "),
+	    
+	    @NamedNativeQuery(name = "totalRows_SUPPL", query = "select count(*) "+
+	    	       " from parser_output po where po.filing_id = :fillingId and po.po_Section = :statementType and po.po_crud_account not like 'D' and (po.REF_PO_ID = -1 or po.REF_PO_ID is null)"),
+	    @NamedNativeQuery(name = "getAsRepLabelContextData", query = "select  po_as_rep_label,min(po_id) po_id, po_section from parser_output  where filing_id = :fillingId and po_section in ('IS','BS','CF')  and PO_CRUD_ACCOUNT not in ('D') and po_as_rep_label ! = 'STATEMENT YEAR' and po_as_rep_label!=''  group by po_as_rep_label,po_section order by case po_section  when 'IS' then 1  when 'BS' then 2 when 'CF' then 3   end"),
+})
+
+@NamedQueries({
+		@NamedQuery(name = "updateNormalizedDataByPoIdFillingIdWqIdStatementType", query = "UPDATE ParserOutput SET poAsRepLabel = :poLable, poIndexOrder = :indexOrder,"
+				+ "poAsRepVal1 = :val1, poAsRepVal2 = :val2, poAsRepVal3 = :val3,"
+				+ "poAsRepVal4 = :val4, poAsRepVal5 = :val5,poAsRepVal6 = :val6,poAsRepVal7 = :val7,poAsRepVal8 = :val8, poCrudAccount = :poCrud, niItem = :niItem, nilLabel = :nilLabel, poSubSection =:poSubSection,accountNumber =:accountNumber,timePeriod =:timePeriod,custodianName=:custodianName,poBreakup=:poBreakup,poSubTotal=:subtotal,note=:note,niItemSuggstive = :niItemSuggstive "
+				+ "WHERE poId = :poId AND fillingId = :fillingId "),
+
+		@NamedQuery(name = "updateNormalizedDataViewFlagByPoIdFillingIdWqIdStatementType", query = "UPDATE ParserOutput SET poCrudAccount = :poCrud"
+				+ " WHERE poId in :poId AND fillingId = :fillingId "),
+
+		@NamedQuery(name = "getDataForGlobelLevel", query = "select new com.livespread.domain.ParserOutput(po.poId, po.poSection, po.poSubSection, po.poAsRepLabel,po.poIndexOrder, po.niItem,po.mappingName) from ParserOutput po where po.fillingId = :fillingId and po.poId IN (:poIdList) "),
+
+		@NamedQuery(name = "getRecordUsingPOID", query = "select po from ParserOutput po where poId=:poId"),
+
+		@NamedQuery(name = "updateByFillingId", query = "update ParserOutput set poCrudAccount='D' where fillingId=:fillingId"),
+		@NamedQuery(name = "getFirst", query = "update ParserOutput set poCrudAccount='D' where fillingId=:fillingId"),
+		@NamedQuery(name = "getFirstParserOutputRecord", query = "select po from ParserOutput po where po.fillingId=:filingId and po.poSection=:poSection and po.poAsRepLabel=:poAsRepLabel and poCrudAccount!='D'"),
+		@NamedQuery(name = "updateNiItemAndNiLabel", query = "update ParserOutput set nilLabel=:niLabel,niItem=:niItem where fillingId=:filingId and poSection=:section and niItem is null and nilLabel is null and PO_TRANS_TYPE !='ROW_HEADING'"),
+		@NamedQuery(name = "updatePoMergeCloumn", query = "update ParserOutput set poMerge=:poMerge where poSection=:poSection and poTableId=:poTableId and fillingId=:fillingId"),
+		@NamedQuery(name = "deleteParserOutput_ByFilingIdAndTableId", query = "Delete from ParserOutput po where (po.fillingId=:filingId and po.poTableId=:tableId) or po.refPoId in (select poo.poId from ParserOutput poo where poo.fillingId=:filingId and poo.poTableId=:tableId)"),
+		@NamedQuery(name = "deleteParserOutputRecordsByFilingId", query = "Delete from ParserOutput where fillingId=:fillingId"),
+		@NamedQuery(name = "getDistinctSectionListByFilingId", query = "SELECT DISTINCT(po.poSection) FROM ParserOutput po WHERE po.fillingId=:fillingId"),
+		@NamedQuery(name = "fetchParserOutputForLanguageMapping", query = "select po.fillingId,po.poAsRepLabel,po.poSection,po.nonEnglishLable,wq.language from ParserOutput po,WorkQueue wq where po.fillingId=wq.filingId and po.poAsRepLabel is not null and po.nonEnglishLable is not null and po.poId in(:poIdList)"),
+		@NamedQuery(name = "getParserOutputByNormLabelGlobalData",  query = "from ParserOutput po where po.fillingId=:filingId and po.mappingType is not null  and ((po.mappingType !='Automated') or (po.mappingType ='Automated' and (po.mappingName like '%CompanyLevel%' or po.mappingName like '%IndustryLevel%'))) and (po.nilLabel is not null and po.nilLabel!='') and poCrudAccount!='D' and poSection in (:sectionList) order by po.poIndexOrder"),
+		@NamedQuery(name = "getParserOutputByNormLabelCompanyData", query = "from ParserOutput po where po.fillingId=:filingId and po.mappingType is not null  and ((po.mappingType !='Automated') or (po.mappingType ='Automated' and (po.mappingName like '%GlobalLevel%' or po.mappingName like '%IndustryLevel%'))) and (po.nilLabel is not null and po.nilLabel!='') and poCrudAccount!='D' and poSection in (:sectionList) order by po.poIndexOrder"),
+		@NamedQuery(name = "getParserOutputByNormLabelIndustryData",  query = "from ParserOutput po where po.fillingId=:filingId and po.mappingType is not null  and ((po.mappingType !='Automated') or (po.mappingType ='Automated' and (po.mappingName like '%GlobalLevel%' or po.mappingName like '%CompanyLevel%'))) and (po.nilLabel is not null and po.nilLabel!='') and poCrudAccount!='D' and poSection in (:sectionList) order by po.poIndexOrder"),
+		@NamedQuery(name = "updateNormLabelByPoId", query = "update ParserOutput set nilLabel=:normLabel,niItem=:normLabelId,mappingType=:mappingType,poCrudAccount=:poCrudAccount,niItemSuggstive =:normLabelId,mappingName=:mappingName,fiId=:fiId,poSubSection=:poSubSection  where poId = :poId"),
+		@NamedQuery(name = "getParserOutputListByFilingId", query = "select po from ParserOutput po where po.fillingId=:filingId and poSection in ('IS','BS','CF','EQTY') and poBreakup = 'N' order by poIndexOrder asc"),
+		@NamedQuery(name = "updateMappingNameByPoId", query = "update ParserOutput set mappingName=:mappingName where poId In (:poIdList)"),
+		@NamedQuery(name = "updateCrudAccountPoId", query = "UPDATE ParserOutput SET poCrudAccount = :poCrudAccount where poId=:poId"),
+		@NamedQuery(name = "getParserOutputByPoID", query = "select po from ParserOutput po where poId=:poId and po.nilLabel is not null and po.niItem is not null "),
+		@NamedQuery(name = "getParserOutputByFilingId", query = "select po from ParserOutput po where fillingId=:filingId and poId is not null"),
+		@NamedQuery(name = "getPoIdArslabelByPoIdList", query = "select po.poId,po.poAsRepLabel,po.poSubSection,po.poSection from ParserOutput po where po.poId in(:poIdList)"),
+		@NamedQuery(name = "getPoIdArsLabelMapByFilingIdAndRefPoIdIsNotNull", query = "select po.poId,po.poAsRepLabel,poAsRepVal1,poAsRepVal2,poAsRepVal3,poAsRepVal4,poAsRepVal5,poAsRepVal6,poAsRepVal7,poAsRepVal8,poAsRepVal9,poAsRepVal10,poAsRepVal11,poAsRepVal12,poAsRepVal13,poAsRepVal14,poAsRepVal15,poAsRepVal16,poAsRepVal17,poAsRepVal18,poAsRepVal19,poAsRepVal20,uploadId from ParserOutput po where po.fillingId=:filingId"),
+		@NamedQuery(name = "getParserOutputByPoIndexOrder", query = "select po.poId from ParserOutput po where po.fillingId=:filingId and poSection=:poSection and poIndexOrder=:poIndexOrder and poCrudAccount  not in ('D')"),
+		@NamedQuery(name = "getValuesColumnCount", query = "from ParserOutput where fillingId=:filingId and poSection=:poSection and poCrudAccount not in ('D')"),
+		@NamedQuery(name="getNormalizedDataByFilingIdandStatementType",query="select po from ParserOutput po where po.fillingId=:fillingId and po.poSection=:statementType and po.poCrudAccount not like 'D' order by po.poIndexOrder"),
+		@NamedQuery(name="getNormalizedDataByFilingIdandStatementTypeForSUPPL",query="select po from ParserOutput po where po.fillingId=:fillingId and po.poSection=:statementType and po.poCrudAccount not like 'D' and (po.refPoId=-1 or po.refPoId is null) order by po.poIndexOrder"),
+		@NamedQuery(name="getNormalizedDataByPOID",query="select po from ParserOutput po where po.refPoId=:refPoId and po.poSection=:statementType and po.poCrudAccount not like 'D' order by po.poIndexOrder"),
+		@NamedQuery(name="getNormalizedDataForExcelBySectionAndFilingId",query="select poIndexOrder,poAsRepLabel,nilLabel,poSection,poBreakup,pageNo,poAsRepVal1,poAsRepVal2,poAsRepVal3,poAsRepVal4,poAsRepVal5,poAsRepVal6,poAsRepVal7,poAsRepVal8,poAsRepVal9,poAsRepVal10,poAsRepVal11,poAsRepVal12,poAsRepVal13,poAsRepVal14,poAsRepVal15,poAsRepVal16,poAsRepVal17,poAsRepVal18,poAsRepVal19,poAsRepVal20,nonEnglishLable from ParserOutput po where po.fillingId=:fillingId and po.poSection in(:sectionSet)and po.poCrudAccount not like 'D' order by po.poIndexOrder"),
+	    @NamedQuery(name=  "updateRefPoIdByPoId", query = "update ParserOutput set poSection =:asRepLableSection, refPoId=:asRefLabelPoid , poIndexOrder =:insertMaxPoIndex where  fillingId=:fillingId and poId =:poids"),
+	    @NamedQuery(name = "getPoIndexOrderBySection", query = "select max(po.poIndexOrder) from ParserOutput po where po.fillingId=:fillingId and poSection=:asRepLableSection and poCrudAccount  not in ('D')"),	    
+	    @NamedQuery(name = "getRefPoidsList", query = "select  poId from ParserOutput where refPoId=:poId and poCrudAccount not in ('D') and fillingId=:fillingId"),
+	    @NamedQuery(name = "getValuesColumnCountForQaCheck", query = "from ParserOutput where fillingId=:filingId and modifiedBy is not null and poSection=:poSection and poCrudAccount not in ('D')"),
+		@NamedQuery(name = "getPoModifyByList", query = "select  distinct(modifiedBy) from ParserOutput where poCrudAccount not in ('D') and fillingId=:fillingId and poSection=:poSection and modifiedBy is not null"),
+		@NamedQuery(name = "getPoSubSectionList", query = "select  DISTINCT(poSubSection) from ParserOutput where poSubSection is not null "),
+		@NamedQuery(name = "getValuesColumnCountByModifiedBy", query = "from ParserOutput where fillingId=:filingId and poSection=:poSection and poCrudAccount not in ('D') and modifiedBy is not null and modifiedBy=:modifiedBy"),
+		@NamedQuery(name = "updateNormLabelByPoIdForITR", query = "update ParserOutput set nilLabel=:normLabel,niItem=:normLabelId,mappingType=:mappingType,poCrudAccount=:poCrudAccount,niItemSuggstive =:normLabelId,mappingName=:mappingName,fiId=:fiId where poId = :poId"),
+		@NamedQuery(name = "getNextSequencesByIndexSeq", query = "select poIndexOrder  from ParserOutput where   poSection=:section and poCrudAccount <> 'D'  and fillingId=:filingId and poIndexOrder between :startIndex and :endIndex"),
+})
+public class ParserOutput implements Serializable, BaseEntity {
+
+	public ParserOutput(Integer poId, String poSection,String poSubSection, String poAsRepLabel, Integer poIndexOrder, Integer niItem,String mappingName) {
+		
+		this.poId = poId;
+		this.poSection = poSection;
+		this.poAsRepLabel = poAsRepLabel;
+		this.poIndexOrder = poIndexOrder;
+		this.niItem = niItem;
+		this.poSubSection = poSubSection;
+		this.mappingName = mappingName;
+	}
+
+
+	private static final long serialVersionUID = 1L;
+
+	@Id
+//	@GeneratedValue(generator = "sequence")
+//	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_PO_ID") })
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "PO_ID")
+	private Integer poId;
+
+	@Column(name = "WQ_ID")
+	private Integer wqId;
+
+	@Column(name = "PO_SECTION")
+	private String poSection;
+
+	@Column(name = "PO_AS_REP_LABEL")
+	private String poAsRepLabel;
+
+	@Column(name = "PO_INDEX_ORDER")
+	private Integer poIndexOrder;
+
+	@Column(name = "PO_VAL1")
+	private String poAsRepVal1;
+
+	@Column(name = "PO_VAL2")
+	private String poAsRepVal2;
+
+	@Column(name = "PO_VAL3")
+	private String poAsRepVal3;
+
+	@Column(name = "PO_VAL4")
+	private String poAsRepVal4;
+
+	@Column(name = "PO_VAL5")
+	private String poAsRepVal5;
+
+	@Column(name = "PO_VAL6")
+	private String poAsRepVal6;
+
+	@Column(name = "PO_VAL7")
+	private String poAsRepVal7;
+
+	@Column(name = "PO_VAL8")
+	private String poAsRepVal8;
+	
+	@Column(name = "PO_VAL9")
+	private String poAsRepVal9;
+	
+	@Column(name = "PO_VAL10")
+	private String poAsRepVal10;
+	
+	@Column(name = "PO_VAL11")
+	private String poAsRepVal11;
+	@Column(name = "PO_VAL12")
+	private String poAsRepVal12;
+	@Column(name = "PO_VAL13")
+	private String poAsRepVal13;
+	@Column(name = "PO_VAL14")
+	private String poAsRepVal14;
+	@Column(name = "PO_VAL15")
+	private String poAsRepVal15;
+	@Column(name = "PO_VAL16")
+	private String poAsRepVal16;
+	@Column(name = "PO_VAL17")
+	private String poAsRepVal17;
+	@Column(name = "PO_VAL18")
+	private String poAsRepVal18;
+	@Column(name = "PO_VAL19")
+	private String poAsRepVal19;
+	@Column(name = "PO_VAL20")
+	private String poAsRepVal20;
+	
+	@Column(name = "filing_id")
+	private Integer fillingId;
+
+	@Column(name = "PO_CRUD_ACCOUNT")
+	private String poCrudAccount;
+
+	@Column(name = "NIL_LABEL")
+	private String nilLabel;
+
+	@Column(name = "NI_ITEM")
+	private Integer niItem;
+
+	@Column(name = "PO_SUBSECTION")
+	private String poSubSection;
+
+	@Column(name = "PO_BREAKUP")
+	private String poBreakup;
+
+	@Column(name = "PO_SUBTOTAL1")
+	private String poSubTotal;
+
+	@Column(name = "ACCOUNT_NUMBER")
+	private String accountNumber;
+
+	@Column(name = "CUSTODIAN_NAME")
+	private String custodianName;
+
+	@Column(name = "TIME_PERIOD")
+	private String timePeriod;
+
+
+	@Column(name = "PO_YCOORDINATES")
+	private String poYcoordinates;
+
+	@Column(name = "PO_MERGE")
+	private String poMerge;
+
+	@Column(name = "PO_TABLE_ID")
+	private String poTableId;
+
+	
+	@Column(name = "page_no")
+	private String pageNo;
+	
+	@Column(name = "PO_AS_REP_VAL1")
+	private String poAsRepValue1;
+	
+	@Column(name = "PO_AS_REP_VAL2")
+	private String poAsRepValue2;
+	
+	@Column(name = "PO_AS_REP_VAL3")
+	private String poAsRepValue3;
+	
+	@Column(name = "PO_AS_REP_VAL4")
+	private String poAsRepValue4;
+	
+	@Column(name = "PO_AS_REP_VAL5")
+	private String poAsRepValue5;
+	
+	@Column(name = "PO_AS_REP_VAL6")
+	private String poAsRepValue6;
+	
+	@Column(name = "PO_AS_REP_VAL7")
+	private String poAsRepValue7;
+	
+	@Column(name = "PO_AS_REP_VAL8")
+	private String poAsRepValue8;
+			   	
+	@Column(name = "NON_ENGLISH_LABEL")
+	private String nonEnglishLable;
+
+	@Column(name = "PO_ANCHOR")
+	private String poAnchor;
+
+	@Column(name = "TEMPLATE_ID")
+	private Integer templateId;
+	
+	@Column(name="REF_PO_ID")
+	private Integer refPoId = -1;
+	
+	@Column(name="UPLOAD_ID")
+	private Integer uploadId;
+	
+	@Column(name="PO_NOTE")
+	private String note;
+	
+	@Column(name="MAPPING_NAME")
+	private String mappingName;
+	
+	@Column(name="MAPPING_TYPE")
+	private String mappingType;
+	
+	@Column(name="IS_DUPLICATE")
+	private String isDuplicate;
+	
+	@Column(name="NI_ITEM_SUGGESTIVE")
+	private String niItemSuggstive;
+	
+	@Column(name="PO_MODIFIED_BY")
+	private String poModifiedBy;
+	
+	@Column(name="FI_ID")
+	private Integer fiId;
+	
+	
+	@Transient
+	private String encryptedFilingId;
+	
+	@Transient
+	private String isSupplPOIDMapped;
+	
+	@Transient
+	private List<ArsPoMapping> arsPoMappingList;
+	
+	@Transient
+	private String niItemSection;
+	
+	@Transient
+	private String isMultipleNiItems;
+	
+	@Transient
+	private String trClass;
+
+	@Transient
+	Map<String,String> po_valColMap;
+
+	@Column(name="MODIFIED_BY")
+	private String modifiedBy;
+
+	@Transient
+	private String searchLevelClassName;
+	
+
+
+	public String getSearchLevelClassName() {
+		return searchLevelClassName;
+	}
+
+
+	public void setSearchLevelClassName(String searchLevelClassName) {
+		this.searchLevelClassName = searchLevelClassName;
+	}
+
+
+	public Map<String, String> getPo_valColMap() {
+		return po_valColMap;
+	}
+
+
+	public void setPo_valColMap(Map<String, String> po_valColMap) {
+		this.po_valColMap = po_valColMap;
+	}
+
+
+	public String getPoAsRepVal9() {
+		return poAsRepVal9;
+	}
+
+
+	public void setPoAsRepVal9(String poAsRepVal9) {
+		this.poAsRepVal9 = poAsRepVal9;
+	}
+
+
+	public String getPoAsRepVal10() {
+		return poAsRepVal10;
+	}
+
+
+	public void setPoAsRepVal10(String poAsRepVal10) {
+		this.poAsRepVal10 = poAsRepVal10;
+	}
+
+
+	public String getPoAsRepVal11() {
+		return poAsRepVal11;
+	}
+
+
+	public void setPoAsRepVal11(String poAsRepVal11) {
+		this.poAsRepVal11 = poAsRepVal11;
+	}
+
+
+	public String getPoAsRepVal12() {
+		return poAsRepVal12;
+	}
+
+
+	public void setPoAsRepVal12(String poAsRepVal12) {
+		this.poAsRepVal12 = poAsRepVal12;
+	}
+
+
+	public String getPoAsRepVal13() {
+		return poAsRepVal13;
+	}
+
+
+	public void setPoAsRepVal13(String poAsRepVal13) {
+		this.poAsRepVal13 = poAsRepVal13;
+	}
+
+
+	public String getPoAsRepVal14() {
+		return poAsRepVal14;
+	}
+
+
+	public void setPoAsRepVal14(String poAsRepVal14) {
+		this.poAsRepVal14 = poAsRepVal14;
+	}
+
+
+	public String getPoAsRepVal15() {
+		return poAsRepVal15;
+	}
+
+
+	public void setPoAsRepVal15(String poAsRepVal15) {
+		this.poAsRepVal15 = poAsRepVal15;
+	}
+
+
+	public String getPoAsRepVal16() {
+		return poAsRepVal16;
+	}
+
+
+	public void setPoAsRepVal16(String poAsRepVal16) {
+		this.poAsRepVal16 = poAsRepVal16;
+	}
+
+
+	public String getPoAsRepVal17() {
+		return poAsRepVal17;
+	}
+
+
+	public void setPoAsRepVal17(String poAsRepVal17) {
+		this.poAsRepVal17 = poAsRepVal17;
+	}
+
+
+	public String getPoAsRepVal18() {
+		return poAsRepVal18;
+	}
+
+
+	public void setPoAsRepVal18(String poAsRepVal18) {
+		this.poAsRepVal18 = poAsRepVal18;
+	}
+
+
+	public String getPoAsRepVal19() {
+		return poAsRepVal19;
+	}
+
+
+	public void setPoAsRepVal19(String poAsRepVal19) {
+		this.poAsRepVal19 = poAsRepVal19;
+	}
+
+
+	public String getPoAsRepVal20() {
+		return poAsRepVal20;
+	}
+
+
+	public void setPoAsRepVal20(String poAsRepVal20) {
+		this.poAsRepVal20 = poAsRepVal20;
+	}
+
+
+	public Integer getTemplateId() {
+		return templateId;
+	}
+
+
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+
+
+	public String getPoAnchor() {
+		return poAnchor;
+	}
+
+
+	public void setPoAnchor(String poAnchor) {
+		this.poAnchor = poAnchor;
+	}
+
+
+	public Object clone() {
+        ParserOutput obj = new ParserOutput();
+        obj.setAccountNumber(this.accountNumber);
+        obj.setCustodianName(this.custodianName);
+        obj.setFillingId(this.fillingId);
+        obj.setNiItem(this.niItem);
+        obj.setNilLabel(this.nilLabel);
+        obj.setPageNo(this.pageNo);
+        obj.setPoAsRepLabel(this.poAsRepLabel);
+        obj.setPoAsRepVal1(this.poAsRepVal1);
+        obj.setPoAsRepVal2(this.poAsRepVal2);
+        obj.setPoAsRepVal3(this.poAsRepVal3);
+        obj.setPoAsRepVal4(this.poAsRepVal4);
+        obj.setPoAsRepVal5(this.poAsRepVal5);
+        obj.setPoAsRepVal6(this.poAsRepVal6);
+        obj.setPoAsRepVal7(this.poAsRepVal7);
+        obj.setPoAsRepVal8(this.poAsRepVal8);
+        obj.setPoBreakup(this.poBreakup);
+        obj.setPoCrudAccount(this.poCrudAccount);
+        obj.setPoIndexOrder(this.poIndexOrder);
+        obj.setPoMerge(this.poMerge);
+        obj.setPoSection(this.poSection);
+        obj.setPoSubSection(this.poSubSection);
+        obj.setPoSubTotal(this.poSubTotal);
+        obj.setPoTableId(this.poTableId);
+        obj.setPoYcoordinates(this.poYcoordinates);
+        obj.setTimePeriod(this.timePeriod);
+        obj.setWqId(this.wqId);
+        return obj;
+    }
+	
+	
+	public ParserOutput() {
+		super();
+	}
+
+
+	public String getNonEnglishLable() {
+		return nonEnglishLable;
+	}
+
+
+	public void setNonEnglishLable(String nonEnglishLable) {
+		this.nonEnglishLable = nonEnglishLable;
+	}
+
+
+	public String getPageNo() {
+		return pageNo;
+	}
+
+	public void setPageNo(String pageNo) {
+		this.pageNo = pageNo;
+	}
+
+	public String getPoAsRepVal7() {
+		return poAsRepVal7;
+	}
+
+	public void setPoAsRepVal7(String poAsRepVal7) {
+		this.poAsRepVal7 = poAsRepVal7;
+	}
+
+	public String getPoAsRepVal8() {
+		return poAsRepVal8;
+	}
+
+	public void setPoAsRepVal8(String poAsRepVal8) {
+		this.poAsRepVal8 = poAsRepVal8;
+	}
+
+	public String getAccountNumber() {
+		return accountNumber;
+	}
+
+	public void setAccountNumber(String accountNumber) {
+		this.accountNumber = accountNumber;
+	}
+
+	public String getCustodianName() {
+		return custodianName;
+	}
+
+	public void setCustodianName(String custodianName) {
+		this.custodianName = custodianName;
+	}
+
+	public String getTimePeriod() {
+		return timePeriod;
+	}
+
+	public void setTimePeriod(String timePeriod) {
+		this.timePeriod = timePeriod;
+	}
+
+	public String getPoAsRepVal5() {
+		return poAsRepVal5;
+	}
+
+	public void setPoAsRepVal5(String poAsRepVal5) {
+		this.poAsRepVal5 = poAsRepVal5;
+	}
+
+	public String getPoAsRepVal6() {
+		return poAsRepVal6;
+	}
+
+	public void setPoAsRepVal6(String poAsRepVal6) {
+		this.poAsRepVal6 = poAsRepVal6;
+	}
+
+	public String getPoBreakup() {
+		return poBreakup;
+	}
+
+	public void setPoBreakup(String poBreakup) {
+		this.poBreakup = poBreakup;
+	}
+
+	public String getPoSubTotal() {
+		return poSubTotal;
+	}
+
+	public void setPoSubTotal(String poSubTotal) {
+		this.poSubTotal = poSubTotal;
+	}
+
+	public String getPoSubSection() {
+		return poSubSection;
+	}
+
+	public void setPoSubSection(String poSubSection) {
+		this.poSubSection = poSubSection;
+	}
+
+	public Integer getNiItem() {
+		return niItem;
+	}
+
+	public void setNiItem(Integer niItem) {
+		this.niItem = niItem;
+	}
+
+	public String getNilLabel() {
+		return nilLabel;
+	}
+
+	public void setNilLabel(String nilLabel) {
+		this.nilLabel = nilLabel;
+	}
+
+	public String getPoCrudAccount() {
+		return poCrudAccount;
+	}
+
+	public void setPoCrudAccount(String poCrudAccount) {
+		this.poCrudAccount = poCrudAccount;
+	}
+
+	public Integer getFillingId() {
+		return fillingId;
+	}
+
+	public void setFillingId(Integer fillingId) {
+		this.fillingId = fillingId;
+	}
+
+	public Integer getPoIndexOrder() {
+		return poIndexOrder;
+	}
+
+	public void setPoIndexOrder(Integer poIndexOrder) {
+		this.poIndexOrder = poIndexOrder;
+	}
+
+	public String getPoAsRepVal4() {
+		return poAsRepVal4;
+	}
+
+	public void setPoAsRepVal4(String poAsRepVal4) {
+		this.poAsRepVal4 = poAsRepVal4;
+	}
+
+	public Integer getPoId() {
+		return poId;
+	}
+
+	public void setPoId(Integer poId) {
+		this.poId = poId;
+	}
+
+	public Integer getWqId() {
+		return wqId;
+	}
+
+	public void setWqId(Integer wqId) {
+		this.wqId = wqId;
+	}
+
+	public String getPoSection() {
+		return poSection;
+	}
+
+	public void setPoSection(String poSection) {
+		this.poSection = poSection;
+	}
+
+	public String getPoAsRepLabel() {
+		return poAsRepLabel;
+	}
+
+	public void setPoAsRepLabel(String poAsRepLabel) {
+		this.poAsRepLabel = poAsRepLabel;
+	}
+
+	public String getPoAsRepVal1() {
+		return poAsRepVal1;
+	}
+
+	public void setPoAsRepVal1(String poAsRepVal1) {
+		this.poAsRepVal1 = poAsRepVal1;
+	}
+
+	public String getPoAsRepVal2() {
+		return poAsRepVal2;
+	}
+
+	public void setPoAsRepVal2(String poAsRepVal2) {
+		this.poAsRepVal2 = poAsRepVal2;
+	}
+
+	public String getPoAsRepVal3() {
+		return poAsRepVal3;
+	}
+
+	public void setPoAsRepVal3(String poAsRepVal3) {
+		this.poAsRepVal3 = poAsRepVal3;
+	}
+
+	
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	
+	public String getPoYcoordinates() {
+		return poYcoordinates;
+	}
+
+	public void setPoYcoordinates(String poYcoordinates) {
+		this.poYcoordinates = poYcoordinates;
+	}
+
+	public String getPoMerge() {
+		return poMerge;
+	}
+
+	public void setPoMerge(String poMerge) {
+		this.poMerge = poMerge;
+	}
+
+	public String getPoTableId() {
+		return poTableId;
+	}
+
+	public void setPoTableId(String poTableId) {
+		this.poTableId = poTableId;
+	}
+
+	
+	public String getPoAsRepValue1() {
+		return poAsRepValue1;
+	}
+
+	public void setPoAsRepValue1(String poAsRepValue1) {
+		this.poAsRepValue1 = poAsRepValue1;
+	}
+
+	public String getPoAsRepValue2() {
+		return poAsRepValue2;
+	}
+
+	public void setPoAsRepValue2(String poAsRepValue2) {
+		this.poAsRepValue2 = poAsRepValue2;
+	}
+
+	public String getPoAsRepValue3() {
+		return poAsRepValue3;
+	}
+
+	public void setPoAsRepValue3(String poAsRepValue3) {
+		this.poAsRepValue3 = poAsRepValue3;
+	}
+
+	public String getPoAsRepValue4() {
+		return poAsRepValue4;
+	}
+
+	public void setPoAsRepValue4(String poAsRepValue4) {
+		this.poAsRepValue4 = poAsRepValue4;
+	}
+
+	public String getPoAsRepValue5() {
+		return poAsRepValue5;
+	}
+
+	public void setPoAsRepValue5(String poAsRepValue5) {
+		this.poAsRepValue5 = poAsRepValue5;
+	}
+
+	public String getPoAsRepValue6() {
+		return poAsRepValue6;
+	}
+
+	public void setPoAsRepValue6(String poAsRepValue6) {
+		this.poAsRepValue6 = poAsRepValue6;
+	}
+
+	public String getPoAsRepValue7() {
+		return poAsRepValue7;
+	}
+
+	public void setPoAsRepValue7(String poAsRepValue7) {
+		this.poAsRepValue7 = poAsRepValue7;
+	}
+
+	public String getPoAsRepValue8() {
+		return poAsRepValue8;
+	}
+
+	public void setPoAsRepValue8(String poAsRepValue8) {
+		this.poAsRepValue8 = poAsRepValue8;
+	}
+
+	
+	public Integer getRefPoId() {
+		return refPoId;
+	}
+
+
+	public void setRefPoId(Integer refPoId) {
+		this.refPoId = refPoId;
+	}
+
+
+	
+	public String getMappingName() {
+		return mappingName;
+	}
+
+
+	public void setMappingName(String mappingName) {
+		this.mappingName = mappingName;
+	}
+
+
+	public String getMappingType() {
+		return mappingType;
+	}
+
+
+	public void setMappingType(String mappingType) {
+		this.mappingType = mappingType;
+	}
+
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+	@Override
+	public String toString() {
+		return "ParserOutput [poId=" + poId + ", wqId=" + wqId + ", poSection="
+				+ poSection + ", poAsRepLabel=" + poAsRepLabel
+				+ ", poIndexOrder=" + poIndexOrder + ", poAsRepVal1="
+				+ poAsRepVal1 + ", poAsRepVal2=" + poAsRepVal2
+				+ ", poAsRepVal3=" + poAsRepVal3 + ", poAsRepVal4="
+				+ poAsRepVal4 + ", fillingId=" + fillingId + ", poCrudAccount="
+				+ poCrudAccount + "]";
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		
+		ParserOutput other = (ParserOutput) obj;
+		if (poBreakup == null) {
+			if (other.poBreakup != null)
+				return false;
+		} else if (!poBreakup.equals(other.poBreakup))
+			return false;
+		
+		if (poAsRepLabel == null) {
+			if (other.poAsRepLabel != null)
+				return false;
+		} else if (!poAsRepLabel.equals(other.poAsRepLabel))
+			return false;
+		
+		if (poAsRepVal1 == null) {
+			if (other.poAsRepVal1 != null)
+				return false;
+		}else if((poAsRepVal1 == null || poAsRepVal1.isEmpty()) && (other.poAsRepVal1==null || other.poAsRepVal1.isEmpty())){
+		} else if (!poAsRepVal1.equalsIgnoreCase(other.poAsRepVal1))
+			return false;
+		
+		if (poAsRepVal2 == null) {
+			if (other.poAsRepVal2 != null)
+				return false;
+		}else if((poAsRepVal2 == null || poAsRepVal2.isEmpty()) && (other.poAsRepVal2==null || other.poAsRepVal2.isEmpty())){
+		}else if (!poAsRepVal2.equals(other.poAsRepVal2))
+		    return false;
+		
+		if (poAsRepVal3 == null) {
+			if (other.poAsRepVal3 != null)
+				return false;
+		}else if((poAsRepVal3 == null || poAsRepVal3.isEmpty()) && (other.poAsRepVal3==null || other.poAsRepVal3.isEmpty())){
+		}else if (!poAsRepVal3.equals(other.poAsRepVal3))
+			return false;
+		
+		if (poAsRepVal4 == null) {
+			if (other.poAsRepVal4 != null)
+				return false;
+		}else if((poAsRepVal4 == null || poAsRepVal4.isEmpty()) && (other.poAsRepVal4==null || other.poAsRepVal4.isEmpty())){
+		} else if (!poAsRepVal4.equals(other.poAsRepVal4))
+			return false;
+		
+		if (poAsRepVal5 == null) {
+			if (other.poAsRepVal5 != null)
+				return false;
+		}else if((poAsRepVal5 == null || poAsRepVal5.isEmpty()) && (other.poAsRepVal5==null || other.poAsRepVal5.isEmpty())){
+
+		}else if (!poAsRepVal5.equals(other.poAsRepVal5))
+			return false;
+		
+		if (poAsRepVal6 == null) {
+			if (other.poAsRepVal6 != null)
+				return false;
+		}else if((poAsRepVal6 == null || poAsRepVal6.isEmpty()) && (other.poAsRepVal6==null || other.poAsRepVal6.isEmpty())){
+			
+		} else if (!poAsRepVal6.equals(other.poAsRepVal6))
+			return false;
+		
+		if (poAsRepVal7 == null) {
+			if (other.poAsRepVal7 != null)
+				return false;
+		}else if((poAsRepVal7 == null || poAsRepVal7.isEmpty()) && (other.poAsRepVal7==null || other.poAsRepVal7.isEmpty())){
+
+		} else if (!poAsRepVal7.equals(other.poAsRepVal7))
+			return false;
+		
+		if (poAsRepVal8 == null) {
+			if (other.poAsRepVal8 != null)
+				return false;
+		}else if((poAsRepVal8 == null || poAsRepVal8.isEmpty()) && (other.poAsRepVal8==null || other.poAsRepVal8.isEmpty())){
+
+		} else if (!poAsRepVal8.equals(other.poAsRepVal8))
+			return false;
+		
+		if (poIndexOrder == null) {
+			if (other.poIndexOrder != null)
+				return false;
+		} else if (!poIndexOrder.equals(other.poIndexOrder))
+			return false;
+		
+		if (niItem == null) {
+			if (other.niItem != null)
+				return false;
+		} else if (!niItem.equals(other.niItem))
+			return false;
+		
+		if (nilLabel == null) {
+			if (other.nilLabel != null)
+				return false;
+		}else if((nilLabel == null || nilLabel.isEmpty()) && (other.nilLabel==null || other.nilLabel.isEmpty())){
+
+		}else if (!nilLabel.equals(other.nilLabel))
+			return false;
+		
+		if (poSubSection == null) {
+			if (other.poSubSection != null)
+				return false;
+		}else if((poSubSection == null || poSubSection.isEmpty()) && (other.poSubSection==null || other.poSubSection.isEmpty())){
+
+		} else if (!poSubSection.equals(other.poSubSection))
+			return false;
+		
+		if (accountNumber == null) {
+			if (other.accountNumber != null)
+				return false;
+		}else if((accountNumber == null || accountNumber.isEmpty()) && (other.accountNumber==null || other.accountNumber.isEmpty())){
+
+		} else if (!accountNumber.equals(other.accountNumber))
+			return false;
+		
+		if (timePeriod == null) {
+			if (other.timePeriod != null)
+				return false;
+		} else if((timePeriod == null || timePeriod.isEmpty()) && (other.timePeriod==null || other.timePeriod.isEmpty())){
+
+		}else if (!timePeriod.equals(other.timePeriod))
+			return false;
+		
+		if (custodianName == null) {
+			if (other.custodianName != null)
+				return false;
+		} else if((custodianName == null || custodianName.isEmpty()) && (other.custodianName==null || other.custodianName.isEmpty())){
+
+		} else if (!custodianName.equals(other.custodianName))
+			return false;
+		
+		if (poSubTotal == null) {
+			if (other.poSubTotal != null)
+				return false;
+		}else if((poSubTotal == null || poSubTotal.isEmpty()) && (other.poSubTotal==null || other.poSubTotal.isEmpty())){
+
+		} else if (!poSubTotal.equals(other.poSubTotal))
+			return false;
+		
+		if (note == null) {
+			if (other.note != null)
+				return false;
+		}else if((note == null || note.isEmpty()) && (other.note==null || other.note.isEmpty())){
+
+		} else if (!note.equals(other.note))
+			return false;
+		
+		if(!CollectionUtils.isEmpty(po_valColMap)){
+			return false;
+		}
+		
+		return true;
+	}
+
+
+	/**
+	 * @return the uploadId
+	 */
+	public Integer getUploadId() {
+		return uploadId;
+	}
+
+
+	/**
+	 * @param uploadId the uploadId to set
+	 */
+	public void setUploadId(Integer uploadId) {
+		this.uploadId = uploadId;
+	}
+
+
+	/**
+	 * @return the encryptedFilingId
+	 */
+	public String getEncryptedFilingId() {
+		return encryptedFilingId;
+	}
+
+
+	/**
+	 * @param encryptedFilingId the encryptedFilingId to set
+	 */
+	public void setEncryptedFilingId(String encryptedFilingId) {
+		this.encryptedFilingId = encryptedFilingId;
+	}
+
+	/**
+	 * @return the note
+	 */
+	public String getNote() {
+		return note;
+	}
+
+
+	/**
+	 * @param note the note to set
+	 */
+	public void setNote(String note) {
+		this.note = note;
+	}
+
+	public String getIsSupplPOIDMapped() {
+		return isSupplPOIDMapped;
+	}
+
+
+	public void setIsSupplPOIDMapped(String isSupplPOIDMapped) {
+		this.isSupplPOIDMapped = isSupplPOIDMapped;
+	}
+
+
+	public List<ArsPoMapping> getArsPoMappingList() {
+		return arsPoMappingList;
+	}
+
+
+	public void setArsPoMappingList(List<ArsPoMapping> arsPoMappingList) {
+		this.arsPoMappingList = arsPoMappingList;
+	}
+
+
+	public String getNiItemSection() {
+		return niItemSection;
+	}
+
+
+	public void setNiItemSection(String niItemSection) {
+		this.niItemSection = niItemSection;
+	}
+
+
+	public String getIsDuplicate() {
+		return isDuplicate;
+	}
+
+
+	public void setIsDuplicate(String isDuplicate) {
+		this.isDuplicate = isDuplicate;
+	}
+
+
+	public String getNiItemSuggstive() {
+		return niItemSuggstive;
+	}
+
+
+	public void setNiItemSuggstive(String niItemSuggstive) {
+		this.niItemSuggstive = niItemSuggstive;
+	}
+
+
+	public String getIsMultipleNiItems() {
+		return isMultipleNiItems;
+	}
+
+
+	public void setIsMultipleNiItems(String isMultipleNiItems) {
+		this.isMultipleNiItems = isMultipleNiItems;
+	}
+
+
+	public String getTrClass() {
+		return trClass;
+	}
+
+
+	public void setTrClass(String trClass) {
+		this.trClass = trClass;
+	}
+
+
+	public String getPoModifiedBy() {
+		return poModifiedBy;
+	}
+
+
+	public void setPoModifiedBy(String poModifiedBy) {
+		this.poModifiedBy = poModifiedBy;
+	}
+
+
+	public Integer getFiId() {
+		return fiId;
+	}
+
+
+	public void setFiId(Integer fiId) {
+		this.fiId = fiId;
+	}
+
+
+	public String getModifiedBy() {
+		return modifiedBy;
+	}
+
+
+	public void setModifiedBy(String modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+	
+	
+	
+
+}

@@ -1,0 +1,17 @@
+package com.livespread.service;
+
+import java.util.List;
+
+import com.livespread.domain.FinancialItems;
+
+public interface FinancialItemService {
+	List<FinancialItems> f_findFinancialListByEntityId(Integer entityId,Integer firstRecord,Integer displayRecords,String filLabel,Integer templateId);
+	List<FinancialItems> f_findFinancialListByTemplateId(Integer templateId,Integer firstRecord,Integer displayRecords,String filLabel);
+	boolean f_deleteFinancialItemByFiId(Integer fiId,int userId);
+	Integer totalFinancialsItemCountByEntityId(Integer entityId,String fiLabel,Integer templateId);
+	Integer totalFinancialsItemCountByTemplateId(Integer templateId,String fiLabel);
+	List<String> f_getfiLabelList(String fiLabel,Integer id,String level);
+	Integer totalFinancialsItemCountByIndustryId(String industryId,String fiLabel,int templateId);
+	List<FinancialItems> f_findFinancialListByIndustryId(String industryId, Integer firstRecord, Integer displayRecords,String filabel, Integer templateId);
+
+}

@@ -1,0 +1,50 @@
+package com.livespread.controller;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.livespread.domain.User;
+import com.livespread.service.AuditReportService;
+
+
+@Controller
+public class AuditReportController {
+	private Logger LOGGER = Logger.getLogger(AuditReportController.class);
+	
+@Autowired
+private AuditReportService auditReportService;
+
+
+	@RequestMapping(value = "/showAuditTrail.htm", method = { RequestMethod.GET,RequestMethod.POST })
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public String showAuditTrail(HttpServletRequest request,
+			HttpServletResponse response, Model map,HttpSession httpSession) {
+		LOGGER.info("**Start-- showAuditTrail()");
+		try {
+		/**	
+		 * Here we fetch all filing id from parser_output_audit table and LS_REPROCESS_AUDIT table.
+		 */
+		User user = (User) request.getSession().getAttribute("user");
+		
+		List<Integer> allFilingIdList=null;	
+		if(user!=null){
+		allFilingIdList=auditReportService.f_gerAllFilingIdForAuditTrail(user.getUserGroupId(),user.getUserAccess());	
+		}//end user null
+		map.addAttribute("filingIdList",allFilingIdList);
+		} catch (Exception ex) {
+			LOGGER.error("Exception in >>>.class showAuditTrail >method",ex);
+		ex.printStackTrace();	
+		}
+		return "audit_trail";
+	}
+}

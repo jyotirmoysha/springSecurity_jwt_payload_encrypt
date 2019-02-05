@@ -1,0 +1,20 @@
+/**
+ * 
+ */
+package com.livespread.util;
+
+import java.util.Comparator;
+
+import com.livespread.command.QACheckListData;
+
+/**
+ * @author kp0e1301
+ *
+ */
+public class QACheckListDataSortBySeqOrder implements Comparator<QACheckListData>{
+
+	public int compare(QACheckListData a, QACheckListData b)
+    {
+        return a.getSeqOrder().compareTo(b.getSeqOrder());
+    }
+}

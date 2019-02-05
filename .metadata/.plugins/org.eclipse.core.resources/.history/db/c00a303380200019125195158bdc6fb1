@@ -1,0 +1,34 @@
+package com.livespread.util;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.livespread.service.UserAuditService;
+import com.livespread.service.WorkQueueService;
+
+public class WorkQueueServiceFactory {
+
+	@Autowired
+	public static WorkQueueService workQueueService;
+	
+	@Autowired
+	public static UserAuditService userAuditService;
+
+	
+
+	public static UserAuditService getUserAuditService() {
+		return userAuditService;
+	}
+
+	public static void setUserAuditService(UserAuditService userAuditService) {
+		WorkQueueServiceFactory.userAuditService = userAuditService;
+	}
+
+	public static WorkQueueService getWorkQueueService() {
+		return workQueueService;
+	}
+
+	public static void setWorkQueueService(WorkQueueService workQueueService) {
+		WorkQueueServiceFactory.workQueueService = workQueueService;
+	}
+
+}

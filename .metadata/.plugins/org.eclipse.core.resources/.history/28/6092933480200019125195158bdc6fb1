@@ -1,0 +1,136 @@
+package com.livespread.command;
+
+import java.util.Date;
+import java.util.Set;
+
+import com.livespread.domain.User;
+
+public class PdfExtractionMetadatCommand {
+
+	private String section;
+	private String beginKeyword;
+	private Integer tableId;
+	private Integer beginPageNumber;
+	
+	private Set<Integer> filingSet;
+	
+	private Integer eId;
+	
+	private Date stardDate;
+	
+	private Date endDate;
+	
+	private User user;
+	
+	private Integer pemId;
+	
+	private String rowSegmentationType;
+	
+	private String columnNoToSplit;
+	
+	private String status;
+	
+	private String language;
+	
+	
+	public String getSection() {
+		return section;
+	}
+	public void setSection(String section) {
+		this.section = section;
+	}
+	public String getBeginKeyword() {
+		return beginKeyword;
+	}
+	public void setBeginKeyword(String beginKeyword) {
+		this.beginKeyword = beginKeyword;
+	}
+	public Integer getTableId() {
+		return tableId;
+	}
+	public void setTableId(Integer tableId) {
+		this.tableId = tableId;
+	}
+	
+	
+	public Integer getBeginPageNumber() {
+		return beginPageNumber;
+	}
+	public void setBeginPageNumber(Integer beginPageNumber) {
+		this.beginPageNumber = beginPageNumber;
+		
+	}
+	
+	
+	
+	public Set<Integer> getFilingSet() {
+		return filingSet;
+	}
+	public void setFilingSet(Set<Integer> filingSet) {
+		this.filingSet = filingSet;
+	}
+	public Integer geteId() {
+		return eId;
+	}
+	public void seteId(Integer eId) {
+		this.eId = eId;
+	}
+	public Date getStardDate() {
+		return stardDate;
+	}
+	public void setStardDate(Date stardDate) {
+		this.stardDate = stardDate;
+	}
+	public Date getEndDate() {
+		return endDate;
+	}
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+	
+	public User getUser() {
+		return user;
+	}
+	public void setUser(User user) {
+		this.user = user;
+	}
+	
+	public Integer getPemId() {
+		return pemId;
+	}
+	public void setPemId(Integer pemId) {
+		this.pemId = pemId;
+	}
+	public String getRowSegmentationType() {
+		return rowSegmentationType;
+	}
+	public void setRowSegmentationType(String rowSegmentationType) {
+		this.rowSegmentationType = rowSegmentationType;
+	}
+	public String getColumnNoToSplit() {
+		return columnNoToSplit;
+	}
+	public void setColumnNoToSplit(String columnNoToSplit) {
+		this.columnNoToSplit = columnNoToSplit;
+	}
+	public String getStatus() {
+		return status;
+	}
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	
+	public String getLanguage() {
+		return language;
+	}
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+	@Override
+	public String toString() {
+		return "PdfExtractionMetadatCommand [section=" + section
+				+ ", beginKeyword=" + beginKeyword + ", tableId=" + tableId
+				+ "]";
+	}
+	
+}

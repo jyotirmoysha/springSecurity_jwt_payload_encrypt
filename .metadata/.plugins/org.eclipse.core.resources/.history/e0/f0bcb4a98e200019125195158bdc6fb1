@@ -1,0 +1,72 @@
+#Relational Database Type: for SQL Database value should be 'SQL_SERVER' and for ORACLE database value should be ORACLE
+relationDatabaseType=SQL_SERVER
+#JDBC Driver: for SQL Database value should be 'com.microsoft.sqlserver.jdbc.SQLServerDriver' and for ORACLE database value should be 'oracle.jdbc.OracleDriver'
+jdbcDriver=com.microsoft.sqlserver.jdbc.SQLServerDriver
+#hibernate dialect: for SQL Database value should be 'com.rage.extendeddao.SQLServer2012Dialect' and for ORACLE database value should be 'org.hibernate.dialect.Oracle10gDialect'
+hibernatedialect=com.rage.extendeddao.SQLServer2012Dialect
+
+#Application database details
+appDatabaseServerIp=172.25.2.148
+appDatabaseServerPort=55572
+appDatabaseName=LIVESPREAD_UAT
+appDatabaseUserName=Livespread
+appDatabasePassword=Lq5DByV+tQ8KStDRtORIGg==
+
+#UIC database details
+uicDatabaseServerIp=172.25.2.148
+uicDatabaseServerPort=55572
+uicDatabaseName=UIC_UAT
+uicDatabaseUserName=Livespread
+uicDatabasePassword=Lq5DByV+tQ8KStDRtORIGg==
+
+#RAGE database details
+rageDatabaseServerIp=172.25.2.148
+rageDatabaseServerPort=55572
+rageDatabaseName=PLATFORMDB_UAT
+rageDatabaseUserName=Livespread
+rageDatabasePassword=Lq5DByV+tQ8KStDRtORIGg==
+
+#EMail Configuration properties
+mail.smtp.from=LS.Support@genpact.com
+mail.smtp.password=System#234
+mail.smtp.cc=LS.Support@genpact.com
+mail.smtp.port=25
+mail.smtp.ssl.trust=58.2.248.28
+mail.smtp.host=58.2.248.28
+
+
+#Application Configuration properties
+secureFlag=true
+cssType=product
+
+#LiveSpread-FS path
+HOME_RESOURCE_PATH=/home/rage/LIVESPREAD-FS/LSSQL/dev
+#APPLICATION_URLS=https://uatlivespread.rageframeworks.com/LiveSpread-SQL
+APPLICATION_URLS=https://localhost:8080/LS_SQL_TEST
+#Rage Configuration
+rageApplicationName=LIVESPREAD
+
+#Logs file details
+LogFilePath=/home/rage/LS_Branding/logs/appLogger.log
+
+#Windows authentication
+windowsAuthentication=N
+
+##########################################################
+#Please do not modify below property details
+# Externalize Rage process Names
+rageAuditTrailCallProcessName=JSON_Audit_Trail
+timeStatRageCallProcessName=ATRS
+mappingStats=Mapping_Stats
+columnMerge=Merging_single_year_multicolmn_wrapper
+modifyStatus=Modify_Status_Revised_Master
+mappingNormalizationMaster=Mapping_Normalization_Master
+forcedOCR=Adhoc_OCR_Master_Process
+batchExecution=Batch_Execution
+autoCaseGeneration=Auto Case Generation
+masterProcessBank=Master Process Bank Statm integration
+reprocess=Reprocess
+achDebitCalculation=Debit ACH Calculation
+generateXMLDocument=Select Data
+xbrlProcess=Xbrl_Master_Process
+segmentMerge=EO - Statement Merge

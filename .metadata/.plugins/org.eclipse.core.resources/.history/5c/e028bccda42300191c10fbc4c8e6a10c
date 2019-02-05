@@ -1,0 +1,21 @@
+package com.livespread.api.controller;
+
+import java.util.List;
+
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+
+@RestController
+public class LSFileProcessingStatusController {
+	
+	
+		@RequestMapping("/topics")
+		public String getAllCourses() {
+			return "Hello Jyotirmoy";
+
+		}
+	
+
+}

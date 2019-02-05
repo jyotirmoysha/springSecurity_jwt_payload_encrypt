@@ -1,0 +1,394 @@
+package com.livespread.util;
+
+import java.util.List;
+import java.util.Map;
+
+import com.livespread.domain.AuditTrailRolesSummary;
+import com.livespread.domain.AuditTrailStatementSummary;
+
+import jxl.write.Label;
+import jxl.write.Number;
+import jxl.write.WritableCellFormat;
+import jxl.write.WritableFont;
+import jxl.write.WritableSheet;
+import jxl.write.WriteException;
+import jxl.write.biff.RowsExceededException;
+
+public class StatementAndRoleSummarySheet {
+
+	 private static WritableCellFormat times;
+
+      
+	/**
+	 * This function used for to create Ars mapping Excel sheet
+	 * @param sheet
+	 * @param headcellFormat
+	 * @param reprocessAuditList
+	 * @param cellFormatWithBorder
+	 * @param cellFormat1
+	 * @return
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public static WritableSheet f_createSheetForStatementAndRoleSummary(WritableSheet statementAndRoleSummarySheet,WritableCellFormat headcellFormat,Map<String,List<Object>> statementAndRoleSummaryMap,WritableCellFormat cellFormatWithBorder,WritableCellFormat cellFormat1) throws Exception{
+		
+		
+		
+	    int rowCounter=0;  
+		for (Map.Entry<String, List<Object>> entry : statementAndRoleSummaryMap.entrySet())
+		{
+			String tableTitle=entry.getKey();
+			 // Lets create a times font
+            WritableFont times10pt = new WritableFont(WritableFont.TIMES, 10);
+            // Define the cell format
+            times = new WritableCellFormat(times10pt);
+            // Lets automatically wrap the cells
+            times.setWrap(false);
+           
+            addCaption(statementAndRoleSummarySheet, 0, rowCounter, tableTitle);
+            rowCounter=rowCounter+1;
+            if(tableTitle.equalsIgnoreCase("AUDIT_TRAIL_ROLE_SUMMARY"))									
+            statementAndRoleSummarySheet.addCell(new Label(0,rowCounter,"ATRS_ID", headcellFormat));
+        	else
+        	statementAndRoleSummarySheet.addCell(new Label(0,rowCounter,"ATSS_ID", headcellFormat));	
+            
+        	statementAndRoleSummarySheet.addCell(new Label(1,rowCounter,"SEQ_NO", headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(2,rowCounter,"WQ_ID", headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(3,rowCounter,"CASE_ID", headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(4,rowCounter,"CREATED_DATE", headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(5,rowCounter,"CASE_NAME", headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(6,rowCounter,"TYPE", headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(7,rowCounter,"USER", headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(8,rowCounter,"PAGE_SIZE", headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(9,rowCounter,"EXT_BY_SYSTEM", headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(10,rowCounter,"MAP_BY_SYSTEM", headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(11,rowCounter,"EXTRACTION_ADDITIONS", headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(12,rowCounter,"EXTRACTION_ADDITIONS_PER", headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(13,rowCounter,"EXTRACTION_MODIFICATIONS", headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(14,rowCounter,"EXTRACTION_MODIFICATIONS_PER", headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(15,rowCounter,"EXTRACTION_DELETIONS",headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(16,rowCounter,"EXTRACTION_DELETIONS_PER",headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(17,rowCounter,"MAPPING_ADDITIONS",headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(18,rowCounter,"MAPPING_ADDITIONS_PER",headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(19,rowCounter,"MAPPING_MODIFICATIONS",headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(20,rowCounter,"MAPPING_MODIFICATIONS_PER",headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(21,rowCounter,"MAPPING_DELETIONS",headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(22,rowCounter,"MAPPING_DELETIONS_PER",headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(23,rowCounter,"EXT_RETAINED",headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(24,rowCounter,"MAP_RETAINED",headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(25,rowCounter,"EXT_RETAINED_PER",headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(26,rowCounter,"MAP_RETAINED_PER",headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(27,rowCounter,"EXT_TOTAL_SYSTEM_USER",headcellFormat));
+            statementAndRoleSummarySheet.addCell(new Label(28,rowCounter,"MAP_TOTAL_SYSTEM_USER",headcellFormat));
+
+            rowCounter=rowCounter+1;
+            int blankcell = 0;
+            if(tableTitle.equalsIgnoreCase("AUDIT_TRAIL_ROLE_SUMMARY")){
+            	 List<AuditTrailRolesSummary> auditTrailRolesSummaryList=(List<AuditTrailRolesSummary>)(Object)statementAndRoleSummaryMap.get(tableTitle);
+            	for(AuditTrailRolesSummary rolesSummary:auditTrailRolesSummaryList){
+            	  if(rolesSummary.getAtrsID()!=null)
+                  statementAndRoleSummarySheet.addCell(new Number(0,rowCounter,rolesSummary.getAtrsID(),cellFormatWithBorder));
+            	  else	
+            	 statementAndRoleSummarySheet.addCell(new Number(0,rowCounter,blankcell,cellFormatWithBorder));
+            	  
+            	  if(rolesSummary.getSeqNo()!=null)
+                  statementAndRoleSummarySheet.addCell(new Number(1,rowCounter,rolesSummary.getSeqNo(),cellFormatWithBorder));
+            	  else
+            	  statementAndRoleSummarySheet.addCell(new Number(1,rowCounter,blankcell,cellFormatWithBorder));
+            	  
+            	  if(rolesSummary.getWqId()!=null)
+                  statementAndRoleSummarySheet.addCell(new Number(2,rowCounter,rolesSummary.getWqId(),cellFormatWithBorder));
+            	  else
+                  statementAndRoleSummarySheet.addCell(new Number(2,rowCounter,blankcell,cellFormatWithBorder));
+            	  
+            	  if(rolesSummary.getCaseId()!=null)
+                  statementAndRoleSummarySheet.addCell(new Number(3,rowCounter,rolesSummary.getCaseId(),cellFormatWithBorder));
+            	  else
+            	  statementAndRoleSummarySheet.addCell(new Number(3,rowCounter,blankcell,cellFormatWithBorder));
+            	  
+            	  if(rolesSummary.getCreatedDate()!=null)
+                  statementAndRoleSummarySheet.addCell(new Label(4,rowCounter,rolesSummary.getCreatedDate().toString(),cellFormatWithBorder));
+            	  else
+            	  statementAndRoleSummarySheet.addCell(new Label(4,rowCounter,"",cellFormatWithBorder));
+            	
+            	  if(rolesSummary.getCaseName()!=null)
+            	  statementAndRoleSummarySheet.addCell(new Label(5,rowCounter,rolesSummary.getCaseName(),cellFormatWithBorder));
+            	  else
+            	 statementAndRoleSummarySheet.addCell(new Label(5,rowCounter,"",cellFormatWithBorder));
+            		  
+                if(rolesSummary.getType()!=null)
+                 statementAndRoleSummarySheet.addCell(new Label(6,rowCounter,rolesSummary.getType(),cellFormatWithBorder));
+                else
+                statementAndRoleSummarySheet.addCell(new Label(6,rowCounter,"",cellFormatWithBorder));
+                
+                if(rolesSummary.getUserName()!=null)
+                statementAndRoleSummarySheet.addCell(new Label(7,rowCounter,rolesSummary.getUserName(),cellFormatWithBorder));
+                else
+                statementAndRoleSummarySheet.addCell(new Label(7,rowCounter,"",cellFormatWithBorder));
+                
+                if(rolesSummary.getPageSize()!=null)
+                statementAndRoleSummarySheet.addCell(new Number(8,rowCounter,rolesSummary.getPageSize(),cellFormatWithBorder));
+                else
+                statementAndRoleSummarySheet.addCell(new Number(8,rowCounter,blankcell,cellFormatWithBorder));
+                
+                if(rolesSummary.getExtBySystem()!=null)
+                statementAndRoleSummarySheet.addCell(new Number(9,rowCounter,rolesSummary.getExtBySystem(),cellFormatWithBorder));
+                else
+                statementAndRoleSummarySheet.addCell(new Number(9,rowCounter,blankcell,cellFormatWithBorder));
+                
+                if(rolesSummary.getMapBySystem()!=null)
+                statementAndRoleSummarySheet.addCell(new Number(10,rowCounter,rolesSummary.getMapBySystem(),cellFormatWithBorder));
+                else
+                statementAndRoleSummarySheet.addCell(new Number(10,rowCounter,blankcell,cellFormatWithBorder));
+                
+                if(rolesSummary.getExtractionAdditions()!=null)
+                 statementAndRoleSummarySheet.addCell(new Number(11,rowCounter,rolesSummary.getExtractionAdditions(),cellFormatWithBorder));
+                else
+                 statementAndRoleSummarySheet.addCell(new Number(11,rowCounter,blankcell,cellFormatWithBorder));
+                 
+                if(rolesSummary.getExtraction_additions_per()!=null)
+                statementAndRoleSummarySheet.addCell(new Number(12,rowCounter,rolesSummary.getExtraction_additions_per(),cellFormatWithBorder));
+                else
+                statementAndRoleSummarySheet.addCell(new Number(12,rowCounter,blankcell,cellFormatWithBorder));
+                
+                if(rolesSummary.getExtractionModifications()!=null)
+                 statementAndRoleSummarySheet.addCell(new Number(13,rowCounter,rolesSummary.getExtractionModifications(),cellFormatWithBorder));
+                else
+                statementAndRoleSummarySheet.addCell(new Number(13,rowCounter,blankcell,cellFormatWithBorder));
+                 
+                if(rolesSummary.getExtractionModificationsPer()!=null)
+                statementAndRoleSummarySheet.addCell(new Number(14,rowCounter,rolesSummary.getExtractionModificationsPer(),cellFormatWithBorder));
+                else
+                statementAndRoleSummarySheet.addCell(new Number(14,rowCounter,blankcell,cellFormatWithBorder));
+                
+                if(rolesSummary.getExtractionDeletions()!=null)
+                  statementAndRoleSummarySheet.addCell(new Number(15,rowCounter,rolesSummary.getExtractionDeletions(),cellFormatWithBorder));
+                else
+                statementAndRoleSummarySheet.addCell(new Number(15,rowCounter,blankcell,cellFormatWithBorder));
+                
+                if(rolesSummary.getExtractionDeletionsPer()!=null)
+                  statementAndRoleSummarySheet.addCell(new Number(16,rowCounter,rolesSummary.getExtractionDeletionsPer(),cellFormatWithBorder));
+                else
+                statementAndRoleSummarySheet.addCell(new Number(16,rowCounter,blankcell,cellFormatWithBorder));
+                
+                if(rolesSummary.getMappingAdditions()!=null)
+                 statementAndRoleSummarySheet.addCell(new Number(17,rowCounter,rolesSummary.getMappingAdditions(),cellFormatWithBorder));
+                else
+                 statementAndRoleSummarySheet.addCell(new Number(17,rowCounter,blankcell,cellFormatWithBorder));
+                
+                if(rolesSummary.getMappingAdditionsPer()!=null)
+                statementAndRoleSummarySheet.addCell(new Number(18,rowCounter,rolesSummary.getMappingAdditionsPer(),cellFormatWithBorder));
+                else
+                 statementAndRoleSummarySheet.addCell(new Number(18,rowCounter,blankcell,cellFormatWithBorder));
+                
+                if(rolesSummary.getMappingModifications()!=null)
+                 statementAndRoleSummarySheet.addCell(new Number(19,rowCounter,rolesSummary.getMappingModifications(),cellFormatWithBorder));
+                else
+                 statementAndRoleSummarySheet.addCell(new Number(19,rowCounter,blankcell,cellFormatWithBorder));
+                
+                if(rolesSummary.getMappingModificationsPer()!=null) 
+                statementAndRoleSummarySheet.addCell(new Number(20,rowCounter,rolesSummary.getMappingModificationsPer(),cellFormatWithBorder));
+                else
+                statementAndRoleSummarySheet.addCell(new Number(20,rowCounter,blankcell,cellFormatWithBorder));
+                
+                if(rolesSummary.getMappingDeletions()!=null)
+                statementAndRoleSummarySheet.addCell(new Number(21,rowCounter,rolesSummary.getMappingDeletions(),cellFormatWithBorder));
+                else
+                statementAndRoleSummarySheet.addCell(new Number(21,rowCounter,blankcell,cellFormatWithBorder));
+                
+                if(rolesSummary.getMappingDeletionsPer()!=null)
+                 statementAndRoleSummarySheet.addCell(new Number(22,rowCounter,rolesSummary.getMappingDeletionsPer(),cellFormatWithBorder));
+                else
+                 statementAndRoleSummarySheet.addCell(new Number(22,rowCounter,blankcell,cellFormatWithBorder));
+                
+                if(rolesSummary.getExtRetained()!=null)
+                 statementAndRoleSummarySheet.addCell(new Number(23,rowCounter,rolesSummary.getExtRetained(),cellFormatWithBorder));
+                else
+                 statementAndRoleSummarySheet.addCell(new Number(23,rowCounter,blankcell,cellFormatWithBorder));
+                
+                if(rolesSummary.getMapRetained()!=null)
+                statementAndRoleSummarySheet.addCell(new Number(24,rowCounter,rolesSummary.getMapRetained(),cellFormatWithBorder));
+                else
+                statementAndRoleSummarySheet.addCell(new Number(24,rowCounter,blankcell,cellFormatWithBorder));
+                
+                if(rolesSummary.getExtRetainedPer()!=null)
+                 statementAndRoleSummarySheet.addCell(new Number(25,rowCounter,rolesSummary.getExtRetainedPer(),cellFormatWithBorder));
+                else
+                 statementAndRoleSummarySheet.addCell(new Number(25,rowCounter,blankcell,cellFormatWithBorder));
+                
+                if(rolesSummary.getMapRetainedPer()!=null)
+                  statementAndRoleSummarySheet.addCell(new Number(26,rowCounter,rolesSummary.getMapRetainedPer(),cellFormatWithBorder));
+                else
+                 statementAndRoleSummarySheet.addCell(new Number(26,rowCounter,blankcell,cellFormatWithBorder));
+                if(rolesSummary.getExtTotalSystemUser()!=null)
+                 statementAndRoleSummarySheet.addCell(new Number(27,rowCounter,rolesSummary.getExtTotalSystemUser(),cellFormatWithBorder));
+                else
+                statementAndRoleSummarySheet.addCell(new Number(27,rowCounter,blankcell,cellFormatWithBorder));
+                if(rolesSummary.getMapTotalSystemUser()!=null)
+                statementAndRoleSummarySheet.addCell(new Number(28,rowCounter,rolesSummary.getMapTotalSystemUser(),cellFormatWithBorder));
+                else
+                statementAndRoleSummarySheet.addCell(new Number(28,rowCounter,blankcell,cellFormatWithBorder));	
+                
+                rowCounter++;
+            	}
+            }else{
+           	 
+            	 List<AuditTrailStatementSummary> auditTrailRolesSummaryList=(List<AuditTrailStatementSummary>)(Object)statementAndRoleSummaryMap.get(tableTitle);
+             	for(AuditTrailStatementSummary rolesSummary:auditTrailRolesSummaryList){
+              	  if(rolesSummary.getAtssId()!=null)
+                      statementAndRoleSummarySheet.addCell(new Number(0,rowCounter,rolesSummary.getAtssId(),cellFormatWithBorder));
+                	  else	
+                	 statementAndRoleSummarySheet.addCell(new Number(0,rowCounter,blankcell,cellFormatWithBorder));
+                	  
+                	  if(rolesSummary.getSeqNo()!=null)
+                      statementAndRoleSummarySheet.addCell(new Number(1,rowCounter,rolesSummary.getSeqNo(),cellFormatWithBorder));
+                	  else
+                	  statementAndRoleSummarySheet.addCell(new Number(1,rowCounter,blankcell,cellFormatWithBorder));
+                	  
+                	  if(rolesSummary.getWqId()!=null)
+                      statementAndRoleSummarySheet.addCell(new Number(2,rowCounter,rolesSummary.getWqId(),cellFormatWithBorder));
+                	  else
+                      statementAndRoleSummarySheet.addCell(new Number(2,rowCounter,blankcell,cellFormatWithBorder));
+                	  
+                	  if(rolesSummary.getCaseId()!=null)
+                      statementAndRoleSummarySheet.addCell(new Number(3,rowCounter,rolesSummary.getCaseId(),cellFormatWithBorder));
+                	  else
+                	  statementAndRoleSummarySheet.addCell(new Number(3,rowCounter,blankcell,cellFormatWithBorder));
+                	  
+                	  if(rolesSummary.getCreatedDate()!=null)
+                      statementAndRoleSummarySheet.addCell(new Label(4,rowCounter,rolesSummary.getCreatedDate().toString(),cellFormatWithBorder));
+                	  else
+                	  statementAndRoleSummarySheet.addCell(new Label(4,rowCounter,"",cellFormatWithBorder));
+                	
+                	  if(rolesSummary.getCaseName()!=null)
+                	  statementAndRoleSummarySheet.addCell(new Label(5,rowCounter,rolesSummary.getCaseName(),cellFormatWithBorder));
+                	  else
+                	 statementAndRoleSummarySheet.addCell(new Label(5,rowCounter,"",cellFormatWithBorder));
+                		  
+                    if(rolesSummary.getType()!=null)
+                     statementAndRoleSummarySheet.addCell(new Label(6,rowCounter,rolesSummary.getType(),cellFormatWithBorder));
+                    else
+                    statementAndRoleSummarySheet.addCell(new Label(6,rowCounter,"",cellFormatWithBorder));
+                    
+                    if(rolesSummary.getUserName()!=null)
+                    statementAndRoleSummarySheet.addCell(new Label(7,rowCounter,rolesSummary.getUserName(),cellFormatWithBorder));
+                    else
+                    statementAndRoleSummarySheet.addCell(new Label(7,rowCounter,"",cellFormatWithBorder));
+                    
+                    if(rolesSummary.getPageSize()!=null)
+                    statementAndRoleSummarySheet.addCell(new Number(8,rowCounter,rolesSummary.getPageSize(),cellFormatWithBorder));
+                    else
+                    statementAndRoleSummarySheet.addCell(new Number(8,rowCounter,blankcell,cellFormatWithBorder));
+                    
+                    if(rolesSummary.getExtBySystem()!=null)
+                    statementAndRoleSummarySheet.addCell(new Number(9,rowCounter,rolesSummary.getExtBySystem(),cellFormatWithBorder));
+                    else
+                    statementAndRoleSummarySheet.addCell(new Number(9,rowCounter,blankcell,cellFormatWithBorder));
+                    
+                    if(rolesSummary.getMapBySystem()!=null)
+                    statementAndRoleSummarySheet.addCell(new Number(10,rowCounter,rolesSummary.getMapBySystem(),cellFormatWithBorder));
+                    else
+                    statementAndRoleSummarySheet.addCell(new Number(10,rowCounter,blankcell,cellFormatWithBorder));
+                    
+                    if(rolesSummary.getExtractionAdditions()!=null)
+                     statementAndRoleSummarySheet.addCell(new Number(11,rowCounter,rolesSummary.getExtractionAdditions(),cellFormatWithBorder));
+                    else
+                     statementAndRoleSummarySheet.addCell(new Number(11,rowCounter,blankcell,cellFormatWithBorder));
+                     
+                    if(rolesSummary.getExtraction_additions_per()!=null)
+                    statementAndRoleSummarySheet.addCell(new Number(12,rowCounter,rolesSummary.getExtraction_additions_per(),cellFormatWithBorder));
+                    else
+                    statementAndRoleSummarySheet.addCell(new Number(12,rowCounter,blankcell,cellFormatWithBorder));
+                    
+                    if(rolesSummary.getExtractionModifications()!=null)
+                     statementAndRoleSummarySheet.addCell(new Number(13,rowCounter,rolesSummary.getExtractionModifications(),cellFormatWithBorder));
+                    else
+                    statementAndRoleSummarySheet.addCell(new Number(13,rowCounter,blankcell,cellFormatWithBorder));
+                     
+                    if(rolesSummary.getExtractionModificationsPer()!=null)
+                    statementAndRoleSummarySheet.addCell(new Number(14,rowCounter,rolesSummary.getExtractionModificationsPer(),cellFormatWithBorder));
+                    else
+                    statementAndRoleSummarySheet.addCell(new Number(14,rowCounter,blankcell,cellFormatWithBorder));
+                    
+                    if(rolesSummary.getExtractionDeletions()!=null)
+                      statementAndRoleSummarySheet.addCell(new Number(15,rowCounter,rolesSummary.getExtractionDeletions(),cellFormatWithBorder));
+                    else
+                    statementAndRoleSummarySheet.addCell(new Number(15,rowCounter,blankcell,cellFormatWithBorder));
+                    
+                    if(rolesSummary.getExtractionDeletionsPer()!=null)
+                      statementAndRoleSummarySheet.addCell(new Number(16,rowCounter,rolesSummary.getExtractionDeletionsPer(),cellFormatWithBorder));
+                    else
+                    statementAndRoleSummarySheet.addCell(new Number(16,rowCounter,blankcell,cellFormatWithBorder));
+                    
+                    if(rolesSummary.getMappingAdditions()!=null)
+                     statementAndRoleSummarySheet.addCell(new Number(17,rowCounter,rolesSummary.getMappingAdditions(),cellFormatWithBorder));
+                    else
+                     statementAndRoleSummarySheet.addCell(new Number(17,rowCounter,blankcell,cellFormatWithBorder));
+                    
+                    if(rolesSummary.getMappingAdditionsPer()!=null)
+                    statementAndRoleSummarySheet.addCell(new Number(18,rowCounter,rolesSummary.getMappingAdditionsPer(),cellFormatWithBorder));
+                    else
+                     statementAndRoleSummarySheet.addCell(new Number(18,rowCounter,blankcell,cellFormatWithBorder));
+                    
+                    if(rolesSummary.getMappingModifications()!=null)
+                     statementAndRoleSummarySheet.addCell(new Number(19,rowCounter,rolesSummary.getMappingModifications(),cellFormatWithBorder));
+                    else
+                     statementAndRoleSummarySheet.addCell(new Number(19,rowCounter,blankcell,cellFormatWithBorder));
+                    
+                    if(rolesSummary.getMappingModificationsPer()!=null) 
+                    statementAndRoleSummarySheet.addCell(new Number(20,rowCounter,rolesSummary.getMappingModificationsPer(),cellFormatWithBorder));
+                    else
+                    statementAndRoleSummarySheet.addCell(new Number(20,rowCounter,blankcell,cellFormatWithBorder));
+                    
+                    if(rolesSummary.getMappingDeletions()!=null)
+                    statementAndRoleSummarySheet.addCell(new Number(21,rowCounter,rolesSummary.getMappingDeletions(),cellFormatWithBorder));
+                    else
+                    statementAndRoleSummarySheet.addCell(new Number(21,rowCounter,blankcell,cellFormatWithBorder));
+                    
+                    if(rolesSummary.getMappingDeletionsPer()!=null)
+                     statementAndRoleSummarySheet.addCell(new Number(22,rowCounter,rolesSummary.getMappingDeletionsPer(),cellFormatWithBorder));
+                    else
+                     statementAndRoleSummarySheet.addCell(new Number(22,rowCounter,blankcell,cellFormatWithBorder));
+                    
+                    if(rolesSummary.getExtRetained()!=null)
+                     statementAndRoleSummarySheet.addCell(new Number(23,rowCounter,rolesSummary.getExtRetained(),cellFormatWithBorder));
+                    else
+                     statementAndRoleSummarySheet.addCell(new Number(23,rowCounter,blankcell,cellFormatWithBorder));
+                    
+                    if(rolesSummary.getMapRetained()!=null)
+                    statementAndRoleSummarySheet.addCell(new Number(24,rowCounter,rolesSummary.getMapRetained(),cellFormatWithBorder));
+                    else
+                    statementAndRoleSummarySheet.addCell(new Number(24,rowCounter,blankcell,cellFormatWithBorder));
+                    
+                    if(rolesSummary.getExtRetainedPer()!=null)
+                     statementAndRoleSummarySheet.addCell(new Number(25,rowCounter,rolesSummary.getExtRetainedPer(),cellFormatWithBorder));
+                    else
+                     statementAndRoleSummarySheet.addCell(new Number(25,rowCounter,blankcell,cellFormatWithBorder));
+                    
+                    if(rolesSummary.getMap_retained_per()!=null)
+                      statementAndRoleSummarySheet.addCell(new Number(26,rowCounter,rolesSummary.getMap_retained_per(),cellFormatWithBorder));
+                    else
+                     statementAndRoleSummarySheet.addCell(new Number(26,rowCounter,blankcell,cellFormatWithBorder));
+                    if(rolesSummary.getExtTotalSystemUser()!=null)
+                     statementAndRoleSummarySheet.addCell(new Number(27,rowCounter,rolesSummary.getExtTotalSystemUser(),cellFormatWithBorder));
+                    else
+                    statementAndRoleSummarySheet.addCell(new Number(27,rowCounter,blankcell,cellFormatWithBorder));
+                    if(rolesSummary.getMapTotalSystemUser()!=null)
+                    statementAndRoleSummarySheet.addCell(new Number(28,rowCounter,rolesSummary.getMapTotalSystemUser(),cellFormatWithBorder));
+                    else
+                    statementAndRoleSummarySheet.addCell(new Number(28,rowCounter,blankcell,cellFormatWithBorder));	
+                    
+                    rowCounter++;
+                	}
+		}
+		}//map for
+		return statementAndRoleSummarySheet;
+	}
+	private static void addCaption(WritableSheet sheet, int column, int row, String s) throws RowsExceededException, 
+	   WriteException 
+	 { 
+	  Label label; 
+	  label = new Label(column, row, s, times); 
+	  sheet.addCell(label); 
+	 } 
+}

@@ -1,0 +1,153 @@
+package com.livespread.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import com.livespread.domain.BusinessEntity;
+import com.livespread.domain.FinancialItems;
+import com.livespread.domain.NamedNativeQueryName;
+import com.livespread.domain.NamedQueryName;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Service("uploadTempletService")
+public class UploadTempletServiceImpl implements UploadTempletService {
+	private Logger LOGGER = Logger.getLogger(UploadTempletServiceImpl.class);
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public void saveFinancialItemsList(
+			List<FinancialItems> savedFinancialItemsList,
+			List<FinancialItems> failedFinancialItemsList) {
+		LOGGER.info("Starts get StatusList  ");
+
+			for (FinancialItems financialItem : savedFinancialItemsList) {
+				genericDaoImpl.persist(financialItem);
+			}
+	
+		LOGGER.info("End get StatusList ");
+	}
+	
+	@Override
+	public Map<Integer, String> f_findCompanyName(String searchVal) {
+		Map<Integer, String> resultMap = null;
+		try {
+			LOGGER.info("class UploadTempletServiceImpl : methodName >>>f_findCompanyName");
+			Map<String, Object> parameters = new HashMap<>();
+			parameters.put("searchVal", searchVal);
+			List<Object> result = genericDaoImpl.findByNamedQuery(NamedQueryName.findCompanyName, BusinessEntity.class,
+					parameters);
+			if(!result.isEmpty() && result!=null){
+				resultMap=new LinkedHashMap<>();
+			for (Object object : result) {
+				Object[] objIn = (Object[]) object;
+				if(objIn[0]!=null && objIn[1]!=null){
+					Integer companyId=null;					
+					try{
+					companyId=Integer.parseInt(objIn[0].toString());	
+					}catch(NumberFormatException exception){
+						exception.printStackTrace();
+					}
+					resultMap.put(companyId,objIn[1].toString());
+				}
+				}
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:", e);
+		}
+		return resultMap;
+	}
+	
+	@Override
+	public List<Object> f_getFinancialItemByEid(Integer companyId) {
+		List<Object> resultList = null;
+		try {
+			LOGGER.info("class UploadTempletServiceImpl : methodName >>>f_getFinancialItemByEid");
+			Map<String, Object> parameters = new HashMap<>();
+			parameters.put("companyId", companyId);
+			resultList = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.findFinancialItemList, FinancialItems.class,parameters);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:", e);
+		}
+		return resultList;
+	}
+	
+	@Override
+	public Map<String, String> findCompanyDetailsByName(String companyNameToExport,String autoCompleteflag) {
+		Map<String, String> companyNameMap = new LinkedHashMap<String, String>();
+		try {
+			LOGGER.info("class UploadTempletServiceImpl : methodName >>>findCompanyDetailsByName");
+			Map<String, Object> parameters = new HashMap<>();
+			List<Object> result=new ArrayList<Object>();
+			parameters.put("companyName", companyNameToExport);
+			if(null !=autoCompleteflag && "Y".equalsIgnoreCase(autoCompleteflag)){
+				result = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getBusinessEntityCompanyNameAutoComplete, BusinessEntity.class,parameters);
+			}else{
+				result = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getBusinessEntityCompanyName, BusinessEntity.class,parameters);
+			}
+			Object[] objIn=null;
+			if(!CollectionUtils.isEmpty(result)){
+			for (Object object : result) {
+				objIn = (Object[]) object;
+				if(objIn[0]!=null && objIn[1]!=null && objIn[2]!=null){
+					companyNameMap.put(objIn[1].toString(),objIn[0].toString()+"~"+objIn[2].toString());
+				}
+				}
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:", e);
+		}
+		return companyNameMap;
+	}
+	
+	@Override
+	public Map<String, String> findCompanyDetailsById(String companyIdToExport,String autoCompleteflag) {
+		Map<String, String> companyIdMap = new LinkedHashMap<String, String>();
+		try {
+			LOGGER.info("class UploadTempletServiceImpl : methodName >>>findCompanyDetailsById");
+			List<Object> result=new ArrayList<Object>();
+			Map<String, Object> parameters = new HashMap<>();
+			parameters.put("companyId", companyIdToExport);
+			if(null !=autoCompleteflag && "Y".equalsIgnoreCase(autoCompleteflag)){
+				result = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getBusinessEntityCompanyIdAutoComplete, BusinessEntity.class,parameters);
+			}else{
+				result = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getBusinessEntityCompanyId, BusinessEntity.class,parameters);
+			}
+			
+					
+			if(!result.isEmpty() && result!=null){
+				Object[] objIn =null;
+				for (Object object : result) {
+					objIn = (Object[]) object;
+					if(objIn[0]!=null && objIn[1]!=null && objIn[2]!=null){
+						companyIdMap.put(objIn[0].toString(),objIn[1].toString()+"~"+objIn[2].toString());
+					}
+				}
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:", e);
+		}
+		return companyIdMap;
+	}	
+}

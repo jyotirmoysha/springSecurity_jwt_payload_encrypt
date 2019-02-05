@@ -1,0 +1,82 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+/**
+ * The persistent class for the ERM_APPLICATION_FEATURE database table.
+ * 
+ */
+@Entity
+@Table(name = "APPLICATION_FEATURES")
+public class ApplicationFeatures implements Serializable {
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@Column(name = "ID")
+	private long id;
+
+	@Column(name = "FEATURE_DESC", length = 80)
+	private String featureDescription;
+
+	@Column(name = "FEATURE_NAME", length = 80)
+	private String featureName;
+
+	public ApplicationFeatures() {
+	}
+
+	@Override
+	public String toString() {
+		return "ApplicationFeature [featureName=" + featureName + "]";
+	}
+
+	/**
+	 * @return the id
+	 */
+	public long getId() {
+		return id;
+	}
+
+	/**
+	 * @param id
+	 *            the id to set
+	 */
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	/**
+	 * @return the featureDescription
+	 */
+	public String getFeatureDescription() {
+		return featureDescription;
+	}
+
+	/**
+	 * @param featureDescription
+	 *            the featureDescription to set
+	 */
+	public void setFeatureDescription(String featureDescription) {
+		this.featureDescription = featureDescription;
+	}
+
+	/**
+	 * @return the featureName
+	 */
+	public String getFeatureName() {
+		return featureName;
+	}
+
+	/**
+	 * @param featureName
+	 *            the featureName to set
+	 */
+	public void setFeatureName(String featureName) {
+		this.featureName = featureName;
+	}
+
+}

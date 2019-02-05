@@ -1,0 +1,411 @@
+package com.livespread.service;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.livespread.domain.FileUploadModel;
+import com.livespread.domain.Filings;
+import com.livespread.domain.NamedQueryName;
+import com.livespread.domain.WorkQueue;
+import com.livespread.util.UploadUtility;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Service("fileUploadService")
+public class FileUploadServiceImpl implements FileUploadService {
+
+	private Logger LOGGER = Logger.getLogger(FileUploadServiceImpl.class);
+
+	@Value("${uploadPermanantDirectory.path}")
+	private String permanantDirectoryPath;
+
+	@Value("${uploadPermanantDirectory.pathcpsec}")
+	private String permanantDirectoryPathCoSec;
+
+	@Value("${uploadTempDirectory.path}")
+	private String tempDirectoryPath;
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl = null;
+
+	@Value("${reviewFlag}")
+	String reviewFlag;
+	
+	@Value("${homePath.path}")
+	private String homePath;
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public String UploadTempDocument(MultipartFile file, String customerId)
+			throws IllegalStateException, IOException {
+		String directoryPath = UploadUtility
+				.createDirectoryPath(tempDirectoryPath);
+		String filePath = UploadUtility.createFileName(customerId,
+				file.getOriginalFilename());
+		if (UploadUtility.uploadFileinTempLocation(directoryPath + filePath,
+				file)) {
+			LOGGER.info("--- Documents Uploaded in Temp Directory Successfully:--------");
+			return filePath;
+		} else
+			return "";
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean UploadPermanantDocument(String file, String customerId,
+			String parserName, String userName) throws IllegalStateException, IOException {
+		LOGGER.info("--- UploadPermanantDocument Started:--------" + file);
+		String year = new SimpleDateFormat("yyyy").format(new Date());
+		String month = new SimpleDateFormat("MM").format(new Date());
+		String date = new SimpleDateFormat("dd").format(new Date());
+		String permanentPath = UploadUtility
+				.createDirectoryPath(permanantDirectoryPath + "/" + year + "/"
+						+ month + "/" + date + "/" + customerId + "/");
+		LOGGER.info("--- Directory Created:--------" + permanentPath);
+		String fileName = file;
+		String newFilePath = permanentPath + fileName;
+		LOGGER.info("--- UploadPermanantDocument Started:--------" + file);
+	
+			if (UploadUtility.uploadFileonServer(permanentPath, fileName,
+					tempDirectoryPath)) {
+				LOGGER.info("--- Documents Uploaded in Permenant Directory Successfully:--------**"
+						+ newFilePath);
+					try {
+						return addFileDetails(newFilePath, customerId,
+								new File(newFilePath).getCanonicalFile(), parserName, userName);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+			
+			} else {
+				LOGGER.warn("--- Documents Not Uploaded in Permenant Directory :--------"
+						+ newFilePath);
+				return false;
+			}
+			return false;
+	}
+
+	public boolean addFileDetails(String filePath, String customerid,
+			File File, String parserName, String userName){
+		FileUploadModel fileUploadModel = new FileUploadModel();
+		// set all values in model class
+		fileUploadModel.setFileName(File.getName());
+		fileUploadModel.setFilePath(filePath);
+		fileUploadModel.setFileType(File.getName().split("\\.")[1]);
+		fileUploadModel.setCustomerId(Integer.parseInt(customerid));
+		fileUploadModel.setCreateDate(new java.sql.Timestamp(System
+				.currentTimeMillis()));
+		fileUploadModel.setParserIdentifier(parserName);
+		fileUploadModel.setCreatedBy(userName);
+		fileUploadModel.setReview(reviewFlag);
+		LOGGER.info("----CREATE FileUpload Model---------"
+				+ fileUploadModel.toString());
+			return saveFileDetails(fileUploadModel);
+	}
+
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	@Override
+	public boolean saveFileDetails(FileUploadModel fileUploadModel) {
+		LOGGER.info("-------  saveFileDetails starts --------------");
+		genericDaoImpl.persist(fileUploadModel);
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.livespread.service.FileUploadService#deleteUploadedDocument(java.
+	 * lang.String)
+	 */
+	@Override
+	public boolean deleteUploadedDocument(String fileName)
+			throws IllegalStateException, IOException {
+		LOGGER.info("-------  deleteUploadedDocument Service starts --------------");
+		String filePath = tempDirectoryPath + fileName;
+		LOGGER.warn("-------  deleteUploadedDocument filePath: --------------"
+				+ filePath);
+		return UploadUtility.deleteFileinTempLocation(filePath);
+	}
+
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	/***flag=2 for orgional doc and flag=1 processed doc  and*****************/
+	public String getFileUpload(String customerId, String wqId, int flag) {
+		LOGGER.info("-------  getFileUpload Service starts --------------");
+		LOGGER.warn("-------  getFileUpload  --------------" + customerId);
+		Map<String, Object> parameterMapForParserMasterId = new HashMap<String, Object>();
+		parameterMapForParserMasterId
+				.put("wqId", Integer.parseInt(wqId.trim()));
+		WorkQueue workQueue = genericDaoImpl.findByColumn(
+				NamedQueryName.getWorkQueueByWqId, WorkQueue.class,
+				parameterMapForParserMasterId);
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("customerId", Integer.parseInt(customerId));
+		parameterMap.put("parserId", workQueue.getParserMasterId());
+		List<FileUploadModel> lfp = (ArrayList<FileUploadModel>) (Object) genericDaoImpl
+				.findByNamedQuery(
+						NamedQueryName.getFilePathByCustomerNParserId,
+						FileUploadModel.class, parameterMap);
+		
+		if (lfp != null && lfp.size() > 0) {
+			if(flag==6 && workQueue.getParserMasterId()==12){
+				return UploadUtility.getPathForProcessedDoc(lfp.get(0)
+						.getFilePath());
+			}else{
+				if (flag == 1) // /
+				{
+					return UploadUtility.getPathForProcessedDoc(lfp.get(0)
+							.getFilePath());
+				} else if (flag == 3) {
+					return UploadUtility.getPathforOrgionalDoc(lfp.get(0)
+							.getProcessedFilePath());
+				}else if(flag == 6){
+
+					return UploadUtility.getPathForProcessedDoc(lfp.get(0)
+							.getFilePath());
+				}
+				/*
+				 * Flag=5 means png file path
+				 */
+				else if (flag == 5) {
+					return lfp.get(0).getProcessedFilePath();
+				} else {
+					return UploadUtility.getPathforOrgionalDoc(lfp.get(0)
+							.getFilePath());
+				}
+			}
+			
+		} else
+			return null;
+	}
+
+
+	public String getFilePath(Integer customerId, Integer fillingId, int flag) {
+		LOGGER.info("-------  getFileUpload Service starts --------------");
+		LOGGER.info("-------  getFileUpload  --------------" + customerId + ":"
+				+ fillingId + ":" + flag);
+		String path = null;
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("customerId", customerId);
+		@SuppressWarnings("unchecked")
+		List<FileUploadModel> lfp = (ArrayList<FileUploadModel>) (Object) genericDaoImpl
+				.findByNamedQuery(NamedQueryName.getFilePathByCustomerId,
+						FileUploadModel.class, parameterMap);
+		if (lfp != null && lfp.size() > 0) {
+			if (flag == 1) // flag 1 for get Anchor file/Processed Doc
+				path = UploadUtility.getPathforAnchorDoc(lfp.get(0)
+						.getFilePath(), fillingId);
+			else if (flag == 2) // flag 2 for get Source File Folder path
+				path = UploadUtility.getPathforOrgionalDoc(lfp.get(0)
+						.getFilePath());
+			else if (flag == 3) // // flag 3 for get Text Doc
+				path = UploadUtility
+						.getPathforTextDoc(lfp.get(0).getFilePath());
+		}
+		// for Unix filepath
+		if (path != null)
+			;
+		path = path.replaceAll("/", "\\/");
+
+		LOGGER.info("-------  getFilePath  Service Completed with--------------"
+				+ path);
+		return path;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public String getParsserTypeByCustId(Integer customerId) {
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("customerId", customerId);
+		List<String> fupModel = (ArrayList<String>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getParserIdentifierByCustomerId,FileUploadModel.class, parameterMap);
+		if (fupModel != null && fupModel.size() > 0) {
+			return fupModel.get(0);
+		} else
+			return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public String getFileUploadByFilingId(String filingId, int flag) {
+		LOGGER.info("-------  getFileUploadByFilingId Service starts --------------");
+		LOGGER.warn("-------  getFileUpload  --------------" + filingId);
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("filingId", Integer.parseInt(filingId));
+		List<Filings> filings = (ArrayList<Filings>) (Object) genericDaoImpl
+				.findByNamedQuery(NamedQueryName.getFilePathByFilingId,
+						Filings.class, parameterMap);
+		if (filings != null && filings.size() > 0) {
+			Integer fcik = filings.get(0).getF_cik();
+			if (flag == 1) // /
+				return UploadUtility.getPathByFilingIdForProcessedDoc(
+						permanantDirectoryPathCoSec, fcik);
+			else
+				return UploadUtility.getPathByFilingIdForOrgionalDoc(filings
+						.get(0).getF_fileName());
+		} else
+			return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+	public List<FileUploadModel> getUploadDetailsList(Integer filingId,
+			Integer parserId) {
+		LOGGER.info("** Starts  getUploadDetailsList methode in FileUploadServiceImpl class ");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("filingId", filingId);
+		parameters.put("parserId", parserId);
+		LOGGER.info("** End  getUploadDetailsList methode in FileUploadServiceImpl class ");
+		return (ArrayList<FileUploadModel>) (Object) genericDaoImpl
+				.findByNamedQuery(NamedQueryName.getUploadDetailsByFilingId,
+						FileUploadModel.class, parameters);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+	public List<String> getConvertedFileNames(String customerId, String wqId,
+			Integer parserId)  {
+		LOGGER.info("-------------- getOrgionalFileNames started -------------------");
+		LOGGER.debug("** start-getConvertedFileNames started with" + customerId);
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("customerId", Integer.parseInt(customerId));
+		parameterMap.put("parserId", parserId);
+		List<String> fileNamesList = (ArrayList<String>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getProcessedFileNameByCustomerNParserId,FileUploadModel.class, parameterMap);
+		List<String> fileNames= new ArrayList<>();
+			/**
+			 * if parser is pdf based parser then get only one entry for processed file name
+			 */
+			if(parserId==11)
+			{
+				if(!fileNamesList.isEmpty())
+				{
+					
+					try{
+					fileNames.add(fileNamesList.get(0));	
+					}catch(Exception e){
+					LOGGER.error("error:",e);	
+				  }
+				}
+				
+				
+			}else{
+				fileNames = fileNamesList;
+			}
+		return fileNames;
+	}
+	
+	
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+	public String f_getProcessedFilePath(Integer filingId, Integer uploadId)  {
+		
+		String processedFilePath="";
+		String finalPath = null;
+		LOGGER.info("** start-f_getProcessedFilePath started with" + uploadId);
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("filingId",filingId);
+		parameterMap.put("uploadId",uploadId);
+		try{	
+	    FileUploadModel fileUploadModel= genericDaoImpl.findByColumn(NamedQueryName.getProcessedFilePath_By_uploadIdAndFilingId, FileUploadModel.class, parameterMap);
+		LOGGER.info("** f_getProcessedFilePath completed with result ="+ fileUploadModel.getProcessedFilePath());
+		processedFilePath=fileUploadModel.getProcessedFilePath();
+		String[] pathArray = processedFilePath.split("LIVESPREAD-FS");
+		if(pathArray!=null && pathArray.length==2)
+		{
+			finalPath = homePath+pathArray[1]; 
+		}
+		else
+		{
+			finalPath = processedFilePath;
+		}
+		
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:", e);
+		}
+       return finalPath;
+	}
+	
+	
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+	public String f_getProcessedFilePathByFilingId(Integer filingId)  {
+		String processedFilePath="";
+		String finalPath = null;
+		LOGGER.info("** start-f_getProcessedFilePathByFilingId started with filing id=" + filingId);
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("filingId",filingId);
+		try{	
+	    List<FileUploadModel> fileUploadModel=(List<FileUploadModel>)(Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getProcessedFilePath_By_FilingId, FileUploadModel.class, parameterMap);
+	    if(!fileUploadModel.isEmpty()){
+	    	FileUploadModel uploadModel=fileUploadModel.get(0);
+	    	LOGGER.info("** f_getProcessedFilePathByFilingId completed with result ="+ uploadModel.getProcessedFilePath());	
+	    	processedFilePath=uploadModel.getProcessedFilePath();
+	    	String[] pathArray = processedFilePath.split("LIVESPREAD-FS");
+			if(pathArray!=null && pathArray.length==2)
+			{
+				finalPath = homePath+pathArray[1]; 
+			}
+			else
+			{
+				finalPath = processedFilePath;
+			}
+	    }
+		
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:", e);
+		}
+       return finalPath;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public FileUploadModel getFileUploadModelToShowClickBackByFillingId(Integer filingId)  {
+		
+		
+		LOGGER.info("** start-getFileUploadModelToShowClickBack started with" );
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("filingId",filingId);
+		try{	
+			List<FileUploadModel> fileUploadModelList = (ArrayList<FileUploadModel>) (Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getProcessedFilePath_By_FilingId, FileUploadModel.class, parameterMap);
+			
+			
+			if(!CollectionUtils.isEmpty(fileUploadModelList))
+			{
+				 return fileUploadModelList.get(0);
+			}else{
+				return null;
+			}
+		
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:", e);
+			return null;
+		}
+       
+	}
+}

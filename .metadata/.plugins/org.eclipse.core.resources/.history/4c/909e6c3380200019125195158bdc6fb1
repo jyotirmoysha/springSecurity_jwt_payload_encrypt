@@ -1,0 +1,24 @@
+package com.livespread.service;
+
+import java.util.List;
+
+import org.springframework.dao.DataAccessException;
+
+import com.livespread.domain.ApplicationScreenComponents;
+import com.livespread.domain.UserGroupsAttributeMapping;
+
+
+public interface ComponentAssignService {
+	List<ApplicationScreenComponents> f_findScreenAllComponent() throws DataAccessException;
+	List<UserGroupsAttributeMapping> f_findAllMappingRecords() throws DataAccessException;
+	List<String> f_findDistinctScreenName() throws DataAccessException;
+	List<Integer> f_findScreenIdsByGroupId(Integer userGroupId)throws DataAccessException;
+	List<Integer> f_findScreenIdsByTemplateId(Integer templateId)throws DataAccessException;
+
+	public boolean f_updateScreenComponentByGroupId(int userGroupId,List<Integer> componentIdsList,String basedon) throws DataAccessException;
+	public void f_insertScreenComponent(Integer usergroupId,List<Integer> insertList,String basedon);
+	public void f_deleteScreenComponentById(Integer usergroupId,List<Integer> insertList,String basedon);
+	List<UserGroupsAttributeMapping> f_findAllMappingRecordsGrpAdmin(Integer userGroupId) throws DataAccessException;
+	
+	
+}

@@ -1,0 +1,23 @@
+package com.livespread.excel;
+import org.apache.poi.ss.usermodel.CellStyle; 
+import org.apache.poi.ss.usermodel.Workbook; 
+ 
+public class ClonedStyleFactory implements CellStyleFactory { 
+ 
+    private final org.apache.poi.ss.usermodel.Cell source; 
+ 
+    private ClonedStyleFactory(org.apache.poi.ss.usermodel.Cell source) { 
+        this.source = source; 
+    } 
+ 
+    public static ClonedStyleFactory newStyleBasedOn(org.apache.poi.ss.usermodel.Cell source) { 
+        return new ClonedStyleFactory(source); 
+    } 
+ 
+    @Override 
+    public CellStyle create(Workbook workbook) { 
+        CellStyle style = workbook.createCellStyle(); 
+        style.cloneStyleFrom(source.getCellStyle()); 
+        return style; 
+    } 
+}

@@ -1,0 +1,25 @@
+package com.livespread.command;
+
+public class EditFileCommand {
+
+	private StringBuilder textAreaData;
+
+	private String filePathName;
+
+	public String getFilePathName() {
+		return filePathName;
+	}
+
+	public void setFilePathName(String filePathName) {
+		this.filePathName = filePathName;
+	}
+
+	public StringBuilder getTextAreaData() {
+		return textAreaData;
+	}
+
+	public void setTextAreaData(StringBuilder textAreaData) {
+		this.textAreaData = textAreaData;
+	}
+
+}

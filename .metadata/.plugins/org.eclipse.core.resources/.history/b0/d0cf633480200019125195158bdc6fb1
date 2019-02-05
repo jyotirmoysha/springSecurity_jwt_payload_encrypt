@@ -1,0 +1,13 @@
+package com.livespread.common;
+
+import java.util.Comparator;
+
+import com.livespread.command.DatePeriodCommand;
+
+public class StmtPeriodComparator implements Comparator<DatePeriodCommand> {
+	@Override
+    public int compare(DatePeriodCommand emp1, DatePeriodCommand emp2) {
+        return emp2.getPeriod() - emp1.getPeriod();
+    }
+
+}

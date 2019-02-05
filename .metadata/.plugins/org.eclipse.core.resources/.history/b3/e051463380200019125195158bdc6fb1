@@ -1,0 +1,104 @@
+package com.livespread.util;
+
+import java.text.DateFormatSymbols;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+public class GetMaxYearMonthAndPeriod {
+	private Logger LOGGER = Logger.getLogger(GetMaxYearMonthAndPeriod.class);
+	
+
+	
+	public Map<String,String> getMaxYearMonthAndPreiod(ArrayList<Integer> stmtYear,ArrayList<String> stmtMonth,ArrayList<Integer> stmtdate,ArrayList<Integer> stmtperiod){
+		LOGGER.info("**start--getMaxYearMonthAndPreiod class");
+		Map<String,String> resultMap=new HashMap<String,String>();
+		try{
+	
+			  /**
+			   * Here if statement year is grater than all year then take month,date and period from same column
+			   */
+			  
+			  /*Here max Indices function get largest value index*/
+			  
+			  int year=0;
+			  String monthName="";
+			  int period=0;
+			  ArrayList<Integer> largestYearindex=new ArrayList<Integer>(); 
+			 if(!stmtYear.isEmpty()){
+				 largestYearindex=GetMaxIndexListFromList.maxIndices(stmtYear);
+				 /**size less than one means only one largest year largest.**/
+				if(largestYearindex.size()<=1){
+					year=stmtYear.get(largestYearindex.get(0));
+					monthName=stmtMonth.get(largestYearindex.get(0));
+					period=stmtperiod.get(largestYearindex.get(0));
+				}else{
+					Map<Integer,Integer> largestMonthMap=new HashMap<Integer,Integer>();
+					ArrayList<Integer> largestMonthList=new ArrayList<Integer>();
+					for(Integer yearIndex:largestYearindex){
+						if(!stmtMonth.get(yearIndex).isEmpty()){
+						largestMonthMap.put(yearIndex, GetMonthNumberUsingName.getMonthNumber(stmtMonth.get(yearIndex)));
+						largestMonthList.add(GetMonthNumberUsingName.getMonthNumber(stmtMonth.get(yearIndex)));
+						}
+					}
+					ArrayList<Integer> largestMonthIndex=new ArrayList<Integer>();
+					if(!largestMonthList.isEmpty()){
+					largestMonthIndex=GetMaxIndexListFromList.maxIndices(new ArrayList<Integer>(largestMonthMap.values()));
+
+					if(largestMonthIndex.size()<=1){
+						int monthnumber=largestMonthList.get(largestMonthIndex.get(0));
+						monthName=new DateFormatSymbols().getMonths()[monthnumber-1];
+						year=stmtYear.get(largestYearindex.get(0));
+						Integer finalPeriodIndex=(Integer)GetKeyFromValueInMap.getKeyFromValue(largestMonthMap,monthnumber);
+						period=stmtperiod.get(finalPeriodIndex);
+					}else{
+						
+						int monthnumber=largestMonthList.get(largestMonthIndex.get(0));
+						monthName=new DateFormatSymbols().getMonths()[monthnumber-1];
+						
+						List<Integer> largestMonthKeys=LargetstKeyFromMap.largestKeyFromMap(largestMonthMap);
+						ArrayList<Integer> largestPeriod=new ArrayList<Integer>();
+						for(Integer key:largestMonthKeys){
+							largestPeriod.add(stmtperiod.get(key));
+							monthName=stmtMonth.get(key);
+							year=stmtYear.get(key);
+						}
+						
+						ArrayList<Integer> largestperiodIndex=GetMaxIndexListFromList.maxIndices(largestPeriod);
+						for(Integer periodIndex:largestperiodIndex){
+							period=stmtperiod.get(periodIndex);
+						}
+					}
+				}else{
+				/**This if else for if year is same but month is blank.
+				 * Then we have check is period is any value if yes the get largest value	
+				 */
+				
+				/**
+				 * Here we are checking is period largest value is zero means period is blank
+				 */
+				ArrayList<Integer> tempPeriodList=new ArrayList<Integer>();	
+				period=GetMaxIndexListFromList.getMaxValue(stmtperiod);
+				if(period!=0){
+					for(Integer yearIndex:largestYearindex){
+						tempPeriodList.add(stmtperiod.get(yearIndex));
+					}
+					period=GetMaxIndexListFromList.getMaxValue(tempPeriodList);	
+				}
+			 year=stmtYear.get(largestYearindex.get(0));
+			 }
+		}//end we get no same year then get largest year
+			 resultMap.put("year", String.valueOf(year));
+			 resultMap.put("monthName", monthName);
+			 resultMap.put("period", String.valueOf(period));
+			 }	 
+		}catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error",e);	
+		}
+		return resultMap;
+	}
+
+}

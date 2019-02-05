@@ -1,0 +1,69 @@
+package com.livespread.command;
+
+public class NormInputParamers {	
+		private String section;
+		private Integer wqId;
+		private Integer poId;
+		private Integer fillingId;
+		private Integer startNum;
+		private Integer endNum;
+		private String updatedPoidsList;
+		private String recordType;
+		private String asRepLabel;
+		public String getSection() {
+			return section;
+		}
+		public void setSection(String section) {
+			this.section = section;
+		}
+		public Integer getWqId() {
+			return wqId;
+		}
+		public void setWqId(Integer wqId) {
+			this.wqId = wqId;
+		}
+		public Integer getFillingId() {
+			return fillingId;
+		}
+		public void setFillingId(Integer fillingId) {
+			this.fillingId = fillingId;
+		}
+		public Integer getStartNum() {
+			return startNum;
+		}
+		public void setStartNum(Integer startNum) {
+			this.startNum = startNum;
+		}
+		public Integer getEndNum() {
+			return endNum;
+		}
+		public void setEndNum(Integer endNum) {
+			this.endNum = endNum;
+		}
+		public String getUpdatedPoidsList() {
+			return updatedPoidsList;
+		}
+		public void setUpdatedPoidsList(String updatedPoidsList) {
+			this.updatedPoidsList = updatedPoidsList;
+		}
+		public String getRecordType() {
+			return recordType;
+		}
+		public void setRecordType(String recordType) {
+			this.recordType = recordType;
+		}
+		public String getAsRepLabel() {
+			return asRepLabel;
+		}
+		public void setAsRepLabel(String asRepLabel) {
+			this.asRepLabel = asRepLabel;
+		}
+		public Integer getPoId() {
+			return poId;
+		}
+		public void setPoId(Integer poId) {
+			this.poId = poId;
+		}
+
+	
+}

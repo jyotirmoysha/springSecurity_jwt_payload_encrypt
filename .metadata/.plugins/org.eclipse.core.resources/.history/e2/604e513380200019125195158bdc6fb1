@@ -1,0 +1,26 @@
+package com.livespread.util;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
+public class ConvertStringListToInteger {
+	private static Logger LOGGER = Logger.getLogger(ConvertStringListToInteger.class);
+
+	public static List<Integer> getIntegerList(List<String> stringArray) {
+		LOGGER.info("**start getIntegerList methode");
+		List<Integer> result = new ArrayList<Integer>();
+        for(String stringValue : stringArray) {
+            try {
+                //Convert String to Integer, and store it into integer array list.
+                result.add(Integer.parseInt(stringValue));
+            } catch(NumberFormatException nfe) {
+            	nfe.printStackTrace();
+            	LOGGER.error("Parsing failed! " + stringValue + " can not be an integer");
+            } 
+        }       
+        return result;
+    }
+
+}

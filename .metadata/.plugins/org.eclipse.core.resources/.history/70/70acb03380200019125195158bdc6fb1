@@ -1,0 +1,501 @@
+package com.livespread.rage.domain;
+
+import java.util.List;
+
+public class ExtractorTableCommand {
+
+	private List<Integer> id;
+	private List<Integer> etrbc_Id;
+	private List<Integer> erp_Id;
+
+	private Integer uploadId;
+
+	private Integer filingId;
+	private String encryptedFilingId;
+	private List<String> tableType;
+
+	private List<String> tag;
+	private List<String> xvalue;
+	private List<String> inclusive;
+	private List<String> action;
+	private List<String> srchType;
+	public List<String> propertyValue;
+	public List<String> orderValue;
+	public List<String> propertyName;
+
+	public Integer etrbc_cik;
+	public Integer etrbc_cid;
+	public String etrbc_industry;
+	public String etrbc_language;
+
+	public List<String> deleteFlag;
+
+	/*
+	 * This used for LS_EXTRACTION_METADATA table
+	 */
+
+	private List<Integer> extMetadataIdList;
+	private List<String> sectionList;
+	private List<String> sub_sectionList;
+	private List<String> keywordsList;
+	/*
+	 * End
+	 */
+
+	/*
+	 * This used for LS_PDF_EXTRACTION_METADATA table
+	 */
+	private List<Integer> pemPid;
+	private List<Integer> pemBeginPageNo;
+	private List<String> pemBeginKeyword;
+	private List<Integer> pemendPageNo;
+	private List<String> pemendKeyword;
+	private List<String> pemSection;
+	private List<Integer> pemTableId;
+	
+	private List<String> pemScope;
+	private List<String> pemSubsection;
+	private List<String> globalLevel;
+	private List<String> pemRowSegmentationType;
+	private List<String> pemColumnNumberToSplit;
+	private List<String> notesSection;
+	private List<String> poIDAsRepLable;
+
+
+	/**
+	 *This field used for business entity id  
+	 */
+		private String pemEid;
+
+	/**
+	 *Following fields used for LS_REPROCESS_AUDIT table 	
+	 */
+	private String Status;	
+	private Integer parserId;	
+	private Integer transactionId;	
+	 
+	
+	/*
+	 * End
+	 */
+/**
+ * This code used for Description inforation section DIOF
+ */
+	private List<String> topic;
+	private List<String> extractionType;
+	private List<String> extractionArea;
+	private List<Integer> rank;
+
+	
+	
+	public List<Integer> getRank() {
+		return rank;
+	}
+
+
+	public void setRank(List<Integer> rank) {
+		this.rank = rank;
+	}
+
+
+	public List<String> getTopic() {
+		return topic;
+	}
+
+
+	public void setTopic(List<String> topic) {
+		this.topic = topic;
+	}
+
+
+	public List<String> getExtractionType() {
+		return extractionType;
+	}
+
+
+	public void setExtractionType(List<String> extractionType) {
+		this.extractionType = extractionType;
+	}
+
+
+	public List<String> getExtractionArea() {
+		return extractionArea;
+	}
+
+
+	public void setExtractionArea(List<String> extractionArea) {
+		this.extractionArea = extractionArea;
+	}
+
+
+	public Integer getUploadId() {
+		return uploadId;
+	}
+
+
+	public Integer getTransactionId() {
+		return transactionId;
+	}
+
+
+	public void setTransactionId(Integer transactionId) {
+		this.transactionId = transactionId;
+	}
+
+
+	public Integer getParserId() {
+		return parserId;
+	}
+
+
+	public void setParserId(Integer parserId) {
+		this.parserId = parserId;
+	}
+
+
+	public String getStatus() {
+		return Status;
+	}
+
+
+	public void setStatus(String status) {
+		Status = status;
+	}
+
+
+	public List<Integer> getPemTableId() {
+		return pemTableId;
+	}
+
+	public void setPemTableId(List<Integer> pemTableId) {
+		this.pemTableId = pemTableId;
+	}
+
+	public List<Integer> getPemPid() {
+		return pemPid;
+	}
+
+	public void setPemPid(List<Integer> pemPid) {
+		this.pemPid = pemPid;
+	}
+
+	public List<Integer> getPemBeginPageNo() {
+		return pemBeginPageNo;
+	}
+
+	public void setPemBeginPageNo(List<Integer> pemBeginPageNo) {
+		this.pemBeginPageNo = pemBeginPageNo;
+	}
+
+	public List<String> getPemBeginKeyword() {
+		return pemBeginKeyword;
+	}
+
+	public void setPemBeginKeyword(List<String> pemBeginKeyword) {
+		this.pemBeginKeyword = pemBeginKeyword;
+	}
+
+	public List<Integer> getPemendPageNo() {
+		return pemendPageNo;
+	}
+
+	public void setPemendPageNo(List<Integer> pemendPageNo) {
+		this.pemendPageNo = pemendPageNo;
+	}
+
+	public List<String> getPemendKeyword() {
+		return pemendKeyword;
+	}
+
+	public void setPemendKeyword(List<String> pemendKeyword) {
+		this.pemendKeyword = pemendKeyword;
+	}
+
+	public List<String> getPemSection() {
+		return pemSection;
+	}
+
+	public void setPemSection(List<String> pemSection) {
+		this.pemSection = pemSection;
+	}
+
+	public void setUploadId(Integer uploadId) {
+		this.uploadId = uploadId;
+	}
+
+	public String getEncryptedFilingId() {
+		return encryptedFilingId;
+	}
+
+	public void setEncryptedFilingId(String encryptedFilingId) {
+		this.encryptedFilingId = encryptedFilingId;
+	}
+
+	public List<Integer> getId() {
+		return id;
+	}
+
+	public void setId(List<Integer> id) {
+		this.id = id;
+	}
+
+	public List<String> getDeleteFlag() {
+		return deleteFlag;
+	}
+
+	public void setDeleteFlag(List<String> deleteFlag) {
+		this.deleteFlag = deleteFlag;
+	}
+
+	public List<Integer> getErp_Id() {
+		return erp_Id;
+	}
+
+	public void setErp_Id(List<Integer> erp_Id) {
+		this.erp_Id = erp_Id;
+	}
+
+	public List<Integer> getEtrbc_Id() {
+		return etrbc_Id;
+	}
+
+	public void setEtrbc_Id(List<Integer> etrbc_Id) {
+		this.etrbc_Id = etrbc_Id;
+	}
+
+	public List<String> getPropertyName() {
+		return propertyName;
+	}
+
+	public void setPropertyName(List<String> propertyName) {
+		this.propertyName = propertyName;
+	}
+
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public List<String> getPropertyValue() {
+		return propertyValue;
+	}
+
+	public void setPropertyValue(List<String> propertyValue) {
+		this.propertyValue = propertyValue;
+	}
+
+	public List<String> getTableType() {
+		return tableType;
+	}
+
+	public void setTableType(List<String> tableType) {
+		this.tableType = tableType;
+	}
+
+	public List<String> getTag() {
+		return tag;
+	}
+
+	public void setTag(List<String> tag) {
+		this.tag = tag;
+	}
+
+	public List<String> getXvalue() {
+		return xvalue;
+	}
+
+	public void setXvalue(List<String> xvalue) {
+		this.xvalue = xvalue;
+	}
+
+	public List<String> getInclusive() {
+		return inclusive;
+	}
+
+	public void setInclusive(List<String> inclusive) {
+		this.inclusive = inclusive;
+	}
+
+	public List<String> getAction() {
+		return action;
+	}
+
+	public void setAction(List<String> action) {
+		this.action = action;
+	}
+
+	public List<String> getSrchType() {
+		return srchType;
+	}
+
+	public void setSrchType(List<String> srchType) {
+		this.srchType = srchType;
+	}
+
+	public List<String> getOrderValue() {
+		return orderValue;
+	}
+
+	public void setOrderValue(List<String> orderValue) {
+		this.orderValue = orderValue;
+	}
+
+	public List<Integer> getExtMetadataIdList() {
+		return extMetadataIdList;
+	}
+
+	public void setExtMetadataIdList(List<Integer> extMetadataIdList) {
+		this.extMetadataIdList = extMetadataIdList;
+	}
+
+	public List<String> getSectionList() {
+		return sectionList;
+	}
+
+	public void setSectionList(List<String> sectionList) {
+		this.sectionList = sectionList;
+	}
+
+	public List<String> getSub_sectionList() {
+		return sub_sectionList;
+	}
+
+	public void setSub_sectionList(List<String> sub_sectionList) {
+		this.sub_sectionList = sub_sectionList;
+	}
+
+	public List<String> getKeywordsList() {
+		return keywordsList;
+	}
+
+	public void setKeywordsList(List<String> keywordsList) {
+		this.keywordsList = keywordsList;
+	}
+
+	public Integer getEtrbc_cik() {
+		return etrbc_cik;
+	}
+
+	public void setEtrbc_cik(Integer etrbc_cik) {
+		this.etrbc_cik = etrbc_cik;
+	}
+
+	public Integer getEtrbc_cid() {
+		return etrbc_cid;
+	}
+
+	public void setEtrbc_cid(Integer etrbc_cid) {
+		this.etrbc_cid = etrbc_cid;
+	}
+
+	public String getEtrbc_industry() {
+		return etrbc_industry;
+	}
+
+	public void setEtrbc_industry(String etrbc_industry) {
+		this.etrbc_industry = etrbc_industry;
+	}
+
+	public String getEtrbc_language() {
+		return etrbc_language;
+	}
+
+	public void setEtrbc_language(String etrbc_language) {
+		this.etrbc_language = etrbc_language;
+	}
+	public String getPemEid() {
+		return pemEid;
+	}
+		
+	public void setPemEid(String pem_eid) {
+		this.pemEid = pem_eid;
+	}
+		
+	
+
+	public List<String> getPemScope() {
+		return pemScope;
+	}
+
+
+	public void setPemScope(List<String> pemScope) {
+		this.pemScope = pemScope;
+	}
+
+
+	public List<String> getPemSubsection() {
+		return pemSubsection;
+	}
+
+
+	public void setPemSubsection(List<String> pemSubsection) {
+		this.pemSubsection = pemSubsection;
+	}
+
+
+	public List<String> getGlobalLevel() {
+		return globalLevel;
+	}
+
+
+	public void setGlobalLevel(List<String> globalLevel) {
+		this.globalLevel = globalLevel;
+	}
+
+
+	public List<String> getPemRowSegmentationType() {
+		return pemRowSegmentationType;
+	}
+
+
+	public void setPemRowSegmentationType(List<String> pemRowSegmentationType) {
+		this.pemRowSegmentationType = pemRowSegmentationType;
+	}
+
+
+	public List<String> getPemColumnNumberToSplit() {
+		return pemColumnNumberToSplit;
+	}
+
+
+	public void setPemColumnNumberToSplit(List<String> pemColumnNumberToSplit) {
+		this.pemColumnNumberToSplit = pemColumnNumberToSplit;
+	}
+	
+	
+	
+
+
+	@Override
+	public String toString() {
+		return "ExtractorTableCommand [filingId=" + filingId + ", tableType="
+				+ tableType + ", tag=" + tag + ", xvalue=" + xvalue
+				+ ", inclusive=" + inclusive + ", action=" + action
+				+ ", srchType=" + srchType + ", propertyValue=" + propertyValue
+				+ ", orderValue=" + orderValue + "]";
+	}
+
+
+	public List<String> getNotesSection() {
+		return notesSection;
+	}
+
+
+	public void setNotesSection(List<String> notesSection) {
+		this.notesSection = notesSection;
+	}
+
+
+	public List<String> getPoIDAsRepLable() {
+		return poIDAsRepLable;
+	}
+
+
+	public void setPoIDAsRepLable(List<String> poIDAsRepLable) {
+		this.poIDAsRepLable = poIDAsRepLable;
+	}
+
+}

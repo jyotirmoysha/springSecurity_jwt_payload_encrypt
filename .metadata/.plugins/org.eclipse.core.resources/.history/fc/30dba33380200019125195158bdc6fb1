@@ -1,0 +1,30 @@
+package com.livespread.security;
+
+
+public final class SecureKeyFactory {
+
+    /**
+     * This constant is used for initializing the AES-256 secure algorithm.
+     */
+    private static final int DATABASE_CONNECTION_SECURE_KEY = 1;
+
+
+    private SecureKeyFactory() {
+    }
+
+    public static AbstractSecureKey getInstance(int keyType) {
+        switch (keyType) {
+            case DATABASE_CONNECTION_SECURE_KEY:
+                return new DatabaseConnectionSecureKeyImpl();
+        }
+        return null;
+    }
+
+	public static int getDatabaseConnectionSecureKey() {
+		return DATABASE_CONNECTION_SECURE_KEY;
+	}
+
+	
+    
+    
+}

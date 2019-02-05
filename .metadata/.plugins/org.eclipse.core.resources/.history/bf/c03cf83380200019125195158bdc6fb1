@@ -1,0 +1,410 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * 
+ * @author Naveed.Khan
+ *
+ */
+
+@NamedQueries ({
+	@NamedQuery(name = "getCordinateDetails", query = "FROM POCordHighlightDetails  WHERE poId = :poId"),
+	@NamedQuery(name = "getCordinateDetailsNew", query = "FROM POCordHighlightDetails  WHERE poId in (:poIdList)"),
+})
+
+@Entity
+@Table(name = "PO_CORD_HIGHLIGHT_DETAILS")
+public class POCordHighlightDetails implements Serializable, BaseEntity {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "POCH_ID")
+	private Integer pochId;
+
+	@Column(name = "PO_ID")
+	private Integer poId;
+
+	@Column(name = "CORD_DETAILS_VAL1")
+	private String cordDetailsVAL1;
+
+	@Column(name = "CORD_DETAILS_VAL2")
+	private String cordDetailsVAL2;
+
+	@Column(name = "CORD_DETAILS_VAL3")
+	private String cordDetailsVAL3;
+	
+	@Column(name = "CORD_DETAILS_VAL4")
+	private String cordDetailsVAL4;
+	
+	@Column(name = "CORD_DETAILS_VAL5")
+	private String cordDetailsVAL5;
+	
+	@Column(name = "CORD_DETAILS_VAL6")
+	private String cordDetailsVAL6;
+	
+	@Column(name = "CORD_DETAILS_VAL7")
+	private String cordDetailsVAL7;
+	
+	@Column(name = "CORD_DETAILS_VAL8")
+	private String cordDetailsVAL8;
+	
+	@Column(name = "CORD_DETAILS_VAL9")
+	private String cordDetailsVAL9;
+
+	@Column(name = "CORD_DETAILS_VAL10")
+	private String cordDetailsVAL10;
+
+	@Column(name = "CORD_DETAILS_VAL11")
+	private String cordDetailsVAL11;
+
+	@Column(name = "CORD_DETAILS_VAL12")
+	private String cordDetailsVAL12;
+
+	@Column(name = "CORD_DETAILS_VAL13")
+	private String cordDetailsVAL13;
+	
+	@Column(name = "CORD_DETAILS_VAL14")
+	private String cordDetailsVAL14;
+	
+	@Column(name = "CORD_DETAILS_VAL15")
+	private String cordDetailsVAL15;
+	
+	@Column(name = "CORD_DETAILS_VAL16")
+	private String cordDetailsVAL16;
+	
+	@Column(name = "CORD_DETAILS_VAL17")
+	private String cordDetailsVAL17;
+	
+	@Column(name = "CORD_DETAILS_VAL18")
+	private String cordDetailsVAL18;
+	
+	@Column(name = "CORD_DETAILS_VAL19")
+	private String cordDetailsVAL19;
+
+	@Column(name = "CORD_DETAILS_VAL20")
+	private String cordDetailsVAL20;
+	
+	
+	@Column(name = "FILING_ID")
+	private Integer filingId;
+
+	@Column(name = "PO_SECTION")
+	private String opSection;
+
+	@Column(name = "UPLOAD_ID")
+	private Integer uploadId;
+	
+	public Integer getPochId() {
+		return pochId;
+	}
+
+	public void setPochId(Integer pochId) {
+		this.pochId = pochId;
+	}
+
+	public Integer getPoId() {
+		return poId;
+	}
+
+	public void setPoId(Integer poId) {
+		this.poId = poId;
+	}
+
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public Integer getUploadId() {
+		return uploadId;
+	}
+
+	public void setUploadId(Integer uploadId) {
+		this.uploadId = uploadId;
+	}
+
+	public Integer getPochID() {
+		return pochId;
+	}
+
+	public void setPochID(Integer pochId) {
+		this.pochId = pochId;
+	}
+
+	public Integer getpoId() {
+		return poId;
+	}
+
+	public void setpoId(Integer poId) {
+		this.poId = poId;
+	}
+
+	public String getCordDetailsVAL1() {
+		return cordDetailsVAL1;
+	}
+
+	public void setCordDetailsVal1(String cordDetailsVAL1) {
+		this.cordDetailsVAL1 = cordDetailsVAL1;
+	}
+
+	public String getCordDetailsVAL2() {
+		return cordDetailsVAL2;
+	}
+
+	public void setCordDetailsVAL2(String cordDetailsVAL2) {
+		this.cordDetailsVAL2 = cordDetailsVAL2;
+	}
+
+	public String getCordDetailsVAL3() {
+		return cordDetailsVAL3;
+	}
+
+	public void setCordDetailsVAL3(String cordDetailsVAL3) {
+		this.cordDetailsVAL3 = cordDetailsVAL3;
+	}
+
+	public String getCordDetailsVAL4() {
+		return cordDetailsVAL4;
+	}
+
+	public void setCordDetailsVAL4(String cordDetailsVAL4) {
+		this.cordDetailsVAL4 = cordDetailsVAL4;
+	}
+
+	public String getCordDetailsVAL5() {
+		return cordDetailsVAL5;
+	}
+
+	public void setCordDetailsVAL5(String cordDetailsVAL5) {
+		this.cordDetailsVAL5 = cordDetailsVAL5;
+	}
+
+	public String getCordDetailsVAL6() {
+		return cordDetailsVAL6;
+	}
+
+	public void setCordDetailsVAL6(String cordDetailsVAL6) {
+		this.cordDetailsVAL6 = cordDetailsVAL6;
+	}
+
+	public String getCordDetailsVAL7() {
+		return cordDetailsVAL7;
+	}
+
+	public void setCordDetailsVAL7(String cordDetailsVAL7) {
+		this.cordDetailsVAL7 = cordDetailsVAL7;
+	}
+
+	public String getCordDetailsVAL8() {
+		return cordDetailsVAL8;
+	}
+
+	public void setCordDetailsVAL8(String cordDetailsVAL8) {
+		this.cordDetailsVAL8 = cordDetailsVAL8;
+	}
+
+	public String getCordDetailsVAL9() {
+		return cordDetailsVAL9;
+	}
+
+	public void setCordDetailsVAL9(String cordDetailsVAL9) {
+		this.cordDetailsVAL9 = cordDetailsVAL9;
+	}
+
+	public String getCordDetailsVAL10() {
+		return cordDetailsVAL10;
+	}
+
+	public void setCordDetailsVAL10(String cordDetailsVAL10) {
+		this.cordDetailsVAL10 = cordDetailsVAL10;
+	}
+
+	public Integer getFilingID() {
+		return filingId;
+	}
+
+	public void setFilingID(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public String getOpSection() {
+		return opSection;
+	}
+
+	public void setOpSection(String opSection) {
+		this.opSection = opSection;
+	}
+
+	@Override
+	public EntityType getEntityType() {		
+		return EntityType.APPLICATION;
+	}
+
+	/**
+	 * @return the cordDetailsVAL11
+	 */
+	public String getCordDetailsVAL11() {
+		return cordDetailsVAL11;
+	}
+
+	/**
+	 * @param cordDetailsVAL11 the cordDetailsVAL11 to set
+	 */
+	public void setCordDetailsVAL11(String cordDetailsVAL11) {
+		this.cordDetailsVAL11 = cordDetailsVAL11;
+	}
+
+	/**
+	 * @return the cordDetailsVAL12
+	 */
+	public String getCordDetailsVAL12() {
+		return cordDetailsVAL12;
+	}
+
+	/**
+	 * @param cordDetailsVAL12 the cordDetailsVAL12 to set
+	 */
+	public void setCordDetailsVAL12(String cordDetailsVAL12) {
+		this.cordDetailsVAL12 = cordDetailsVAL12;
+	}
+
+	/**
+	 * @return the cordDetailsVAL13
+	 */
+	public String getCordDetailsVAL13() {
+		return cordDetailsVAL13;
+	}
+
+	/**
+	 * @param cordDetailsVAL13 the cordDetailsVAL13 to set
+	 */
+	public void setCordDetailsVAL13(String cordDetailsVAL13) {
+		this.cordDetailsVAL13 = cordDetailsVAL13;
+	}
+
+	/**
+	 * @return the cordDetailsVAL14
+	 */
+	public String getCordDetailsVAL14() {
+		return cordDetailsVAL14;
+	}
+
+	/**
+	 * @param cordDetailsVAL14 the cordDetailsVAL14 to set
+	 */
+	public void setCordDetailsVAL14(String cordDetailsVAL14) {
+		this.cordDetailsVAL14 = cordDetailsVAL14;
+	}
+
+	/**
+	 * @return the cordDetailsVAL15
+	 */
+	public String getCordDetailsVAL15() {
+		return cordDetailsVAL15;
+	}
+
+	/**
+	 * @param cordDetailsVAL15 the cordDetailsVAL15 to set
+	 */
+	public void setCordDetailsVAL15(String cordDetailsVAL15) {
+		this.cordDetailsVAL15 = cordDetailsVAL15;
+	}
+
+	/**
+	 * @return the cordDetailsVAL16
+	 */
+	public String getCordDetailsVAL16() {
+		return cordDetailsVAL16;
+	}
+
+	/**
+	 * @param cordDetailsVAL16 the cordDetailsVAL16 to set
+	 */
+	public void setCordDetailsVAL16(String cordDetailsVAL16) {
+		this.cordDetailsVAL16 = cordDetailsVAL16;
+	}
+
+	/**
+	 * @return the cordDetailsVAL17
+	 */
+	public String getCordDetailsVAL17() {
+		return cordDetailsVAL17;
+	}
+
+	/**
+	 * @param cordDetailsVAL17 the cordDetailsVAL17 to set
+	 */
+	public void setCordDetailsVAL17(String cordDetailsVAL17) {
+		this.cordDetailsVAL17 = cordDetailsVAL17;
+	}
+
+	/**
+	 * @return the cordDetailsVAL18
+	 */
+	public String getCordDetailsVAL18() {
+		return cordDetailsVAL18;
+	}
+
+	/**
+	 * @param cordDetailsVAL18 the cordDetailsVAL18 to set
+	 */
+	public void setCordDetailsVAL18(String cordDetailsVAL18) {
+		this.cordDetailsVAL18 = cordDetailsVAL18;
+	}
+
+	/**
+	 * @return the cordDetailsVAL19
+	 */
+	public String getCordDetailsVAL19() {
+		return cordDetailsVAL19;
+	}
+
+	/**
+	 * @param cordDetailsVAL19 the cordDetailsVAL19 to set
+	 */
+	public void setCordDetailsVAL19(String cordDetailsVAL19) {
+		this.cordDetailsVAL19 = cordDetailsVAL19;
+	}
+
+	/**
+	 * @return the cordDetailsVAL20
+	 */
+	public String getCordDetailsVAL20() {
+		return cordDetailsVAL20;
+	}
+
+	/**
+	 * @param cordDetailsVAL20 the cordDetailsVAL20 to set
+	 */
+	public void setCordDetailsVAL20(String cordDetailsVAL20) {
+		this.cordDetailsVAL20 = cordDetailsVAL20;
+	}
+
+	/**
+	 * @param cordDetailsVAL1 the cordDetailsVAL1 to set
+	 */
+	public void setCordDetailsVAL1(String cordDetailsVAL1) {
+		this.cordDetailsVAL1 = cordDetailsVAL1;
+	}
+
+}

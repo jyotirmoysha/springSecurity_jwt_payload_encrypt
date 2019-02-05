@@ -1,0 +1,255 @@
+package com.livespread.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import com.google.common.collect.Lists;
+import com.livespread.command.POCordHighlightDetailsCommand;
+import com.livespread.dao.NormalizationViewDAO;
+import com.livespread.domain.NamedQueryName;
+import com.livespread.domain.POCordHighlightDetails;
+import com.rage.extendeddao.ExtendedGenericDao;
+
+/**
+ * 
+ * @author Naveed.Khan
+ *
+ */
+@Service("POCordHighlightDetailsService")
+public class POCordHighlightDetailsServiceImpl implements  POCordHighlightDetailsService{
+
+
+	private Logger LOGGER = Logger.getLogger(POCordHighlightDetailsServiceImpl.class);
+	
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+	
+	@Autowired
+	private NormalizationViewDAO normalizationViewDAO;
+
+	@Override
+	public String getCoordinateDetails(int poId,String coordinateColumn) {
+		LOGGER.info("=======  POCordHighlightDetailsServiceImpl Service starts =======");
+		String CoodinatesWithPageNo= "0,0,0,0,1";
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("poId", poId);
+		List<Object> coordinatesListObject = genericDaoImpl.findByNamedQuery(NamedQueryName.getCordinateDetails, POCordHighlightDetails.class, parameterMap);
+		//checking for column number and getting respective cloumn coordinates
+		if(coordinatesListObject!=null && !coordinatesListObject.isEmpty())
+		{
+			POCordHighlightDetails poCordHighlightDetails = (POCordHighlightDetails)coordinatesListObject.get(0);
+		if(coordinatesListObject.size()>=1){
+			if(coordinateColumn.equalsIgnoreCase("val1")){
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL1();
+			}else if (coordinateColumn.equalsIgnoreCase("val2")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL2();
+			}else if (coordinateColumn.equalsIgnoreCase("val3")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL3();
+			}else if (coordinateColumn.equalsIgnoreCase("val4")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL4();
+			}else if (coordinateColumn.equalsIgnoreCase("val5")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL5();
+			}else if (coordinateColumn.equalsIgnoreCase("val6")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL6();
+			}else if (coordinateColumn.equalsIgnoreCase("val7")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL7();
+			}else if (coordinateColumn.equalsIgnoreCase("val8")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL8();
+			}else if (coordinateColumn.equalsIgnoreCase("val9")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL9();
+			}else if (coordinateColumn.equalsIgnoreCase("val10")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL10();
+			}else if(coordinateColumn.equalsIgnoreCase("val11")){
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL11();
+			}else if (coordinateColumn.equalsIgnoreCase("val12")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL12();
+			}else if (coordinateColumn.equalsIgnoreCase("val13")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL13();
+			}else if (coordinateColumn.equalsIgnoreCase("val14")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL14();
+			}else if (coordinateColumn.equalsIgnoreCase("val15")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL15();
+			}else if (coordinateColumn.equalsIgnoreCase("val16")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL16();
+			}else if (coordinateColumn.equalsIgnoreCase("val17")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL17();
+			}else if (coordinateColumn.equalsIgnoreCase("val18")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL18();
+			}else if (coordinateColumn.equalsIgnoreCase("val19")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL19();
+			}else if (coordinateColumn.equalsIgnoreCase("val20")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL20();
+			}
+			System.out.println("~~~~~~~~~~~~~~~~~~~  :"+CoodinatesWithPageNo);
+		  }
+		}
+		LOGGER.info("=======  POCordHighlightDetailsServiceImpl Service ends =======");
+		return CoodinatesWithPageNo;
+	}
+
+	@Override
+	public List<Object> getCoordinateDetailsNew(List<Integer> poIdList) {
+		LOGGER.info("=======  getCoordinateDetailsNew Service starts =======");
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("poIdList", poIdList);
+		List<Object> coordinatesListObject = genericDaoImpl.findByNamedQuery(NamedQueryName.getCordinateDetailsNew, POCordHighlightDetails.class, parameterMap);
+
+		return coordinatesListObject;
+	}
+
+
+
+	@Override
+	public String getCoordinateDetailsNew(String coordinateColumn, POCordHighlightDetails poCordHighlightDetails) {
+		LOGGER.info("=======  POCordHighlightDetailsServiceImpl Service starts =======");
+			String CoodinatesWithPageNo= "0,0,0,0,1";
+		
+			if(coordinateColumn.equalsIgnoreCase("val1")){
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL1();
+			}else if (coordinateColumn.equalsIgnoreCase("val2")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL2();
+			}else if (coordinateColumn.equalsIgnoreCase("val3")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL3();
+			}else if (coordinateColumn.equalsIgnoreCase("val4")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL4();
+			}else if (coordinateColumn.equalsIgnoreCase("val5")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL5();
+			}else if (coordinateColumn.equalsIgnoreCase("val6")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL6();
+			}else if (coordinateColumn.equalsIgnoreCase("val7")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL7();
+			}else if (coordinateColumn.equalsIgnoreCase("val8")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL8();
+			}else if (coordinateColumn.equalsIgnoreCase("val9")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL9();
+			}else if (coordinateColumn.equalsIgnoreCase("val10")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL10();
+			}else if(coordinateColumn.equalsIgnoreCase("val11")){
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL11();
+			}else if (coordinateColumn.equalsIgnoreCase("val12")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL12();
+			}else if (coordinateColumn.equalsIgnoreCase("val13")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL13();
+			}else if (coordinateColumn.equalsIgnoreCase("val14")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL14();
+			}else if (coordinateColumn.equalsIgnoreCase("val15")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL15();
+			}else if (coordinateColumn.equalsIgnoreCase("val16")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL16();
+			}else if (coordinateColumn.equalsIgnoreCase("val17")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL17();
+			}else if (coordinateColumn.equalsIgnoreCase("val18")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL18();
+			}else if (coordinateColumn.equalsIgnoreCase("val19")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL19();
+			}else if (coordinateColumn.equalsIgnoreCase("val20")) {
+				CoodinatesWithPageNo=poCordHighlightDetails.getCordDetailsVAL20();
+			}
+			System.out.println("~~~~~~~~~~~~~~~~~~~  :"+CoodinatesWithPageNo);
+		  
+		LOGGER.info("=======  POCordHighlightDetailsServiceImpl Service ends =======");
+		return CoodinatesWithPageNo;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.livespread.service.POCordHighlightDetailsService#getCoordinateDetailsMap(java.util.List)
+	 */
+	@Override
+	public Map<Integer, POCordHighlightDetails> getCoordinateDetailsMap(List<Integer> selectedPoIdList)throws Exception 
+	{
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		Map<Integer, POCordHighlightDetails> coordinateDetailsMap = null;
+		List<POCordHighlightDetails> coordinatesList =null;
+		List<List<Integer>> outputPoIdList = Lists.partition(selectedPoIdList, 500);
+		
+		parameterMap.put("poIdList", selectedPoIdList);
+		//List<POCordHighlightDetails> coordinatesList = (ArrayList<POCordHighlightDetails>) (Object) (genericDaoImpl.findByNamedQuery(NamedQueryName.getCordinateDetailsNew, POCordHighlightDetails.class, parameterMap));
+		coordinatesList=normalizationViewDAO.getCoordinateDetailByPoIdList(outputPoIdList);
+		
+		if(coordinatesList!=null && !coordinatesList.isEmpty())
+		{
+			coordinateDetailsMap = new HashMap<>();
+			for (POCordHighlightDetails poCordHighlightDetails : coordinatesList) 
+			{
+				coordinateDetailsMap.put(poCordHighlightDetails.getpoId(), poCordHighlightDetails);
+			}
+		}
+		return coordinateDetailsMap;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.livespread.service.POCordHighlightDetailsService#getCoordinateAndDocumentTypeDetails(java.lang.Integer, java.lang.String)
+	 */
+	@Override
+	public POCordHighlightDetailsCommand getCoordinateAndDocumentTypeDetails(Integer poIdVal, String coordinateColumn) 
+	{
+		LOGGER.info("=======  POCordHighlightDetailsServiceImpl Service starts =======");
+		POCordHighlightDetailsCommand coordinatesDetails= null;
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("poId", poIdVal);
+		List<Object> coordinatesListObject = genericDaoImpl.findByNamedQuery(NamedQueryName.getCordinateDetails, POCordHighlightDetails.class, parameterMap);
+		//checking for column number and getting respective column coordinates
+		if(!CollectionUtils.isEmpty(coordinatesListObject))
+		{
+			POCordHighlightDetails poCordHighlightDetails = (POCordHighlightDetails)coordinatesListObject.get(0);
+			coordinatesDetails= new POCordHighlightDetailsCommand();
+			if(coordinateColumn.equalsIgnoreCase("val1")){
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL1());
+			}else if (coordinateColumn.equalsIgnoreCase("val2")) {
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL2());
+			}else if (coordinateColumn.equalsIgnoreCase("val3")) {
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL3());
+			}else if (coordinateColumn.equalsIgnoreCase("val4")) {
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL4());
+			}else if (coordinateColumn.equalsIgnoreCase("val5")) {
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL5());
+			}else if (coordinateColumn.equalsIgnoreCase("val6")) {
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL6());
+			}else if (coordinateColumn.equalsIgnoreCase("val7")) {
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL7());
+			}else if (coordinateColumn.equalsIgnoreCase("val8")) {
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL8());
+			}else if (coordinateColumn.equalsIgnoreCase("val9")) {
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL9());
+			}else if (coordinateColumn.equalsIgnoreCase("val10")) {
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL10());
+			}else if(coordinateColumn.equalsIgnoreCase("val11")){
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL11());
+			}else if (coordinateColumn.equalsIgnoreCase("val12")) {
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL12());
+			}else if (coordinateColumn.equalsIgnoreCase("val13")) {
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL13());
+			}else if (coordinateColumn.equalsIgnoreCase("val14")) {
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL14());
+			}else if (coordinateColumn.equalsIgnoreCase("val15")) {
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL15());
+			}else if (coordinateColumn.equalsIgnoreCase("val16")) {
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL16());
+			}else if (coordinateColumn.equalsIgnoreCase("val17")) {
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL17());
+			}else if (coordinateColumn.equalsIgnoreCase("val18")) {
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL18());
+			}else if (coordinateColumn.equalsIgnoreCase("val19")) {
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL19());
+			}else if (coordinateColumn.equalsIgnoreCase("val20")) {
+				coordinatesDetails.setCoordinates(poCordHighlightDetails.getCordDetailsVAL20());
+			}
+			if(poCordHighlightDetails.getUploadId()!=null)
+			{
+			coordinatesDetails.setUploadId(poCordHighlightDetails.getUploadId());
+			}
+			else
+			{
+				coordinatesDetails.setUploadId(0);	
+			}
+		}
+		LOGGER.info("=======  POCordHighlightDetailsServiceImpl Service ends =======");
+		return coordinatesDetails;
+	}
+}

@@ -1,0 +1,100 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "CLIENT_FEATURE_MAPPING")
+@NamedNativeQueries({
+					@NamedNativeQuery(name = "findAllGroupFeatureByGroupId", query = "SELECT  UG.USERS_GROUP_ID,UG.USERS_GROUP_NAME , CFM.FEATURE_ID,CFM.FEATURES FROM USER_GROUPS  UG LEFT OUTER JOIN (SELECT C.*,LF.FEATURES FROM CLIENT_FEATURE_MAPPING C ,"
++" LS_FEATURES LF WHERE C.FEATURE_ID=LF.FEATURE_ID AND C.IS_ACTIVE='Y' AND C.User_group_id IN (SELECT USERS_GROUP_ID FROM USER_GROUPS)) CFM ON UG.USERS_GROUP_ID=CFM.USER_GROUP_ID "
++" WHERE  (UG.PARENT_USER_GROUP=:uGroupId OR UG.USERS_GROUP_ID=:uGroupId) ORDER BY  UG.USERS_GROUP_NAME ,CFM.FEATURE_ID ")
+})
+
+@NamedQueries({
+	@NamedQuery(name = "featuresNameByGroupId", query = "select featureId from ClientFeatureMapping where userGroupId=:userGroupId and isActive='Y' order by featureId"),
+	@NamedQuery(name = "deleteFeatureIdbyGroupId", query = "delete from  ClientFeatureMapping where featureId=:featureId and userGroupId=:userGroupId")
+})
+
+public class ClientFeatureMapping  implements Serializable, BaseEntity {
+	private static final long serialVersionUID = 1L;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "CFM_Id")
+	private Integer cfmId;
+
+	@Column(name = "USER_GROUP_ID")
+	private Integer userGroupId;
+
+	@Column(name = "FEATURE_ID")
+	private Integer featureId;
+
+	@Column(name = "CLIENTS")
+	private String clients;
+
+	@Column(name = "IS_ACTIVE")
+	private String isActive;
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+	public Integer getCfmId() {
+		return cfmId;
+	}
+
+	public void setCfmId(Integer cfmId) {
+		this.cfmId = cfmId;
+	}
+
+	public Integer getUserGroupId() {
+		return userGroupId;
+	}
+
+	public void setUserGroupId(Integer userGroupId) {
+		this.userGroupId = userGroupId;
+	}
+
+	public Integer getFeatureId() {
+		return featureId;
+	}
+
+	public void setFeatureId(Integer featureId) {
+		this.featureId = featureId;
+	}
+
+	public String getClients() {
+		return clients;
+	}
+
+	public void setClients(String clients) {
+		this.clients = clients;
+	}
+
+	public String getIsActive() {
+		return isActive;
+	}
+
+	public void setIsActive(String isActive) {
+		this.isActive = isActive;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}	
+
+}

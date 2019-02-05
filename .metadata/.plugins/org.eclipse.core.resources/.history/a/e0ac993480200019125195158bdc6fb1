@@ -1,0 +1,32 @@
+/**
+ * 
+ */
+package com.livespread.command;
+
+
+/**
+ * @author KP0e1301
+ *
+ */
+public class AccountingStandardCommand {
+
+	private Integer accountingStandardId;
+	private String accountingStandardName;
+
+	public Integer getAccountingStandardId() {
+		return accountingStandardId;
+	}
+
+	public void setAccountingStandardId(Integer accountingStandardId) {
+		this.accountingStandardId = accountingStandardId;
+	}
+
+	public String getAccountingStandardName() {
+		return accountingStandardName;
+	}
+
+	public void setAccountingStandardName(String accountingStandardName) {
+		this.accountingStandardName = accountingStandardName;
+	}
+
+}

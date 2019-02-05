@@ -1,0 +1,62 @@
+body{margin:0; padding:0; background:#fff; font-family:arial; font-size:13px;}
+.clear{clear:both;}
+.header{background: #000; width: 100%; height: 70px; margin:0px; padding:0px}
+.header-wpr {width:90%; margin:0 auto;}
+.logo_wpr { width: 40%; height: 60px; float: left; margin: 0px 0px; padding: 0px 0px; background: url(../images/logo.png) no-repeat center left;}
+.right-panel{float:right;}
+.logout{float:left; text-align:right; margin:25px 0 0 0; color:#fff; font-size:13px;}
+.menu-wrap{background:none !important; float:left;}
+.menu {background:none !important; margin:0 atuo 0 0;}
+.menu li {background:none !important; margin:0; list-style:none; font-family:'arial'; font-size:13px;}
+.menu a {transition:all linear 0.15s; color:#fff; font-size:12px; text-align:left;}
+.menu li:hover > a, .menu .current-item > a {text-decoration:none; color:#fcbd2c;}
+.menu .arrow {font-size:11px; line-height:0%; margin:0 0 0 3px;}
+ /*----- Top Level -----*/
+.menu > ul > li {background:none !important; float:left; display:inline-block; position:relative; font-size:19px;}
+.menu > ul > li > a {padding:10px 20px 5px 10px; display:inline-block; color:#fcbd2c; background:#000; font-weight:bold; font-size:12px; text-decoration:none;}
+.menu > ul > li:hover > a, .menu > ul > .current-item > a {background:#383838;}
+ /*----- Bottom Level -----*/
+.menu li:hover .sub-menu {z-index:1; opacity:1;}
+.sub-menu {width:100%; padding:3px 0px; position:absolute; top:100%; left:0px; z-index:-1; opacity:0; transition:opacity linear 0.15s; box-shadow:0px 2px 3px rgba(0,0,0,0.2); background:#383838;}
+.sub-menu li {display:block; font-size:16px;}
+.sub-menu li a {padding:5px 10px 8px 14px;display:block; text-decoration:none; color:#fcbd2c;}
+.sub-menu li a:hover, .sub-menu .current-item a {background:#5c5c5c; color:#fcbd2c;}
+/*----- nav ----------*/
+.nav{ background: url(../images/menu-bg.gif) repeat-x; width: 100%; height:30px; margin: -17px 0 0 0; padding:0px 0 0 10px;}
+.nav  ul li{list-style:none; display:inline-block; margin:6px 0 0 0; padding:0}
+.nav  ul li a{font: 13px arial; color:#fff; margin:0px 0px 0px 0px;  padding: 10px 20px 10px 20px; text-decoration:none;}
+.nav  ul li a:hover{ background:#fff; color:#005f98; padding:7px 20px 12px 20px; text-decoration:none;}
+.nav ul li a.active{ background:#fff; color:#005f98; padding:7px 20px 12px 20px; text-decoration:none;}
+/*----- Login --------*/
+.content-wrapper{width:90%; margin:20px auto;}
+.left-panel{width:20%; margin:100px auto; background:#006995; float:left; padding:0 0 27% 0}
+.left-panel ul {margin: 0; padding: 0;  list-style-type: none;}
+.left-panel li {border-bottom: 1px dotted #fff; text-align:left;}
+.left-panel ul li a{color:#fff; font-size:14px;  text-decoration:none; display:block; padding: 15px 0 15px 15px;}
+.left-panel ul li a:hover{background:#004870;}
+.left-panel ul li a.active{background:#004870;}
+
+.userguide-right-panel{width: 78%; margin:90px 0 40px 0; float:right;}
+.user-table{border:1px solid #ccc; margin:0 0 15px 0;}
+.user-table th{background:#6ABBBD; color:#fff; font-size:13px; font-weight:bold;}
+
+
+.accordion-manual { margin-bottom:4px;}
+.accordion-manual-header { background: url(../images/down_arrow_white.gif) 10px 10px no-repeat #0f696c; color:#FFF; font-weight:bold; line-height:18px; padding:3px 6px 4px 26px; height:18px; font-size:12px; cursor:pointer; overflow:hidden}
+.accordion-manual-content { background:#fff; border:solid 1px #0f696c; padding:8px; border-top:none}
+.accordion-manual-header.active {background: url(../images/up_arrow_white.gif) 10px 10px no-repeat #0f696c;}
+
+.accordion-manual-content ul.list {margin:0px; padding:4px; background:#d9e6ee; border:solid 1px #c5dae7; -webkit-border-radius: 8px;
+-moz-border-radius: 8px;
+border-radius: 8px; }
+.accordion-manual-content ul.list li { background: url(../images/bullet.gif) 4px 11px no-repeat; padding:4px 4px 4px 16px; font-weight:bold; font-size:12px; line-height:18px;}
+
+.left-panel li {text-align:left;}
+.left-panel ul li a{color:#fff; font-size:14px; border-bottom: 1px dotted #fff;  text-decoration:none; display:block; padding: 15px 0 15px 15px;}
+.left-panel{width:20%; margin:100px auto; background:#006995; float:left; padding:0 0 22% 0}
+.left-panel ul li a:hover{background:#004870;}
+.left-panel ul li a.active{background:#004870;}
+.UicTblCaptionH2{width:160px !important; margin:3px 0 0 100px !important; padding:4px;}
+.new-color{color:#333 !important; font-size:13px !important}
+.table.uic_dynamictable {font: 1.5em/18px Helvetica Neue, Helvetica, Arial, sans-serif !important;}
+.jumbotron{background:#fff; border:1px solid #ccc; width:100% !important; margin:0 0 0 -10px}

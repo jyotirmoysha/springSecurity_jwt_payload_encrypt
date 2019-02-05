@@ -1,0 +1,89 @@
+package com.livespread.util;
+
+import java.util.Map;
+import java.util.ResourceBundle;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.livespread.service.LSRageProcessesService;
+import com.livespread.service.WorkQueueService;
+
+public class ProcessListGenerator {
+
+	Logger logger = Logger.getLogger(ProcessListGenerator.class);
+	public static Map<String, Integer> processMap;
+	public static String jbossCategory;
+	public static Integer rageApplicationId;
+
+	@Autowired
+	private LSRageProcessesService lsRageProcessesService;
+	
+	@Autowired
+	private WorkQueueService workQueueService;
+
+	/**
+	 * @return the processMap
+	 */
+	public static Map<String, Integer> getProcessMap() {
+		return processMap;
+	}
+
+	/**
+	 * @param processMap the processMap to set
+	 */
+	public static void setProcessMap(Map<String, Integer> processMap) {
+		ProcessListGenerator.processMap = processMap;
+	}
+
+	/**
+	 * @return the rageApplicationId
+	 */
+	public static Integer getRageApplicationId() {
+		return rageApplicationId;
+	}
+
+	/**
+	 * @param rageApplicationId the rageApplicationId to set
+	 */
+	public static void setRageApplicationId(Integer rageApplicationId) {
+		ProcessListGenerator.rageApplicationId = rageApplicationId;
+	}
+
+	/**
+	 * @return the workQueueService
+	 */
+	public WorkQueueService getWorkQueueService() {
+		return workQueueService;
+	}
+
+	/**
+	 * @param workQueueService the workQueueService to set
+	 */
+	public void setWorkQueueService(WorkQueueService workQueueService) {
+		this.workQueueService = workQueueService;
+	}
+
+	public LSRageProcessesService getLsRageProcessesService() {
+		return lsRageProcessesService;
+	}
+
+	public void setLsRageProcessesService(LSRageProcessesService lsRageProcessesService) {
+		this.lsRageProcessesService = lsRageProcessesService;
+	}
+
+	public void initIt() throws Exception {
+		try {
+			ResourceBundle versionProperties = ResourceBundle.getBundle("application");
+			String rageApplicationName = versionProperties.getString("rageApplicationName");
+			rageApplicationId = workQueueService.getRageApplicationIdByRageApplicationName(rageApplicationName);
+			jbossCategory = workQueueService.getJbossCategory();
+			processMap = lsRageProcessesService.f_getAllLSRageProcesses(rageApplicationId);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.warn(e.getStackTrace());
+		}
+
+	}
+
+}

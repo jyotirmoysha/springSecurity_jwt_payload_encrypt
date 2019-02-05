@@ -1,0 +1,54 @@
+body{font-family:"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif !important; font-size:11px !important; overflow:auto !important}
+input::-webkit-input-placeholder, textarea::-webkit-input-placeholder
+{
+    color: red;
+}
+.ui-widget input,
+.ui-widget select,
+.ui-widget textarea,
+.ui-widget button {font-family: Lucida Grande,Lucida Sans,Arial,sans-serif; font-size: 11px;}
+.close {float: right; font-size: 21px !important; font-weight: 700; line-height: 1; color: #000; text-shadow: 0 1px 0 #fff; opacity: 100; margin-top:2px !important;}
+.btn {line-height: 12px !important; border-radius: 0px;}
+.chosen-container-single .chosen-single span {text-align:left !important;}
+.chosen-container .chosen-drop {text-align:left !important; }
+.chosen-container-single .chosen-single {width:280px; border-radius:2px; height:26px;}
+.chosen-container.chosen-with-drop .chosen-drop{width:280px !important;}
+.chosen-container-single .chosen-default {width:280px !important}
+.btn-primary {color: #fff; background-color: #006995; border-color: #006995;}
+.dropdwn{color:#000 !important}
+.loadinggif {background:url('images/ajax-loader.gif') no-repeat right center; }
+.msgBg{float:left; width:15%; margin-left:45px; position:fixed; top:115px; padding:10px; background:#004870 !important; color:#fff; font-size:11px; text-align:left; font-weight:normal; font-family:Helvetica Neue, Helvetica, Arial, sans-serif;}
+/* input, button, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+} */
+.newtable{border:1px solid #ccc}
+.newtable thead tr td{background:#004870; color:#fff !important; font-size:11px !important; padding:4px;}
+.newtable tbody tr td{color:#333 !important; padding:4px}
+.bootstrap-select.btn-group .dropdown-menu{margin:4px 0 0 0 !important}
+.form-control{border-radius:2px !important; background:#1a6aaf !important; color:#fff; border-radius:0px; padding:5px 3px; font-size:12px}
+.bootstrap-select > .btn{background:none !important; border:0px;}
+.bootstrap-select.btn-group .btn .filter-option{color:#fff !important}
+.bootstrap-select.btn-group .btn .caret{color:#fff !important; left:207px}
+button.btn.dropdown-toggle.selectpicker.btn-default{padding:2px 10px !important; margin-left:-7px; border-raduis:0px}
+#popup_container{top:120px !important}
+.open{border:0px !important}
+.btn-group>.btn:hover, .btn-group-vertical>.btn:hover, .btn-group>.btn:focus, .btn-group-vertical>.btn:focus, .btn-group>.btn:active, .btn-group-vertical>.btn:active, .btn-group>.btn.active, .btn-group-vertical>.btn.active{border:none !important; outline:none !important}
+.chosen-container-single .chosen-search{color:#000 !important}
+.chosen-container .chosen-results{padding:0 0 7px 4px}
+.subbtn{margin-bottom:30px}
+.btn_import{margin-left:-10px;}
+.btn-wrapper{margin:0 0 0 20px}
+.bootstrap-select.btn-group:not(.input-group-btn), .bootstrap-select.btn-group[class*="col-"]{margin-left:-14px !important; width:217px;}
+.btn .dropdown-toggle .selectpicker .btn-default{margin-left:-14px !important; padding:5px !important}
+.bootstrap-select.btn-group .btn .caret{left:200px !important}
+#Incomestatement{margin-left:-14px;}
+.imgbtns{margin-left:-1px}
+@media only screen and (max-width: 991px) {
+ .left-panel-new{width:100% !important; margin-bottom:20px}
+.chosen-container-single .chosen-single{width:150px !important}
+.msgBg{margin-left:17px; top:500px;}
+.btn-wrapper{margin:0 0 0 78px}
+#Incomestatement{width:221px; margin-left:-14px;}
+}

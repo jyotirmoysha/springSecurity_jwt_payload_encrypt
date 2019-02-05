@@ -1,0 +1,51 @@
+@media screen and (min-width: 768px){
+  .financeTable{height:72% !important;}
+}
+
+@media screen and (min-width: 800px) and (min-height: 600px){
+  .financeTable{height:56% !important;}
+  .menu_wpr ul li a {font: 1.1em/18px Helvetica Neue, Helvetica, Arial, sans-serif !important;}
+}
+
+@media screen and (min-width: 1024px) and (min-height: 768px){
+ .financeTable{height:64% !important;}
+ .UicShowScroll{height:64% !important;}
+}
+
+@media screen and (min-width: 1024px) and (min-height: 1366px){
+ .financeTable{height:78% !important;}
+ .UicShowScroll{height:78% !important;}
+}
+
+@media screen and (min-width: 1152px){
+ .financeTable{height:67% !important;}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 600px){
+.financeTable{height:53% !important;}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 720px){
+.financeTable{height:61% !important;}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 768px){
+ .financeTable{height:64% !important;}
+ #btn-wrapper{width:45% !important;}
+}
+
+@media screen and (min-width: 1360px){
+ .financeTable{height:68% !important;}
+}
+
+@media screen and (min-width: 1440px) and (min-height: 900px){
+ .financeTable{height:67% !important;}
+}
+
+@media screen and (min-width: 1600px){
+ .financeTable{height:68% !important;}
+}
+
+@media screen and (min-width: 1680px){
+ .financeTable{height:72% !important;}
+}

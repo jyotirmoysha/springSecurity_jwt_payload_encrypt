@@ -1,0 +1,98 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "GOLDEN_SET_REPORTS")
+@NamedQueries({
+@NamedQuery(name = "getDistinctFeatureDataByBatchId", query = "SELECT DISTINCT caseId,caseName FROM GoldenSetReports WHERE batchId=:batchId"),
+@NamedQuery(name = "getFeatureDataReportByBatchIdAndCaseId", query = "FROM GoldenSetReports WHERE batchId=:batchId and caseId=:caseId order by wqId desc")
+})
+
+public class GoldenSetReports implements Serializable, BaseEntity{
+	@Id
+	@Column(name = "BATCH_ID")
+	private Integer batchId;
+	@Column(name = "WQ_ID")
+	private Integer wqId;
+	@Column(name = "Case_Name")
+	private String caseName;
+	@Column(name = "Case_ID")
+	private Integer caseId;
+	@Column(name = "Status")
+	private String status;
+	@Column(name = "MODIFIED_BY")
+	private String modifiedBy;
+
+	public Integer getBatchId() {
+		return batchId;
+	}
+
+	public void setBatchId(Integer batchId) {
+		this.batchId = batchId;
+	}
+
+	public Integer getWqId() {
+		return wqId;
+	}
+
+	public void setWqId(Integer wqId) {
+		this.wqId = wqId;
+	}
+
+	public String getCaseName() {
+		return caseName;
+	}
+
+	public void setCaseName(String caseName) {
+		this.caseName = caseName;
+	}
+
+	public Integer getCaseId() {
+		return caseId;
+	}
+
+	public void setCaseId(Integer caseId) {
+		this.caseId = caseId;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public String getModifiedBy() {
+		return modifiedBy;
+	}
+
+	public void setModifiedBy(String modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+
+	
+	
+	
+	
+	
+	
+	
+}

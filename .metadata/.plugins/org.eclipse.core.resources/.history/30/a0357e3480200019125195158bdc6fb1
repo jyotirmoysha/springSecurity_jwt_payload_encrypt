@@ -1,0 +1,163 @@
+package com.livespread.command;
+
+import org.springframework.web.multipart.MultipartFile;
+
+
+public class ImportExcelInputsCommand {
+
+	private Integer wqId;
+	private Integer fillingId;
+	private Integer customerId;
+	private String customerName;
+	private MultipartFile importInputFile;
+	private String statementFormat;
+	private String compIdOrCik;
+	private String xfileName;
+	private String businessName;
+	private String encryptedWqId;
+	private String encryptedFillingId;
+	private String encryptedCustomerId;
+	private String encryptedcustomerName;
+	private String encryptedbusinessName;
+	private String encryptedxfileName;
+	private String encryptedCompIdOrCik;
+
+	public String getEncryptedCompIdOrCik() {
+		return encryptedCompIdOrCik;
+	}
+
+	public void setEncryptedCompIdOrCik(String encryptedCompIdOrCik) {
+		this.encryptedCompIdOrCik = encryptedCompIdOrCik;
+	}
+
+	public String getEncryptedcustomerName() {
+		return encryptedcustomerName;
+	}
+
+	public void setEncryptedcustomerName(String encryptedcustomerName) {
+		this.encryptedcustomerName = encryptedcustomerName;
+	}
+
+	public String getEncryptedbusinessName() {
+		return encryptedbusinessName;
+	}
+
+	public void setEncryptedbusinessName(String encryptedbusinessName) {
+		this.encryptedbusinessName = encryptedbusinessName;
+	}
+
+	public String getEncryptedxfileName() {
+		return encryptedxfileName;
+	}
+
+	public void setEncryptedxfileName(String encryptedxfileName) {
+		this.encryptedxfileName = encryptedxfileName;
+	}
+
+	public String getEncryptedWqId() {
+		return encryptedWqId;
+	}
+
+	public void setEncryptedWqId(String encryptedWqId) {
+		this.encryptedWqId = encryptedWqId;
+	}
+
+	public String getEncryptedFillingId() {
+		return encryptedFillingId;
+	}
+
+	public void setEncryptedFillingId(String encryptedFillingId) {
+		this.encryptedFillingId = encryptedFillingId;
+	}
+
+	public String getEncryptedCustomerId() {
+		return encryptedCustomerId;
+	}
+
+	public void setEncryptedCustomerId(String encryptedCustomerId) {
+		this.encryptedCustomerId = encryptedCustomerId;
+	}
+
+	public String getBusinessName() {
+		return businessName;
+	}
+
+	public void setBusinessName(String businessName) {
+		this.businessName = businessName;
+	}
+
+	public String getXfileName() {
+		return xfileName;
+	}
+
+	public void setXfileName(String xfileName) {
+		this.xfileName = xfileName;
+	}
+
+	public String getCompIdOrCik() {
+		return compIdOrCik;
+	}
+
+	public void setCompIdOrCik(String compIdOrCik) {
+		this.compIdOrCik = compIdOrCik;
+	}
+
+	public String getStatementFormat() {
+		return statementFormat;
+	}
+
+	public void setStatementFormat(String statementFormat) {
+		this.statementFormat = statementFormat;
+	}
+
+	public MultipartFile getImportInputFile() {
+		return importInputFile;
+	}
+
+	public void setImportInputFile(MultipartFile importInputFile) {
+		this.importInputFile = importInputFile;
+	}
+
+	public Integer getWqId() {
+		return wqId;
+	}
+
+	public void setWqId(Integer wqId) {
+		this.wqId = wqId;
+	}
+
+	public Integer getFillingId() {
+		return fillingId;
+	}
+
+	public void setFillingId(Integer fillingId) {
+		this.fillingId = fillingId;
+	}
+
+	public Integer getCustomerId() {
+		return customerId;
+	}
+
+	public void setCustomerId(Integer customerId) {
+		this.customerId = customerId;
+	}
+
+	public String getCustomerName() {
+		return customerName;
+	}
+
+	public void setCustomerName(String customerName) {
+		this.customerName = customerName;
+	}
+
+	public String toString() {
+		String importExcelInputsCommandStr = "wqId : " + wqId + " fillingId : "
+				+ fillingId + " customerName : " + customerName
+				+ " businessName : " + businessName + " customerId : "
+				+ customerId + " statementFormat : " + statementFormat
+				+ " xfileName : " + xfileName + " compIdOrCik : " + compIdOrCik;
+		return importExcelInputsCommandStr;
+
+	}
+
+}

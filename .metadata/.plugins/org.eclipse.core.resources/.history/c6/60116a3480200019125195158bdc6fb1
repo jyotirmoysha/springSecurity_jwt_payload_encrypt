@@ -1,0 +1,26 @@
+package com.livespread.common;
+
+import java.util.Comparator;
+import java.util.List;
+
+import com.livespread.rage.domain.PdfExtractionMetadata;
+
+public class SectionComparator implements Comparator<PdfExtractionMetadata> {
+
+	private List<String> sortOrder;
+
+	public SectionComparator(List<String> sortOrder) {
+		this.sortOrder = sortOrder;
+	}
+
+	@Override
+	public int compare(PdfExtractionMetadata arg0,
+			PdfExtractionMetadata arg1) {
+
+		String a1 = arg0.getPemSection();
+		String a2 = arg1.getPemSection();
+
+		return sortOrder.indexOf(a1) - sortOrder.indexOf(a2);
+	}
+	
+}

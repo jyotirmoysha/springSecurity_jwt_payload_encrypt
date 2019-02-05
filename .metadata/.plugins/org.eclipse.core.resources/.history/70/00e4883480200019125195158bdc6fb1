@@ -1,0 +1,248 @@
+/**
+ * 
+ */
+package com.livespread.command;
+
+import java.io.Serializable;
+
+/**
+ * @author sd0e482
+ *
+ */
+public class NormalizationBreakupData implements Serializable
+{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	private Integer poId;
+	private Integer poIndex;
+	private String asRepLabel;
+	private String section;
+	private String asRepValue;
+	private String coordinate;
+	private String filingId;
+	private String isCoordinateExists;
+	private String column;
+	
+	private String nonEnglishLable;
+	private String poFilerReported;
+	private String niLabel;
+	private Integer balancingValue;
+	
+	private String xCordinate;
+	private String yCordinate;
+	
+	private String x2Cordinate;
+	private String y1Cordinate;
+	private String pageNo;
+	
+	private Integer niItem;
+	
+	private String isParent;
+	private String clickbackCoordinates;
+	private Integer uploadId;
+
+	
+	public String getxCordinate() {
+		return xCordinate;
+	}
+	public void setxCordinate(String xCordinate) {
+		this.xCordinate = xCordinate;
+	}
+	public String getyCordinate() {
+		return yCordinate;
+	}
+	public void setyCordinate(String yCordinate) {
+		this.yCordinate = yCordinate;
+	}
+	public String getX2Cordinate() {
+		return x2Cordinate;
+	}
+	public void setX2Cordinate(String x2Cordinate) {
+		this.x2Cordinate = x2Cordinate;
+	}
+	public String getY1Cordinate() {
+		return y1Cordinate;
+	}
+	public void setY1Cordinate(String y1Cordinate) {
+		this.y1Cordinate = y1Cordinate;
+	}
+	public String getPageNo() {
+		return pageNo;
+	}
+	public void setPageNo(String pageNo) {
+		this.pageNo = pageNo;
+	}
+	public Integer getNiItem() {
+		return niItem;
+	}
+	public void setNiItem(Integer niItem) {
+		this.niItem = niItem;
+	}
+	public String getIsParent() {
+		return isParent;
+	}
+	public void setIsParent(String isParent) {
+		this.isParent = isParent;
+	}
+	public String getPoFilerReported() {
+		return poFilerReported;
+	}
+	public void setPoFilerReported(String poFilerReported) {
+		this.poFilerReported = poFilerReported;
+	}
+	/**
+	 * @return the poId
+	 */
+	public Integer getPoId() {
+		return poId;
+	}
+	/**
+	 * @param poId the poId to set
+	 */
+	public void setPoId(Integer poId) {
+		this.poId = poId;
+	}
+	/**
+	 * @return the poIndex
+	 */
+	public Integer getPoIndex() {
+		return poIndex;
+	}
+	/**
+	 * @param poIndex the poIndex to set
+	 */
+	public void setPoIndex(Integer poIndex) {
+		this.poIndex = poIndex;
+	}
+	/**
+	 * @return the asRepLabel
+	 */
+	public String getAsRepLabel() {
+		return asRepLabel;
+	}
+	/**
+	 * @param asRepLabel the asRepLabel to set
+	 */
+	public void setAsRepLabel(String asRepLabel) {
+		this.asRepLabel = asRepLabel;
+	}
+	/**
+	 * @return the section
+	 */
+	public String getSection() {
+		return section;
+	}
+	/**
+	 * @param section the section to set
+	 */
+	public void setSection(String section) {
+		this.section = section;
+	}
+	/**
+	 * @return the asRepValue
+	 */
+	public String getAsRepValue() {
+		return asRepValue;
+	}
+	/**
+	 * @param asRepValue the asRepValue to set
+	 */
+	public void setAsRepValue(String asRepValue) {
+		this.asRepValue = asRepValue;
+	}
+	/**
+	 * @return the coordinate
+	 */
+	public String getCoordinate() {
+		return coordinate;
+	}
+	/**
+	 * @param coordinate the coordinate to set
+	 */
+	public void setCoordinate(String coordinate) {
+		this.coordinate = coordinate;
+	}
+	/**
+	 * @return the isCoordinateExists
+	 */
+	public String getIsCoordinateExists() {
+		return isCoordinateExists;
+	}
+	/**
+	 * @param isCoordinateExists the isCoordinateExists to set
+	 */
+	public void setIsCoordinateExists(String isCoordinateExists) {
+		this.isCoordinateExists = isCoordinateExists;
+	}
+	/**
+	 * @return the filingId
+	 */
+	public String getFilingId() {
+		return filingId;
+	}
+	/**
+	 * @param filingId the filingId to set
+	 */
+	public void setFilingId(String filingId) {
+		this.filingId = filingId;
+	}
+	/**
+	 * @return the column
+	 */
+	public String getColumn() {
+		return column;
+	}
+	/**
+	 * @param column the column to set
+	 */
+	public void setColumn(String column) {
+		this.column = column;
+	}
+	public String getNonEnglishLable() {
+		return nonEnglishLable;
+	}
+	public void setNonEnglishLable(String nonEnglishLable) {
+		this.nonEnglishLable = nonEnglishLable;
+	}
+	public String getNiLabel() {
+		return niLabel;
+	}
+	public void setNiLabel(String niLabel) {
+		this.niLabel = niLabel;
+	}
+	public Integer getBalancingValue() {
+		return balancingValue;
+	}
+	public void setBalancingValue(Integer balancingValue) {
+		this.balancingValue = balancingValue;
+	}
+	/**
+	 * @return the clickbackCoordinates
+	 */
+	public String getClickbackCoordinates() {
+		return clickbackCoordinates;
+	}
+	/**
+	 * @param clickbackCoordinates the clickbackCoordinates to set
+	 */
+	public void setClickbackCoordinates(String clickbackCoordinates) {
+		this.clickbackCoordinates = clickbackCoordinates;
+	}
+	/**
+	 * @return the uploadId
+	 */
+	public Integer getUploadId() {
+		return uploadId;
+	}
+	/**
+	 * @param uploadId the uploadId to set
+	 */
+	public void setUploadId(Integer uploadId) {
+		this.uploadId = uploadId;
+	}
+
+}

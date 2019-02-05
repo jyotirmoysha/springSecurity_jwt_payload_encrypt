@@ -1,0 +1,56 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "BANK_MASTER")
+@NamedQueries({
+	@NamedQuery(name = "getBankNameList", query = "from BankMaster order by bankId")
+})
+public class BankMaster implements Serializable, BaseEntity {
+	
+	private static final long serialVersionUID = 1L;
+	@Id
+	@Column(name = "ID")
+	private Integer id;
+
+	@Column(name = "BANK_ID")
+	private Integer bankId;
+
+	@Column(name = "BANK_NAME")
+	private String bankName;
+
+	public Integer getId() {
+		return id;
+	}
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	public Integer getBankId() {
+		return bankId;
+	}
+	public void setBankId(Integer bankId) {
+		this.bankId = bankId;
+	}
+
+	public String getBankName() {
+		return bankName;
+	}
+	public void setBankName(String bankName) {
+		this.bankName = bankName;
+	}
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+}

@@ -1,0 +1,220 @@
+package com.livespread.rage.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "REQUEST_QUEUE")
+public class RequestQueue implements BaseEntity,Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@Column(name = "REQUEST_ID")
+	private Integer requestId;
+
+	@Column(name = "CMPT_SEQ_ID")
+	private Integer cmptSeqId;
+
+	@Column(name = "APPL_SEQ_ID")
+	private Integer applSeqId;
+
+	@Column(name = "APPL_NAME")
+	private String applName;
+
+	@Column(name = "APPL_VERSION")
+	private String applVersion;
+
+	@Column(name = "RQ_CMPT_VERSION")
+	private String rqCmptVersion;
+
+	@Column(name = "RQ_PARAMETERS")
+	private String rqParameters;
+
+	@Column(name = "RQ_SUBMISSION_DATE")
+	private Date rqSubmissionDate;
+
+	@Column(name = "RQ_SCHEDULE_DATE")
+	private Date rqScheduleDate;
+
+	@Column(name = "RQ_STATUS")
+	private String rqStatus;
+
+	@Column(name = "USER_SEQ_ID")
+	private Integer userSeqId;
+
+	@Column(name = "RQ_PERIODICSCHDL_FLAG")
+	private String rqPeriodicschdlFlag;
+
+	@Column(name = "RQ_PRIORITY")
+	private Integer rqPriority;
+
+	@Column(name = "RQ_UNITS")
+	private Integer rqUnits;
+
+	@Column(name = "RQ_REFERREDRULEID")
+	private Integer rqReferredruleid;
+
+	@Column(name = "JBOSS_CATEGORY")
+	private String jbossCategory;
+
+	public Integer getRequestId() {
+		return requestId;
+	}
+
+	public void setRequestId(Integer requestId) {
+		this.requestId = requestId;
+	}
+
+	public Integer getCmptSeqId() {
+		return cmptSeqId;
+	}
+
+	public void setCmptSeqId(Integer cmptSeqId) {
+		this.cmptSeqId = cmptSeqId;
+	}
+
+	public Integer getApplSeqId() {
+		return applSeqId;
+	}
+
+	public void setApplSeqId(Integer applSeqId) {
+		this.applSeqId = applSeqId;
+	}
+
+	public String getApplName() {
+		return applName;
+	}
+
+	public void setApplName(String applName) {
+		this.applName = applName;
+	}
+
+	public String getApplVersion() {
+		return applVersion;
+	}
+
+	public void setApplVersion(String applVersion) {
+		this.applVersion = applVersion;
+	}
+
+	public String getRqCmptVersion() {
+		return rqCmptVersion;
+	}
+
+	public void setRqCmptVersion(String rqCmptVersion) {
+		this.rqCmptVersion = rqCmptVersion;
+	}
+
+	public String getRqParameters() {
+		return rqParameters;
+	}
+
+	public void setRqParameters(String rqParameters) {
+		this.rqParameters = rqParameters;
+	}
+
+	public Date getRqSubmissionDate() {
+		return rqSubmissionDate;
+	}
+
+	public void setRqSubmissionDate(Date rqSubmissionDate) {
+		this.rqSubmissionDate = rqSubmissionDate;
+	}
+
+	public Date getRqScheduleDate() {
+		return rqScheduleDate;
+	}
+
+	public void setRqScheduleDate(Date rqScheduleDate) {
+		this.rqScheduleDate = rqScheduleDate;
+	}
+
+	public String getRqStatus() {
+		return rqStatus;
+	}
+
+	public void setRqStatus(String rqStatus) {
+		this.rqStatus = rqStatus;
+	}
+
+	public Integer getUserSeqId() {
+		return userSeqId;
+	}
+
+	public void setUserSeqId(Integer userSeqId) {
+		this.userSeqId = userSeqId;
+	}
+
+	public String getRqPeriodicschdlFlag() {
+		return rqPeriodicschdlFlag;
+	}
+
+	public void setRqPeriodicschdlFlag(String rqPeriodicschdlFlag) {
+		this.rqPeriodicschdlFlag = rqPeriodicschdlFlag;
+	}
+
+	public Integer getRqPriority() {
+		return rqPriority;
+	}
+
+	public void setRqPriority(Integer rqPriority) {
+		this.rqPriority = rqPriority;
+	}
+
+	public Integer getRqUnits() {
+		return rqUnits;
+	}
+
+	public void setRqUnits(Integer rqUnits) {
+		this.rqUnits = rqUnits;
+	}
+
+	public Integer getRqReferredruleid() {
+		return rqReferredruleid;
+	}
+
+	public void setRqReferredruleid(Integer rqReferredruleid) {
+		this.rqReferredruleid = rqReferredruleid;
+	}
+
+	public String getJbossCategory() {
+		return jbossCategory;
+	}
+
+	public void setJbossCategory(String jbossCategory) {
+		this.jbossCategory = jbossCategory;
+	}
+
+	@Override
+	public String toString() {
+		return "RequestQueue [requestId=" + requestId + ", cmptSeqId="
+				+ cmptSeqId + ", applSeqId=" + applSeqId + ", applName="
+				+ applName + ", applVersion=" + applVersion
+				+ ", rqCmptVersion=" + rqCmptVersion + ", rqParameters="
+				+ rqParameters + ", rqSubmissionDate=" + rqSubmissionDate
+				+ ", rqScheduleDate=" + rqScheduleDate + ", rqStatus="
+				+ rqStatus + ", userSeqId=" + userSeqId
+				+ ", rqPeriodicschdlFlag=" + rqPeriodicschdlFlag
+				+ ", rqPriority=" + rqPriority + ", rqUnits=" + rqUnits
+				+ ", rqReferredruleid=" + rqReferredruleid + ", jbossCategory="
+				+ jbossCategory + "]";
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.RAGE;
+	}
+
+}

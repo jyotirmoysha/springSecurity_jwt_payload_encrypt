@@ -1,0 +1,450 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "FILINGS")
+@NamedQueries({
+		@NamedQuery(name = "updateFilingsByFillingId", query = "UPDATE Filings SET templateIndustry = :templateIndustry, templateId = :templateId "
+				+ "WHERE filing_id = :fillingId "),
+		@NamedQuery(name = "getTemplateId", query = "SELECT N FROM Filings N where N.filing_id = :filingId"),
+		@NamedQuery(name = "getFilePathByFilingId", query = "SELECT F FROM Filings F WHERE F.filing_id = :filingId") })
+@NamedNativeQueries({
+
+})
+public class Filings implements Serializable, BaseEntity {
+
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@Column(name = "FILING_ID")
+	private Integer filing_id;
+
+	@Column(name = "F_DATE_FILED")
+	private Date F_date_filed;
+
+	@Column(name = "F_FORM_TYPE")
+	private String f_form_type;
+
+	@Column(name = "F_FILENAME")
+	private String f_fileName;
+
+	@Column(name = "F_COMPANY_NAME")
+	private String f_companyName;
+
+	@Column(name = "F_CIK")
+	private Integer f_cik;
+
+	@Column(name = "F_SIC")
+	private String f_sic;
+
+	@Column(name = "F_DOWNLOAD")
+	private String f_download;
+
+	@Column(name = "F_EXT_ENTITY_ID")
+	private String f_ext_Entity_Id;
+
+	@Column(name = "F_EXT_REGION")
+	private String f_ext_region;
+
+	@Column(name = "F_HIST_STMT_ID")
+	private String f_hist_stmt_id;
+
+	@Column(name = "F_DATE_FILED_CHAR")
+	private String f_date_filed_char;
+
+	@Column(name = "F_ACCESSION_NUMBER")
+	private String f_accession_number;
+
+	@Column(name = "F_CASHFLOW_FILING_ID")
+	private Integer f_cashflow_filing_id;
+
+	@Column(name = "E_ID")
+	private Integer e_id;
+
+	@Column(name = "F_SOURCE")
+	private String f_source;
+
+	@Column(name = "F_DATE_CREATED")
+	private Date F_date_created;
+
+	@Column(name = "F_REPORT_DATE")
+	private Date F_report_date;
+
+	@Column(name = "F_LOCALE")
+	private String f_locale;
+
+	@Column(name = "DI_ID")
+	private Integer di_id;
+
+	@Column(name = "F_HIST_STMT_ID2")
+	private Integer f_hist_stmt_id2;
+
+	@Column(name = "F_HIST_STMT_ID3")
+	private Integer f_hist_stmt_id3;
+
+	@Column(name = "F_HIST_STMT_ID1")
+	private Integer f_hist_stmt_id1;
+
+	@Column(name = "ARS_ID")
+	private Integer ars_id;
+
+	@Column(name = "F_DOC_DIRECTORY")
+	private String f_doc_directory;
+
+	@Column(name = "EXTRACTION_STATUS")
+	private String f_extraction_status;
+
+	@Column(name = "F_HDR_INFO")
+	private String f_hdr_info;
+
+	@Column(name = "VALID8K")
+	private String valid8k;
+
+	@Column(name = "COVENANT_VALID")
+	private String f_convenant_valid;
+
+	@Column(name = "VALID_10K")
+	private String valid10k;
+
+	@Column(name = "TEMPLATE_ID")
+	private Integer templateId;
+
+	@Column(name = "TEMPLATE_INDUSTRY", insertable = true, updatable = true)
+	private String templateIndustry;
+
+	public String getTemplateIndustry() {
+		return templateIndustry;
+	}
+
+	public void setTemplateIndustry(String templateIndustry) {
+		this.templateIndustry = templateIndustry;
+	}
+
+	public Integer getFiling_id() {
+		return filing_id;
+	}
+
+	public void setFiling_id(Integer filing_id) {
+		this.filing_id = filing_id;
+	}
+
+	public Date getF_date_filed() {
+		return F_date_filed;
+	}
+
+	public void setF_date_filed(Date f_date_filed) {
+		F_date_filed = f_date_filed;
+	}
+
+	public String getF_form_type() {
+		return f_form_type;
+	}
+
+	public void setF_form_type(String f_form_type) {
+		this.f_form_type = f_form_type;
+	}
+
+	public String getF_fileName() {
+		return f_fileName;
+	}
+
+	public void setF_fileName(String f_fileName) {
+		this.f_fileName = f_fileName;
+	}
+
+	public String getF_companyName() {
+		return f_companyName;
+	}
+
+	public void setF_companyName(String f_companyName) {
+		this.f_companyName = f_companyName;
+	}
+
+	public Integer getF_cik() {
+		return f_cik;
+	}
+
+	public void setF_cik(Integer f_cik) {
+		this.f_cik = f_cik;
+	}
+
+	public String getF_sic() {
+		return f_sic;
+	}
+
+	public void setF_sic(String f_sic) {
+		this.f_sic = f_sic;
+	}
+
+	public String getF_download() {
+		return f_download;
+	}
+
+	public void setF_download(String f_download) {
+		this.f_download = f_download;
+	}
+
+	public String getF_ext_Entity_Id() {
+		return f_ext_Entity_Id;
+	}
+
+	public void setF_ext_Entity_Id(String f_ext_Entity_Id) {
+		this.f_ext_Entity_Id = f_ext_Entity_Id;
+	}
+
+	public String getF_ext_region() {
+		return f_ext_region;
+	}
+
+	public void setF_ext_region(String f_ext_region) {
+		this.f_ext_region = f_ext_region;
+	}
+
+	public String getF_hist_stmt_id() {
+		return f_hist_stmt_id;
+	}
+
+	public void setF_hist_stmt_id(String f_hist_stmt_id) {
+		this.f_hist_stmt_id = f_hist_stmt_id;
+	}
+
+	public String getF_date_filed_char() {
+		return f_date_filed_char;
+	}
+
+	public void setF_date_filed_char(String f_date_filed_char) {
+		this.f_date_filed_char = f_date_filed_char;
+	}
+
+	public String getF_accession_number() {
+		return f_accession_number;
+	}
+
+	public void setF_accession_number(String f_accession_number) {
+		this.f_accession_number = f_accession_number;
+	}
+
+	public Integer getF_cashflow_filing_id() {
+		return f_cashflow_filing_id;
+	}
+
+	public void setF_cashflow_filing_id(Integer f_cashflow_filing_id) {
+		this.f_cashflow_filing_id = f_cashflow_filing_id;
+	}
+
+	public Integer getE_id() {
+		return e_id;
+	}
+
+	public void setE_id(Integer e_id) {
+		this.e_id = e_id;
+	}
+
+	public String getF_source() {
+		return f_source;
+	}
+
+	public void setF_source(String f_source) {
+		this.f_source = f_source;
+	}
+
+	public Date getF_date_created() {
+		return F_date_created;
+	}
+
+	public void setF_date_created(Date f_date_created) {
+		F_date_created = f_date_created;
+	}
+
+	public Date getF_report_date() {
+		return F_report_date;
+	}
+
+	public void setF_report_date(Date f_report_date) {
+		F_report_date = f_report_date;
+	}
+
+	public String getF_locale() {
+		return f_locale;
+	}
+
+	public void setF_locale(String f_locale) {
+		this.f_locale = f_locale;
+	}
+
+	public Integer getDi_id() {
+		return di_id;
+	}
+
+	public void setDi_id(Integer di_id) {
+		this.di_id = di_id;
+	}
+
+	public Integer getF_hist_stmt_id2() {
+		return f_hist_stmt_id2;
+	}
+
+	public void setF_hist_stmt_id2(Integer f_hist_stmt_id2) {
+		this.f_hist_stmt_id2 = f_hist_stmt_id2;
+	}
+
+	public Integer getF_hist_stmt_id3() {
+		return f_hist_stmt_id3;
+	}
+
+	public void setF_hist_stmt_id3(Integer f_hist_stmt_id3) {
+		this.f_hist_stmt_id3 = f_hist_stmt_id3;
+	}
+
+	public Integer getF_hist_stmt_id1() {
+		return f_hist_stmt_id1;
+	}
+
+	public void setF_hist_stmt_id1(Integer f_hist_stmt_id1) {
+		this.f_hist_stmt_id1 = f_hist_stmt_id1;
+	}
+
+	public Integer getArs_id() {
+		return ars_id;
+	}
+
+	public void setArs_id(Integer ars_id) {
+		this.ars_id = ars_id;
+	}
+
+	public String getF_doc_directory() {
+		return f_doc_directory;
+	}
+
+	public void setF_doc_directory(String f_doc_directory) {
+		this.f_doc_directory = f_doc_directory;
+	}
+
+	public String getF_extraction_status() {
+		return f_extraction_status;
+	}
+
+	public void setF_extraction_status(String f_extraction_status) {
+		this.f_extraction_status = f_extraction_status;
+	}
+
+	public String getF_hdr_info() {
+		return f_hdr_info;
+	}
+
+	public void setF_hdr_info(String f_hdr_info) {
+		this.f_hdr_info = f_hdr_info;
+	}
+
+	public String getValid8k() {
+		return valid8k;
+	}
+
+	public void setValid8k(String valid8k) {
+		this.valid8k = valid8k;
+	}
+
+	public String getF_convenant_valid() {
+		return f_convenant_valid;
+	}
+
+	public void setF_convenant_valid(String f_convenant_valid) {
+		this.f_convenant_valid = f_convenant_valid;
+	}
+
+	public String getValid10k() {
+		return valid10k;
+	}
+
+	public void setValid10k(String valid10k) {
+		this.valid10k = valid10k;
+	}
+
+	public Integer getTemplateId() {
+		return templateId;
+	}
+
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+
+		return EntityType.APPLICATION;
+	}
+
+	@Column(name = "customer_id")
+	private Integer customerId;
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("Filings [filing_id=").append(filing_id)
+				.append(", F_date_filed=").append(F_date_filed)
+				.append(", f_form_type=").append(f_form_type)
+				.append(", f_fileName=").append(f_fileName)
+				.append(", f_companyName=").append(f_companyName)
+				.append(", f_cik=").append(f_cik).append(", f_sic=")
+				.append(f_sic).append(", f_download=").append(f_download)
+				.append(", f_ext_Entity_Id=").append(f_ext_Entity_Id)
+				.append(", f_ext_region=").append(f_ext_region)
+				.append(", f_hist_stmt_id=").append(f_hist_stmt_id)
+				.append(", f_date_filed_char=").append(f_date_filed_char)
+				.append(", f_accession_number=").append(f_accession_number)
+				.append(", f_cashflow_filing_id=").append(f_cashflow_filing_id)
+				.append(", e_id=").append(e_id).append(", f_source=")
+				.append(f_source).append(", F_date_created=")
+				.append(F_date_created).append(", F_report_date=")
+				.append(F_report_date).append(", f_locale=").append(f_locale)
+				.append(", di_id=").append(di_id).append(", f_hist_stmt_id2=")
+				.append(f_hist_stmt_id2).append(", f_hist_stmt_id3=")
+				.append(f_hist_stmt_id3).append(", f_hist_stmt_id1=")
+				.append(f_hist_stmt_id1).append(", ars_id=").append(ars_id)
+				.append(", f_doc_directory=").append(f_doc_directory)
+				.append(", f_extraction_status=").append(f_extraction_status)
+				.append(", f_hdr_info=").append(f_hdr_info)
+				.append(", valid8k=").append(valid8k)
+				.append(", f_convenant_valid=").append(f_convenant_valid)
+				.append(", valid10k=").append(valid10k).append(", templateId=")
+				.append(templateId).append(", customerId=").append(customerId)
+				.append("]");
+		return builder.toString();
+	}
+
+	/**
+	 * @return the customerId
+	 */
+	public Integer getCustomerId() {
+		return customerId;
+	}
+
+	/**
+	 * @param customerId
+	 *            the customerId to set
+	 */
+	public void setCustomerId(Integer customerId) {
+		this.customerId = customerId;
+	}
+
+}

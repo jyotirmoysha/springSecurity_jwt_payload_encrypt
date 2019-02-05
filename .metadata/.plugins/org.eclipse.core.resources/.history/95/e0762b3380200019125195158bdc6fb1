@@ -1,0 +1,126 @@
+package com.livespread.vta;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+
+
+/**
+ * Servlet Filter implementation class SecureFilter
+ */
+public class ReferrerFilter implements Filter {
+
+	protected final Log LOG = LogFactory.getLog(getClass());
+	private static ResourceBundle rb = ResourceBundle.getBundle("application");
+	public static final String[] applicationUrlList=rb.getString("APPLICATION_URLS").trim().split(";");
+	
+    /**
+     * Default constructor. 
+     */
+    public ReferrerFilter() {
+    	super();
+    }
+
+	/**
+	 * @see Filter#destroy()
+	 */
+    @Override
+	public void destroy() {
+		
+	}
+
+	/**
+	 * @see Filter#doFilter(ServletRequest, ServletResponse, FilterChain)
+	 */
+	@Override
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+		if(request instanceof HttpServletRequest && response instanceof HttpServletResponse)
+		{
+			HttpServletRequest httpRequest = (HttpServletRequest) request;
+			HttpServletResponse httpResponse = (HttpServletResponse) response;
+			String url = httpRequest.getServletPath();	
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Request ServletPath : " + url);
+			}		
+			String referer = httpRequest.getHeader("referer");
+			LOG.info("Referel Header="+referer);
+			Boolean validReferreHeader  = false;
+			if(null != referer)
+			{
+				URL refererURL =new URL(referer);
+				String urlString = refererURL.getAuthority()+httpRequest.getContextPath();
+				//String urlString = httpRequest.getScheme()+"://"+refererURL.getAuthority()+httpRequest.getContextPath();
+				LOG.info("Request URL " +httpRequest.getRequestURL().toString());
+				for(String appUrl : applicationUrlList){
+					appUrl = getURI(appUrl);
+					if(urlString.equals(appUrl)){
+						validReferreHeader = true;
+						break;
+					}
+				}
+			}
+			else{
+				if (isURL(httpRequest.getServletPath()))
+				{
+					validReferreHeader = true;
+				}
+			}
+			if(!validReferreHeader){
+				if(httpRequest.getSession(false)!=null){
+					httpRequest.getSession(false).invalidate();
+				}		
+				LOG.info("Invalid Referrer Header");
+				httpResponse.sendRedirect("logout.htm");
+				return;
+			}
+			chain.doFilter(request, response);
+		}
+	}
+
+	@Override
+	public void init(FilterConfig arg0) throws ServletException {
+		
+	}
+
+	public static String getURLWithContextPath(HttpServletRequest request) {
+		   return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+		}
+	
+	public boolean isURL(String strurl) {
+		String strMyURL[] = {"/login.htm", "/logout.htm","/welcome.htm","/forgotPwd.htm","/PageNotFoundLSCustomException.htm","/changePasswordByMail.htm","/manifest.appcache"};
+		for (int itr = 0; itr < strMyURL.length; ++itr) {
+			if (strurl.indexOf(strMyURL[itr]) != -1)
+				return true;
+		}
+		return false;
+	}
+		
+	private static String getURI(String applicationURL)
+	{
+        try {
+            URL url = new URL(applicationURL);
+            String protocol = url.getProtocol();
+            String result = applicationURL.replaceFirst(protocol + ":", "");
+            if (result.startsWith("//"))
+            {
+                result = result.substring(2);
+            }
+           return result;
+        } catch (Exception e) {
+        	return null;
+        }
+	}
+}

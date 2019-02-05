@@ -1,0 +1,102 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "LS_FINANCIAL_META_ROW_INFO_LOGS")
+public class LsFinancialMetaRowInfoLogs implements Serializable,BaseEntity{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name="RI_SEQ_ID")
+	private long riSeqId;
+	
+	@Column(name="META_DATA_ID")
+	private long metaDataId;
+	
+	@Column(name="COLUMN_CHNAGE")
+	private String columnChnage;
+	
+	@Column(name="STATUS")
+	private String status;
+
+	@Column(name="UPDATED_BY")
+	private long updatedby;
+
+	@Column(name="UPDATED_ON")
+	private Date updatedOn;
+
+	public long getRiSeqId() {
+		return riSeqId;
+	}
+
+	public void setRiSeqId(long riSeqId) {
+		this.riSeqId = riSeqId;
+	}
+
+	public long getMetaDataId() {
+		return metaDataId;
+	}
+
+	public void setMetaDataId(long metaDataId) {
+		this.metaDataId = metaDataId;
+	}
+
+	public String getColumnChnage() {
+		return columnChnage;
+	}
+
+	public void setColumnChnage(String columnChnage) {
+		this.columnChnage = columnChnage;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public long getUpdatedby() {
+		return updatedby;
+	}
+
+	public void setUpdatedby(long updatedby) {
+		this.updatedby = updatedby;
+	}
+
+	public Date getUpdatedOn() {
+		return updatedOn;
+	}
+
+	public void setUpdatedOn(Date updatedOn) {
+		this.updatedOn = updatedOn;
+	}
+
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+
+	
+	
+	
+}

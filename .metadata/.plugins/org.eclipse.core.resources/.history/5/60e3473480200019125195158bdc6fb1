@@ -1,0 +1,1879 @@
+package com.livespread.controller;
+
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.json.simple.JSONObject;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.livespread.command.ExportCommand;
+import com.livespread.command.ImportExcelInputsCommand;
+import com.livespread.command.SectionIdentificationCommand;
+import com.livespread.common.PurgedSessionVariable;
+import com.livespread.domain.BankMaster;
+import com.livespread.domain.FileUploadModel;
+import com.livespread.domain.ItrTemplateFormMetadata;
+import com.livespread.domain.ParserOutput;
+import com.livespread.domain.StatusMaster;
+import com.livespread.domain.User;
+import com.livespread.domain.WorkQueue;
+import com.livespread.rage.domain.ExcelViewData;
+import com.livespread.rage.domain.ExtractionMetadata;
+import com.livespread.rage.domain.ExtractorRunProperties;
+import com.livespread.rage.domain.ExtractorTableCommand;
+import com.livespread.rage.domain.PdfExtractionMetadata;
+import com.livespread.rage.domain.SectionIdentification;
+import com.livespread.service.ExtractionService;
+import com.livespread.service.ExtractionServiceITR;
+import com.livespread.service.FileUploadService;
+import com.livespread.service.NormalizationService;
+import com.livespread.service.StatusMasterService;
+import com.livespread.service.WorkQueueService;
+import com.livespread.util.CipherUtils;
+import com.livespread.util.DrawDigitsFromString;
+import com.livespread.util.ReleaseLockedUser;
+
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
+
+@Controller
+public class ExtractionController {
+	private Logger LOGGER = Logger.getLogger(ExtractionController.class);
+
+	@Autowired
+	private ExtractionService extractionServ;
+
+	@Autowired
+	private ExtractionServiceITR extractionServiceITR;
+	
+	@Autowired
+	private StatusMasterService statusMasterService;
+
+	@Autowired
+	private WorkQueueService workQueueService;
+
+	@Autowired
+	private FileUploadService fileUploadService;
+
+	@Autowired
+	private NormalizationService normalizationService;
+	
+	@Value("${workque.reprocess.status}")
+	String workqueReprocessStatus;
+	
+	@Value("${workque.descriptive.reprocess.status}")
+	String workqueDescriptiveReprocessStatus;
+	
+	@Value("${modifyStatus}")
+	private String modifyStatus;
+	
+	@Value("${achDebitCalculation}")
+	private String achDebitCalculation;
+	
+	@Value("${columnMerge}")
+	private String columnMerge;
+	
+	@Value("${forcedOCR}")
+	private String forcedOCR;
+
+	/**** rules_management_extraction View Mapping **************/
+	@RequestMapping(value = "/rules_management_extraction.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public String viewExtractionPage(HttpServletRequest request,
+			HttpServletResponse response,
+			@RequestParam("fillingId") String fillingId,
+			@RequestParam("WqId") String WqId,
+			@RequestParam("customerName") String customerName,
+			@RequestParam("businessName") String businessName,
+			@RequestParam("fileName") String fileName,
+			@RequestParam("compIdOrCik") String compIdOrCik,
+			@RequestParam("customerId") String customerId,
+			@RequestParam("statementType") String statementType,
+			HttpSession session,
+			Model map) {
+
+		LOGGER.info("--- viewExtractionPage request Mapping started--------");
+
+		LOGGER.info("--- viewExtractionPage request Mapping completed with rules_management_extraction--------");
+		/*
+		 * Here fetch data from LS_EXTRACTOR_TABLEID_BY_ENTITY and
+		 * LS_EXTRACTOR_RUN_PROPERTIES table using filingId.
+		 */
+		try {
+			PurgedSessionVariable.removeVariableForNormalization(request.getSession());
+			String decryptedFillingId = CipherUtils.decrypt(fillingId);
+			String decryptedcustomerId = CipherUtils.decrypt(customerId);
+
+			map.addAttribute("customerName", customerName);
+			map.addAttribute("businessName", businessName);
+			map.addAttribute("fileName", fileName);
+			map.addAttribute("caseId", fillingId);
+			map.addAttribute("fillingId", fillingId);
+			map.addAttribute("wqId", WqId);
+			map.addAttribute("customerId", customerId);
+			map.addAttribute("compIdOrCik", compIdOrCik);
+
+			String decryptedCustomerName = CipherUtils.decrypt(customerName);
+
+			String decryptedCompIdOrCik = CipherUtils.decrypt(compIdOrCik);
+			map.addAttribute("decryptedCustomerName", decryptedCustomerName);
+			map.addAttribute("decryptedFillingId", decryptedFillingId);
+			map.addAttribute("decryptedCompIdOrCik", decryptedCompIdOrCik);
+
+			/**
+			 * Added code to implement locked by.
+			 */
+
+
+			/** Code ends here */
+
+			/*
+			 * This function used for get all status list from status` master
+			 */
+			List<StatusMaster> statusList = statusMasterService.getAllStatusList();
+			map.addAttribute("statusList", statusList);
+
+			/*
+			 * This function used for fetch status(WQ_STATUS) using filingId
+			 * from WORK_QUEUE table
+			 */
+			String statusName = workQueueService.findStatusByFilingId(Integer.parseInt(decryptedFillingId));
+			String parserType = null;
+			map.addAttribute("statementType", statementType);
+			parserType = fileUploadService.getParsserTypeByCustId(Integer.parseInt(decryptedcustomerId));
+				if (null != parserType && parserType.equalsIgnoreCase("ITR")) 
+				{	
+					map.addAttribute("statementType", "ITR");
+				} else if (null != parserType && parserType.equalsIgnoreCase("PDF Based ITR")) 
+				{
+					map.addAttribute("statementType", "pdfBasedITR");
+					
+					List<ItrTemplateFormMetadata> itrTemplateFormMetadata = extractionServiceITR.getTemplateFormMetadataList();
+					Integer selectedTemplateFormId = extractionServiceITR.getselectedTemplateFormId(Integer.parseInt(decryptedFillingId));
+					map.addAttribute("itrTemplateFormMetadataList", itrTemplateFormMetadata);
+					map.addAttribute("selectedTemplateFormId", selectedTemplateFormId);
+				} else if (null != parserType && parserType.equalsIgnoreCase("Banks")) 
+				{
+					map.addAttribute("statementType", "Bank");
+
+				} else if (null != parserType && parserType.equalsIgnoreCase("PDF Based Parser")) 
+				{
+					map.addAttribute("statementType", "Financial");
+				}
+			map.addAttribute("currentStatus", statusName);
+			session.setAttribute("decryptedFillingId",decryptedFillingId.toString());	
+
+			/**
+			 * Here we are fetching data from section_mapping and parser_output table based on section 
+			     */
+			Map<String,String> sectionMappingList=normalizationService.f_fetchSectionListByFilingId(Integer.parseInt(decryptedFillingId),(Integer) session.getAttribute("sessionParserId"));
+			if(sectionMappingList!=null && !sectionMappingList.isEmpty()){
+			session.setAttribute("sessionSectionList",sectionMappingList);
+			}else{
+			sectionMappingList.put("Exceptional Parsing", "Exceptional Parsing");
+			
+			session.setAttribute("sessionSectionList",sectionMappingList);
+			}
+		
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:",e);
+			
+		}
+		return "rules_management_extraction";
+	}
+
+	/**** rules_extraction_subpage on ajax call View Mapping **************/
+
+	@RequestMapping(value = "/rules_extraction_subpage.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public String viewExtractionSubPage(@RequestParam("fillingId") String fillingId,@RequestParam("customerId") String customerId, Model map,HttpSession session)
+	{
+
+		LOGGER.info("--- viewExtractionSubPage request Mapping started--------");
+		String jspPageName = "";
+		try {
+		Integer filingIdNumber=Integer.parseInt(CipherUtils.decrypt(fillingId));
+		 Integer parserId = workQueueService.f_getParserIdFromWorkQueueByFilingId(filingIdNumber);
+		 Map<Integer, Map<String,List<PdfExtractionMetadata>>> pdfExtractionMapBySectionWise = extractionServ.f_getPdfExtractionDataBySectionWise(filingIdNumber, parserId);
+	     map.addAttribute("extractor_rule_list_map", pdfExtractionMapBySectionWise);
+		 jspPageName = "rules_management_pdfbasedparser";
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:",e);
+		}
+		LOGGER.info("--- viewExtractionSubPage request Mapping end--------");
+
+		return jspPageName;
+	}
+
+	/**
+	 * This function called when submit form from
+	 * rules_management_extraction.jsp page
+	 **/
+	@RequestMapping(value = "/submit_rules_management_extraction.htm", method = RequestMethod.POST)
+	public @ResponseBody
+	String submitRulesManagementForm(
+			@ModelAttribute ExtractorTableCommand extractorTableCommand,
+			HttpServletRequest request, HttpServletResponse response,
+			Model map, HttpSession session) {
+		LOGGER.info("---submitRulesManagementForm START---");
+		String msg = "Extraction Rules Added Successfully";
+		boolean flag = false;
+		String ret = "";
+		try {
+
+			extractorTableCommand.setFilingId(Integer.parseInt(CipherUtils
+					.decrypt(extractorTableCommand.getEncryptedFilingId())));
+			flag = extractionServ
+					.saveUpadateRulesInExtractor_Table(extractorTableCommand);
+
+			String parserName = (String) session.getAttribute("parserName");
+			map.addAttribute("parserName", parserName);
+
+			if (flag) {
+				ret = "{\"msg\": \"" + msg + "\"," + "\"fillingId\": \""
+						+ extractorTableCommand.getFilingId() + "\"}";
+
+			} else {
+				msg = "Extraction Rules Added Failed";
+				ret = "{\"msg\": \"" + msg + "\"," + "\"fillingId\": \""
+						+ extractorTableCommand.getFilingId() + "\"}";
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:",e);
+			msg = "Extraction Rules Added Failed";
+			ret = "{\"msg\": \"" + msg + "\"," + "\"fillingId\": \""
+					+ extractorTableCommand.getFilingId() + "\"}";
+		}
+
+		return ret;
+	}
+
+	@RequestMapping(value = "/update_status.htm")
+	public String updateExtractionStatus(Model map) {
+		LOGGER.info("--- updateExtractionStatus request Mapping started--------");
+		LOGGER.info("--- viewExtractionPage request Mapping completed with rules_management_extraction--------");
+		return "rules_management_extraction";
+	}
+
+	/**
+	 * This function called when click on save or refresh button on
+	 * rules_management_extraction.jsp page
+	 **/
+	@RequestMapping(value = "/save_rules_management_extraction.htm", method = RequestMethod.POST)
+	public String submitRulesManagementForm1(Model map, HttpSession session, HttpServletRequest request) {
+		LOGGER.info("---submitRulesManagementForm START---");
+		boolean flag = false;
+		try {
+			/** Here we get input parameters from form field **/
+			String[] pemPidArray = request.getParameterValues("pemPid");
+			String[] beginPageNoArray = request.getParameterValues("pemBeginPageNo");
+			String[] pemBeginKeywordArray = request.getParameterValues("pemBeginKeyword");
+			String[] pemendPageNoArray = request.getParameterValues("pemendPageNo");
+			String[] pemEndKeywordArray = request.getParameterValues("pemendKeyword");
+			String[] pemRowSegmentationTypeArray = request.getParameterValues("pemRowSegmentationType");
+			String[] pemColumnNumberToSplitArray = request.getParameterValues("pemColumnNumberToSplit");
+			Integer filingId=Integer.parseInt(request.getParameter("filingId"));
+			/**This input field required for table2 type**/
+			String[] tableNumberAreaArray= request.getParameterValues("tableNumber");
+			String[] topicArray= request.getParameterValues("topic");
+			String[] extractionTypeArray= request.getParameterValues("extractionType");
+			String[] extractionAreaArray= request.getParameterValues("extractionArea");
+			String[] rankArray=request.getParameterValues("rank");
+			String[] pemTableIdArray=request.getParameterValues("pemTableId");
+
+			
+			String[] sectionArray=request.getParameterValues("section");
+			String[] valueOrderArray=null;
+			if(request.getParameter("pemeValueOrder")!=null){
+				valueOrderArray=request.getParameterValues("pemeValueOrder");
+			}
+			List<String> pemPidArrayList = null;
+		
+			List<PdfExtractionMetadata> dataList=new ArrayList<>();
+			if (pemPidArray != null)
+			{
+				WorkQueue workQueue=workQueueService.getCompanyId(filingId);
+				User user = (User) request.getSession().getAttribute("user");
+				String userId=user.getUserId().toString();
+				pemPidArrayList = Arrays.asList(pemPidArray);
+				int tableTwoCount=0;
+				for (int rowCounter = 0; rowCounter < pemPidArrayList.size(); rowCounter++)
+				{
+					PdfExtractionMetadata pdfExtractionMetadata = new PdfExtractionMetadata();
+					pdfExtractionMetadata.setPemFilingId(filingId);
+					pdfExtractionMetadata.setPemSection(sectionArray[rowCounter]);
+					pdfExtractionMetadata.setPemEid(workQueue.geteId()!=null?workQueue.geteId().toString():"");
+					if(tableNumberAreaArray[rowCounter].equalsIgnoreCase("2")){
+						pdfExtractionMetadata.setTopic(topicArray[tableTwoCount]);
+						pdfExtractionMetadata.setExtractionType(extractionTypeArray[tableTwoCount]);
+						pdfExtractionMetadata.setExtractionArea(extractionAreaArray[tableTwoCount]);
+						Integer rank = null;
+						try {
+							rank = Integer.parseInt(rankArray[tableTwoCount]);
+						} catch (Exception e) {
+						}
+						pdfExtractionMetadata.setRank(rank);
+						tableTwoCount=tableTwoCount+1;
+					}
+					
+					if (!pemPidArrayList.get(rowCounter).equalsIgnoreCase("0")) {
+						pdfExtractionMetadata.setPemPid(Integer.parseInt(pemPidArrayList.get(rowCounter)));
+					}
+					if (beginPageNoArray[rowCounter] != null && beginPageNoArray[rowCounter] != "")
+					{
+						Integer beginPageNo = null;
+						try {
+							beginPageNo = Integer.parseInt(beginPageNoArray[rowCounter]);
+						} catch (NumberFormatException e) {
+
+						}
+
+						pdfExtractionMetadata.setPemBeginPageNo(beginPageNo);
+					}
+					
+					if (valueOrderArray[rowCounter] != null && valueOrderArray[rowCounter] != "") {
+						Integer valueOrder = null;
+						try {
+							valueOrder = Integer.parseInt(valueOrderArray[rowCounter]);
+						} catch (NumberFormatException e) {
+
+						}
+
+						pdfExtractionMetadata.setPemeValueOrder(valueOrder);
+					}
+					if (pemBeginKeywordArray[rowCounter] != null && pemBeginKeywordArray[rowCounter] != "") {
+						pdfExtractionMetadata.setPemBeginKeyword(pemBeginKeywordArray[rowCounter]);
+					}
+					if (pemendPageNoArray[rowCounter] != null && pemendPageNoArray[rowCounter] != "") {
+						Integer endPageNo = null;
+						try {
+							endPageNo = Integer.parseInt(pemendPageNoArray[rowCounter]);
+						} catch (NumberFormatException e) {
+
+						}
+						pdfExtractionMetadata.setPemendPageNo(endPageNo);
+					}
+					if (pemEndKeywordArray[rowCounter] != null && pemEndKeywordArray[rowCounter] != "") {
+					pdfExtractionMetadata.setPemendKeyword(pemEndKeywordArray[rowCounter]);
+					}
+					if (pemRowSegmentationTypeArray[rowCounter] != null && pemRowSegmentationTypeArray[rowCounter] != "") {
+					pdfExtractionMetadata.setPemRowSegmentationType(pemRowSegmentationTypeArray[rowCounter]);
+					}
+					if (pemColumnNumberToSplitArray[rowCounter] != null && pemColumnNumberToSplitArray[rowCounter] != "") {
+					pdfExtractionMetadata.setPemColumnNumberToSplit(pemColumnNumberToSplitArray[rowCounter]);
+					}
+					if (pemTableIdArray!=null && pemTableIdArray.length>rowCounter && pemTableIdArray[rowCounter] != null && pemTableIdArray[rowCounter] != "") {
+						Integer pemTableId = null;
+						try {
+							pemTableId = Integer.parseInt(pemTableIdArray[rowCounter]);
+						} catch (NumberFormatException e) {
+
+						}
+
+						pdfExtractionMetadata.setPemTableId(pemTableId);
+					}
+					pdfExtractionMetadata.setCreatedBy(userId);
+				 dataList.add(pdfExtractionMetadata);
+				}//end for
+				//Here we save data  in two table LS_PDF_EXTRACTION_METADATA and 
+			 flag=extractionServ.saveUpadateRulesIn_Pdf_Extractor_Table(dataList);
+			 if(flag){
+		      map.addAttribute("msg", "Rules Added successfully.");
+			 }else{
+			  map.addAttribute("msg", "Error occured while saving rules. Please try again.");  
+			 }
+			
+			 Integer parserId = workQueueService.f_getParserIdFromWorkQueueByFilingId(filingId);
+			 Map<Integer, Map<String,List<PdfExtractionMetadata>>> pdfExtractionMapBySectionWise = extractionServ.f_getPdfExtractionDataBySectionWise(filingId, parserId);
+    	     map.addAttribute("extractor_rule_list_map", pdfExtractionMapBySectionWise);
+    	     
+			} // end pem array condition list
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:", e);
+		}
+
+		LOGGER.info("--- END submitRulesManagementForm ---");
+
+		return "rules_management_pdfbasedparser";
+	}
+	/** This function called for reprocess extractor rules **/
+
+	@RequestMapping(value = "/call_rule_reprocess.htm", method = RequestMethod.POST)
+	public @ResponseBody
+	boolean callRulesReprocess(@RequestParam("fillingId") String fillingId,
+			@RequestParam("customerId") String customerId,
+			@RequestParam("wqId") String wqId,
+			@RequestParam("reProcessType") String reProcessType,
+			@RequestParam("uploadId") String uploadId,
+			@RequestParam("entityId") String entityId, Model map,HttpSession session) {
+		     String docPath = "";
+		     boolean flag = false;
+		     User user =null;
+		try {
+			user= (User) session.getAttribute("user");
+			Long userId = user.getUserId();
+			String decryptedFillingId = CipherUtils.decrypt(fillingId);
+			String decryptedCustomerId = CipherUtils.decrypt(customerId);
+			wqId = CipherUtils.decrypt(wqId);
+			docPath = fileUploadService.getFileUpload(decryptedCustomerId,
+					wqId, 1).replaceAll("/", "\\/");
+			LOGGER.info("------------------ DbPath --------------------"
+					+ docPath);
+
+			WorkQueue workQueue = workQueueService.getWorkQueueDetails(Integer.parseInt(wqId));
+			workQueue.setRerunStatus(reProcessType);
+			workQueue.setWqStatus(workqueReprocessStatus);
+			flag = workQueueService.updateWorkque(workQueue);
+
+			String userRole= ReleaseLockedUser.caseStatus(workQueue, user);
+			extractionServ.saveMOdifyStaus(decryptedFillingId, userRole,workqueReprocessStatus, userId, "Reprocess" );	
+		    	
+			return flag;
+		} catch (Exception e) {
+
+			LOGGER.error("Error:", e);
+			e.printStackTrace();
+		}
+		return flag;
+	}
+
+	/*
+	 * This function used for modify status(ie insert entry in request_queue
+	 * table)
+	 */
+
+	@RequestMapping(value = "/modify_status.htm", method = RequestMethod.POST)
+	public @ResponseBody
+	boolean modifyStatus(@RequestParam("fillingId") String fillingId,
+			@RequestParam("customerId") String customerId,
+			@RequestParam("wqId") String wqId,
+			@RequestParam("statusName") String status,HttpSession session) {
+		     User user = null;
+		if (customerId != null)
+			customerId = CipherUtils.decrypt(customerId);
+
+		if (fillingId != null)
+			fillingId = CipherUtils.decrypt(fillingId);
+
+		if (wqId != null)
+			wqId = CipherUtils.decrypt(wqId);
+
+		LOGGER.info("** Start modifyStatus method");
+		String docPath = "";
+		boolean flag = false;
+		try {
+		    user=(User) session.getAttribute("user");
+			Long userId = user.getUserId();
+			
+			docPath = fileUploadService.getFileUpload(customerId, wqId, 1)
+					.replaceAll("/", "\\/");
+			LOGGER.info("------------------ DbPath --------------------"
+					+ docPath);
+			Integer requestId = extractionServ.saveToRequestQueueForModifyStatus(fillingId.toString(), docPath, status,modifyStatus);
+			normalizationService.saveInvokeProcessTracker(requestId,Integer.parseInt(fillingId),"N",modifyStatus,userId);
+			//inserting 'modify status' in ProcessLogTracker 
+			normalizationService.updateWqStatusByFilingId(Integer.parseInt(fillingId), "Processing");
+	    	WorkQueue  wq = workQueueService.getCompanyId(Integer.parseInt(fillingId));
+			String userRole= ReleaseLockedUser.caseStatus(wq, user);
+			extractionServ.saveMOdifyStaus(fillingId, userRole, status, userId,modifyStatus);	
+			flag =true;
+		} catch (Exception e) {
+			LOGGER.error("Error:",e);
+			e.printStackTrace();
+		}
+		LOGGER.info("** End modifyStatus method ");
+		return flag;
+	}
+
+	@RequestMapping(value = "/exportToExcel.htm")
+	public ModelAndView getNormalizationDataToExportInExcel(ExportCommand exportCmd, Model map, HttpSession session) {
+		String stmtFormat = exportCmd.getStatementFormat();
+		int wqId = Integer.parseInt(CipherUtils.decrypt(exportCmd.getEncryptedWqId()));
+		int fillingId = Integer.parseInt(CipherUtils.decrypt(exportCmd.getEncryptedFillingId()));
+		String customerName = CipherUtils.decrypt(exportCmd.getCustomerName());
+		Integer customerId = Integer.parseInt(CipherUtils.decrypt(exportCmd.getEncryptedCustomerId()));
+		Map<String, Object> excelViewDataMap = new LinkedHashMap<String, Object>();
+		excelViewDataMap.put("customerName", customerName);
+		excelViewDataMap.put("customerId", customerId);
+		excelViewDataMap.put("stmtFormat", stmtFormat);
+		Integer parserId = (Integer) session.getAttribute("sessionParserId");
+
+		if (null != stmtFormat && stmtFormat.equalsIgnoreCase("AccountSummary")
+				|| stmtFormat.equalsIgnoreCase("Deposits")
+				|| stmtFormat.equalsIgnoreCase("DailyBalances")
+				|| stmtFormat.equalsIgnoreCase("AccountActivity")
+				|| stmtFormat.equalsIgnoreCase("Withdrawals")) {
+
+			List<ExcelViewData> excelViewDataListAS = null;
+			List<ExcelViewData> excelViewDataListDPS = null;
+			List<ExcelViewData> excelViewDataListDBS = null;
+			List<ExcelViewData> excelViewDataListW = null;
+			List<ExcelViewData> excelViewDataListAA = null;
+
+			try {
+				List<Object> parserOutput = normalizationService
+						.getNormalizedDataOfBanksForXsl(wqId, fillingId);
+
+				ExcelViewData excelViewData;
+				if (null != parserOutput && parserOutput.size() > 0) {
+
+					excelViewDataListAS = new ArrayList<ExcelViewData>();
+					excelViewDataListDPS = new ArrayList<ExcelViewData>();
+					excelViewDataListDBS = new ArrayList<ExcelViewData>();
+					excelViewDataListW = new ArrayList<ExcelViewData>();
+					excelViewDataListAA = new ArrayList<ExcelViewData>();
+
+					for (Object obj : parserOutput) {
+
+						Object[] objIn = (Object[]) obj;
+						excelViewData = new ExcelViewData();
+						excelViewData.setPoId(objIn[0] != null ? Integer.parseInt(objIn[0].toString()) : 0);
+						excelViewData.setPoAsRepLabel(objIn[1] != null ? objIn[1].toString() : "");
+						excelViewData.setPoIndexOrder(objIn[2] != null ? Integer.parseInt(objIn[2].toString()) : 0);
+						excelViewData.setAccountNumber((objIn[3] != null ? objIn[3].toString() : ""));
+						excelViewData.setTimePeriod(objIn[4] != null ? objIn[4].toString() : "");
+						excelViewData.setPoAsRepVal1(objIn[5] != null ? objIn[5].toString() : "");
+						excelViewData.setPoAsRepVal2(objIn[6] != null ? objIn[6].toString() : "");
+						excelViewData.setPoAsRepVal3(objIn[7] != null ? objIn[7].toString() : "");
+						excelViewData.setPoAsRepVal4(objIn[10] != null ? objIn[10].toString() : "");
+						excelViewData.setPoAsRepVal5(objIn[11] != null ? objIn[11].toString() : "");
+						excelViewData.setPoAsRepVal6(objIn[12] != null ? objIn[12].toString() : "");
+						excelViewData.setPoAsRepVal7(objIn[13] != null ? objIn[13].toString() : "");
+						excelViewData.setPoAsRepVal8(objIn[14] != null ? objIn[14].toString() : "");
+						excelViewData.setPoAsRepVal9(objIn[15] != null ? objIn[15].toString() : "");
+						excelViewData.setPoAsRepVal10(objIn[16] != null ? objIn[16].toString() : "");
+						excelViewData.setNilLabel(objIn[17] != null ? objIn[17].toString() : "");
+						excelViewData.setPoSection((objIn[18] != null ? objIn[18].toString() : ""));
+						excelViewData.setCustodianName((objIn[19] != null ? objIn[19].toString() : ""));
+						
+						excelViewData.setPoAsRepVal11(objIn[20] != null ? objIn[20].toString() : "");
+						excelViewData.setPoAsRepVal12(objIn[21] != null ? objIn[21].toString() : "");
+						excelViewData.setPoAsRepVal13(objIn[22] != null ? objIn[22].toString() : "");
+						excelViewData.setPoAsRepVal14(objIn[23] != null ? objIn[23].toString() : "");
+						excelViewData.setPoAsRepVal15(objIn[24] != null ? objIn[24].toString() : "");
+						excelViewData.setPoAsRepVal16(objIn[25] != null ? objIn[25].toString() : "");
+						excelViewData.setPoAsRepVal17(objIn[26] != null ? objIn[26].toString() : "");
+						excelViewData.setPoAsRepVal18(objIn[27] != null ? objIn[27].toString() : "");
+						excelViewData.setPoAsRepVal19(objIn[28] != null ? objIn[28].toString() : "");
+						excelViewData.setPoAsRepVal20(objIn[29] != null ? objIn[29].toString() : "");
+
+						if (excelViewData.getPoSection().equalsIgnoreCase("AccountSummary")) 
+						{
+							excelViewDataListAS.add(excelViewData);
+						} else if (excelViewData.getPoSection().equalsIgnoreCase("Deposits")) 
+						{
+							excelViewDataListDPS.add(excelViewData);
+						} else if (excelViewData.getPoSection().equalsIgnoreCase("DailyBalances")) 
+						{
+							excelViewDataListDBS.add(excelViewData);
+						} else if (excelViewData.getPoSection().equalsIgnoreCase("Withdrawals")) 
+						{
+							excelViewDataListW.add(excelViewData);
+						} else if (excelViewData.getPoSection().equalsIgnoreCase("AccountActivity")) 
+						{
+							excelViewDataListAA.add(excelViewData);
+						}
+					}
+				}
+
+				Set<ExcelViewData> excelViewDataSetAS = new HashSet<ExcelViewData>(excelViewDataListAS);
+				Set<ExcelViewData> excelViewDataSetDPS = new HashSet<ExcelViewData>(excelViewDataListDPS);
+				Set<ExcelViewData> excelViewDataSetDBS = new HashSet<ExcelViewData>(excelViewDataListDBS);
+				Set<ExcelViewData> excelViewDataSetW = new HashSet<ExcelViewData>(excelViewDataListW);
+				Set<ExcelViewData> excelViewDataSetAA = new HashSet<ExcelViewData>(excelViewDataListAA);
+
+				excelViewDataMap.put("excelViewDataSetAS", excelViewDataSetAS);
+				excelViewDataMap.put("excelViewDataSetDPS", excelViewDataSetDPS);
+				excelViewDataMap.put("excelViewDataSetDBS", excelViewDataSetDBS);
+				excelViewDataMap.put("excelViewDataSetW", excelViewDataSetW);
+				excelViewDataMap.put("excelViewDataSetAA", excelViewDataSetAA);
+
+				return new ModelAndView("excelViewAccountSummery", "excelViewDataMap",excelViewDataMap);
+			} catch (Exception e) {
+				LOGGER.error("Exception Occured", e);
+				e.printStackTrace();
+			}
+
+		} else if (null != stmtFormat && stmtFormat.equalsIgnoreCase("NMP")
+				|| stmtFormat.equalsIgnoreCase("NAS")
+				|| stmtFormat.equalsIgnoreCase("SP")
+				|| stmtFormat.equalsIgnoreCase("ALLOCATION")
+				|| stmtFormat.equalsIgnoreCase("PC")) {
+
+			String OrgfilePath = "";
+
+			/*
+			 * This methode get for PNG file path from db flag 2 means file_path
+			 */
+			try {
+				OrgfilePath = fileUploadService.getFileUpload(
+								CipherUtils.decrypt(exportCmd.getEncryptedCustomerId()),
+								CipherUtils.decrypt(exportCmd.getEncryptedWqId()), 5).replaceAll("/", "\\/");
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				LOGGER.error("Error:",e);
+			}
+			List<ExcelViewData> excelViewDataListNMP = null;
+			List<ExcelViewData> excelViewDataListNAS = null;
+			List<ExcelViewData> excelViewDataListSP = null;
+			List<ExcelViewData> excelViewDataListAllocation = null;
+			List<ExcelViewData> excelViewDataListPC = null;
+
+			try {
+
+				List<Object> parserOutput = normalizationService.getNormalizedDataForXsl(wqId, fillingId);
+
+				ExcelViewData excelViewData;
+				if (null != parserOutput && parserOutput.size() > 0) {
+
+					excelViewDataListNMP = new ArrayList<ExcelViewData>();
+					excelViewDataListNAS = new ArrayList<ExcelViewData>();
+					excelViewDataListSP = new ArrayList<ExcelViewData>();
+					excelViewDataListAllocation = new ArrayList<ExcelViewData>();
+					excelViewDataListPC = new ArrayList<ExcelViewData>();
+
+					for (Object obj : parserOutput) {
+
+						Object[] objIn = (Object[]) obj;
+						excelViewData = new ExcelViewData();
+						excelViewData.setPoId(objIn[0] != null ? Integer.parseInt(objIn[0].toString()) : 0);
+						excelViewData.setPoAsRepLabel(objIn[1] != null ? objIn[1].toString() : "");
+						excelViewData.setPoIndexOrder(objIn[2] != null ? Integer.parseInt(objIn[2].toString()) : 0);
+						excelViewData.setPoAsRepVal1(objIn[3] != null ? objIn[3].toString() : "");
+						excelViewData.setPoAsRepVal2(objIn[4] != null ? objIn[4].toString() : "");
+						excelViewData.setPoAsRepVal3(objIn[5] != null ? objIn[5].toString() : "");
+						excelViewData.setPoAsRepVal4(objIn[8] != null ? objIn[8].toString() : "");
+						excelViewData.setPoAsRepVal5(objIn[9] != null ? objIn[9].toString() : "");
+						excelViewData.setPoAsRepVal6(objIn[10] != null ? objIn[10].toString() : "");
+						excelViewData.setPoAsRepVal7(objIn[11] != null ? objIn[11].toString() : "");
+						excelViewData.setPoAsRepVal8(objIn[12] != null ? objIn[12].toString() : "");
+						excelViewData.setPoAsRepVal9(objIn[13] != null ? objIn[13].toString() : "");
+						excelViewData.setPoAsRepVal10(objIn[14] != null ? objIn[14].toString() : "");
+						excelViewData.setPoAsRepVal11(objIn[15] != null ? objIn[15].toString() : "");
+						excelViewData.setPoAsRepVal12(objIn[16] != null ? objIn[16].toString() : "");
+						excelViewData.setPoAsRepVal13(objIn[17] != null ? objIn[17].toString() : "");
+						excelViewData.setPoAsRepVal14(objIn[18] != null ? objIn[18].toString() : "");
+						excelViewData.setPoAsRepVal15(objIn[19] != null ? objIn[19].toString() : "");
+						excelViewData.setPoAsRepVal16(objIn[20] != null ? objIn[20].toString() : "");
+						excelViewData.setPoAsRepVal17(objIn[21] != null ? objIn[21].toString() : "");
+						excelViewData.setPoAsRepVal18(objIn[22] != null ? objIn[22].toString() : "");
+						excelViewData.setPoAsRepVal19(objIn[23] != null ? objIn[23].toString() : "");
+						excelViewData.setPoAsRepVal20(objIn[24] != null ? objIn[24].toString() : "");
+						excelViewData.setNilLabel(objIn[25] != null ? objIn[25].toString() : "");
+						excelViewData.setPoSubSectionParserOutPut((objIn[26] != null ? objIn[26].toString() : ""));
+						excelViewData.setPoSection((objIn[27] != null ? objIn[27].toString() : ""));
+						excelViewData.setPoBreakUp(objIn[28] != null ? objIn[28].toString() : "");
+
+						if (excelViewData.getPoSection().equalsIgnoreCase("NMP")) 
+						{
+							excelViewDataListNMP.add(excelViewData);
+						} else if (excelViewData.getPoSection().equalsIgnoreCase("NAS")) 
+						{
+							excelViewDataListNAS.add(excelViewData);
+						} else if (excelViewData.getPoSection().equalsIgnoreCase("SP")) 
+						{
+							excelViewDataListSP.add(excelViewData);
+						} else if (excelViewData.getPoSection().equalsIgnoreCase("ALLOCATION")) 
+						{
+							excelViewDataListAllocation.add(excelViewData);
+						} else if (excelViewData.getPoSection().equalsIgnoreCase("PC")) 
+						{
+							excelViewDataListPC.add(excelViewData);
+						}
+					}
+				}
+
+				Set<ExcelViewData> excelViewDataSetNMP = new HashSet<ExcelViewData>(excelViewDataListNMP);
+				Set<ExcelViewData> excelViewDataSetNAS = new HashSet<ExcelViewData>(excelViewDataListNAS);
+				Set<ExcelViewData> excelViewDataSetSP = new HashSet<ExcelViewData>(excelViewDataListSP);
+				Set<ExcelViewData> excelViewDataSetAllocation = new HashSet<ExcelViewData>(excelViewDataListAllocation);
+				Set<ExcelViewData> excelViewDataSetPC = new HashSet<ExcelViewData>(excelViewDataListPC);
+
+				excelViewDataMap.put("excelViewDataSetNMP", excelViewDataSetNMP);
+				excelViewDataMap.put("excelViewDataSetNAS", excelViewDataSetNAS);
+				excelViewDataMap.put("excelViewDataSetSP", excelViewDataSetSP);
+				excelViewDataMap.put("excelViewDataSetAllocation",excelViewDataSetAllocation);
+				excelViewDataMap.put("excelViewDataSetPC", excelViewDataSetPC);
+				excelViewDataMap.put("imagefileNamePath", OrgfilePath);
+
+				return new ModelAndView("excelView", "excelViewDataMap",excelViewDataMap);
+			} catch (Exception e) {
+				LOGGER.error("Exception Occured", e);
+				e.printStackTrace();
+			}
+
+		} else if (null != stmtFormat
+				&& stmtFormat.equalsIgnoreCase("Key Developments")
+				|| stmtFormat.equalsIgnoreCase("Key Financials")
+				|| stmtFormat.equalsIgnoreCase("Business Segment")
+				|| stmtFormat.equalsIgnoreCase("Geographic Segment")
+				|| stmtFormat.equalsIgnoreCase("Business Description")
+				|| stmtFormat.equalsIgnoreCase("Share Price")
+				|| stmtFormat.equalsIgnoreCase("Key Management")
+				|| stmtFormat.equalsIgnoreCase("Shareholding")) {
+
+			List<ExcelViewData> excelViewDataListKeyDevelopments = null;
+			List<ExcelViewData> excelViewDataListKeyFinancials = null;
+			List<ExcelViewData> excelViewDataListBusinessSegment = null;
+			List<ExcelViewData> excelViewDataListGeographicSegment = null;
+			List<ExcelViewData> excelViewDataListBusinessDescription = null;
+			List<ExcelViewData> excelViewDataListSharePrice = null;
+			List<ExcelViewData> excelViewDataListKeyManagement = null;
+			List<ExcelViewData> excelViewDataListShareholding = null;
+
+			try {
+
+				List<Object> parserOutput = normalizationService.getNormalizedDataForXsl(wqId, fillingId);
+
+				ExcelViewData excelViewData;
+				if (null != parserOutput && parserOutput.size() > 0) {
+
+					excelViewDataListKeyDevelopments = new ArrayList<ExcelViewData>();
+					excelViewDataListKeyFinancials = new ArrayList<ExcelViewData>();
+					excelViewDataListBusinessSegment = new ArrayList<ExcelViewData>();
+					excelViewDataListGeographicSegment = new ArrayList<ExcelViewData>();
+					excelViewDataListBusinessDescription = new ArrayList<ExcelViewData>();
+					excelViewDataListSharePrice = new ArrayList<ExcelViewData>();
+					excelViewDataListKeyManagement = new ArrayList<ExcelViewData>();
+					excelViewDataListShareholding = new ArrayList<ExcelViewData>();
+
+					for (Object obj : parserOutput) {
+
+						Object[] objIn = (Object[]) obj;
+						excelViewData = new ExcelViewData();
+						excelViewData.setPoId(objIn[0] != null ? Integer.parseInt(objIn[0].toString()) : 0);
+						excelViewData.setPoAsRepLabel(objIn[1] != null ? objIn[1].toString() : "");
+						excelViewData.setPoIndexOrder(objIn[2] != null ? Integer.parseInt(objIn[2].toString()) : 0);
+						excelViewData.setPoAsRepVal1(objIn[3] != null ? objIn[3].toString() : "");
+						excelViewData.setPoAsRepVal2(objIn[4] != null ? objIn[4].toString() : "");
+						excelViewData.setPoAsRepVal3(objIn[5] != null ? objIn[5].toString() : "");
+						excelViewData.setPoAsRepVal4(objIn[8] != null ? objIn[8].toString() : "");
+						excelViewData.setPoAsRepVal5(objIn[9] != null ? objIn[9].toString() : "");
+						excelViewData.setPoAsRepVal6(objIn[10] != null ? objIn[10].toString() : "");
+						excelViewData.setPoAsRepVal7(objIn[11] != null ? objIn[11].toString() : "");
+						excelViewData.setPoAsRepVal8(objIn[12] != null ? objIn[12].toString() : "");
+						excelViewData.setPoAsRepVal9(objIn[13] != null ? objIn[13].toString() : "");
+						excelViewData.setPoAsRepVal10(objIn[14] != null ? objIn[14].toString() : "");
+						excelViewData.setPoAsRepVal11(objIn[15] != null ? objIn[15].toString() : "");
+						excelViewData.setPoAsRepVal12(objIn[16] != null ? objIn[16].toString() : "");
+						excelViewData.setPoAsRepVal13(objIn[17] != null ? objIn[17].toString() : "");
+						excelViewData.setPoAsRepVal14(objIn[18] != null ? objIn[18].toString() : "");
+						excelViewData.setPoAsRepVal15(objIn[19] != null ? objIn[19].toString() : "");
+						excelViewData.setPoAsRepVal16(objIn[20] != null ? objIn[20].toString() : "");
+						excelViewData.setPoAsRepVal17(objIn[21] != null ? objIn[21].toString() : "");
+						excelViewData.setPoAsRepVal18(objIn[22] != null ? objIn[22].toString() : "");
+						excelViewData.setPoAsRepVal19(objIn[23] != null ? objIn[23].toString() : "");
+						excelViewData.setPoAsRepVal20(objIn[24] != null ? objIn[24].toString() : "");
+						excelViewData.setNilLabel(objIn[25] != null ? objIn[25].toString() : "");
+						excelViewData.setPoSubSectionParserOutPut((objIn[26] != null ? objIn[26].toString() : ""));
+						excelViewData.setPoSection((objIn[27] != null ? objIn[27].toString() : ""));
+						excelViewData.setPoBreakUp(objIn[28] != null ? objIn[28].toString() : "");
+
+						if (excelViewData.getPoSection().equalsIgnoreCase("Key Developments")) 
+						{
+							excelViewDataListKeyDevelopments.add(excelViewData);
+						} else if (excelViewData.getPoSection().equalsIgnoreCase("Key Financials")) 
+						{
+							excelViewDataListKeyFinancials.add(excelViewData);
+						} else if (excelViewData.getPoSection().equalsIgnoreCase("Business Segment")) 
+						{
+							excelViewDataListBusinessSegment.add(excelViewData);
+						} else if (excelViewData.getPoSection().equalsIgnoreCase("Geographic Segment")) 
+						{
+							excelViewDataListGeographicSegment.add(excelViewData);
+						} else if (excelViewData.getPoSection().equalsIgnoreCase("Business Description")) {
+							excelViewDataListBusinessDescription.add(excelViewData);
+						} else if (excelViewData.getPoSection().equalsIgnoreCase("Share Price")) 
+						{
+							excelViewDataListSharePrice.add(excelViewData);
+						} else if (excelViewData.getPoSection().equalsIgnoreCase("Key Management")) 
+						{
+							excelViewDataListKeyManagement.add(excelViewData);
+						} else if (excelViewData.getPoSection().equalsIgnoreCase("Shareholding")) 
+						{
+							excelViewDataListShareholding.add(excelViewData);
+						}
+					}
+				}
+
+				Set<ExcelViewData> excelViewDataSetKeyDevelopments = new HashSet<ExcelViewData>(excelViewDataListKeyDevelopments);
+				Set<ExcelViewData> excelViewDataSetKeyFinancials = new HashSet<ExcelViewData>(excelViewDataListKeyFinancials);
+				Set<ExcelViewData> excelViewDataSetBusinessSegment = new HashSet<ExcelViewData>(excelViewDataListBusinessSegment);
+				Set<ExcelViewData> excelViewDataSetGeographicSegment = new HashSet<ExcelViewData>(excelViewDataListGeographicSegment);
+				Set<ExcelViewData> excelViewDataSetBusinessDescription = new HashSet<ExcelViewData>(excelViewDataListBusinessDescription);
+				Set<ExcelViewData> excelViewDataSetSharePrice = new HashSet<ExcelViewData>(excelViewDataListSharePrice);
+				Set<ExcelViewData> excelViewDataSetKeyManagement = new HashSet<ExcelViewData>(excelViewDataListKeyManagement);
+				Set<ExcelViewData> excelViewDataSetShareholding = new HashSet<ExcelViewData>(excelViewDataListShareholding);
+
+				excelViewDataMap.put("excelViewDataSetKeyDevelopments",excelViewDataSetKeyDevelopments);
+				excelViewDataMap.put("excelViewDataSetKeyFinancials",excelViewDataSetKeyFinancials);
+				excelViewDataMap.put("excelViewDataSetBusinessSegment",excelViewDataSetBusinessSegment);
+				excelViewDataMap.put("excelViewDataSetGeographicSegment",excelViewDataSetGeographicSegment);
+				excelViewDataMap.put("excelViewDataSetBusinessDescription",excelViewDataSetBusinessDescription);
+				excelViewDataMap.put("excelViewDataSetSharePrice",excelViewDataSetSharePrice);
+				excelViewDataMap.put("excelViewDataSetKeyManagement",excelViewDataSetKeyManagement);
+				excelViewDataMap.put("excelViewDataSetShareholding",excelViewDataSetShareholding);
+
+				return new ModelAndView("genpactProfilesViewExcelBuilder","excelViewDataMap", excelViewDataMap);
+			} catch (Exception e) {
+				LOGGER.error("Exception Occured", e);
+				e.printStackTrace();
+			}
+
+		} else {
+
+			
+
+			try {
+				/**
+				 * Here if parser id is '12' means dealer form then
+				 */
+				List<Object> parserOutput = null;
+				List<Object> parserOutputSUPPL=null;
+				List<ExcelViewData> excelViewDataList = null;
+				Map<String,String> sectionMappingMap=normalizationService.f_fetchSectionListByFilingId(fillingId,parserId);
+				excelViewDataMap.put("sectionMappingMap",sectionMappingMap);
+				Iterator<Entry<String,String>> sectionMappingEntries = sectionMappingMap.entrySet().iterator();
+				while (sectionMappingEntries.hasNext()) {
+				  Entry<String,String> thisEntry = (Entry<String,String>) sectionMappingEntries.next();
+				  String sectionName = thisEntry.getKey();
+				  String sectionDisplayName = thisEntry.getValue();
+				  ExcelViewData excelViewData =null;
+				  if(sectionName!=null){
+					  if(sectionName.equalsIgnoreCase("SUPPL")){
+						 parserOutputSUPPL = normalizationService.getNormalizedDataForSUPPLXsl(wqId, fillingId);
+						 
+						 if (null != parserOutputSUPPL && parserOutputSUPPL.size() > 0) {
+
+							 excelViewDataList = new ArrayList<ExcelViewData>();
+								excelViewData =null;
+								for (Object obj : parserOutputSUPPL) {
+
+									Object[] objIn = (Object[]) obj;
+									excelViewData = new ExcelViewData();
+									excelViewData.setPoId(objIn[0] != null ? Integer.parseInt(objIn[0].toString()) : 0);
+									excelViewData.setPoAsRepLabel(objIn[1] != null ? objIn[1].toString() : "");
+									excelViewData.setPoIndexOrder(objIn[2] != null ? Integer.parseInt(objIn[2].toString()) : 0);
+									excelViewData.setPoAsRepVal1(objIn[3] != null ? objIn[3].toString() : "");
+									excelViewData.setPoAsRepVal2(objIn[4] != null ? objIn[4].toString() : "");
+									excelViewData.setPoAsRepVal3(objIn[5] != null ? objIn[5].toString() : "");
+									excelViewData.setPoAsRepVal4(objIn[8] != null ? objIn[8].toString() : "");
+									excelViewData.setPoAsRepVal5(objIn[9] != null ? objIn[9].toString() : "");
+									excelViewData.setPoAsRepVal6(objIn[10] != null ? objIn[10].toString() : "");
+									excelViewData.setPoAsRepVal7(objIn[11] != null ? objIn[11].toString() : "");
+									excelViewData.setPoAsRepVal8(objIn[12] != null ? objIn[12].toString() : "");
+									excelViewData.setPoAsRepVal9(objIn[13] != null ? objIn[13].toString() : "");
+									excelViewData.setPoAsRepVal10(objIn[14] != null ? objIn[14].toString() : "");
+									excelViewData.setPoAsRepVal11(objIn[15] != null ? objIn[15].toString() : "");
+									excelViewData.setPoAsRepVal12(objIn[16] != null ? objIn[16].toString() : "");
+									excelViewData.setPoAsRepVal13(objIn[17] != null ? objIn[17].toString() : "");
+									excelViewData.setPoAsRepVal14(objIn[18] != null ? objIn[18].toString() : "");
+									excelViewData.setPoAsRepVal15(objIn[19] != null ? objIn[19].toString() : "");
+									excelViewData.setPoAsRepVal16(objIn[20] != null ? objIn[20].toString() : "");
+									excelViewData.setPoAsRepVal17(objIn[21] != null ? objIn[21].toString() : "");
+									excelViewData.setPoAsRepVal18(objIn[22] != null ? objIn[22].toString() : "");
+									excelViewData.setPoAsRepVal19(objIn[23] != null ? objIn[23].toString() : "");
+									excelViewData.setPoAsRepVal20(objIn[24] != null ? objIn[24].toString() : "");
+									excelViewData.setNilLabel(objIn[25] != null ? objIn[25].toString() : "");
+									excelViewData.setPoSubSectionParserOutPut((objIn[26] != null ? objIn[26].toString() : ""));
+									excelViewData.setPoSection((objIn[27] != null ? objIn[27].toString() : ""));
+									excelViewData.setPoBreakUp(objIn[28] != null ? objIn[28].toString() : "");
+									excelViewData.setNonEnglishLable(objIn[29] != null ? objIn[29].toString() : "");
+
+									if (excelViewData.getPoSection().equalsIgnoreCase("SUPPL")) {
+										excelViewDataList.add(excelViewData);
+									}
+								}
+								excelViewDataMap.put(sectionDisplayName,new LinkedHashSet<ExcelViewData>(excelViewDataList));
+								excelViewDataList = new ArrayList<ExcelViewData>();
+							}
+						 
+					  }else{
+						if(parserId==14 || parserId==18){
+							parserOutput = normalizationService.getNormalizedDataForDealerFormXsl(wqId, fillingId,sectionName);	
+						}else{
+							parserOutput = normalizationService.getNormalizedDataForXsl(wqId, fillingId,sectionName);
+						}
+						excelViewData =null;
+						if (null != parserOutput && parserOutput.size() > 0) {
+							excelViewDataList = new ArrayList<ExcelViewData>();
+							
+							
+
+							/**
+							 * Here if user group is CR and open(1,5) then in export functionality for value1 to value20 set "Co-Prepared" for STATEMENT QUALITY label.
+							 * only for IS,BS,CF section 
+					        */
+							User user = (User) session.getAttribute("user");
+							int userGroupId = user.getUserGroupId();
+
+							for (Object obj : parserOutput) {
+
+								Object[] objIn = (Object[]) obj;
+								excelViewData = new ExcelViewData();
+								excelViewData.setPoId(objIn[0] != null ? Integer.parseInt(objIn[0].toString()) : 0);
+								excelViewData.setPoAsRepLabel(objIn[1] != null ? objIn[1].toString() : "");
+								excelViewData.setPoIndexOrder(objIn[2] != null ? Integer.parseInt(objIn[2].toString()) : 0);
+								excelViewData.setPoAsRepVal1(objIn[3] != null ? objIn[3].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal1().equalsIgnoreCase("Financials"))
+								excelViewData.setPoAsRepVal1("Co-Prepared");
+								
+								excelViewData.setPoAsRepVal2(objIn[4] != null ? objIn[4].toString() : "");
+								
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal2().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal2("Co-Prepared");
+								
+								excelViewData.setPoAsRepVal3(objIn[5] != null ? objIn[5].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal3().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal3("Co-Prepared");
+								
+								excelViewData.setPoAsRepVal4(objIn[8] != null ? objIn[8].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal4().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal4("Co-Prepared");
+								
+								excelViewData.setPoAsRepVal5(objIn[9] != null ? objIn[9].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal5().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal5("Co-Prepared");
+								
+								excelViewData.setPoAsRepVal6(objIn[10] != null ? objIn[10].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal6().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal6("Co-Prepared");
+								
+								excelViewData.setPoAsRepVal7(objIn[11] != null ? objIn[11].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal7().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal7("Co-Prepared");
+								
+								excelViewData.setPoAsRepVal8(objIn[12] != null ? objIn[12].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal8().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal8("Co-Prepared");
+								
+								excelViewData.setPoAsRepVal9(objIn[13] != null ? objIn[13].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal9().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal9("Co-Prepared");
+								
+								excelViewData.setPoAsRepVal10(objIn[14] != null ? objIn[14].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal10().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal10("Co-Prepared");
+
+								excelViewData.setPoAsRepVal11(objIn[15] != null ? objIn[15].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal11().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal11("Co-Prepared");
+								
+								excelViewData.setPoAsRepVal12(objIn[16] != null ? objIn[16].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal12().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal12("Co-Prepared");
+								
+								excelViewData.setPoAsRepVal13(objIn[17] != null ? objIn[17].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal13().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal13("Co-Prepared");
+								
+								excelViewData.setPoAsRepVal14(objIn[18] != null ? objIn[18].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal14().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal14("Co-Prepared");
+								
+								excelViewData.setPoAsRepVal15(objIn[19] != null ? objIn[19].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal15().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal15("Co-Prepared");
+								
+								excelViewData.setPoAsRepVal16(objIn[20] != null ? objIn[20].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal16().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal16("Co-Prepared");
+								
+								excelViewData.setPoAsRepVal17(objIn[21] != null ? objIn[21].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal17().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal17("Co-Prepared");
+								
+								excelViewData.setPoAsRepVal18(objIn[22] != null ? objIn[22].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal18().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal18("Co-Prepared");
+								
+								excelViewData.setPoAsRepVal19(objIn[23] != null ? objIn[23].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal19().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal9("Co-Prepared");
+								
+								excelViewData.setPoAsRepVal20(objIn[24] != null ? objIn[24].toString() : "");
+								if((userGroupId==1 || userGroupId==5) && excelViewData.getPoAsRepLabel().equalsIgnoreCase("STATEMENT QUALITY") && excelViewData.getPoAsRepVal20().equalsIgnoreCase("Financials"))
+									excelViewData.setPoAsRepVal20("Co-Prepared");
+								
+								excelViewData.setNilLabel(objIn[25] != null ? objIn[25].toString() : "");
+								excelViewData.setPoSubSectionParserOutPut((objIn[26] != null ? objIn[26].toString() : ""));
+								excelViewData.setPoSection((objIn[27] != null ? objIn[27].toString() : ""));
+								excelViewData.setPoBreakUp((objIn[28]!= null && !objIn[28].toString().trim().isEmpty()) ? objIn[28].toString() : "");
+								excelViewData.setPageNo(objIn[29] != null ? objIn[29].toString() : "");
+								excelViewData.setNonEnglishLable(objIn[30] != null ? objIn[30].toString() : "");
+								excelViewDataList.add(excelViewData);
+							}
+							excelViewDataMap.put(sectionDisplayName,new LinkedHashSet<ExcelViewData>(excelViewDataList));
+							excelViewDataList = new ArrayList<ExcelViewData>();
+						}
+					  }
+				  }
+				}
+
+				return new ModelAndView("excelView", "excelViewDataMap",
+						excelViewDataMap);
+			} catch (Exception e) {
+
+				LOGGER.error("Exception Occured", e);
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+
+	
+	@RequestMapping(value = "/importExcel.htm", method = { RequestMethod.GET,
+			RequestMethod.POST })
+	public @ResponseBody String importExcel(@ModelAttribute ImportExcelInputsCommand impExlInputCmd ,MultipartHttpServletRequest request,HttpServletResponse response,Model map) throws JsonGenerationException, JsonMappingException, IOException {
+		Integer fillingId = Integer.parseInt(CipherUtils.decrypt(impExlInputCmd.getEncryptedFillingId()));
+		Integer customerId = Integer.parseInt(CipherUtils
+				.decrypt(impExlInputCmd.getEncryptedCustomerId()));
+		String customerName = CipherUtils.decrypt(impExlInputCmd
+				.getEncryptedcustomerName());
+	
+		LOGGER.info(impExlInputCmd.toString());
+
+		List<ParserOutput> pOutPutList = new ArrayList<ParserOutput>();
+		String result1 = "";											
+		ObjectMapper objectMapper = new ObjectMapper();
+		Map<String, String> resultMap = new HashMap<String, String>();
+		
+	    // ** Set dynamic setter for val1 to 20 col
+		Method  method = null;
+		try {
+		 
+			if(impExlInputCmd.getImportInputFile().getOriginalFilename()!=null){
+				String fileName=impExlInputCmd.getImportInputFile().getOriginalFilename();
+				String fileExt=fileName.substring(fileName.lastIndexOf(".")+1);
+				if(!fileExt.equalsIgnoreCase("xls")){
+					resultMap.put("msg", "File should be in xls format");
+					result1 = objectMapper.writeValueAsString(resultMap);
+					return result1;
+				}
+			}
+			/**
+			 * **Start--Import excel validation
+			 * Here we are checking if the imported excel format is like filingId_CustomerName_Output.xls
+			 *eg : id_comapny A Public_Output.xls
+			 *and imported excel should be match with respective filing id and customer name(eg:if filing Id=id and customer name="comapny A Public" then 
+			 *import excel name should be "id_comapny A Public_Output.xls" else show the error message to the user)
+			 */
+			MultipartFile file=impExlInputCmd.getImportInputFile();
+			String fileName=file.getOriginalFilename();
+			String defualtFileName=fillingId+"_"+customerName+"_Output.xls";
+			
+			if(!fileName.equalsIgnoreCase(defualtFileName)){
+				
+				resultMap.put("msg", "Please upload the correct file (The name of the imported file and the exported file do not match)");
+				result1 = objectMapper.writeValueAsString(resultMap);
+				return result1;
+			}
+			/**
+			 * End
+			*/
+			
+			 Workbook workbook = Workbook.getWorkbook(impExlInputCmd
+						.getImportInputFile().getInputStream());
+				int noOfSheets = workbook.getNumberOfSheets();
+				String[] sheetNames = workbook.getSheetNames();
+				String sheetName = sheetNames[0];
+				int poIndexOrder = 10;
+				if (null != sheetName && sheetName.equalsIgnoreCase("AccountSummary")
+						|| sheetName.equalsIgnoreCase("Account Summary")
+						|| sheetName.equalsIgnoreCase("Deposits")
+						|| sheetName.equalsIgnoreCase("DailyBalances")
+						|| sheetName.equalsIgnoreCase("Daily Balances")) {
+
+					for (int j = 0; j < noOfSheets; j++) {
+
+						Sheet sheet = workbook.getSheet(j);
+						sheetName = sheetNames[j];
+						if (sheetName.equalsIgnoreCase("AequalsIgnoreCase(ummary")
+								|| sheetName.equalsIgnoreCase("Account Summary")) {
+							sheetName = "AccountSummary";
+						} else if (sheetName.equalsIgnoreCase("Daily Balances")) {
+							sheetName = "DailyBalances";
+						}
+						int rowCount = sheet.getRows();
+						int colCount = sheet.getColumns();
+						LOGGER.info("Sheet_Name :: " + sheetName + " colCount  :: "
+								+ colCount + " rowCount :: " + rowCount);
+						LOGGER.info("Sheet_Name :: " + sheetName
+								+ " colCount  :: " + colCount + " rowCount :"
+								+ rowCount);
+					
+						if (rowCount == 1) {
+							resultMap.put("msg", "The imported file is blank. Please upload the correct file.");
+							result1 = objectMapper.writeValueAsString(resultMap);
+							return result1;
+						}
+						ParserOutput pOutPut = null;
+						int breakcount = 1;
+						for (int i = 1; i < rowCount; i++) {
+							if (null != sheet.getCell(0, i).getContents()
+									&& !sheet.getCell(0, i).getContents()
+											.equalsIgnoreCase("")) {
+								pOutPut = new ParserOutput();
+								pOutPut.setFillingId(fillingId);
+								pOutPut.setPoCrudAccount("U");
+								pOutPut.setPoIndexOrder(poIndexOrder);
+								pOutPut.setPoAsRepLabel(sheet.getCell(0, i)
+										.getContents());
+								pOutPut.setNilLabel(sheet.getCell(1, i)
+										.getContents());
+								if (null != sheet.getCell(2, i).getContents()
+										&& sheet.getCell(2, i).getContents() != "") {
+									pOutPut.setPoIndexOrder(Integer.parseInt(sheet
+											.getCell(2, i).getContents()));
+								}
+								pOutPut.setAccountNumber(sheet.getCell(3, i)
+										.getContents());
+								if (null != sheet.getCell(4, i).getContents()
+										&& sheet.getCell(4, i).getContents() != "") {
+									pOutPut.setTimePeriod(sheet.getCell(4, i)
+											.getContents());
+								}
+								/**
+								 * Here we set custodian name(bank name) only for Bank parser
+								 */
+								if (null != sheet.getCell(15, i).getContents()
+										&& sheet.getCell(15, i).getContents() != "") {
+									pOutPut.setCustodianName(sheet.getCell(15, i)
+											.getContents());
+								}
+
+								pOutPut.setPoSection(sheetName);
+								if (colCount == 6) {
+									pOutPut.setPoAsRepVal1(sheet.getCell(5, i)
+											.getContents());
+									pOutPut.setPoAsRepValue1(sheet.getCell(5, i)
+											.getContents());
+								} else if (colCount == 7) {
+									pOutPut.setPoAsRepVal1(sheet.getCell(5, i)
+											.getContents());
+									pOutPut.setPoAsRepValue1(sheet.getCell(5, i)
+											.getContents());
+									pOutPut.setPoAsRepVal2(sheet.getCell(6, i)
+											.getContents());
+									pOutPut.setPoAsRepValue2(sheet.getCell(6, i)
+											.getContents());
+								} else if (colCount == 8) {
+									pOutPut.setPoAsRepVal1(sheet.getCell(5, i)
+											.getContents());
+									pOutPut.setPoAsRepValue1(sheet.getCell(5, i)
+											.getContents());
+									pOutPut.setPoAsRepVal2(sheet.getCell(6, i)
+											.getContents());
+									pOutPut.setPoAsRepValue2(sheet.getCell(6, i)
+											.getContents());
+									pOutPut.setPoAsRepVal3(sheet.getCell(7, i)
+											.getContents());
+									pOutPut.setPoAsRepValue3(sheet.getCell(7, i)
+											.getContents());
+								} else if (colCount == 9) {
+									pOutPut.setPoAsRepVal1(sheet.getCell(5, i)
+											.getContents());
+									pOutPut.setPoAsRepValue1(sheet.getCell(5, i)
+											.getContents());
+									pOutPut.setPoAsRepVal2(sheet.getCell(6, i)
+											.getContents());
+									pOutPut.setPoAsRepValue2(sheet.getCell(6, i)
+											.getContents());
+									pOutPut.setPoAsRepVal3(sheet.getCell(7, i)
+											.getContents());
+									pOutPut.setPoAsRepValue3(sheet.getCell(7, i)
+											.getContents());
+									pOutPut.setPoAsRepVal4(sheet.getCell(8, i)
+											.getContents());
+									pOutPut.setPoAsRepValue4(sheet.getCell(8, i)
+											.getContents());
+								} else if (colCount == 10) {
+									pOutPut.setPoAsRepVal1(sheet.getCell(5, i)
+											.getContents());
+									pOutPut.setPoAsRepValue1(sheet.getCell(5, i)
+											.getContents());
+									pOutPut.setPoAsRepVal2(sheet.getCell(6, i)
+											.getContents());
+									pOutPut.setPoAsRepValue2(sheet.getCell(6, i)
+											.getContents());
+									pOutPut.setPoAsRepVal3(sheet.getCell(7, i)
+											.getContents());
+									pOutPut.setPoAsRepValue3(sheet.getCell(7, i)
+											.getContents());
+									pOutPut.setPoAsRepVal4(sheet.getCell(8, i)
+											.getContents());
+									pOutPut.setPoAsRepValue4(sheet.getCell(8, i)
+											.getContents());
+									pOutPut.setPoAsRepVal5(sheet.getCell(9, i)
+											.getContents());
+									pOutPut.setPoAsRepValue5(sheet.getCell(9, i)
+											.getContents());
+								} else {
+									pOutPut.setPoAsRepVal1(sheet.getCell(5, i)
+											.getContents());
+									pOutPut.setPoAsRepValue1(sheet.getCell(5, i)
+											.getContents());
+									pOutPut.setPoAsRepVal2(sheet.getCell(6, i)
+											.getContents());
+									pOutPut.setPoAsRepValue2(sheet.getCell(6, i)
+											.getContents());
+									pOutPut.setPoAsRepVal3(sheet.getCell(7, i)
+											.getContents());
+									pOutPut.setPoAsRepValue3(sheet.getCell(7, i)
+											.getContents());
+									pOutPut.setPoAsRepVal4(sheet.getCell(8, i)
+											.getContents());
+									pOutPut.setPoAsRepValue4(sheet.getCell(8, i)
+											.getContents());
+									pOutPut.setPoAsRepVal5(sheet.getCell(9, i)
+											.getContents());
+									pOutPut.setPoAsRepValue5(sheet.getCell(9, i)
+											.getContents());
+									pOutPut.setPoAsRepVal6(sheet.getCell(10, i)
+											.getContents());
+									pOutPut.setPoAsRepValue6(sheet.getCell(10, i)
+											.getContents());
+								}
+
+								pOutPutList.add(pOutPut);
+							} else {
+
+								if (breakcount >= 3) {
+									break;
+								} else {
+									breakcount++;
+									continue;
+								}
+							}
+							poIndexOrder = poIndexOrder + 10;
+						}
+
+					}
+
+				} else {
+ 				for (int j = 0; j < noOfSheets; j++) {
+					Sheet sheet = workbook.getSheet(j);
+					sheetName = sheetNames[j];
+					sheetName=normalizationService.getSectionNameBySectionDisplayName(sheetName);
+					int rowCount = sheet.getRows();
+					int colCount = sheet.getColumns();
+					LOGGER.info("Sheet_Name :: " + sheetName + " colCount  :: "
+							+ colCount + " rowCount :: " + rowCount);
+					LOGGER.info("Sheet_Name :: " + sheetName
+							+ " colCount  :: " + colCount + " rowCount :"
+							+ rowCount);
+					if (rowCount == 1) {
+						resultMap.put("msg", "The imported file contains no data.Please import the correct file");
+						result1 = objectMapper.writeValueAsString(resultMap);
+					}
+					ParserOutput pOutPut = null;
+					int breakcount = 1;
+
+					for (int i = 1; i < rowCount; i++) {
+						if (null != sheet.getCell(0, i).getContents()
+								&& !sheet.getCell(0, i).getContents()
+										.equalsIgnoreCase("")) {
+							pOutPut = new ParserOutput();
+							/**
+							 * Here we po_val1 coulumn value as it is to po_as_rep_val column in parser_output table
+							 */
+							// ** Set dynamic setter for val1 to 20 col
+							Class<?> ParserOutputClone = ParserOutput.class;
+							Object obj = null;
+							try {
+								obj = ParserOutputClone.newInstance();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							String nonEnglishLableTemp="";
+							for(int colNumber=0;colNumber<colCount;colNumber++){
+						    	Cell cell1=sheet.getCell(colNumber, 0);
+						    	String columnName = cell1.getContents();
+						    	if(columnName.contains("Value")){
+						    	 String colNo=DrawDigitsFromString.drawDigitsFromString(columnName);
+						    	 method = ParserOutputClone.getDeclaredMethod("setPoAsRepVal" + colNo, String.class);
+						    	 method.setAccessible(true);
+						    	 String celValue="";
+						    
+						    	 if(sheet.getCell(colNumber, i).getContents()!=null){
+						    	 celValue=sheet.getCell(colNumber, i).getContents();
+						    	 method.invoke(obj, celValue.isEmpty() ? "" : celValue.toString());	 
+						    	 }
+						    	}else if(columnName.contains("Non English Label")){
+						    	 if(sheet.getCell(colNumber, i).getContents()!=null){
+						    	 nonEnglishLableTemp=sheet.getCell(colNumber, i).getContents();
+						    	}
+						    	}
+						    }//end column for
+						    BeanUtils.copyProperties(obj,pOutPut);
+						    pOutPut.setNonEnglishLable(nonEnglishLableTemp);
+							pOutPut.setFillingId(fillingId);
+							pOutPut.setPoCrudAccount("U");
+							//pOutPut.setPoIndexOrder(poIndexOrder);
+							if (null != sheet.getCell(0, i).getContents()
+									&& sheet.getCell(0, i).getContents() != "") {
+								pOutPut.setPoIndexOrder(Integer.parseInt(sheet.getCell(0, i).getContents()));
+							}
+							
+							pOutPut.setPoAsRepLabel(sheet.getCell(1, i)
+									.getContents());
+
+							pOutPut.setNilLabel(sheet.getCell(2, i)
+									.getContents());
+							
+							pOutPut.setPoSubSection(sheet.getCell(3, i)
+									.getContents());
+							
+							
+							pOutPut.setPoBreakup(sheet.getCell(4, i)									
+									.getContents());
+							
+							pOutPut.setPageNo(sheet.getCell(5, i)								
+									.getContents());
+							
+							pOutPut.setPoSection(sheetName);
+							
+							pOutPutList.add(pOutPut);
+						} else {
+
+							if (breakcount >= 3) {
+								break;
+							} else {
+								breakcount++;
+								continue;
+							}
+						}
+						poIndexOrder = poIndexOrder + 10;
+						
+					}
+				}
+				}//end is,bs,cf if
+			
+			/**
+			 * Here we set this condition because of we not considering Header row
+			 */
+			if(pOutPutList.size()<1 || pOutPutList.isEmpty() || pOutPutList==null){
+				resultMap.put("msg", "The imported file contains no data.Please import the correcrt file");
+				result1 = objectMapper.writeValueAsString(resultMap);
+				return result1;
+			}
+		normalizationService.importExcelDataInParserOutPut(pOutPutList,customerId,fillingId);
+		
+		resultMap.put("msg", "success");
+		result1 = objectMapper.writeValueAsString(resultMap);
+		} catch (Exception e) {
+		resultMap.put("msg", "Failed to import file");
+		result1 = objectMapper.writeValueAsString(resultMap);
+		e.printStackTrace();
+		LOGGER.error("Error", e);
+		}
+		return result1;
+
+		}
+
+	@RequestMapping(value = "/rules_management_bankparser.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public String viewBankParserSubPage(
+			@RequestParam("fillingId") String fillingId,
+			@RequestParam("fileUploadId") Integer fileUploadId, Model map,
+			HttpSession session) {
+
+		LOGGER.info("--- viewBankParserSubPage request Mapping started--------");
+		try {
+			String decryptedFillingId = CipherUtils.decrypt(fillingId);
+
+			Integer filingId = Integer.parseInt(decryptedFillingId);
+			/*
+			 * Here we get first upload id from LS_EXTRACTION_METADATA table
+			 */
+			if (fileUploadId == 0) {
+				fileUploadId = extractionServ.getFirstUploadId(filingId);
+			}
+
+			List<ExtractorRunProperties> extractor_runproperties_list = extractionServ
+					.getExtractionRunPropertiesByFilingIdAndUploadId(filingId,
+							fileUploadId);
+			map.addAttribute("extractor_runproperties_list",
+					extractor_runproperties_list);
+
+			/*
+			 * Here we get data LS_EXTRACTION_METADATA based on upload id and
+			 * filing id
+			 */
+			List<ExtractionMetadata> extractionMetadataList = extractionServ
+					.getExtractionMetadatByFilingId(filingId, fileUploadId);
+			map.addAttribute("extractionMetadataList", extractionMetadataList);
+
+			/*
+			 * Here we get distinct subsection and section from
+			 * LS_EXTRACTION_METADATA.
+			 */
+
+			List<ExtractionMetadata> subSectionList = extractionServ
+					.getDistinctSubSection();
+			map.addAttribute("subSectionList", subSectionList);
+			/*
+			 * Here we get pasrer id from session
+			 */
+			Integer parserId = (Integer) session
+					.getAttribute("sessionParserId");
+
+			/*
+			 * Here we get FileUpload details based on filing id
+			 */
+			List<FileUploadModel> fileUploadList = fileUploadService
+					.getUploadDetailsList(filingId, parserId);
+			/**
+			 * Here we get bank name list for bank parser
+			 */
+			List<BankMaster> bankNameList = extractionServ.getBankNameList();
+			map.addAttribute("bankNameList", bankNameList);
+
+			
+			map.addAttribute("fileUploadList", fileUploadList);
+			map.addAttribute("fileUploadId", fileUploadId);
+			map.addAttribute("fillingId", fillingId);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			LOGGER.error("Error:",e);
+		}
+		LOGGER.info("--- viewBankParserSubPage request Mapping end--------");
+		return "rules_management_bankparser";
+	}
+
+	/** This function called when click on save button for bank parser **/
+	@RequestMapping(value = "/save_rules_management_bankparser.htm", method = RequestMethod.POST)
+	public String submitRulesManagementForBankParser(
+			@ModelAttribute ExtractorTableCommand extractorTableCommand,
+			Model map, HttpSession session) {
+		LOGGER.info("**-save_rules_management_bankparser START---");
+		boolean flag = true;
+
+		try {
+
+			Integer filingId = Integer.parseInt(CipherUtils
+					.decrypt(extractorTableCommand.getEncryptedFilingId()));
+			Integer fileUploadId = 0;
+
+			/*
+			 * Here we get parser id from session
+			 */
+			Integer parserId = (Integer) session
+					.getAttribute("sessionParserId");
+
+			/*
+			 * Here we get FileUpload details based on filing id
+			 */
+			List<FileUploadModel> fileUploadList = fileUploadService
+					.getUploadDetailsList(filingId, parserId);
+			map.addAttribute("fileUploadList", fileUploadList);
+
+			/*
+			 * if upload id is 0 that means update or insert rules for all files
+			 * Here we get first upload id from LS_EXTRACTOR_RUN_PROPERTIES table
+			 */
+
+			if (extractorTableCommand.getUploadId() != 0) {
+				flag = extractionServ
+						.saveUpadateExtractionRunProperties(extractorTableCommand);
+				fileUploadId = extractorTableCommand.getUploadId();
+			} else {
+				extractionServ
+						.deleteExtractiorRulePropertiesByFilingId(filingId);
+				extractorTableCommand.setErp_Id(null);
+				for (FileUploadModel fileUploadModel : fileUploadList) {
+					extractorTableCommand.setUploadId(fileUploadModel
+							.getFileUploadId());
+					flag = extractionServ
+							.saveUpadateExtractionRunProperties(extractorTableCommand);
+				}
+				fileUploadId = extractionServ.getFirstUploadId(filingId);
+			}
+
+			/*
+			 * This methode used for insert or update data in
+			 * extractor_metatadata table
+			 */
+			List<ExtractionMetadata> extractionMetadataList = extractionServ
+					.saveUpadateExtractiorMetaData(extractorTableCommand);
+			map.addAttribute("extractionMetadataList", extractionMetadataList);
+
+			/*
+			 * End
+			 */
+
+			/*
+			 * Here we get distinct subsection and section from
+			 * LS_EXTRACTION_METADATA.
+			 */
+
+			List<ExtractionMetadata> subSectionList = extractionServ
+					.getDistinctSubSection();
+			map.addAttribute("subSectionList", subSectionList);
+			/*
+			 * End
+			 */
+
+			List<ExtractorRunProperties> extractor_runproperties_list = extractionServ
+					.getExtractionRunPropertiesByFilingIdAndUploadId(filingId,
+							fileUploadId);
+			map.addAttribute("extractor_runproperties_list",
+					extractor_runproperties_list);
+
+			map.addAttribute("fileUploadId", fileUploadId);
+			map.addAttribute("rulFlag", flag);
+			map.addAttribute("fillingId",
+					extractorTableCommand.getEncryptedFilingId());
+			List<BankMaster> bankNameList = extractionServ.getBankNameList();
+			map.addAttribute("bankNameList", bankNameList);
+
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:",e);
+			map.addAttribute("rulFlag", false);
+		}
+
+		LOGGER.info("--- END submitRulesManagementForm ---");
+
+		return "rules_management_bankparser";
+	}
+
+	/*
+	 * This function used for Debit ACH mapping from normalization page
+	 */
+	@RequestMapping(value = "/debitACHMapping.htm", method = RequestMethod.POST)
+	public @ResponseBody
+	boolean modifyStatus(@RequestParam("fillingId") String fillingId,HttpSession session) {
+		LOGGER.info("** Start debitACHMapping methode");
+		boolean flag = false;
+		try {
+			User user=(User) session.getAttribute("user");
+			if (fillingId != null)
+				fillingId = CipherUtils.decrypt(fillingId);
+
+			Integer requestId = extractionServ.saveToRequestQueueFordebitACHMapping(fillingId.toString(),achDebitCalculation);
+			normalizationService.saveInvokeProcessTracker(requestId,Integer.parseInt(fillingId),"N",achDebitCalculation,user.getUserId());
+			flag=true;
+		} catch (Exception e) {
+			LOGGER.error("Error",e);
+			e.printStackTrace();
+		}
+		LOGGER.info("** End debitACHMapping methode ");
+		return flag;
+	}
+	
+	
+	/**
+	 * This controller used for update rules at global level in called from LS_PDF_EXTRACTION_METADATA table 
+	 */
+	@RequestMapping(value = "/updateRulesAtGlobalLevel.htm", produces = "text/html; charset=UTF-8", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String updateRulesAtGlobalLevel(@RequestParam("checkboxArray") String checkboxArray,HttpServletRequest request,HttpSession session) {
+		String msg ="" ;
+		LOGGER.info("** Start-updateRulesAtGlobalLevel methode");
+		try {
+			/*
+			 * This function used for update update rules at global level column in parser_output
+			 * table based on filing_id,section and table_id.
+			 */
+			User user= (User) session.getAttribute("user");
+			msg = extractionServ.f_updateRulesAtGlobalLevel(checkboxArray,user);
+
+		} catch (Exception e) {
+		  e.printStackTrace();
+		  LOGGER.error("Error:", e);
+		}
+
+		LOGGER.info("** End-update_NormalizedLabelColumn methode");
+
+		return msg;
+
+	}
+	
+	
+	@RequestMapping(value = "/call_rule_reprocess_descriptive.htm", method = RequestMethod.POST)
+	public @ResponseBody
+	boolean callDescriptiveRulesReprocess(@RequestParam("fillingId") String fillingId, Model map,HttpSession session) {
+		     boolean flag = false;
+		     User user =null;
+		try {
+			user= (User) session.getAttribute("user");
+			Long userId = user.getUserId();
+			String decryptedFillingId = CipherUtils.decrypt(fillingId);
+
+			WorkQueue workQueue = workQueueService.getWorkQueueDetailsUsingFilingId(Integer.parseInt(decryptedFillingId));
+			workQueue.setWqStatus(workqueDescriptiveReprocessStatus);
+			flag = workQueueService.updateWorkque(workQueue);
+			String userRole= ReleaseLockedUser.caseStatus(workQueue, user);
+			extractionServ.saveMOdifyStaus(decryptedFillingId, userRole,workqueReprocessStatus, userId, "Descriptive Reprocess" );			    	
+			return flag;
+		} catch (Exception e) {
+
+			LOGGER.error("Error:", e);
+			e.printStackTrace();
+		}
+		return flag;
+	}
+	
+	@RequestMapping(value = "/column_Merge.htm", method = RequestMethod.POST)
+	public @ResponseBody
+	boolean columnMerge(@RequestParam("fillingId") String fillingId,
+			@RequestParam("statementFormat") String statementFormat,HttpSession session) {
+		     User user = null;
+	
+		if (fillingId != null)
+			fillingId = CipherUtils.decrypt(fillingId);
+		LOGGER.info("** Start columnMerge method");
+		boolean flag = false;
+		try {
+		    user=(User) session.getAttribute("user");
+			Long userId = user.getUserId();
+			Integer requestId = extractionServ.saveToRequestQueueForColumnMerge(Integer.parseInt(fillingId),statementFormat,columnMerge);
+			normalizationService.saveInvokeProcessTracker(requestId,Integer.parseInt(fillingId),"N",columnMerge,userId);
+			//inserting 'modify status' in ProcessLogTracker 
+	    	WorkQueue  wq = workQueueService.getCompanyId(Integer.parseInt(fillingId));
+			String userRole= ReleaseLockedUser.caseStatus(wq, user);
+			extractionServ.saveColumnMerge(Integer.parseInt(fillingId), userRole, wq.getWqStatus(), userId,columnMerge);
+			flag=true;
+		} catch (Exception e) {
+			LOGGER.error("Error:",e);
+			e.printStackTrace();
+		}
+		LOGGER.info("** End modifyStatus method ");
+		return flag;
+	}
+	
+	/**
+	 * Below controller used for custome Configuration on Rules Management screen**/
+	@RequestMapping(value = "/custom_configuration.htm", method = RequestMethod.POST)
+	public String customeConfiguration(@RequestParam("fillingId") Integer fillingId,Model map)
+	{
+    	LOGGER.info("** Start customeConfiguration Controller");
+		try {
+		Integer parserId = workQueueService.f_getParserIdFromWorkQueueByFilingId(fillingId);
+		Map<String,Map<String,Map<String,List<String>>>> dataMap=extractionServ.getExtractionRunPropertiesByFilingId(fillingId,parserId);    		
+		map.addAttribute("dataMap", dataMap);
+		} catch (Exception e) {
+			LOGGER.error("Error:",e);
+			e.printStackTrace();
+		}
+		LOGGER.info("** End modifyStatus method ");
+		return "rules_custom_cofiguration";
+	}
+	
+	@RequestMapping(value = "/update_custom_configuration.htm", method = RequestMethod.POST)
+	public @ResponseBody boolean updateCustomeConfiguration(@RequestParam("fillingId") Integer fillingId,Model map,@RequestParam("propName") String propName,@RequestParam("propValue") String propValue,HttpSession session)
+	{
+    	LOGGER.info("** Start updatecustomeConfiguration Controller");
+		boolean flag = false;
+		try {
+		    User user=(User) session.getAttribute("user");
+			Long userId = user.getUserId();
+
+		ExtractorRunProperties extractorRunProperties=new ExtractorRunProperties();
+		extractorRunProperties.setFilingId(fillingId);
+		extractorRunProperties.setErp_propertyName(propName);
+		extractorRunProperties.setErp_propertyValue(propValue);
+		extractorRunProperties.setErp_Date(new java.util.Date());
+		extractorRunProperties.setCreatedBy(userId.toString());
+		extractorRunProperties.setCreatedDate(new java.util.Date());
+		flag=extractionServ.updateSaveExtractorRunProperties(extractorRunProperties);
+		
+		} catch (Exception e) {
+		LOGGER.error("Error:",e);
+		e.printStackTrace();
+		}
+    	LOGGER.info("** End updatecustomeConfiguration Controller");
+		return flag;
+	}
+	
+	@RequestMapping(value = "/deleteExtractionRules.htm", method = RequestMethod.POST)
+	public @ResponseBody boolean deleteExtractionRules(@RequestParam("param") Integer[] param)
+	{
+    	LOGGER.info("** Start updatecustomeConfiguration Controller");
+		boolean flag = false;
+		if(param!=null && param.length!=0){
+		try {
+		
+		List<Integer> idList = Arrays.asList(param);
+		flag=extractionServ.deleteExtractionRules(idList);
+		
+		} catch (Exception e) {
+		LOGGER.error("Error:",e);
+		e.printStackTrace();
+		}
+    	LOGGER.info("** End updatecustomeConfiguration Controller");
+		}
+		return flag;
+	}
+	
+	@RequestMapping(value = "/forcedOCR.htm", method = RequestMethod.POST)
+	public @ResponseBody
+	boolean forcedOCR(@RequestParam("fillingId") String fillingId, @RequestParam("ocrType") String ocrType,  Model map,HttpSession session) 
+	{
+		boolean flag = false;
+		User user = null;
+		try {
+			if (!StringUtils.isEmpty(fillingId)&& !StringUtils.isEmpty(ocrType)){
+			fillingId = CipherUtils.decrypt(fillingId);
+		    user=(User) session.getAttribute("user");
+			Long userId = user.getUserId();
+			WorkQueue  wq = workQueueService.getCompanyId(Integer.parseInt(fillingId));
+			Integer requestId = extractionServ.forcedOCR(fillingId.toString(),forcedOCR,wq.getWqStatus());
+			normalizationService.saveInvokeProcessTracker(requestId,Integer.parseInt(fillingId),"N",forcedOCR,userId);
+			flag=workQueueService.updateWqStatusAndOcrTypeByFilingId(Integer.parseInt(fillingId), "Processing",ocrType);
+			String userRole= ReleaseLockedUser.caseStatus(wq, user);
+			extractionServ.saveMOdifyStaus(fillingId, userRole,workqueReprocessStatus, userId, forcedOCR );	
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error",e);
+			e.printStackTrace();
+		}
+		return flag;
+	}
+
+	
+	@RequestMapping(value = "/viewGlobalDataPopUp.htm", method = { RequestMethod.GET, RequestMethod.POST })
+	public String viewGlobalMetaData(Model map, HttpSession session) {
+		LOGGER.info("** Start-viewGlobalDataPopUp method!");
+		Long totalRecords=0l;
+		Map<String, List<String>> sectionLanguageMap =null;
+		try{
+				totalRecords= extractionServ.getTotalRecordsOfGlobalData(null);	
+				if(totalRecords != null && totalRecords != 0){
+					sectionLanguageMap=extractionServ.getGlobalDropDwnList();
+			}
+		map.addAttribute("sectionList", sectionLanguageMap.get("sectionList"));
+		map.addAttribute("languageList", sectionLanguageMap.get("languageList"));	
+		map.addAttribute("totalRecords", totalRecords);
+		}catch(Exception e){
+			LOGGER.error("Error",e);
+			e.printStackTrace();	
+		}
+		return "viewGlobalMetaDataPopUp";
+	}
+	
+	
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/showGlobalPageNation.htm", method = {RequestMethod.GET, RequestMethod.POST })
+		public @ResponseBody JSONObject showGlobalPageNation(
+				@RequestParam("page") Integer page,
+				@RequestParam("displayRecords") Long displayRecords,
+				@RequestParam("totalRecords") Long totalRecords,
+				@RequestParam("keyword") String keyword,
+				@RequestParam("section") String section,
+				@RequestParam("language") String language,Model map) {
+		
+		LOGGER.info("** Start-showGlobalPageNation method");
+		JSONObject jsonResponse = new JSONObject();
+		Integer startNum=0;
+		Integer endNum=0;
+		Long totalPages=0l;
+		List<SectionIdentification> globalMetaDeta =null;
+		SectionIdentificationCommand cmd=null;
+		try{
+	  //logic for startpage and end page 
+			  cmd=new SectionIdentificationCommand();
+			  cmd.setKeyword(keyword);
+			  cmd.setLanguage(language);
+			  cmd.setSectionName(section);
+				if(totalRecords==null || totalRecords==0){
+					totalRecords=0l;
+					page=1;					
+					totalRecords= extractionServ.getTotalRecordsOfGlobalData(cmd);	
+				}
+				if(page!=null && displayRecords!=null && totalRecords!=null && page!=0 &&  displayRecords!=0 && totalRecords!=0){
+					//totalPages Logic
+					if(totalRecords!=null && totalRecords!=0){
+						totalPages = (long) Math.round(totalRecords / displayRecords);
+						long remainder = (totalRecords % displayRecords);
+						if (totalPages != 0 && remainder != 0) {
+							++totalPages;
+						}
+					}
+					Integer x=page;
+					Integer y=displayRecords.intValue();
+					Integer z=y-1;
+		            startNum=(x*y)-z;
+					endNum=(x*y);
+					cmd.setStartPageNo(startNum);
+					cmd.setEndPageNo(endNum);
+					globalMetaDeta = extractionServ.getGloblaMetaData(cmd);	
+			    }
+			}
+		catch(Exception e){
+			e.printStackTrace();
+			LOGGER.error("Error in showGlobalPageNation ", e);
+		}
+		jsonResponse.put("globalMetaDetaList", globalMetaDeta);
+		jsonResponse.put("page", page);
+		jsonResponse.put("startNum", startNum);
+		jsonResponse.put("endNum", endNum);
+		jsonResponse.put("totalPages", totalPages);
+		jsonResponse.put("totalRecords", totalRecords);
+		return jsonResponse;	
+	  }
+	
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/autoCompleteToKeyword.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody  JSONObject autoCompleteToGlobalKeywordList(@RequestParam("keywordVal") String keyword, HttpServletRequest request,Model map) {
+	
+		 JSONObject globalJSON = new JSONObject();
+		 List<String> keywordList=null;
+		try{
+		if (!StringUtils.isEmpty(keyword) && !StringUtils.isEmpty(keyword)) {
+			keywordList = extractionServ.getKeywordList(keyword.trim());
+			globalJSON.put("jsonArry", keywordList);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			LOGGER.error("Error in updateIgnoreList", e);
+		}
+		
+	return globalJSON;
+}
+}

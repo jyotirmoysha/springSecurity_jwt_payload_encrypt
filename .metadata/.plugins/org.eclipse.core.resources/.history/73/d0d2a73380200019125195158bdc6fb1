@@ -1,0 +1,110 @@
+package com.livespread.rage.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "LS_EXTRACTION_METADATA")
+@NamedQueries({ @NamedQuery(name = "findExtractionMetadata", query = "SELECT EM FROM ExtractionMetadata EM where filingId=:filingId and uploadId=:uploadId order by section"),
+
+})
+@NamedNativeQueries({
+	@NamedNativeQuery(name = "getFirstFileUploadId", query = "select distinct top 1 UPLOAD_ID from LS_EXTRACTION_METADATA where FILING_ID=:filingId"),
+		@NamedNativeQuery(name = "findDistinctSubsectionFromExtMetadata", query = "select DISTINCT sub_section,section from LS_EXTRACTION_METADATA where sub_section is not null"), })
+public class ExtractionMetadata implements BaseEntity,Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+//	@GeneratedValue(generator = "sequence")
+//	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_EXTRACT_METADAT") })
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "EXT_METADATA")
+	private Integer extMetadataId;
+
+	@Column(name = "SUB_SECTION")
+	private String subSection;
+
+	@Column(name = "KEYWORDS")
+	private String keyWords;
+
+	@Column(name = "FILING_ID")
+	private Integer filingId;
+
+	@Column(name = "UPLOAD_ID")
+	private Integer uploadId;
+
+	@Column(name = "SECTION")
+	private String section;
+
+	public String getSubSection() {
+		return subSection;
+	}
+
+	public void setSubSection(String subSection) {
+		this.subSection = subSection;
+	}
+
+	public String getKeyWords() {
+		return keyWords;
+	}
+
+	public void setKeyWords(String keyWords) {
+		this.keyWords = keyWords;
+	}
+
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public Integer getUploadId() {
+		return uploadId;
+	}
+
+	public void setUploadId(Integer uploadId) {
+		this.uploadId = uploadId;
+	}
+
+	public String getSection() {
+		return section;
+	}
+
+	public void setSection(String section) {
+		this.section = section;
+	}
+
+
+	public Integer getExtMetadataId() {
+		return extMetadataId;
+	}
+
+	public void setExtMetadataId(Integer extMetadataId) {
+		this.extMetadataId = extMetadataId;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.RAGE;
+	}
+
+}

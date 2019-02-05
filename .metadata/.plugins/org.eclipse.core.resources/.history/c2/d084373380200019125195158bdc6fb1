@@ -1,0 +1,161 @@
+package com.livespread.util;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.livespread.domain.NamedNativeQueryName;
+import com.livespread.domain.ParserSectionMapping;
+import com.livespread.rage.domain.ExtractorRunProperties;
+
+public class ExtractionUtil {
+public static Map<String,Map<String,Map<String,List<String>>>> f_getCustomConfigScreenData(List<ExtractorRunProperties> extractor_runproperties_list,List<String> sectionList)
+{
+	/** Here we put values in Map
+	 * Map<DropDownType,Map<"ISOrinetation",Map<"SlideBySlide",DropDownList>>> 
+	 * 
+	 * **/
+Map<String,Map<String,Map<String,List<String>>>> dataMap=new LinkedHashMap<>();
+try{
+
+
+
+	String stateMentMerge="Select";
+	String stndrdTagsLogic="Select";
+	String extractionScope="Select";
+	String extractreakups="Select";
+	String isBreakups="Select";
+	String bsBreakups="Select";
+	String Standalone="Select";
+	String generateLog="Select";
+	String subsectionmapping="Select";
+	for(ExtractorRunProperties extractorRunPropertiesObj:extractor_runproperties_list)
+	{
+	 
+	 if(extractorRunPropertiesObj.getErp_propertyName().equalsIgnoreCase("Statement Merge"))
+	 {
+	  stateMentMerge=extractorRunPropertiesObj.getErp_propertyValue();
+	 }
+	 if(extractorRunPropertiesObj.getErp_propertyName().equalsIgnoreCase("Use Standard Tags Logic"))
+	 {
+		 stndrdTagsLogic=extractorRunPropertiesObj.getErp_propertyValue();
+	 }
+	 if(extractorRunPropertiesObj.getErp_propertyName().equalsIgnoreCase("Extraction Scope"))
+	 {
+		 extractionScope=extractorRunPropertiesObj.getErp_propertyValue();
+	 }
+	 if(extractorRunPropertiesObj.getErp_propertyName().equalsIgnoreCase("Extract Breakups"))
+	 {
+		 extractreakups=extractorRunPropertiesObj.getErp_propertyValue();
+	 }
+	 if(extractorRunPropertiesObj.getErp_propertyName().equalsIgnoreCase("IS Breakups"))
+	 {
+		 isBreakups=extractorRunPropertiesObj.getErp_propertyValue();
+	 }
+	 if(extractorRunPropertiesObj.getErp_propertyName().equalsIgnoreCase("BS Breakups"))
+	 {
+		 bsBreakups=extractorRunPropertiesObj.getErp_propertyValue();
+	 }
+	 if(extractorRunPropertiesObj.getErp_propertyName().equalsIgnoreCase("Generate Log"))
+	 {
+		 generateLog=extractorRunPropertiesObj.getErp_propertyValue();
+	 }
+	 
+	 if(extractorRunPropertiesObj.getErp_propertyName().equalsIgnoreCase("Sub Section Mapping"))
+	 {
+		 subsectionmapping=extractorRunPropertiesObj.getErp_propertyValue();
+	 }
+	 if(extractorRunPropertiesObj.getErp_propertyName().equalsIgnoreCase("Standalone"))
+	 {
+		 Standalone=extractorRunPropertiesObj.getErp_propertyValue();
+	 }
+	}
+
+	Map<String,Map<String,List<String>>> propertyMap=null;
+	List<String> dropDownList=null;
+	Map<String,List<String>> selectedValuesMap=null;
+
+	propertyMap=new LinkedHashMap<>();
+
+	selectedValuesMap=new LinkedHashMap<>();
+	selectedValuesMap.put(subsectionmapping, sectionList);
+	propertyMap.put("Sub Section Mapping", selectedValuesMap);
+
+	selectedValuesMap=new LinkedHashMap<>();
+	selectedValuesMap.put(extractionScope, sectionList);
+	propertyMap.put("Extraction Scope", selectedValuesMap);
+
+	dataMap.put("multiple", propertyMap);
+	
+
+	propertyMap=new LinkedHashMap<>();
+	dropDownList=new ArrayList<>();
+	dropDownList.add("Select");
+	dropDownList.add("Off");
+	dropDownList.add("On");
+	selectedValuesMap=new LinkedHashMap<>();
+	selectedValuesMap.put(generateLog, dropDownList);
+	propertyMap.put("Generate Log", selectedValuesMap);
+
+
+	dropDownList=new ArrayList<>();
+	dropDownList.add("Select");
+	dropDownList.add("Yes");
+	dropDownList.add("No");
+	selectedValuesMap=new LinkedHashMap<>();
+	selectedValuesMap.put(Standalone, dropDownList);
+	propertyMap.put("Standalone", selectedValuesMap);
+
+	dropDownList=new ArrayList<>();
+	dropDownList.add("Select");
+	dropDownList.add("Yes");
+	dropDownList.add("No");
+	selectedValuesMap=new LinkedHashMap<>();
+	selectedValuesMap.put(bsBreakups, dropDownList);
+	propertyMap.put("BS Breakups", selectedValuesMap);
+
+
+	dropDownList=new ArrayList<>();
+	dropDownList.add("Select");
+	dropDownList.add("Yes");
+	dropDownList.add("No");
+	selectedValuesMap=new LinkedHashMap<>();
+	selectedValuesMap.put(isBreakups, dropDownList);
+	propertyMap.put("IS Breakups", selectedValuesMap);
+
+
+	dropDownList=new ArrayList<>();
+	dropDownList.add("Select");
+	dropDownList.add("Yes");
+	dropDownList.add("No");
+	selectedValuesMap=new LinkedHashMap<>();
+	selectedValuesMap.put(extractreakups, dropDownList);
+	propertyMap.put("Extract Breakups", selectedValuesMap);
+
+
+
+	dropDownList=new ArrayList<>();
+	dropDownList.add("Select");
+	dropDownList.add("Yes");
+	dropDownList.add("No");
+	selectedValuesMap=new LinkedHashMap<>();
+	selectedValuesMap.put(stateMentMerge, dropDownList);
+	propertyMap.put("Statement Merge", selectedValuesMap);
+
+	dropDownList=new ArrayList<>();
+	dropDownList.add("Select");
+	dropDownList.add("Yes");
+	dropDownList.add("No");
+	selectedValuesMap=new LinkedHashMap<>();
+	selectedValuesMap.put(stndrdTagsLogic, dropDownList);
+	propertyMap.put("Use Standard Tags Logic", selectedValuesMap);
+	dataMap.put("SingleDropDown", propertyMap);
+}catch(Exception e){
+	e.printStackTrace();
+}
+	return dataMap;
+
+}
+}

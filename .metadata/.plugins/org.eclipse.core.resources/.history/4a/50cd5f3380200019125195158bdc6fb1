@@ -1,0 +1,379 @@
+package com.livespread.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.livespread.command.GoldenCaseWorkQueueCommand;
+import com.livespread.command.GoldenFtrCaseMapSrchCriteriaCommand;
+import com.livespread.dao.NormalizationViewDAO;
+import com.livespread.domain.GoldenSetBatchTracker;
+import com.livespread.domain.GoldenSetMetadata;
+import com.livespread.domain.GoldenSetReports;
+import com.livespread.domain.NamedQueryName;
+import com.livespread.domain.WorkQueue;
+import com.livespread.rage.domain.SectionIdentification;
+import com.livespread.util.LiveSpreadUtil;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Service("goldenFeatureCaseMappingService")
+public class GoldenFeatureCaseMappingServiceImpl implements GoldenFeatureCaseMappingService{
+	private Logger LOGGER = Logger.getLogger(GoldenFeatureCaseMappingServiceImpl.class);
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+	
+	@Autowired
+	private NormalizationViewDAO normalizationViewDAO;
+
+	/**
+	 * Fetch feature and case id mapping information
+	 * from work queue table.
+	 */
+	@Override
+	public List<GoldenSetMetadata> f_getGoldenCaseFeatures() {
+		LOGGER.info("** Start-f_getGoldenCaseFeatures methode");
+		List<GoldenSetMetadata> goldenSetMetadataList=(List<GoldenSetMetadata>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getAllGoldenSetFeatures, GoldenSetMetadata.class);
+		LOGGER.info("** End-f_getGoldenCaseFeatures methode");
+		return goldenSetMetadataList;
+	}
+	
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public List<Object> getFeatureCaseMappings(Integer userId) throws DataAccessException  {
+	//public List<Object> getFeatureCaseMappings(Integer userId) throws DataAccessException  {
+		LOGGER.info("inside findAllFeatureCaseMappings");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("userId", userId);
+		
+		List<Object> workQueueList = genericDaoImpl.findByNamedQuery(
+				NamedQueryName.getFeatureCaseMappings, WorkQueue.class,parameters);
+		/*List<Object> workQueueList = genericDaoImpl.findByNamedQuery(
+				NamedQueryName.getFeatureCaseMappings, WorkQueue.class);*/
+		if (workQueueList != null && workQueueList.size() > 0) {
+			LOGGER.info("getworKQueueList ends");
+			return workQueueList;
+		}
+		LOGGER.info("getworKQueueList ends");
+		return null;
+
+	}
+	
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public Long getFeatureCaseMappingsCount(GoldenFtrCaseMapSrchCriteriaCommand cmd) throws DataAccessException  {
+	//public List<Object> getFeatureCaseMappings(Integer userId) throws DataAccessException  {
+		LOGGER.info("inside findAllFeatureCaseMappings");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		String dynamic="";
+		boolean whFlag=true;
+		Long totalRecords=0l;
+	   	String sqlCountQuery=null;
+		
+		if(cmd!=null){
+				
+				//parameters.put("userId", cmd.getUserID());
+			if (cmd.getKeywordWQ()!=null && cmd.getKeywordWQ().intValue()!=0) {
+				parameters.put("keywordWQ", cmd.getKeywordWQ()+"%");
+				if(whFlag){
+					dynamic=dynamic+" and ";
+				}
+				dynamic=dynamic+" WQ_ID like :keywordWQ "; 
+				whFlag=true;
+			}
+			if (cmd.getCompName()!=null && !cmd.getCompName().isEmpty()) {
+				parameters.put("keywordCN", cmd.getCompName()+"%");
+				if(whFlag){
+					dynamic=dynamic+" and ";
+				}
+				dynamic=dynamic+"WQ_CUSTOMER_NAME like :keywordCN "; 
+				whFlag=true;
+			}
+			if (cmd.getFeatureID()!=null && cmd.getFeatureID().intValue() != 0){
+				if(whFlag){
+					dynamic=dynamic+" and ";
+				}
+				parameters.put("featureListID", cmd.getFeatureID());
+				dynamic=dynamic+"CASE_ID =:featureListID "; 
+				whFlag=true;
+			}
+			if (cmd.getUserID()!=null && cmd.getUserID().intValue() != 0){
+				if(whFlag){
+					dynamic=dynamic+" and ";
+				}
+				parameters.put("userId", cmd.getUserID());
+				dynamic=dynamic+"USER_ID =:userId "; 
+				whFlag=true;
+			}
+			
+		}
+		/*List<Object> workQueueList = genericDaoImpl.findByNamedQuery(
+				NamedQueryName.getFeatureCaseMappings, WorkQueue.class,parameters);*/
+		sqlCountQuery="select  count(WQ_ID) from WORK_QUEUE where GOLDEN_FLAG is null "+dynamic;
+		totalRecords =normalizationViewDAO.getECountResult(sqlCountQuery,parameters);
+		
+		/*if (workQueueList != null && workQueueList.size() > 0) {
+			LOGGER.info("getworKQueueList ends");
+			return workQueueList;
+		}*/
+		LOGGER.info("getworKQueueList ends");
+		return totalRecords.longValue();
+
+	}
+	/**
+	 * update Work queue table based on case id selected
+	 * from feature case mapping screen
+	 */
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public int updateWorkQueueByCaseId(Integer caseID, Integer wqId) throws DataAccessException {
+		LOGGER.info("inside findAllFeatureCaseMappings");
+		int updatedFlag = 0;
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("caseID", caseID);
+		parameters.put("wqId", wqId);
+
+		updatedFlag = genericDaoImpl.updateByNamedQuery(NamedQueryName.updateWorkQueueByCaseId, WorkQueue.class,
+				parameters);
+
+		return updatedFlag;
+	}
+
+	@Override
+	public Long getTotalRecordsOfFeatureCaseMapping(Integer userId) throws DataAccessException {
+		Long totalRecords=0l;
+   	    String dynamic="";
+	    String sqlCountQuery=null;
+	    boolean whFlag=false;
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("userId", userId);
+		
+		 sqlCountQuery="select  count(WQ_ID) from WORK_QUEUE where GOLDEN_FLAG is null and USER_ID=:userId";
+		 totalRecords =normalizationViewDAO.getCountResult(sqlCountQuery,parameters);
+		return totalRecords;
+	}
+
+	@Override
+	public List<Object> getFeatureCaseMappingsJSON(GoldenFtrCaseMapSrchCriteriaCommand cmd)
+			throws DataAccessException {
+	/*public List<Object> getFeatureCaseMappingsJSON(Integer userId, Integer startPageNo, Integer endPageNo)
+			throws DataAccessException {*/
+		LOGGER.info("inside findAllFeatureCaseMappings");
+		String  dynamicPage="";
+		String  dynamic="";
+		boolean pageFlag=false;
+		boolean whFlag=false;
+		List<Object> globalFeatureCaseMappingList = null;
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		if(cmd!=null){
+		parameters.put("userId", cmd.getUserID());
+		whFlag = true;
+		//parameters.put("startNum", cmd.getStartPageNo());
+		//parameters.put("endNum", cmd.getEndPageNo());		
+		//parameters.put("userId", cmd.getUserID());
+		if (cmd.getKeywordWQ()!=null && cmd.getKeywordWQ().intValue()!=0) {
+			parameters.put("keywordWQ", cmd.getKeywordWQ()+"%");
+			if(whFlag){
+				dynamic=dynamic+" and ";
+			}
+			dynamic=dynamic+"WQ_ID like :keywordWQ "; 
+			whFlag=true;
+		}
+		if (cmd.getCompName()!=null && !cmd.getCompName().isEmpty()) {
+			parameters.put("keywordCN", cmd.getCompName()+"%");
+			if(whFlag){
+				dynamic=dynamic+" and ";
+			}
+			dynamic=dynamic+"WQ_CUSTOMER_NAME like :keywordCN "; 
+			whFlag=true;
+		}
+		if (cmd.getFeatureID()!=null && cmd.getFeatureID().intValue() != 0){
+			if(whFlag){
+				dynamic=dynamic+" and ";
+			}
+			parameters.put("featureListID", cmd.getFeatureID());
+			dynamic=dynamic+"CASE_ID =:featureListID "; 
+			whFlag=true;
+		}
+		/*if (cmd.getUserID()!=null && cmd.getUserID().intValue() != 0){
+			if(whFlag){
+				dynamic=dynamic+" and ";
+			}
+			parameters.put("userId", cmd.getUserID());
+			dynamic=dynamic+"USER_ID =:userId "; 
+			whFlag=true;
+		}*/
+				
+		
+		if(null!=cmd.getUserID() && null!=cmd.getStartPageNo() && null!=cmd.getEndPageNo()){
+			
+
+			if (cmd.getStartPageNo()!=null && cmd.getStartPageNo()!=0) {
+				parameters.put("startNum", cmd.getStartPageNo());
+				dynamicPage=dynamicPage+"Num >= :startNum "; 
+				pageFlag=true;
+			}
+			if (cmd.getEndPageNo()!=null && cmd.getEndPageNo()!=0){
+				parameters.put("endNum", cmd.getEndPageNo());
+				if(pageFlag){
+				dynamicPage=dynamicPage+" and ";
+				}
+				dynamicPage=dynamicPage+"Num < =:endNum "; 
+			}
+			if(pageFlag){
+				dynamicPage=" where "+dynamicPage;
+			}	
+			//String dynamicQuery="select * from (Select row_number() over(order by WQ_ID desc) as Num,WQ_ID,CASE_ID,COMPANY_ID,WQ_CUSTOMER_NAME,WQ_STATUS,CREATE_DATE,CREATED_BY from WORK_QUEUE where GOLDEN_FLAG is null and USER_ID =:userId) wq "+dynamicPage;
+			String dynamicQuery="select * from (Select row_number() over(order by WQ_ID desc) as Num,WQ_ID,CASE_ID,COMPANY_ID,WQ_CUSTOMER_NAME,WQ_STATUS,CREATE_DATE,CREATED_BY from WORK_QUEUE where GOLDEN_FLAG is null and USER_ID =:userId "+dynamic+") wq "+dynamicPage;
+			
+			globalFeatureCaseMappingList =normalizationViewDAO.getEListOfObjects(dynamicQuery,parameters);
+		
+			
+		}
+		}
+		return globalFeatureCaseMappingList;
+	}
+
+	@Override
+	public List<String> getKeywordListWQ(String keyword,Integer userId) {
+
+		List<String> keywordList = null;
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("wqId", keyword);
+		parameters.put("userId", userId);
+		List<Object> keywords = genericDaoImpl.findByNamedQuery(NamedQueryName.getAutoCompleteKeywordMetaDataListWQ,
+				WorkQueue.class, parameters);
+		if (keywords != null) {
+			keywordList = new ArrayList<String>();
+			for (Object object : keywords) {
+				keywordList.add(object.toString() != null ? object.toString() : "");
+			}
+		}
+		return keywordList;
+
+	}
+	
+	@Override
+	public List<String> getKeywordListCN(String keyword,Integer userId) {
+
+		List<String> keywordList = null;
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("wqCustomerName", keyword);
+		parameters.put("userId", userId);
+		List<Object> keywords = genericDaoImpl.findByNamedQuery(NamedQueryName.getAutoCompleteKeywordMetaDataListCN,
+				WorkQueue.class, parameters);
+		if (keywords != null) {
+			keywordList = new ArrayList<String>();
+			for (Object object : keywords) {
+				keywordList.add(object.toString() != null ? object.toString() : "");
+			}
+		}
+		return keywordList;
+
+	}
+/**
+ * This function used for get work queue cases based on user group id
+ */
+	@Override
+	public Map<String,List<GoldenCaseWorkQueueCommand>> f_getFeatureFilingIdAssociation(Integer userGroupId) {
+		LOGGER.info("** Start-f_getGoldenCaseFeatures methode");
+		
+		Map<String,List<GoldenCaseWorkQueueCommand>> dataMap=new LinkedHashMap<>();
+		List<GoldenSetMetadata> objectList=(List<GoldenSetMetadata>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getAllGoldenSetFeatures, GoldenSetMetadata.class);
+		List<GoldenSetMetadata> goldenSetMetadataList= LiveSpreadUtil.populateFeatureListMetaData(objectList);
+		for(GoldenSetMetadata goldenSetMetadata:goldenSetMetadataList){
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("userGroupId", userGroupId);
+			parameters.put("goldenFlag", "N");
+			parameters.put("caseID", goldenSetMetadata.getCaseId());
+			List<Object> workQueueObjList=genericDaoImpl.findByNamedQuery(NamedQueryName.getGoldenCaseDataByGroupId, WorkQueue.class,parameters);
+			List<GoldenCaseWorkQueueCommand> goldenCaseWorkQueueCommandList=new ArrayList<>();
+			for(Object object:workQueueObjList)
+			{
+				GoldenCaseWorkQueueCommand caseWorkQueueCommand=new GoldenCaseWorkQueueCommand();
+				Object[] objIn = (Object[]) object;
+				if(objIn[1]!= null)
+				{
+				caseWorkQueueCommand.setWqId(objIn[0]!= null ? Integer.parseInt(objIn[0].toString()):null);
+				caseWorkQueueCommand.setFilingId(objIn[1]!= null ? Integer.parseInt(objIn[1].toString()):null);
+				caseWorkQueueCommand.setCaseId(objIn[2] != null ? Integer.parseInt(objIn[2].toString()):null);
+				caseWorkQueueCommand.setGoldenFlag(objIn[3]!=null?objIn[3].toString():"");
+				caseWorkQueueCommand.setGoldenBatchId(objIn[4] == null ? 0 : Integer.parseInt(objIn[4].toString()));
+				caseWorkQueueCommand.setCompanyName(objIn[5]!=null?objIn[5].toString():"");
+				goldenCaseWorkQueueCommandList.add(caseWorkQueueCommand);
+				}//end filing id null condition
+			}
+			dataMap.put(goldenSetMetadata.getCaseName(), goldenCaseWorkQueueCommandList);
+			
+		}
+		LOGGER.info("** End-f_getGoldenCaseFeatures methode");
+		return dataMap;
+	}
+	@Override
+	public List<GoldenSetBatchTracker>  f_getCaseSummaryData() {
+		LOGGER.info("** Start-f_getGoldenCaseFeatures methode");
+		List<GoldenSetBatchTracker> batchTrackersList=new ArrayList<>();
+		Map<String, Object> parameters = new HashMap<String, Object>();
+
+		List<GoldenSetBatchTracker> batchTrackersListTemp=(List<GoldenSetBatchTracker>)(Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getGoldenSetBatchTracker, GoldenSetBatchTracker.class,parameters);
+		for(GoldenSetBatchTracker goldenSetBatchTracker:batchTrackersListTemp)
+		{
+			Map<String, Object> parametersOne = new HashMap<String, Object>();
+			parametersOne.put("batchId", goldenSetBatchTracker.getBatchId());
+
+			Map<Integer,String> featuresMap=new LinkedHashMap<>();
+			List<Object> featureListData=genericDaoImpl.findByNamedQuery(NamedQueryName.getDistinctFeatureDataByBatchId, GoldenSetReports.class,parametersOne);
+			if(featureListData.size()>0){
+			for(Object object:featureListData)
+			{   
+			Object[] objIn = (Object[]) object;
+			featuresMap.put(objIn[0] == null ? 0 : Integer.parseInt(objIn[0].toString()),objIn[1] == null ? "" : objIn[1].toString());
+			}
+			goldenSetBatchTracker.setFeaturesMap(featuresMap);
+			}
+			batchTrackersList.add(goldenSetBatchTracker);
+		}//end for
+
+		LOGGER.info("** End-f_getGoldenCaseFeatures methode");
+		return batchTrackersList;
+	}
+	
+	@Override
+	public List<GoldenSetReports> f_getFeatureDataReportByBatchIdAndCaseId(Integer batchId,Integer feautreId)
+	{
+		LOGGER.info("** Start-f_getFeatureDataReportByBatchIdAndCaseId methode");
+		
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("batchId", batchId);
+		parameters.put("caseId", feautreId);
+		List<GoldenSetReports> goldenSetReportsList=(List<GoldenSetReports>)(Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getFeatureDataReportByBatchIdAndCaseId, GoldenSetReports.class,parameters);
+	
+		LOGGER.info("** End-f_getFeatureDataReportByBatchIdAndCaseId methode");
+		return goldenSetReportsList;
+	}
+	@Override
+	public GoldenSetBatchTracker f_goldenSetTrackeryBatchId(Integer batchId)
+	{
+		LOGGER.info("** Start-f_goldenSetReportByBatchId methode");
+		GoldenSetBatchTracker batchTracker=new GoldenSetBatchTracker();
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("batchId", batchId);
+		List<GoldenSetBatchTracker> goldenSetTrackerList=(List<GoldenSetBatchTracker>)(Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getFeatureDataReportByBatchId, GoldenSetBatchTracker.class,parameters);
+		if(goldenSetTrackerList!=null && !goldenSetTrackerList.isEmpty()){
+			batchTracker=goldenSetTrackerList.get(0);
+		}
+		LOGGER.info("** End-f_goldenSetReportByBatchId methode");
+		return batchTracker;
+	}
+
+}

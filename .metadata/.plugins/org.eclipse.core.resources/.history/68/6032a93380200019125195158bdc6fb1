@@ -1,0 +1,366 @@
+package com.livespread.rage.domain;
+
+import java.util.List;
+
+import com.livespread.domain.POAnchors;
+
+public class ExcelViewData implements Comparable<ExcelViewData> {
+
+	private Integer poId;
+	private String poAsRepLabel;
+	private Integer poIndexOrder;
+	private String poAsRepVal1;
+	private String poAsRepVal2;
+	private String poAsRepVal3;
+	private String poAsRepVal4;
+	private String poAsRepVal5;
+	private String poAsRepVal6;
+	private String poAsRepVal7;
+	private String poAsRepVal8;
+	private String poAsRepVal9;
+	private String poAsRepVal10;
+	private String poAsRepVal11;
+	private String poAsRepVal12;
+	private String poAsRepVal13;
+	private String poAsRepVal14;
+	private String poAsRepVal15;
+	private String poAsRepVal16;
+	private String poAsRepVal17;
+	private String poAsRepVal18;
+	private String poAsRepVal19;
+	private String poAsRepVal20;
+	private Integer paColumn;
+	private String nilLabel;
+	private String poSubSectionParserOutPut;
+	private String poSection;
+	private List<POAnchors> poanchors;
+	private String accountNumber;
+	private String timePeriod;
+	private String custodianName;
+	private String poBreakUp;
+	private String pageNo;
+	private String nonEnglishLable;
+
+	public String getPageNo() {
+		return pageNo;
+	}
+
+	public void setPageNo(String pageNo) {
+		this.pageNo = pageNo;
+	}
+
+	public String getPoBreakUp() {
+		return poBreakUp;
+	}
+
+	public void setPoBreakUp(String poBreakUp) {
+		this.poBreakUp = poBreakUp;
+	}
+
+	public String getCustodianName() {
+		return custodianName;
+	}
+
+	public void setCustodianName(String custodianName) {
+		this.custodianName = custodianName;
+	}
+
+	public String getTimePeriod() {
+		return timePeriod;
+	}
+
+	public void setTimePeriod(String timePeriod) {
+		this.timePeriod = timePeriod;
+	}
+
+	public String getAccountNumber() {
+		return accountNumber;
+	}
+
+	public void setAccountNumber(String accountNumber) {
+		this.accountNumber = accountNumber;
+	}
+
+	public String getPoAsRepVal8() {
+		return poAsRepVal8;
+	}
+
+	public void setPoAsRepVal8(String poAsRepVal8) {
+		this.poAsRepVal8 = poAsRepVal8;
+	}
+
+	public String getPoAsRepVal9() {
+		return poAsRepVal9;
+	}
+
+	public void setPoAsRepVal9(String poAsRepVal9) {
+		this.poAsRepVal9 = poAsRepVal9;
+	}
+
+	public String getPoAsRepVal10() {
+		return poAsRepVal10;
+	}
+
+	public void setPoAsRepVal10(String poAsRepVal10) {
+		this.poAsRepVal10 = poAsRepVal10;
+	}
+
+	public String getPoAsRepVal5() {
+		return poAsRepVal5;
+	}
+
+	public void setPoAsRepVal5(String poAsRepVal5) {
+		this.poAsRepVal5 = poAsRepVal5;
+	}
+
+	public String getPoAsRepVal6() {
+		return poAsRepVal6;
+	}
+
+	public void setPoAsRepVal6(String poAsRepVal6) {
+		this.poAsRepVal6 = poAsRepVal6;
+	}
+
+	public String getPoAsRepVal7() {
+		return poAsRepVal7;
+	}
+
+	public void setPoAsRepVal7(String poAsRepVal7) {
+		this.poAsRepVal7 = poAsRepVal7;
+	}
+
+	public String getPoSection() {
+		return poSection;
+	}
+
+	public void setPoSection(String poSection) {
+		this.poSection = poSection;
+	}
+
+	public List<POAnchors> getPoanchors() {
+		return poanchors;
+	}
+
+	public void setPoanchors(List<POAnchors> poanchors) {
+		this.poanchors = poanchors;
+	}
+
+	public String getPoSubSectionParserOutPut() {
+		return poSubSectionParserOutPut;
+	}
+
+	public void setPoSubSectionParserOutPut(String poSubSectionParserOutPut) {
+		this.poSubSectionParserOutPut = poSubSectionParserOutPut;
+	}
+
+	public Integer getPoId() {
+		return poId;
+	}
+
+	public void setPoId(Integer poId) {
+		this.poId = poId;
+	}
+
+	public String getPoAsRepLabel() {
+		return poAsRepLabel;
+	}
+
+	public void setPoAsRepLabel(String poAsRepLabel) {
+		this.poAsRepLabel = poAsRepLabel;
+	}
+
+	public Integer getPoIndexOrder() {
+		return poIndexOrder;
+	}
+
+	public void setPoIndexOrder(Integer poIndexOrder) {
+		this.poIndexOrder = poIndexOrder;
+	}
+
+	public String getPoAsRepVal1() {
+		return poAsRepVal1;
+	}
+
+	public void setPoAsRepVal1(String poAsRepVal1) {
+		this.poAsRepVal1 = poAsRepVal1;
+	}
+
+	public String getPoAsRepVal2() {
+		return poAsRepVal2;
+	}
+
+	public void setPoAsRepVal2(String poAsRepVal2) {
+		this.poAsRepVal2 = poAsRepVal2;
+	}
+
+	public String getPoAsRepVal3() {
+		return poAsRepVal3;
+	}
+
+	public void setPoAsRepVal3(String poAsRepVal3) {
+		this.poAsRepVal3 = poAsRepVal3;
+	}
+
+	public String getPoAsRepVal4() {
+		return poAsRepVal4;
+	}
+
+	public String getPoAsRepVal11() {
+		return poAsRepVal11;
+	}
+
+	public void setPoAsRepVal11(String poAsRepVal11) {
+		this.poAsRepVal11 = poAsRepVal11;
+	}
+
+	public String getPoAsRepVal12() {
+		return poAsRepVal12;
+	}
+
+	public void setPoAsRepVal12(String poAsRepVal12) {
+		this.poAsRepVal12 = poAsRepVal12;
+	}
+
+	public String getPoAsRepVal13() {
+		return poAsRepVal13;
+	}
+
+	public void setPoAsRepVal13(String poAsRepVal13) {
+		this.poAsRepVal13 = poAsRepVal13;
+	}
+
+	public String getPoAsRepVal14() {
+		return poAsRepVal14;
+	}
+
+	public void setPoAsRepVal14(String poAsRepVal14) {
+		this.poAsRepVal14 = poAsRepVal14;
+	}
+
+	public String getPoAsRepVal15() {
+		return poAsRepVal15;
+	}
+
+	public void setPoAsRepVal15(String poAsRepVal15) {
+		this.poAsRepVal15 = poAsRepVal15;
+	}
+
+	public String getPoAsRepVal16() {
+		return poAsRepVal16;
+	}
+
+	public void setPoAsRepVal16(String poAsRepVal16) {
+		this.poAsRepVal16 = poAsRepVal16;
+	}
+
+	public String getPoAsRepVal17() {
+		return poAsRepVal17;
+	}
+
+	public void setPoAsRepVal17(String poAsRepVal17) {
+		this.poAsRepVal17 = poAsRepVal17;
+	}
+
+	public String getPoAsRepVal18() {
+		return poAsRepVal18;
+	}
+
+	public void setPoAsRepVal18(String poAsRepVal18) {
+		this.poAsRepVal18 = poAsRepVal18;
+	}
+
+	public String getPoAsRepVal19() {
+		return poAsRepVal19;
+	}
+
+	public void setPoAsRepVal19(String poAsRepVal19) {
+		this.poAsRepVal19 = poAsRepVal19;
+	}
+
+	public String getPoAsRepVal20() {
+		return poAsRepVal20;
+	}
+
+	public void setPoAsRepVal20(String poAsRepVal20) {
+		this.poAsRepVal20 = poAsRepVal20;
+	}
+
+	public void setPoAsRepVal4(String poAsRepVal4) {
+		this.poAsRepVal4 = poAsRepVal4;
+	}
+
+	public Integer getPaColumn() {
+		return paColumn;
+	}
+
+	public void setPaColumn(Integer paColumn) {
+		this.paColumn = paColumn;
+	}
+
+	public String getNilLabel() {
+		return nilLabel;
+	}
+
+	public void setNilLabel(String nilLabel) {
+		this.nilLabel = nilLabel;
+	}
+
+	@Override
+	public int compareTo(ExcelViewData o) {
+		if (this.getPoIndexOrder() > o.getPoIndexOrder())
+			return 1;
+		else if (this.getPoIndexOrder() < o.getPoIndexOrder())
+			return -1;
+		else
+			return 0;
+
+	}
+
+	
+	public String getNonEnglishLable() {
+		return nonEnglishLable;
+	}
+
+	public void setNonEnglishLable(String nonEnglishLable) {
+		this.nonEnglishLable = nonEnglishLable;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((poAsRepLabel == null) ? 0 : poAsRepLabel.hashCode());
+		result = prime * result + ((poId == null) ? 0 : poId.hashCode());
+		result = prime * result
+				+ ((poIndexOrder == null) ? 0 : poIndexOrder.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ExcelViewData other = (ExcelViewData) obj;
+		if (poAsRepLabel == null) {
+			if (other.poAsRepLabel != null)
+				return false;
+		} else if (!poAsRepLabel.equals(other.poAsRepLabel))
+			return false;
+		if (poId == null) {
+			if (other.poId != null)
+				return false;
+		} else if (!poId.equals(other.poId))
+			return false;
+		if (poIndexOrder == null) {
+			if (other.poIndexOrder != null)
+				return false;
+		} else if (!poIndexOrder.equals(other.poIndexOrder))
+			return false;
+		return true;
+	}
+}

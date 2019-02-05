@@ -1,0 +1,37 @@
+package com.livespread.command;
+
+import java.util.List;
+
+public class PasswordFilesCommand {
+
+	public List<String> orgfilename;
+
+	public List<String> filepwd;
+
+	public List<String> uploadfilename;
+
+	public List<String> getOrgfilename() {
+		return orgfilename;
+	}
+
+	public void setOrgfilename(List<String> orgfilename) {
+		this.orgfilename = orgfilename;
+	}
+
+	public List<String> getFilepwd() {
+		return filepwd;
+	}
+
+	public void setFilepwd(List<String> filepwd) {
+		this.filepwd = filepwd;
+	}
+
+	public List<String> getUploadfilename() {
+		return uploadfilename;
+	}
+
+	public void setUploadfilename(List<String> uploadfilename) {
+		this.uploadfilename = uploadfilename;
+	}
+
+}

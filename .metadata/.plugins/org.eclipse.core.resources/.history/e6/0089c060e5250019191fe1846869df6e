@@ -1,0 +1,5 @@
+server.port=7083
+security.basic.enabled=true
+management.security.enabled=true
+spring.resources.chain.enabled=true
+    

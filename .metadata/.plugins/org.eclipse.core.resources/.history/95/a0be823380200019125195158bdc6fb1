@@ -1,0 +1,355 @@
+package com.livespread.service;
+
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.livespread.command.ChangePasswordCommand;
+import com.livespread.domain.User;
+import com.livespread.domain.UserActivationDetails;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.livespread.domain.NamedQueryName;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Service("ChangePasswordService")
+public class ChangePasswordServiceImpl implements ChangePasswordService {
+
+	private Logger LOGGER = Logger.getLogger(ChangePasswordServiceImpl.class);
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+
+	SimpleDateFormat format1 = new SimpleDateFormat("dd-MMM-yyyy");
+	SimpleDateFormat format2 = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss");
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean changePassword(ChangePasswordCommand changePasswordCommand) {
+		LOGGER.info("--- change Passwordrequest Mapping started in serviceImpl--------");
+		LOGGER.info("--- change Passwordrequest >>>class  ChangePasswordServiceImpl in updatePassword method --------");
+		boolean success = false;
+		Date modifiedDate=null;
+		int update = 0;
+			if (changePasswordCommand.getUserId() != null
+					&& changePasswordCommand.getNewPassword().equals(
+							changePasswordCommand.getConfirmPassword())
+					&& changePasswordCommand.getChangePassword() != null) {
+				String cdate = new SimpleDateFormat("dd-MMM-yyyy")
+						.format(new Date());
+				try {
+					modifiedDate = format1.parse(cdate.trim());
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+				Map<String, Object> parameterMap = new HashMap<String, Object>();
+				parameterMap.put("changePassword",
+						changePasswordCommand.getChangePassword());
+				parameterMap.put("userId", changePasswordCommand.getUserId());
+				parameterMap.put("modifiedDate", modifiedDate);
+				update = genericDaoImpl.updateByNamedQuery(
+						NamedQueryName.updateUserPassword, User.class,
+						parameterMap);
+				if (update > 0) {
+					success = true;
+				}
+			}
+
+		return success;
+	}
+
+	// last login-Time and lockedTime and wrongPasswordCount Updated
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean updateLastLoginTime(Long userId) {
+
+		LOGGER.info("--- change Passwordrequest Mapping started in serviceImpl--------");
+		LOGGER.info("--- change Passwordrequest >>>class  ChangePasswordServiceImpl in LastLoginTime update methodName updateLastLoginTime--------");
+		boolean updateLastLoginTime = false;
+		int loginTimeUpdate = 0;
+		try {
+			if (userId != null) {
+				String cdate = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss")
+						.format(new Date());
+				Date modifiedDate = format2.parse(cdate.trim());
+				Map<String, Object> parameterMap = new HashMap<String, Object>();
+				parameterMap.put("userId", userId);
+				parameterMap.put("updateTime", modifiedDate);
+				parameterMap.put("lockedTime", null);
+				parameterMap.put("zero", 0);
+				loginTimeUpdate = genericDaoImpl.updateByNamedQuery(
+						NamedQueryName.updateLastLoginTime, User.class,
+						parameterMap);
+				if (loginTimeUpdate > 0) {
+					updateLastLoginTime = true;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Exception Occured class:ChangePasswordServiceImpl; method: updateLastLoginTime "
+					+ e);
+
+		}
+
+		return updateLastLoginTime;
+	}
+
+	// updating lockedDate and release lock
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean wrongPasswordCountAndDate(User user) {
+		LOGGER.info("--- change Passwordrequest Mapping started in serviceImpl--------");
+		LOGGER.info("--- change Passwordrequest >>>class  ChangePasswordServiceImpl in LastLoginTime update methodName wrongPasswordCountBefore--------");
+		Integer lockedTime = 0;
+		Boolean update = false;
+		Date currentDate = null;
+		SimpleDateFormat format2 = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss");
+		String cdate = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss")
+				.format(new Date());
+		try {
+			currentDate = format2.parse(cdate.trim());
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		Integer wrongPasswordCountDb = user.getWrongPasswordCount();
+		if (wrongPasswordCountDb == null) {
+			wrongPasswordCountDb = 0;
+		}
+		if (user.getUsername() != null && wrongPasswordCountDb == 5) {
+				Map<String, Object> parameterMap = new HashMap<String, Object>();
+				parameterMap.put("userId", user.getUserId());
+				parameterMap.put("lockedTime", null);
+				parameterMap.put("zero", 1);
+				lockedTime = genericDaoImpl.updateByNamedQuery(
+						NamedQueryName.releaseLockTime, User.class,
+						parameterMap);
+				if (lockedTime > 0) {
+					update = true;
+				}
+			}
+			if (user.getUsername() != null && wrongPasswordCountDb < 5) {
+				Map<String, Object> parameterMap = new HashMap<String, Object>();
+				parameterMap.put("userId", user.getUserId());
+				parameterMap.put("lockedTime", currentDate);
+				lockedTime = genericDaoImpl.updateByNamedQuery(
+						NamedQueryName.updateLockedTime, User.class,
+						parameterMap);
+				if (lockedTime > 0) {
+					update = true;
+				}
+			}
+	
+		return update;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean isUserExistByEmail(String email) {
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("email", email);
+		User user = genericDaoImpl.findByColumn(
+				NamedQueryName.checkUserExistByEmail, User.class, parameters);
+		if (user != null) {
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean isUserExistByUserName(String username) {
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("login", username);
+		User user = genericDaoImpl
+				.findByColumn(NamedQueryName.checkUserExistByUsername,
+						User.class, parameters);
+		if (user != null) {
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public String getUserActivationStatusDetails(String emailId,
+			String activationId,
+			MessageDigestPasswordEncoder messageDigestPasswordEncoder) {
+		LOGGER.info("**Start :::ChangePasswordServiceImpl:::getUserActivationStatusDetails");
+		String activationStatus = "invalidRequest";
+		Long userId = null;
+		
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("encActivationId", activationId);
+			parameters.put("emailId", emailId);
+
+			@SuppressWarnings("unchecked")
+			List<UserActivationDetails> lstUserActivationDetails = (ArrayList<UserActivationDetails>) (Object) genericDaoImpl
+					.findByNamedQuery(NamedQueryName.getUserActivationDetails,
+							UserActivationDetails.class, parameters);
+
+			if (lstUserActivationDetails != null
+					&& !lstUserActivationDetails.isEmpty()) {
+				UserActivationDetails userActivationDetails = lstUserActivationDetails
+						.get(0);
+				int result = (new Date()).compareTo(userActivationDetails
+						.getActivationExpireDate());
+				if (result <= 0) {
+					userId = userActivationDetails.getUserId();
+					Map<String, Object> parametersUser = new HashMap<String, Object>();
+					parametersUser.put("userId", userId);
+
+					User user = genericDaoImpl.findByColumn(
+							NamedQueryName.getUserByUserId, User.class,
+							parametersUser);
+
+					activationStatus = "valid_" + user.getLogin() + "@@"
+							+ user.getUserId() + "@@"
+							+ userActivationDetails.getUserActivationId();
+				} else {
+					activationStatus = "activationExpire";
+				}
+			} else
+				activationStatus = "invalidRequest";
+		LOGGER.info("END :::ChangePasswordServiceImpl:::getUserActivationStatusDetails");
+		return activationStatus;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean updateUserPassword(
+			ChangePasswordCommand changePasswordCommand,
+			MessageDigestPasswordEncoder messageDigestPasswordEncoder) {
+		LOGGER.info("BEGIN :::UserManagementServiceImpl:::updateUserPassword");
+		String encryptPassword = null;
+		boolean status = false;
+		Long updatedBy = changePasswordCommand.getUserId();
+			Map<String, Object> parametersAct = new HashMap<String, Object>();
+			parametersAct.put("userActivationId",
+					Long.parseLong(changePasswordCommand.getActivationId()));
+			UserActivationDetails userActivationDetails = (UserActivationDetails) (Object) genericDaoImpl
+					.findByColumn(
+							NamedQueryName.getUserActivationDetailsByActId,
+							UserActivationDetails.class, parametersAct);
+
+			if (userActivationDetails != null) {
+
+				Map<String, Object> parameters = new HashMap<String, Object>();
+				parameters.put("userId", changePasswordCommand.getUserId());
+				User user = (User) (Object) genericDaoImpl.findByColumn(
+						NamedQueryName.getUserByUserId, User.class, parameters);
+
+				if (user != null) {
+					encryptPassword = encryptPassword(
+							changePasswordCommand.getNewPassword(),
+							messageDigestPasswordEncoder);
+					if (encryptPassword != null) {
+						user.setPassword(encryptPassword);
+						user.setFlag("Active"); // 0 --InActive , 1- Active
+						// user.setIsLocked(false); // 1- Lock, 0 -- Unlock
+						user.setModifiedBy(updatedBy.toString());
+						user = genericDaoImpl.merge(user);
+						status = true;
+
+						genericDaoImpl.remove(userActivationDetails);
+
+					}
+
+				}
+			}
+		LOGGER.info("END :::UserManagementServiceImpl:::updateUserPassword");
+		return status;
+	}
+
+	private String encryptPassword(String password,
+			MessageDigestPasswordEncoder messageDigestPasswordEncoder) {
+		LOGGER.info("BEGIN :::UserManagementServiceImpl:::encryptPassword");
+		String encryptedPassword = null;
+			encryptedPassword = messageDigestPasswordEncoder.encodePassword(
+					password, null); // encryption code
+		LOGGER.info("END :::UserManagementServiceImpl:::encryptPassword");
+		return encryptedPassword;
+	}
+
+	@Override
+	public User getUserByUserId(Long userId) {
+
+		Map<String, Object> parametersUser = new HashMap<String, Object>();
+		parametersUser.put("userId", userId);
+		User user = genericDaoImpl.findByColumn(NamedQueryName.getUserByUserId,
+				User.class, parametersUser);
+		return user;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public Integer editUser(User user){
+		LOGGER.info("** start--edit user methode");
+		Timestamp timestamp = new Timestamp(new Date().getTime());
+		String grpArray[] = user.getUsersGroupName().split("~");
+		user.setUserGroupId(Integer.parseInt(grpArray[0]));
+		user.setUsersGroupName(grpArray[1]);
+		user.setModifiedDate(timestamp);
+
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("firstName", user.getFirstName());
+		parameters.put("lastName", user.getLastName());
+		parameters.put("userGroupId", user.getUserGroupId());
+		parameters.put("usersGroupName", user.getUsersGroupName());
+		parameters.put("modifiedBy", user.getModifiedBy());
+		parameters.put("modifiedDate", user.getModifiedDate());
+		parameters.put("userId", user.getUserId());
+		parameters.put("userAccess", user.getUserAccess());
+		parameters.put("flag", user.getFlag());
+		int status = genericDaoImpl.updateByNamedQuery(
+				NamedQueryName.updateUser, User.class, parameters);
+
+		LOGGER.info("** end--edit user methode =status=" + status);
+
+		return status;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public Integer deleteUser(Long userId, String modifiedBy) {
+		LOGGER.info("** start--delete methode in changepasswordservice class");
+		Timestamp timestamp = new Timestamp(new Date().getTime());
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("userId", userId);
+		parameters.put("flag", "InActive");
+		parameters.put("modifiedBy", modifiedBy);
+		parameters.put("modifiedDate", timestamp);
+		// update User set
+		// modifiedBy=:modifiedBy,modifiedDate=:modifiedDate,flag=:flag where
+		// userId=:userId
+		int flag = genericDaoImpl.updateByNamedQuery(NamedQueryName.deleteUser,
+				User.class, parameters);
+		LOGGER.info("** end--delete methode in changepasswordservice class flag="
+				+ flag);
+		return flag;
+	}
+
+	// check existing emailName valid or nor for forgot Pasword!
+	@Override
+	public User getUserByEmail(String email) {
+		User user = null;
+		if (!email.isEmpty() && email != null) {
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("email", email);
+			user = genericDaoImpl.findByColumn(
+					NamedQueryName.checkUserExistByEmail, User.class,
+					parameters);
+		}
+		return user;
+	}
+
+}

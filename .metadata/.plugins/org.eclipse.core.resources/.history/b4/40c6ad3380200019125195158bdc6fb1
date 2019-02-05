@@ -1,0 +1,158 @@
+package com.livespread.rage.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "LS_EXTRACTOR_RUN_PROPERTIES")
+@NamedQueries({
+		@NamedQuery(name = "findExtractiorRuleProperties", query = "SELECT ERP FROM ExtractorRunProperties ERP where filingId=:filingId"),
+		@NamedQuery(name = "findExtractiorRulePropertiesByUploadId", query = "SELECT ERP FROM ExtractorRunProperties ERP where filingId=:filingId and uploadId=:uploadId"), 
+		@NamedQuery(name = "countExtractiorRulePropertiesByPropName", query = "SELECT count(*) FROM ExtractorRunProperties ERP where ERP.filingId=:filingId and ERP.erp_propertyName=:propertyName"),
+		@NamedQuery(name = "updateExtractiorRulePropertiesByFilingId", query = "UPDATE ExtractorRunProperties SET erp_propertyValue=:propertyValue,createdDate=:createdDate,createdBy=:createdBy where filingId=:filingId and erp_propertyName=:propertyName")
+})
+	
+@NamedNativeQueries({
+	    @NamedNativeQuery(name = "getFirstUploadId", query = "select distinct top1 upload_id from LS_EXTRACTOR_RUN_PROPERTIES where filing_id=:filingId"),
+		@NamedNativeQuery(name = "deleteExtractiorRulePropertiesByFilingId", query = "delete from LS_EXTRACTOR_RUN_PROPERTIES where filing_id=:filingId")
+
+})
+public class ExtractorRunProperties implements BaseEntity,Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	
+//	@GeneratedValue(generator = "sequence",strategy=GenerationType.IDENTITY)
+//	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_EXTRACTOR_RUN_PROPERTIES") })
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ERP_ID")
+	private Integer erpId;
+
+	@Column(name = "FILING_ID")
+	private Integer filingId;
+
+	@Column(name = "ERP_DATE")
+	private Date erp_Date;
+
+	@Column(name = "ERP_PROPERTY_NAME")
+	private String erp_propertyName;
+
+	@Column(name = "ERP_PROPERTY_VALUE")
+	private String erp_propertyValue;
+
+	@Column(name = "ERP_SORT_ORDER")
+	private String erp_sortOrder;
+
+	@Column(name = "UPLOAD_ID")
+	private Integer uploadId;
+
+	@Column(name = "CREATED_BY")
+	private String createdBy;
+	
+	@Column(name = "CREATED_DATE")
+	private Date createdDate;
+
+	
+	
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Integer getUploadId() {
+		return uploadId;
+	}
+
+	public void setUploadId(Integer uploadId) {
+		this.uploadId = uploadId;
+	}
+
+	public Integer getErpId() {
+		return erpId;
+	}
+
+	public void setErpId(Integer erpId) {
+		this.erpId = erpId;
+	}
+
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public Date getErp_Date() {
+		return erp_Date;
+	}
+
+	public void setErp_Date(Date erp_Date) {
+		this.erp_Date = erp_Date;
+	}
+
+	public String getErp_propertyName() {
+		return erp_propertyName;
+	}
+
+	public void setErp_propertyName(String erp_propertyName) {
+		this.erp_propertyName = erp_propertyName;
+	}
+
+	public String getErp_propertyValue() {
+		return erp_propertyValue;
+	}
+
+	public void setErp_propertyValue(String erp_propertyValue) {
+		this.erp_propertyValue = erp_propertyValue;
+	}
+
+	public String getErp_sortOrder() {
+		return erp_sortOrder;
+	}
+
+	public void setErp_sortOrder(String erp_sortOrder) {
+		this.erp_sortOrder = erp_sortOrder;
+	}
+
+	@Override
+	public String toString() {
+		return "ExtractorRunProperties [erpId=" + erpId + ", filingId="
+				+ filingId + ", erp_Date=" + erp_Date + ", erp_propertyName="
+				+ erp_propertyName + ", erp_propertyValue=" + erp_propertyValue
+				+ ", erp_sortOrder=" + erp_sortOrder + "]";
+	}
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.RAGE;
+	}
+}

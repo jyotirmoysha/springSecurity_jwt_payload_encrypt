@@ -1,0 +1,14 @@
+package com.livespread.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.livespread.command.NormalisedLabelAndValues;
+
+public interface CRTemplateService {
+	public Map<String, Object> getHeaderDetailsForCRTemplate(Integer filingId);
+	public void downloadCRTemplateForClient(Map<String, List<NormalisedLabelAndValues>> normalzedLabelsDetailsMap,
+			String oparationName, String customerName,
+			String downloadedCRTemplatePath, String CRTemplateFilePath,
+			Map<String, Object> mapOfHeaders);
+}

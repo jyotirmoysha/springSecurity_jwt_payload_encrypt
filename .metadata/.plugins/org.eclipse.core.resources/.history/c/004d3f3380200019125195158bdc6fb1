@@ -1,0 +1,204 @@
+package com.livespread.util;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.util.CollectionUtils;
+
+import com.livespread.excel.CopyRow;
+import com.livespread.excel.RowIndex;
+import com.livespread.excel.WriteExcel;
+
+
+
+public class BuildGenericExcel {
+
+	
+
+	private Logger LOGGER = Logger.getLogger(BuildGenericExcel.class);
+	/**
+	 * This function used for to create dynamic excel based on existing excel 
+	 */
+	ReadPropertiesFile readPropertiesFile=new ReadPropertiesFile();
+	
+	public String createCloneExcelTemplate(String excelTemplateName,String downloadedFileName) throws Exception{
+	String outputExcelFile="";
+
+	
+	String excelTemplatePath=readPropertiesFile.f_getFilePathByName("ExcelTemplatePath","application.properties");
+	String excelFileName=excelTemplateName;
+	/**
+	 * Here we create replica of existing template
+	 */
+	String inputExcelFile=excelTemplatePath+excelFileName;
+	InputStream template = new FileInputStream(inputExcelFile);
+	Workbook wb = WorkbookFactory.create(template);
+
+	//Saving excel to a different location or filename.
+	outputExcelFile=excelTemplatePath+downloadedFileName;
+	FileOutputStream out = new FileOutputStream(outputExcelFile);
+	wb.write(out);
+	out.close();
+	template.close();
+	
+	return outputExcelFile;
+	}
+	
+	
+/**
+* This function used for create replica of existing sheet
+*/
+public String f_createSheeetsClone(Map<String,String> sectionMappinMap,String outputFilePath){
+	LOGGER.info("**start-f_createSheeetsClone methode");
+	FileInputStream fileinp = null;
+	FileOutputStream fileOut = null;
+	try{
+	fileinp = new FileInputStream(outputFilePath);
+	XSSFWorkbook workbook = new XSSFWorkbook(fileinp);
+
+	int sheetNumber=1;
+	for (Map.Entry<String, String> entry : sectionMappinMap.entrySet())
+	{
+		workbook.cloneSheet(0);//clone sheet from existing sheet
+		String sheetName="";
+		if(entry.getValue()!=null){
+			sheetName=entry.getValue();
+			sheetName=sheetName.replaceAll("[/\\?*:]+", " ");
+		}
+		workbook.setSheetName(sheetNumber, sheetName);
+		sheetNumber++;
+	}
+	workbook.removeSheetAt(0);
+	fileOut = new FileOutputStream(outputFilePath);
+    workbook.write(fileOut);
+	}catch(Exception e){
+	e.printStackTrace();
+	LOGGER.error("Error:",e);
+	}
+	finally 
+	{
+		if(fileOut!=null)
+		{
+			try {
+				fileOut.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		if(fileinp!=null)
+		{
+			try {
+				fileinp.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
+	LOGGER.info("**End-f_createSheeetsClone methode");
+	return null;
+}
+
+/**
+ *This function used for create dynamic excel for every format  
+ * @param excel name - which is template clone excel.
+ * @Param writing start point rownumber and columnnumber- Here we srart writting data in excel.
+ * @Param Map<SheetName,Map<TableName,List<Object>>> - this map contain List of object based on sheet column header,Here sheetname from excel
+ * and Map.key(sheetname) should be same. 
+ * @param sheetHeaderType - sheetHeaderType means sheet header is row header or columnHeader or both
+ */
+
+public void f_prepareExcelReport(String excelName,Map<String,Map<String,List<? extends Object>>> dataValMap,int startRowNumber,int startColumnNumber,String sheetHeaderType)
+{
+	LOGGER.info("**Start-f_prepareExcelReport function");
+	InputStream inputStream = null;
+	XSSFWorkbook workbook = null;
+	try{
+	String excelTemplatePath=readPropertiesFile.f_getFilePathByName("ExcelTemplatePath","application.properties");
+	/**
+	 * write data in excel file
+	 */
+	String fileCompletePath=excelTemplatePath+excelName;
+	/**
+	 * Here we copy row based on object list and table
+	 */
+
+	inputStream = new FileInputStream(fileCompletePath);
+	 workbook = new XSSFWorkbook(inputStream);
+	for(String sheetName:dataValMap.keySet()){
+	 XSSFSheet worksheet =  workbook.getSheet(sheetName);
+	 Map<String,List<? extends Object>> tableMap=dataValMap.get(sheetName);
+	 
+	 int tableCounter=1;
+	 int tempRowStartNumber=0;
+	 List<? extends Object> objectList=null;
+	 if(!CollectionUtils.isEmpty(tableMap))
+	 {   
+		 tempRowStartNumber=startRowNumber;
+		 for(String tableName:tableMap.keySet()){
+			 int tempStartColumnNumber=startColumnNumber;
+	    	
+			 boolean isFound = tableName.indexOf("Table") !=-1? true: false; //true
+			 int rowTotal = worksheet.getLastRowNum();
+		//here if sheet has multiple table or has already table header and table header row 
+		  if(isFound || rowTotal>2){
+			 if(tableCounter<=1){
+			 if(tableMap.keySet().size()>1){
+		     tempRowStartNumber=startRowNumber+1;
+			 }else{
+			 tempRowStartNumber=startRowNumber;
+			 }
+			}else{
+			tempRowStartNumber=tempRowStartNumber+3;
+			}
+			}
+			 objectList=tableMap.get(tableName);
+			 if(!CollectionUtils.isEmpty(objectList)){
+				 for(int i=0;i<objectList.size();i++){
+				     RowIndex from=RowIndex.row(tempRowStartNumber);
+					 RowIndex to=RowIndex.row(tempRowStartNumber+1);
+					 CopyRow.copyRow(workbook, worksheet, from, to);
+					 WriteExcel.writeDataInRow(workbook, worksheet,from,objectList.get(i),tempStartColumnNumber);
+					 tempRowStartNumber++;
+					 }
+			 }
+			
+			 tableCounter=tableCounter+1;
+		 }
+	 }
+	}
+	FileOutputStream out = new FileOutputStream(fileCompletePath);
+	workbook.write(out);
+	out.close();
+
+	} catch (FileNotFoundException e) {
+		e.printStackTrace();
+	} catch (IOException e) {
+		e.printStackTrace();
+	}
+	finally {
+		if(inputStream!=null)
+		{
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	LOGGER.info("**End-f_prepareExcelReport function");
+}//end function
+
+}

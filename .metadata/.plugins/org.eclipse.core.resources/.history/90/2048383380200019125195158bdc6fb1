@@ -1,0 +1,419 @@
+/**
+ * 
+ */
+
+package com.livespread.util;
+
+import java.math.BigInteger;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.ResourceBundle;
+
+import org.apache.log4j.Logger;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.CollectionUtils;
+
+import com.livespread.command.GoldenFeatureCaseMappingData;
+import com.livespread.command.ParserOutputCommand;
+import com.livespread.command.QACheckListData;
+import com.livespread.domain.GoldenSetMetadata;
+import com.livespread.domain.QAMessageChecklist;
+import com.livespread.domain.User;
+import com.livespread.exception.UserNotLoginException;
+
+public class LiveSpreadUtil {
+
+	static Logger logger = Logger.getLogger(LiveSpreadUtil.class);
+
+	private static Properties properties = null;
+
+	public static User getUser() throws UserNotLoginException {
+		if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof User) {
+			return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		} else {
+			throw new UserNotLoginException("User Not Login");
+		}
+	}
+
+	public static Map<String, Object> getModelMapSuccess(String msg) {
+		Map<String, Object> modelMap = new HashMap<String, Object>(2);
+		modelMap.put("message", msg);
+		modelMap.put("success", true);
+		modelMap.put("status", true);
+		return modelMap;
+	}
+
+	public static Map<String, Object> getModelMapError(String msg) {
+		Map<String, Object> modelMap = new HashMap<String, Object>(2);
+		modelMap.put("message", msg);
+		modelMap.put("success", false);
+		modelMap.put("status", false);
+		return modelMap;
+	}
+
+	public static String getFormatedDate(Date date, String pattern) {
+		SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+		return sdf.format(date);
+	}
+
+	public static String getPropertyFromBundle(String propertyName) {
+		try {
+
+			if (properties == null) {
+
+				ResourceBundle bundle = ResourceBundle.getBundle("application");
+				Iterator<String> itr = bundle.keySet().iterator();
+				while (itr.hasNext()) {
+
+					String key = itr.next();
+					properties = new Properties();
+					String value = bundle.getString(key);
+					properties.put(key, value);
+				}
+			}
+			if (properties.get(propertyName) != null) {
+
+				return properties.get(propertyName).toString();
+			} else {
+
+				ResourceBundle bundle = ResourceBundle.getBundle("application");
+				String value = bundle.getString(propertyName);
+				if (value == null) {
+
+					return "";
+				} else {
+
+					return value;
+				}
+			}
+		} catch (Exception e) {
+			logger.error(e, e);
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	public static List<String> getListOfStatements() {
+		List<String> listOfStatements = new ArrayList<String>();
+
+		listOfStatements.add(LiveSpreadUtil.getPropertyFromBundle("statementYear"));
+		listOfStatements.add(LiveSpreadUtil.getPropertyFromBundle("statementYear"));
+		listOfStatements.add(LiveSpreadUtil.getPropertyFromBundle("statementMonth"));
+		listOfStatements.add(LiveSpreadUtil.getPropertyFromBundle("statementDate"));
+		listOfStatements.add(LiveSpreadUtil.getPropertyFromBundle("statementPeriod"));
+		listOfStatements.add(LiveSpreadUtil.getPropertyFromBundle("statementUnits"));
+		listOfStatements.add(LiveSpreadUtil.getPropertyFromBundle("statementCurrency"));
+		listOfStatements.add(LiveSpreadUtil.getPropertyFromBundle("statementType"));
+		listOfStatements.add(LiveSpreadUtil.getPropertyFromBundle("statementFor"));
+
+		listOfStatements.add(LiveSpreadUtil.getPropertyFromBundle("statementQuality"));
+		listOfStatements.add(LiveSpreadUtil.getPropertyFromBundle("DESCRIPTION"));
+		listOfStatements.add(LiveSpreadUtil.getPropertyFromBundle("Description"));
+		listOfStatements.add(LiveSpreadUtil.getPropertyFromBundle("DESCRIPTION"));
+
+		return listOfStatements;
+	}
+
+	public static Timestamp getCurrentTimeStamp() {
+
+		return new Timestamp(Calendar.getInstance().getTimeInMillis());
+
+	}
+
+	public static String getReviewType(String poSection, String niItemSuggestiveVal, Integer niItem,
+			Map<Integer, List<ParserOutputCommand>> childRecordMap, Integer poId) {
+
+		// String[] niItemSuggestiveArray =null;
+
+		List<ParserOutputCommand> childList = new ArrayList<ParserOutputCommand>();
+		if (childRecordMap != null) {
+			if (!CollectionUtils.isEmpty(childRecordMap.get(poId))) {
+				childList.addAll(childRecordMap.get(poId));
+			}
+		}
+
+		String reviewType = "";
+		if (!CollectionUtils.isEmpty(childList)) {
+			for (ParserOutputCommand parserOutputCommand : childList) {
+				reviewType = getReviewString(parserOutputCommand.getNiItemSuggstive(), niItem,
+						parserOutputCommand.getPoSection());
+				if (!reviewType.equalsIgnoreCase("noReview") && !reviewType.equalsIgnoreCase("")) {
+					reviewType = "manualReview";
+					break;
+				}
+			}
+			if (!reviewType.equalsIgnoreCase("manualReview")) {
+				reviewType = getReviewString(niItemSuggestiveVal, niItem, poSection);
+			}
+		} else {
+			reviewType = getReviewString(niItemSuggestiveVal, niItem, poSection);
+		}
+
+		return reviewType;
+	}
+
+	public static String getReviewString(String niItemSuggestiveVal, Integer niItem, String poSection) {
+		String[] niItemSuggestiveArray = null;
+		if (!niItemSuggestiveVal.trim().equals("") && !niItemSuggestiveVal.equals("-1")
+				&& niItemSuggestiveVal != null) {
+			niItemSuggestiveArray = niItemSuggestiveVal.split(",");
+		}
+		if (niItemSuggestiveArray == null) {
+			return "noMapping";
+		} else if (niItemSuggestiveArray.length > 1) {
+			return "multiMatch";
+		} else if (niItemSuggestiveArray.length == 1) {
+			if (niItem.equals(0)) {
+				return "manualReview";
+			} else {
+				if (poSection.equals("IS") || poSection.equals("BS") || poSection.equals("CF")) {
+					return "noReview";
+				} else {
+					return "manualReview";
+				}
+			}
+
+		}
+		return "";
+	}
+
+	public static boolean isNumber(String poAsRepVal) {
+		try {
+			Double.parseDouble(poAsRepVal);
+			return true;
+		} catch (NumberFormatException | NullPointerException ex) {
+			return false;
+		}
+	}
+
+	public static List<QACheckListData> prepareHorizontalQaCheckListData(List<QAMessageChecklist> qaList) {
+
+		QACheckListData qaCheckData = null;
+		List<QACheckListData> qaCheckDataList = new ArrayList<QACheckListData>();
+		List<QACheckListData> normValidationqaCheckDataList = new ArrayList<QACheckListData>();
+		List<QACheckListData> modifiedNormValidationqaCheckDataList = new ArrayList<QACheckListData>();
+		int count = 0;
+		StringBuilder comments = new StringBuilder("");
+		for (QAMessageChecklist qaCheck : qaList) {
+			if (null != qaCheck && (null != qaCheck.getCheckStage() && !"".equalsIgnoreCase(qaCheck.getCheckStage()))
+					&& (null != qaCheck.getCheckStatus() && !"".equalsIgnoreCase(qaCheck.getCheckStatus()))) {
+				qaCheckData = new QACheckListData();
+				qaCheckData.setQaMessageId(qaCheck.getqaMessageId() != null ? qaCheck.getqaMessageId() : null);
+				qaCheckData.setQaMessageIdString(qaCheck.getqaMessageId() != null
+						? CipherUtils.encrypt(qaCheck.getqaMessageId().toString()) : null);
+				qaCheckData.setCheckId(qaCheck.getCheckId() != null ? qaCheck.getCheckId() : null);
+				qaCheckData.setCheckIdString(
+						qaCheck.getCheckId() != null ? CipherUtils.encrypt(qaCheck.getCheckId().toString()) : null);
+				qaCheckData.setCheckStage(qaCheck.getCheckStage());
+				qaCheckData.setCheckName(qaCheck.getCheckName() != null ? qaCheck.getCheckName() : "");
+				qaCheckData.setCheckStatus(qaCheck.getCheckStatus() != null ? qaCheck.getCheckStatus() : "");
+				qaCheckData.setQaMessage(qaCheck.getQaMessage() != null ? qaCheck.getQaMessage() : "");
+				qaCheckData.setActionType(qaCheck.getActionType() != null ? qaCheck.getActionType() : "");
+				qaCheckData.setSection(qaCheck.getSection() != null ? qaCheck.getSection() : "");
+				qaCheckData.setReviewFlag(qaCheck.getReviewFlag());
+				qaCheckData.setComments(qaCheck.getComments() != null ? qaCheck.getComments() : "");
+				qaCheckData.setArsId(qaCheck.getArsId() != null ? qaCheck.getArsId() : 0);
+				qaCheckData.setSeqOrder(qaCheck.getSeqOrder() != null ? qaCheck.getSeqOrder() : 0);
+
+				if ("Normalization Validation".equalsIgnoreCase(qaCheckData.getCheckStage())) {
+					normValidationqaCheckDataList.add(qaCheckData);
+				} else {
+					qaCheckDataList.add(qaCheckData);
+				}
+			}
+		}
+
+		if (!CollectionUtils.isEmpty(normValidationqaCheckDataList)) {
+			count = 0;
+			Integer previousCheckId = 0;
+			Map<Integer, String> tempCheckStatusMap = new HashMap<Integer, String>();
+			for (QACheckListData qACheckListData : normValidationqaCheckDataList) {
+				if (previousCheckId.intValue() == 0) {
+					tempCheckStatusMap = new HashMap<Integer, String>();
+					previousCheckId = qACheckListData.getCheckId();
+				}
+
+				if (previousCheckId.equals(qACheckListData.getCheckId())) {
+					if (qACheckListData.getComments() != null && qACheckListData.getComments().trim().length() > 0) {
+						comments.append(qACheckListData.getComments()).append(",");
+					}
+
+					tempCheckStatusMap.put(qACheckListData.getArsId(), qACheckListData.getCheckStatus());
+				} else {
+					if (normValidationqaCheckDataList.get(count - 1).getComments() != null
+							&& normValidationqaCheckDataList.get(count - 1).getComments().trim().length() > 0) {
+						comments.append(qACheckListData.getComments()).append(",");
+					}
+					qaCheckData = new QACheckListData();
+					qaCheckData.setQaMessageId(normValidationqaCheckDataList.get(count - 1).getQaMessageId());
+					qaCheckData
+							.setQaMessageIdString(normValidationqaCheckDataList.get(count - 1).getQaMessageIdString());
+					qaCheckData.setCheckId(normValidationqaCheckDataList.get(count - 1).getCheckId());
+					qaCheckData.setCheckIdString(normValidationqaCheckDataList.get(count - 1).getCheckIdString());
+					qaCheckData.setCheckStage(normValidationqaCheckDataList.get(count - 1).getCheckStage());
+					qaCheckData.setCheckName(normValidationqaCheckDataList.get(count - 1).getCheckName());
+					qaCheckData.setCheckStatus(normValidationqaCheckDataList.get(count - 1).getCheckStatus());
+					qaCheckData.setQaMessage(normValidationqaCheckDataList.get(count - 1).getQaMessage());
+					qaCheckData.setActionType(normValidationqaCheckDataList.get(count - 1).getActionType());
+					qaCheckData.setSection(normValidationqaCheckDataList.get(count - 1).getSection());
+					qaCheckData.setReviewFlag(normValidationqaCheckDataList.get(count - 1).getReviewFlag());
+					qaCheckData.setComments(comments.toString().length() > 0
+							? comments.toString().substring(0, comments.length() - 1) : "");
+					qaCheckData.setArsId(normValidationqaCheckDataList.get(count - 1).getArsId());
+					qaCheckData.setSeqOrder(normValidationqaCheckDataList.get(count - 1).getSeqOrder());
+					qaCheckData.setCheckStatusMap(tempCheckStatusMap);
+					if (tempCheckStatusMap.containsValue("Failure")) {
+						qaCheckData.setCheckStatus("Failure");
+					}
+					modifiedNormValidationqaCheckDataList.add(qaCheckData);
+					tempCheckStatusMap = new HashMap<Integer, String>();
+					comments = new StringBuilder("");
+					tempCheckStatusMap.put(qACheckListData.getArsId(), qACheckListData.getCheckStatus());
+					previousCheckId = qACheckListData.getCheckId();
+				}
+				if (count == normValidationqaCheckDataList.size() - 1) {
+					if (normValidationqaCheckDataList.get(count - 1).getComments() != null
+							&& normValidationqaCheckDataList.get(count - 1).getComments().trim().length() > 0) {
+						comments.append(qACheckListData.getComments()).append(",");
+					}
+					qaCheckData = new QACheckListData();
+					qaCheckData.setQaMessageId(normValidationqaCheckDataList.get(count - 1).getQaMessageId());
+					qaCheckData
+							.setQaMessageIdString(normValidationqaCheckDataList.get(count - 1).getQaMessageIdString());
+					qaCheckData.setCheckId(normValidationqaCheckDataList.get(count - 1).getCheckId());
+					qaCheckData.setCheckIdString(normValidationqaCheckDataList.get(count - 1).getCheckIdString());
+					qaCheckData.setCheckStage(normValidationqaCheckDataList.get(count - 1).getCheckStage());
+					qaCheckData.setCheckName(normValidationqaCheckDataList.get(count - 1).getCheckName());
+					qaCheckData.setCheckStatus(normValidationqaCheckDataList.get(count - 1).getCheckName());
+					qaCheckData.setQaMessage(normValidationqaCheckDataList.get(count - 1).getQaMessage());
+					qaCheckData.setActionType(normValidationqaCheckDataList.get(count - 1).getActionType());
+					qaCheckData.setSection(normValidationqaCheckDataList.get(count - 1).getSection());
+					qaCheckData.setReviewFlag(normValidationqaCheckDataList.get(count - 1).getReviewFlag());
+					qaCheckData.setComments(comments.toString().length() > 0
+							? comments.toString().substring(0, comments.length() - 1) : "");
+					qaCheckData.setArsId(normValidationqaCheckDataList.get(count - 1).getArsId());
+					qaCheckData.setCheckStatusMap(tempCheckStatusMap);
+					qaCheckData.setSeqOrder(normValidationqaCheckDataList.get(count - 1).getSeqOrder());
+					if (tempCheckStatusMap.containsValue("Failure")) {
+						qaCheckData.setCheckStatus("Failure");
+					}
+					modifiedNormValidationqaCheckDataList.add(qaCheckData);
+				}
+
+				count++;
+
+			}
+
+		}
+		if (!CollectionUtils.isEmpty(modifiedNormValidationqaCheckDataList)) {
+			qaCheckDataList.addAll(modifiedNormValidationqaCheckDataList);
+		}
+		Collections.sort(qaCheckDataList, new QACheckListDataSortBySeqOrder());
+		count = 0;
+		List<QACheckListData> finalQaCheckDataList = new ArrayList<QACheckListData>();
+		List<QACheckListData> tempqaCheckDataList = new ArrayList<QACheckListData>();
+		Integer previousSeqOrder = null;
+		for (QACheckListData qACheckListData : qaCheckDataList) {
+			count++;
+			if (previousSeqOrder == null) {
+				previousSeqOrder = qACheckListData.getSeqOrder();
+			}
+			if (previousSeqOrder != null && previousSeqOrder.equals(qACheckListData.getSeqOrder())) {
+				tempqaCheckDataList.add(qACheckListData);
+			} else {
+				previousSeqOrder = qACheckListData.getSeqOrder();
+				Collections.sort(tempqaCheckDataList);
+				Collections.reverse(tempqaCheckDataList);
+				finalQaCheckDataList.addAll(tempqaCheckDataList);
+				tempqaCheckDataList = new ArrayList<QACheckListData>();
+				tempqaCheckDataList.add(qACheckListData);
+			}
+			if (count == qaCheckDataList.size()) {
+				Collections.sort(tempqaCheckDataList);
+				Collections.reverse(tempqaCheckDataList);
+				finalQaCheckDataList.addAll(tempqaCheckDataList);
+			}
+		}
+		return finalQaCheckDataList;
+	}
+
+	public static List<GoldenFeatureCaseMappingData> prepareHorizontalFeatureCaseMappingData(
+			List<Object> featureCaseMappingList) {
+
+		List<GoldenFeatureCaseMappingData> listData = new ArrayList<GoldenFeatureCaseMappingData>();
+		GoldenFeatureCaseMappingData mappingData = null;
+
+		for (Object object : featureCaseMappingList) {
+
+			Object[] obj = (Object[]) object;
+
+			mappingData = new GoldenFeatureCaseMappingData();
+			
+			mappingData.setWqId(obj[0] != null ? (Integer) obj[0] : 0);
+			mappingData.setCaseID(obj[1] != null ? (Integer) obj[1] : 0);
+			// mappingData.setFilingId(obj[1] != null ? obj[1] : 0);
+			mappingData.setWqCompanyName(obj[3] != null ? (String) obj[3] : "");
+			mappingData.setWqStatus(obj[4] != null ? (String) obj[4] : "");
+			mappingData.setCreatedOn(obj[5] != null ? (Date) obj[5] : new Date());
+			mappingData.setCreatedBy(obj[6] != null ? (String) obj[6] : "");
+
+			listData.add(mappingData);
+		}
+		return listData;
+	}
+	
+	public static List<GoldenSetMetadata> populateFeatureListMetaData(
+			List<GoldenSetMetadata> featurListData) {
+
+		List<GoldenSetMetadata> listData = new ArrayList<GoldenSetMetadata>();
+		GoldenSetMetadata mappingData = null;
+
+		for (Object object : featurListData) {
+
+			Object[] obj = (Object[]) object;
+
+			mappingData = new GoldenSetMetadata();
+			
+			mappingData.setCaseId(obj[0] != null ? (Integer) obj[0] : 0);
+			mappingData.setCaseName(obj[1] != null ? (String) obj[1] : "");
+			
+			listData.add(mappingData);
+		}
+		return listData;
+	}
+
+	
+	public static List<GoldenFeatureCaseMappingData> prepareHorizontalFeatureCaseMappingDataForPage(
+			List<Object> featureCaseMappingList) {
+
+		List<GoldenFeatureCaseMappingData> listData = new ArrayList<GoldenFeatureCaseMappingData>();
+		GoldenFeatureCaseMappingData mappingData = null;
+
+		for (Object object : featureCaseMappingList) {
+
+			Object[] obj = (Object[]) object;
+
+			mappingData = new GoldenFeatureCaseMappingData();
+			
+			mappingData.setWqId(obj[1] != null ? (Integer) obj[1] : 0);
+			mappingData.setCaseID(obj[2] != null ? (Integer) obj[2] : 0);
+			// mappingData.setFilingId(obj[1] != null ? obj[1] : 0);
+			mappingData.setWqCompanyName(obj[4] != null ? (String) obj[4] : "");
+			mappingData.setWqStatus(obj[5] != null ? (String) obj[5] : "");
+			mappingData.setCreatedOn(obj[6] != null ? (Date) obj[6] : new Date());
+			mappingData.setCreatedByI(obj[7] != null ? (Integer) obj[7] : 0);
+
+			listData.add(mappingData);
+		}
+		return listData;
+	}
+}

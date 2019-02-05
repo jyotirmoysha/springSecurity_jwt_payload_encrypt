@@ -1,0 +1,196 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+@Entity
+@Table(name = "ACCURACY_REPORT")
+@NamedNativeQueries({
+@NamedNativeQuery(name = "getAccuracyReportByFilingId", query = "select ID,CATEGORY,FILINGID,SECTION,ITERATION,NO_OF_ALLOCATED_SECTION,NO_OF_EXTRACTED_SECTION,TOTAL_NO_OF_ATTRIBUTES,TOTAL_NO_OF_VALID_ATTRIBUTES,TOTAL_EXTRACTED_PRIMARY_ITEMS,TOTAL_MAPPED_PRIMARY_ITEMS,TOTAL_MAPPED_UNWANTED_LABELS,TOTAL_EXTRACTED_FOOTNOTE_ITEMS,TOTAL_MAPPED_FOOTNOTE_ITEMS,TOTAL_NORMALIZED_CHECKS,RELEVANT_NORMALIZED_CHECKS,ACCURACY_PERCENTAGE,RULE_ID,CREATED_DATE,MULTIPLE_ATTRIBUTE_FLAG from ACCURACY_REPORT where FilingID=:filingid and ITERATION in (select max(ITERATION) from ACCURACY_REPORT where FILINGID=:filingid) order by id"),
+@NamedNativeQuery(name = "getAccuracyReportByFilingIdStartDateEndDate", query = "select ID,CATEGORY,FILINGID,SECTION,ITERATION,NO_OF_ALLOCATED_SECTION,NO_OF_EXTRACTED_SECTION,TOTAL_NO_OF_ATTRIBUTES,TOTAL_NO_OF_VALID_ATTRIBUTES,TOTAL_EXTRACTED_PRIMARY_ITEMS,TOTAL_MAPPED_PRIMARY_ITEMS,TOTAL_MAPPED_UNWANTED_LABELS,TOTAL_EXTRACTED_FOOTNOTE_ITEMS,TOTAL_MAPPED_FOOTNOTE_ITEMS,TOTAL_NORMALIZED_CHECKS,RELEVANT_NORMALIZED_CHECKS,ACCURACY_PERCENTAGE,RULE_ID,CREATED_DATE,MULTIPLE_ATTRIBUTE_FLAG from ACCURACY_REPORT where CREATED_DATE BETWEEN :startDate AND :endDate and ITERATION in (select max(ITERATION) from ACCURACY_REPORT where FILINGID=:filingid) order by id"),
+@NamedNativeQuery(name = "getAccuracyReportByStartDateEndDateFilingId", query = "select ID,CATEGORY,FILINGID,SECTION,ITERATION,NO_OF_ALLOCATED_SECTION,NO_OF_EXTRACTED_SECTION,TOTAL_NO_OF_ATTRIBUTES,TOTAL_NO_OF_VALID_ATTRIBUTES,TOTAL_EXTRACTED_PRIMARY_ITEMS,TOTAL_MAPPED_PRIMARY_ITEMS,TOTAL_MAPPED_UNWANTED_LABELS,TOTAL_EXTRACTED_FOOTNOTE_ITEMS,TOTAL_MAPPED_FOOTNOTE_ITEMS,TOTAL_NORMALIZED_CHECKS,RELEVANT_NORMALIZED_CHECKS,ACCURACY_PERCENTAGE,RULE_ID,CREATED_DATE,MULTIPLE_ATTRIBUTE_FLAG from ACCURACY_REPORT where FilingID=:filingid and ITERATION in (select max(ITERATION) from ACCURACY_REPORT where FILINGID=:filingid) and CREATED_DATE BETWEEN :startDate AND :endDate order by id"),
+@NamedNativeQuery(name="getDistcintFilingIdList",query="select distinct FILINGID from ACCURACY_REPORT where CREATED_DATE BETWEEN :startDate AND :endDate order by FILINGID")
+})
+
+public class AccuracyAuditReport implements Serializable, BaseEntity {
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@Column(name = "ID")
+	private Integer id;
+	@Column(name = "Category")
+	private String category;
+	@Column(name = "FilingID")
+	private Integer filingid;
+	@Column(name = "Section")
+	private String section;
+	@Column(name = "Iteration")
+	private Integer iteration;
+	@Column(name = "NO_OF_ALLOCATED_SECTION")
+	private Integer no_of_allocated_section;
+	@Column(name = "NO_OF_EXTRACTED_SECTION")
+	private Integer no_of_extracted_section;
+	@Column(name = "TOTAL_NO_OF_ATTRIBUTES")
+	private Integer total_no_of_attributes;
+	@Column(name = "TOTAL_NO_OF_VALID_ATTRIBUTES")
+	private Integer total_no_of_valid_attributes;
+	@Column(name = "TOTAL_EXTRACTED_PRIMARY_ITEMS")
+	private Integer total_extracted_primary_items;
+	@Column(name = "TOTAL_MAPPED_PRIMARY_ITEMS")
+	private Integer total_mapped_primary_items;
+	@Column(name = "TOTAL_MAPPED_UNWANTED_LABELS")
+	private Integer total_mapped_unwanted_labels;
+	@Column(name = "TOTAL_EXTRACTED_FOOTNOTE_ITEMS")
+	private Integer total_extracted_footnote_items;
+	@Column(name = "TOTAL_MAPPED_FOOTNOTE_ITEMS")
+	private Integer total_mapped_footnote_items;
+	@Column(name = "TOTAL_NORMALIZED_CHECKS")
+	private Integer total_normalized_checks;
+	@Column(name = "RELEVANT_NORMALIZED_CHECKS")
+	private Integer relevant_normalized_checks;
+	@Column(name = "ACCURACY_PERCENTAGE")
+	private Integer accuracy_percentage;
+	@Column(name = "RULE_ID")
+	private Integer rule_id;
+	@Column(name = "MULTIPLE_ATTRIBUTE_FLAG")
+	private String multiple_attribute_flag;
+	
+	@Column(name = "Created_Date")
+	private Date Created_Date;
+	
+	public Integer getId() {
+		return id;
+	}
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	public String getCategory() {
+		return category;
+	}
+	public void setCategory(String category) {
+		this.category = category;
+	}
+	public Integer getFilingid() {
+		return filingid;
+	}
+	public void setFilingid(Integer filingid) {
+		this.filingid = filingid;
+	}
+	public String getSection() {
+		return section;
+	}
+	public void setSection(String section) {
+		this.section = section;
+	}
+	public Integer getIteration() {
+		return iteration;
+	}
+	public void setIteration(Integer iteration) {
+		this.iteration = iteration;
+	}
+	public Integer getNo_of_allocated_section() {
+		return no_of_allocated_section;
+	}
+	public void setNo_of_allocated_section(Integer no_of_allocated_section) {
+		this.no_of_allocated_section = no_of_allocated_section;
+	}
+	public Integer getNo_of_extracted_section() {
+		return no_of_extracted_section;
+	}
+	public void setNo_of_extracted_section(Integer no_of_extracted_section) {
+		this.no_of_extracted_section = no_of_extracted_section;
+	}
+	public Integer getTotal_no_of_attributes() {
+		return total_no_of_attributes;
+	}
+	public void setTotal_no_of_attributes(Integer total_no_of_attributes) {
+		this.total_no_of_attributes = total_no_of_attributes;
+	}
+	public Integer getTotal_no_of_valid_attributes() {
+		return total_no_of_valid_attributes;
+	}
+	public void setTotal_no_of_valid_attributes(Integer total_no_of_valid_attributes) {
+		this.total_no_of_valid_attributes = total_no_of_valid_attributes;
+	}
+	public Integer getTotal_extracted_primary_items() {
+		return total_extracted_primary_items;
+	}
+	public void setTotal_extracted_primary_items(Integer total_extracted_primary_items) {
+		this.total_extracted_primary_items = total_extracted_primary_items;
+	}
+	public Integer getTotal_mapped_primary_items() {
+		return total_mapped_primary_items;
+	}
+	public void setTotal_mapped_primary_items(Integer total_mapped_primary_items) {
+		this.total_mapped_primary_items = total_mapped_primary_items;
+	}
+	public Integer getTotal_mapped_unwanted_labels() {
+		return total_mapped_unwanted_labels;
+	}
+	public void setTotal_mapped_unwanted_labels(Integer total_mapped_unwanted_labels) {
+		this.total_mapped_unwanted_labels = total_mapped_unwanted_labels;
+	}
+	public Integer getTotal_extracted_footnote_items() {
+		return total_extracted_footnote_items;
+	}
+	public void setTotal_extracted_footnote_items(Integer total_extracted_footnote_items) {
+		this.total_extracted_footnote_items = total_extracted_footnote_items;
+	}
+	public Integer getTotal_mapped_footnote_items() {
+		return total_mapped_footnote_items;
+	}
+	public void setTotal_mapped_footnote_items(Integer total_mapped_footnote_items) {
+		this.total_mapped_footnote_items = total_mapped_footnote_items;
+	}
+	public Integer getTotal_normalized_checks() {
+		return total_normalized_checks;
+	}
+	public void setTotal_normalized_checks(Integer total_normalized_checks) {
+		this.total_normalized_checks = total_normalized_checks;
+	}
+	public Integer getRelevant_normalized_checks() {
+		return relevant_normalized_checks;
+	}
+	public void setRelevant_normalized_checks(Integer relevant_normalized_checks) {
+		this.relevant_normalized_checks = relevant_normalized_checks;
+	}
+	public Integer getAccuracy_percentage() {
+		return accuracy_percentage;
+	}
+	public void setAccuracy_percentage(Integer accuracy_percentage) {
+		this.accuracy_percentage = accuracy_percentage;
+	}
+	public Integer getRule_id() {
+		return rule_id;
+	}
+	public void setRule_id(Integer rule_id) {
+		this.rule_id = rule_id;
+	}
+	public String getMultiple_attribute_flag() {
+		return multiple_attribute_flag;
+	}
+	public void setMultiple_attribute_flag(String multiple_attribute_flag) {
+		this.multiple_attribute_flag = multiple_attribute_flag;
+	}
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+	
+	
+
+}

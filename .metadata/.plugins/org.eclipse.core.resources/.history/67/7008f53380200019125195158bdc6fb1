@@ -1,0 +1,272 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name="DEALER_TEMPLATE")
+@NamedQueries({
+	@NamedQuery(name = "getTemplateListByDealerName", query = "from DealerTemplate where dealerType=:dealerName"),
+	@NamedQuery(name = "getDealerTemplateById", query = "from DealerTemplate where id IN (:dtList)"),
+	@NamedQuery(name = "updateNormLableAndNormIdByid", query = "update DealerTemplate set normLabel=:normLabel,normId=:normId where id=:dtId"),
+    @NamedQuery(name="getDealerTemplateIdBasedOnDealerType",query="select id from DealerTemplate where dealerType=:dealerType and asRepLabel=:asRepLabel and crudAccount not like 'D' and isActive='Y'")
+})
+public class DealerTemplate implements Serializable, BaseEntity{
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "ID")
+	private Integer id;
+
+	@Column(name = "DEALER_TYPE")
+	private String dealerType;
+
+	@Column(name = "LANGUAGE")
+	private String language;
+	
+	@Column(name = "AS_REP_LABEL")
+	private String asRepLabel;
+	
+	@Column(name = "PAGE_NO")
+	private Integer pageNo;
+	
+	@Column(name = "LINE_NO")
+	private String lineNo;
+	
+	@Column(name = "INDEX_ORDER")
+	private Integer indexOrder;
+	
+	@Column(name = "TEMPLATE_ID")
+	private Integer templateId;
+	 
+	@Column(name = "FORM_ID")
+	private Integer formId;
+
+	@Column(name = "TABLE_ID")
+	private Integer tableId;
+	
+	@Column(name = "COLUMN_ID")
+	private String columnId;
+	
+	@Column(name = "TOTAL_COLUMN")
+	private String totalColumn;
+	
+	@Column(name = "NORM_ID")
+    private Integer normId;
+ 		 
+	
+	@Column(name = "NORM_LABEL")
+    private String normLabel;
+
+	@Column(name = "IS_ACTIVE")
+    private String isActive;
+
+	@Column(name = "NORM_APPROVED")
+    private String normApproved;
+
+	@Column(name = "SECTION")
+    private String section;
+
+	@Column(name = "SUB_SECTION")
+    private String subSection;
+
+	@Column(name = "SIGN_REVERSAL")
+    private String signReversal;
+
+	@Column(name = "TOTAL_CHECK")
+    private String totalCheck;
+
+	@Column(name = "CRUD_ACCOUNT")
+    private String crudAccount;
+
+	@Column(name = "CREATED_BY", updatable = false)
+    private String createdBy;
+
+	@Column(name = "CREATE_DATE")
+    private Date createdDate;
+
+	@Column(name = "MODIFIED_BY")
+    private String modifiedBy;
+
+	@Column(name = "MODIFY_DATE")
+    private Date modifyDate;
+	
+
+public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	public String getDealerType() {
+		return dealerType;
+	}
+
+
+	public void setDealerType(String dealerType) {
+		this.dealerType = dealerType;
+	}
+
+	public String getLanguage() {
+		return language;
+	}
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+	public String getAsRepLabel() {
+		return asRepLabel;
+	}
+	public void setAsRepLabel(String asRepLabel) {
+		this.asRepLabel = asRepLabel;
+	}
+
+	public Integer getPageNo() {
+		return pageNo;
+	}
+	public void setPageNo(Integer pageNo) {
+		this.pageNo = pageNo;
+	}
+	public String getLineNo() {
+		return lineNo;
+	}
+	public void setLineNo(String lineNo) {
+		this.lineNo = lineNo;
+	}
+	public Integer getIndexOrder() {
+		return indexOrder;
+	}
+	public void setIndexOrder(Integer indexOrder) {
+		this.indexOrder = indexOrder;
+	}
+	public Integer getTemplateId() {
+		return templateId;
+	}
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+	public Integer getFormId() {
+		return formId;
+	}
+
+	public void setFormId(Integer formId) {
+		this.formId = formId;
+	}
+	public Integer getTableId() {
+		return tableId;
+	}
+	public void setTableId(Integer tableId) {
+		this.tableId = tableId;
+	}
+	public String getColumnId() {
+		return columnId;
+	}
+	public void setColumnId(String columnId) {
+		this.columnId = columnId;
+	}
+	public String getTotalColumn() {
+		return totalColumn;
+	}
+	public void setTotalColumn(String totalColumn) {
+		this.totalColumn = totalColumn;
+	}
+	public Integer getNormId() {
+		return normId;
+	}
+
+	public void setNormId(Integer normId) {
+		this.normId = normId;
+	}
+	public String getNormLabel() {
+		return normLabel;
+	}
+	public void setNormLabel(String normLabel) {
+		this.normLabel = normLabel;
+	}
+	public String getIsActive() {
+		return isActive;
+	}
+	public void setIsActive(String isActive) {
+		this.isActive = isActive;
+	}
+	public String getNormApproved() {
+		return normApproved;
+	}
+	public void setNormApproved(String normApproved) {
+		this.normApproved = normApproved;
+	}
+	public String getSection() {
+		return section;
+	}
+	public void setSection(String section) {
+		this.section = section;
+	}
+	public String getSubSection() {
+		return subSection;
+	}
+	public void setSubSection(String subSection) {
+		this.subSection = subSection;
+	}
+	public String getSignReversal() {
+		return signReversal;
+	}
+	public void setSignReversal(String signReversal) {
+		this.signReversal = signReversal;
+	}
+	public String getTotalCheck() {
+		return totalCheck;
+	}
+	public void setTotalCheck(String totalCheck) {
+		this.totalCheck = totalCheck;
+	}
+	public String getCrudAccount() {
+		return crudAccount;
+	}
+	public void setCrudAccount(String crudAccount) {
+		this.crudAccount = crudAccount;
+	}
+	public String getCreatedBy() {
+		return createdBy;
+	}
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+	public String getModifiedBy() {
+		return modifiedBy;
+	}
+	public void setModifiedBy(String modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+	public Date getModifyDate() {
+		return modifyDate;
+	}
+	public void setModifyDate(Date modifyDate) {
+		this.modifyDate = modifyDate;
+	}
+
+@Override
+public EntityType getEntityType() {
+	return EntityType.APPLICATION;
+}
+
+
+}	

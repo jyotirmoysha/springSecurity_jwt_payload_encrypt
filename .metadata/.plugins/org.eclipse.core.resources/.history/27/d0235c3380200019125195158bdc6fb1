@@ -1,0 +1,318 @@
+package com.livespread.util;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.servlet.view.document.AbstractJExcelView;
+
+import com.livespread.command.NormalisedLabelAndValues;
+import com.livespread.command.NormalisedParserOutput;
+import com.livespread.command.NormalizedDetails;
+
+import jxl.CellView;
+import jxl.format.Border;
+import jxl.format.BorderLineStyle;
+import jxl.format.Colour;
+import jxl.format.VerticalAlignment;
+import jxl.write.Label;
+import jxl.write.Number;
+import jxl.write.WritableCellFormat;
+import jxl.write.WritableFont;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+
+public class NormalizedViewExcelBuilder extends AbstractJExcelView {
+	private WritableCellFormat headcellFormat;
+	private WritableCellFormat cellFormat;
+	private WritableCellFormat cellFormatWithBorder;
+	private WritableCellFormat headcellFormat1;
+
+	@SuppressWarnings("unchecked")
+	@Override
+	protected void buildExcelDocument(Map<String, Object> model,
+			WritableWorkbook workbook, HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+
+		Map<String, Object> dataMap = (Map<String, Object>) model
+				.get("excelViewDataMap");
+
+		String fileName = (String) dataMap.get("fileName");
+		List<String> clmnHideAcn = (ArrayList<String>)dataMap.get("clmnHideList");
+		if(CollectionUtils.isEmpty(clmnHideAcn)){
+			clmnHideAcn = new ArrayList<String>();
+		}
+		WritableSheet sheet = null;
+
+		response.reset();
+		response.setContentType("application/vnd.ms-excel");
+		response.setHeader("Content-Disposition", "attachment;filename=\""
+				+ StringEscapeUtils.escapeJava(fileName) + "\"");
+
+		WritableFont headcellFont = new WritableFont(WritableFont.TAHOMA, 10);
+		headcellFont.setBoldStyle(WritableFont.BOLD);
+
+		headcellFormat = new WritableCellFormat(headcellFont);
+		headcellFormat.setWrap(true);
+		headcellFormat.setAlignment(jxl.format.Alignment.LEFT);
+		headcellFormat.setVerticalAlignment(VerticalAlignment.TOP);
+		headcellFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
+
+		WritableFont headcellFont1 = new WritableFont(WritableFont.TAHOMA, 10);
+		headcellFont1.setBoldStyle(WritableFont.BOLD);
+		headcellFormat1 = new WritableCellFormat(headcellFont1);
+		headcellFormat1.setWrap(true);
+		headcellFormat1.setAlignment(jxl.format.Alignment.LEFT);
+		headcellFormat1.setVerticalAlignment(VerticalAlignment.TOP);
+		headcellFormat1.setBorder(Border.ALL, BorderLineStyle.THIN);
+		headcellFormat1.setBackground(Colour.GRAY_25);
+
+		WritableFont cellFont = new WritableFont(WritableFont.TAHOMA, 10);
+		cellFormat = new WritableCellFormat(cellFont);
+		cellFormat.setWrap(true);
+		cellFormat.setAlignment(jxl.format.Alignment.LEFT);
+		cellFormat.setVerticalAlignment(VerticalAlignment.TOP);
+		cellFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
+
+		cellFormatWithBorder = new WritableCellFormat(cellFont);
+		cellFormatWithBorder.setVerticalAlignment(VerticalAlignment.TOP);
+		cellFormatWithBorder.setBorder(Border.ALL, BorderLineStyle.THIN);
+
+		CellView cellView = new CellView();
+		cellView.setHidden(true); // set hidden
+
+		Map<String, List<NormalisedLabelAndValues>> listOfNormalzedLabelsDetails = (Map<String, List<NormalisedLabelAndValues>>) dataMap
+				.get("NormalzedLabelsDetailsList");
+
+		Map<String, List<String>> mapOfHeaders = (Map<String, List<String>>) dataMap
+				.get("HeaderMap");
+
+		NormalisedParserOutput normalisedParserOutput = (NormalisedParserOutput) dataMap
+				.get("NormalisedParserOutput");
+
+		int rowCount = 0;
+		int coulmnCnt =0;
+		boolean headerFlag=false;
+		if (null != mapOfHeaders && !mapOfHeaders.isEmpty()
+				&& mapOfHeaders.size() > 0) {
+			sheet = workbook.createSheet("Normalized View", 0);
+			
+			sheet.setColumnView(0, 25);
+			if(clmnHideAcn.contains("AsRepLabel")){
+			sheet.setColumnView(1, 100);
+			}else{
+			sheet.setColumnView(1, 50);
+			}
+			sheet.setColumnView(2, 25);
+
+			for (Map.Entry<String, List<String>> entry : mapOfHeaders
+					.entrySet()) {
+
+				sheet.addCell(new Label(0, rowCount, entry.getKey(),cellFormatWithBorder));
+				sheet.addCell(new Label(1, rowCount, "",cellFormatWithBorder));
+				
+				sheet.mergeCells(0, rowCount, 1, rowCount);
+				ArrayList<String> valueList = (ArrayList<String>) entry.getValue();
+				int col = 2;
+				if(clmnHideAcn.contains("AsRepLabel")){
+					col = 3;	
+				}
+				coulmnCnt=valueList.size();
+				for (String val : valueList) {sheet.addCell(new Label(col, rowCount, val,cellFormatWithBorder));
+					col++;
+				}
+				rowCount++;
+
+			}
+
+			if (normalisedParserOutput != null) {
+
+				sheet.addCell(new Label(0, rowCount, "Quality",cellFormatWithBorder));
+				sheet.addCell(new Label(1, rowCount, "",cellFormatWithBorder));
+				sheet.mergeCells(0, rowCount, 1, rowCount);
+				int qualityColumn = 2;
+				if(clmnHideAcn.contains("AsRepLabel")){
+					qualityColumn = 3;	
+				}
+				
+				if (normalisedParserOutput.getPoAsRepVal1() != null && normalisedParserOutput.getPoAsRepVal1().length() > 0) {
+					sheet.addCell(new Label(qualityColumn, rowCount,normalisedParserOutput.getPoAsRepVal1(),cellFormatWithBorder));
+					qualityColumn = qualityColumn + 1;
+				}
+
+				if (normalisedParserOutput.getPoAsRepVal2() != null
+						&& normalisedParserOutput.getPoAsRepVal2().length() > 0) {
+					sheet.addCell(new Label(qualityColumn, rowCount,normalisedParserOutput.getPoAsRepVal2(),cellFormatWithBorder));
+					qualityColumn = qualityColumn + 1;
+				}
+
+				if (normalisedParserOutput.getPoAsRepVal3() != null && normalisedParserOutput.getPoAsRepVal3().length() > 0) {
+					sheet.addCell(new Label(qualityColumn, rowCount,normalisedParserOutput.getPoAsRepVal3(),cellFormatWithBorder));
+					qualityColumn = qualityColumn + 1;
+				}
+
+				if (normalisedParserOutput.getPoAsRepVal4() != null && normalisedParserOutput.getPoAsRepVal4().length() > 0) {
+					sheet.addCell(new Label(qualityColumn, rowCount,normalisedParserOutput.getPoAsRepVal4(),cellFormatWithBorder));
+					qualityColumn = qualityColumn + 1;
+				}
+
+				rowCount++;
+
+			}
+			
+			int heaaderColumnIndex=-1;
+			if (normalisedParserOutput != null) {
+				if( clmnHideAcn.contains("AccountNumber")){
+					sheet.addCell(new Label(++heaaderColumnIndex, rowCount, "Account Number",
+							headcellFormat));
+				}
+				sheet.addCell(new Label(++heaaderColumnIndex, rowCount, "Normalized Label",
+						headcellFormat));
+				if( !clmnHideAcn.contains("AccountNumber")){
+					sheet.mergeCells(0, rowCount, 1, rowCount);
+					++heaaderColumnIndex;
+				}
+				if( clmnHideAcn.contains("AsRepLabel")){
+					sheet.addCell(new Label(++heaaderColumnIndex, rowCount, "As Rep Label",
+							headcellFormat));
+				}
+				if(coulmnCnt!=0){
+				int k=++heaaderColumnIndex;
+				for(int i=0,j=1; i<coulmnCnt;i++,j++){
+					sheet.addCell(new Label(k, rowCount, "value"+j,headcellFormat));	
+				k++;
+				}
+				}
+				rowCount++;
+			}
+			int dataColumnIndex=-1;
+     if(listOfNormalzedLabelsDetails!=null && !listOfNormalzedLabelsDetails.isEmpty()){
+			for (Map.Entry<String, List<NormalisedLabelAndValues>> lableDetailEntry : listOfNormalzedLabelsDetails.entrySet()) {
+
+				String str_section = (String) lableDetailEntry.getKey();
+				
+				if( !clmnHideAcn.contains("AccountNumber")){
+					sheet.mergeCells(0, rowCount, 1, rowCount);
+					sheet.addCell(new Label(0, rowCount,str_section+":", headcellFormat));
+					rowCount++;
+				}else{
+					sheet.addCell(new Label(0, rowCount,str_section+":", headcellFormat));
+					rowCount++;
+				}
+
+				ArrayList<NormalisedLabelAndValues> normalisedLabelAndValList = (ArrayList<NormalisedLabelAndValues>) lableDetailEntry.getValue();
+
+				for (NormalisedLabelAndValues normalisedLabelAndVal : normalisedLabelAndValList) {
+					dataColumnIndex=-1;
+					headerFlag=false;
+					if( clmnHideAcn.contains("AccountNumber")){
+						sheet.addCell(new Label(++dataColumnIndex, rowCount,normalisedLabelAndVal.getAccountId(),cellFormatWithBorder));
+					}
+					
+					
+					if ("Y".equals(normalisedLabelAndVal.getHeader())) {
+						headerFlag=true;
+						sheet.addCell(new Label(++dataColumnIndex, rowCount,
+								replaceSpace(normalisedLabelAndVal.getLabel(),normalisedLabelAndVal.getLabelHierarchy()),headcellFormat1));
+						if( !clmnHideAcn.contains("AccountNumber")){
+							sheet.mergeCells(0, rowCount, 1, rowCount);
+							++dataColumnIndex;
+						}
+						
+					}
+
+					if ("B".equals(normalisedLabelAndVal.getDisplayFormat())) {
+						if(!headerFlag){
+							sheet.addCell(new Label(++dataColumnIndex, rowCount,
+									replaceSpace(normalisedLabelAndVal.getLabel(),normalisedLabelAndVal.getLabelHierarchy()),headcellFormat1));
+							if( !clmnHideAcn.contains("AccountNumber")){
+								sheet.mergeCells(0, rowCount, 1, rowCount);
+								++dataColumnIndex;
+							}
+						}
+						if( clmnHideAcn.contains("AsRepLabel")){
+							sheet.addCell(new Label(++dataColumnIndex, rowCount,
+								replaceSpace(normalisedLabelAndVal.getLabel(),normalisedLabelAndVal.getLabelHierarchy()),headcellFormat));
+						}
+						
+						@SuppressWarnings("rawtypes")
+						ArrayList normalizedDetailsList = (ArrayList) normalisedLabelAndVal
+								.getList();
+
+						for (int i = 0,j=dataColumnIndex+1; i < normalizedDetailsList.size(); i++,j++) {
+							NormalizedDetails nd = (NormalizedDetails) normalizedDetailsList.get(i);
+							if (nd != null){
+								try{
+									sheet.addCell(new Number(j, rowCount, Integer.parseInt(nd.getValue()), cellFormatWithBorder));
+									}catch(Exception  e){
+								     sheet.addCell(new Label(j, rowCount, nd.getValue(),cellFormatWithBorder));	
+								}
+							}	
+						}
+					} else {
+
+						ArrayList normalizedDetailsList = (ArrayList) normalisedLabelAndVal.getList();
+
+						if (normalizedDetailsList.size() > 0) {
+							sheet.addCell(new Label(++dataColumnIndex, rowCount,replaceSpace(normalisedLabelAndVal.getLabel(),normalisedLabelAndVal.getLabelHierarchy()),cellFormatWithBorder));
+							if( !clmnHideAcn.contains("AccountNumber")){
+								sheet.mergeCells(0, rowCount, 1, rowCount);
+								++dataColumnIndex;
+							}
+							if( clmnHideAcn.contains("AsRepLabel")){
+							sheet.addCell(new Label(++dataColumnIndex, rowCount,normalisedLabelAndVal.getAsRepLabel(),cellFormatWithBorder));
+							}
+							for (int i = 0,j=dataColumnIndex; i < normalizedDetailsList.size(); i++,j++) {
+								NormalizedDetails nd = (NormalizedDetails) normalizedDetailsList.get(i);
+								if (nd != null){
+								try{
+								sheet.addCell(new Number(j + 1, rowCount, Integer.parseInt(nd.getValue()), cellFormatWithBorder));
+								}catch(Exception  e){
+							     sheet.addCell(new Label(j + 1, rowCount, nd.getValue(),cellFormatWithBorder));	
+								}
+							 }
+							}
+						} else {
+							sheet.addCell(new Label(++dataColumnIndex, rowCount,
+									replaceSpace(normalisedLabelAndVal.getLabel(),normalisedLabelAndVal.getLabelHierarchy()),
+									cellFormatWithBorder));
+							if( !clmnHideAcn.contains("AccountNumber")){
+								sheet.mergeCells(0, rowCount, 1, rowCount);
+								++dataColumnIndex;
+							}
+							if( clmnHideAcn.contains("AsRepLabel")){
+								sheet.addCell(new Label(++dataColumnIndex, rowCount,normalisedLabelAndVal.getAsRepLabel(),cellFormatWithBorder));
+								}
+							for (int i = 0,j=dataColumnIndex; i < normalizedDetailsList.size(); i++,j++) {
+								NormalizedDetails nd = (NormalizedDetails) normalizedDetailsList
+										.get(i);
+								if (nd != null)
+								try{
+									sheet.addCell(new Number(j + 1, rowCount, Integer.parseInt(nd.getValue()), cellFormatWithBorder));
+								}catch(Exception  e){
+								     sheet.addCell(new Label(j + 1, rowCount, nd.getValue(),cellFormatWithBorder));	
+								}
+							}
+
+						}
+
+					}
+					
+					rowCount++;
+
+				}
+
+			}// end for
+		}//end if
+		}
+	}
+
+	private String replaceSpace(String lableName, String spaceHirarchy) {			
+		return  spaceHirarchy.replaceAll("&nbsp;", " ")+""+lableName;
+	}	
+}

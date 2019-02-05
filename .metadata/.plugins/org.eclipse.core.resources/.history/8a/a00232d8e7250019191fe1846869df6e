@@ -1,0 +1,7 @@
+server.port=7083
+security.basic.enabled=true
+security.enabled=true
+spring.resources.chain.enabled=true
+security.user.name=user
+security.user.password=password
+    

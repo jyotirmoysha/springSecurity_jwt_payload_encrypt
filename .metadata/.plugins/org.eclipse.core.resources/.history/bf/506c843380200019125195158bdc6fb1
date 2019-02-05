@@ -1,0 +1,184 @@
+package com.livespread.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.livespread.command.DocumentModelCommand;
+import com.livespread.command.SectionIdentificationCommand;
+import com.livespread.domain.BankMaster;
+import com.livespread.domain.DocumentModel;
+import com.livespread.domain.User;
+import com.livespread.rage.domain.ExtractionMetadata;
+import com.livespread.rage.domain.ExtractorRunProperties;
+import com.livespread.rage.domain.ExtractorTableCommand;
+import com.livespread.rage.domain.ExtractorTableidRouteByCik;
+import com.livespread.rage.domain.PdfExtractionMetadata;
+import com.livespread.rage.domain.SectionIdentification;
+
+public interface ExtractionService {
+
+	List<Object> getStatusList();
+
+	boolean updateStatus(String wqId, String status);
+
+	boolean addNewRules(String clientId);
+
+	// This Function is used for save or update data in
+	// RAGEDEV.LS_EXTRACTOR_TABLEID_BY_ENTITY and
+	// RAGEDEV.LS_EXTRACTOR_RUN_PROPERTIES table
+	boolean saveUpadateRulesInExtractor_Table(
+			ExtractorTableCommand extractorTableCommand);
+
+	/*
+	 * This function used for save or update in LS_EXTRACTOR_RUN_PROPERTIES table
+	 * for bank parser
+	 */
+	boolean saveUpadateExtractionRunProperties(
+			ExtractorTableCommand extractorTableCommand);
+
+	/*
+	 * This function used for fetch record from LS_EXTRACTOR_TABLEID_BY_ENTITY
+	 * using filing id
+	 */
+	List<ExtractorTableidRouteByCik> getExtractionRuleByFilingId(
+			Integer filingId);
+
+	/*
+	 * This function used for fetch record from LS_EXTRACTOR_RUN_PROPERTIES using
+	 * filing id
+	 */
+	Map<String,Map<String,Map<String,List<String>>>> getExtractionRunPropertiesByFilingId(Integer filingId,Integer parserId);
+
+
+	/*
+	 * This function used for fetch record from LS_EXTRACTOR_RUN_PROPERTIES using
+	 * filing id and upload id
+	 */
+	List<ExtractorRunProperties> getExtractionRunPropertiesByFilingIdAndUploadId(
+			Integer filingId, Integer uploadId);
+
+	/*
+	 * This function used for fetch first upload id from
+	 * LS_EXTRACTOR_RUN_PROPERTIES table using filing id
+	 */
+	Integer getFirstUploadId(Integer filingId);
+
+	Integer saveToRequestQueue(Integer customerId, String companyID,
+			int userId, Integer userGroupId, Integer entityId, String processName);
+
+	/*
+	 * This function used for fetch record from document table using filing_id
+	 * to show on ITR page
+	 */
+	List<DocumentModel> getDocumentListByFilingID(Integer filingId);
+
+	/*
+	 * This function used for update List of document using filing id
+	 */
+	boolean saveUpadateDocument_Table(DocumentModelCommand modelCommand);
+
+	/*
+	 * This function used for insert data in Request Queue for modify status
+	 */
+	Integer saveToRequestQueueForModifyStatus(String fillingId,
+			String textFilePath, String status, String processName) ;
+
+	boolean deleteExtractiorRulePropertiesByFilingId(Integer fillingId);
+
+	/*
+	 * This function used for insert data in Request Queue for Debit ACH mapping
+	 * process
+	 */
+	Integer saveToRequestQueueFordebitACHMapping(String filingId, String processName);
+
+	/*
+	 * This methode used for fetch data from LS_EXTRACTION_METADATA table based on
+	 * upload_id and filing_id
+	 */
+
+	List<ExtractionMetadata> getExtractionMetadatByFilingId(Integer filingId,
+			Integer uploadId);
+
+	/*
+	 * Here we get distinct subsection and section from LS_EXTRACTION_METADATA.
+	 */
+	List<ExtractionMetadata> getDistinctSubSection() ;
+
+	/*
+	 * This function used for save or update in EXTRACTOR_METADATA table for
+	 * bank parser
+	 */
+	List<ExtractionMetadata> saveUpadateExtractiorMetaData(
+			ExtractorTableCommand extractorTableCommand) ;
+
+	/*
+	 * This function used for fetch record from LS_EXTRACTOR_TABLEID_BY_ENTITY
+	 * using filing id
+	 */
+	List<PdfExtractionMetadata> getPdfBasedExtractionRuleByFilingId(
+			Integer filingId,String flag) ;
+
+	// This Function is used for save or update data in
+	// RAGEDEV.LS_PDF_EXTRACTION_METADATA and RAGEDEV.LS_EXTRACTOR_RUN_PROPERTIES
+	// table
+	boolean saveUpadateRulesIn_Pdf_Extractor_Table(List<PdfExtractionMetadata> pdfExtractionMetadataList);
+
+/**
+ * This methode used for insert record in request_queue table based on filing id and pass process name.
+ * based on process name we will get process id.
+ */
+	Integer saveToRequestQueueByFilingId(Integer filingId,String processName);
+	
+   /**
+	* This method used for delete record from pdf_extraction_metatadata based on table id and filing id. 
+	*/
+	boolean f_deletePdfExtractionMetataDataByfilingId(Integer filingId,Integer tableId);
+	
+	boolean f_checkAnyChangeFromUI(PdfExtractionMetadata extractionMetadata,Map<Integer,PdfExtractionMetadata> existingRecordsMap);
+	
+	
+	public Integer f_getMaxTransactionIdPdfExtraction();
+	
+	/**
+	 * This methode used to update GLOBAL_LEVEL coloumn based in pemid
+	 */
+	
+	String f_updateRulesAtGlobalLevel(String pemIdArray,User user);
+
+	Integer generatePkForRequestQueue();
+	
+	Map<Integer,String> getPOAsRepLabelMap(int filingId);
+	
+   //save modify status	
+	boolean saveMOdifyStaus(String fillingId,
+			String userRole, String status,Long UserId,String buttonStatus) ;
+	
+   List<String> findSetionListByCategory(String category);	
+   
+   Integer saveToRequestQueueForColumnMerge(Integer filling,String section,String processName);
+
+
+   boolean saveColumnMerge(Integer fillingId, String userRole,String status, Long userId, String string);
+   /**This methode used for show data on rules_management screen for pdf parser**/
+   Map<Integer, Map<String,List<PdfExtractionMetadata>>> f_getPdfExtractionDataBySectionWise(Integer filiingId,Integer parserId);
+   
+   /**  *   */
+   boolean updateSaveExtractorRunProperties(ExtractorRunProperties extractorRunProperties);
+   boolean deleteExtractionRules(List<Integer> pemPidList);
+
+   Integer forcedOCR(String filingId, String processName,String oldStatus) throws Exception;
+   
+   Long getTotalRecordsOfGlobalData(SectionIdentificationCommand cmd);
+
+   Map<String, List<String>>   getGlobalDropDwnList(); 
+  
+   List<String> getKeywordList(String keyword); 
+ 
+   List<SectionIdentification> getGloblaMetaData(SectionIdentificationCommand cmd);
+	
+    boolean deleteExtractionITRRules(List<Integer> dcIdList);
+    List<BankMaster> getBankNameList();
+
+   
+   
+}

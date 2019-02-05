@@ -1,0 +1,58 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+@Entity
+@Table(name = "LS_FEATURES")
+@NamedQueries({
+	@NamedQuery(name = "getListOfFeatures", query ="select featureId,features from LsFeatures"),
+})
+public class LsFeatures implements Serializable, BaseEntity{
+
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "FEATURE_ID")
+	private Integer featureId;
+
+	@Column(name = "FEATURES")
+	private String features;
+	
+	public Integer getFeatureId() {
+		return featureId;
+	}
+
+	public void setFeatureId(Integer featureId) {
+		this.featureId = featureId;
+	}
+
+	public String getFeatures() {
+		return features;
+	}
+
+	public void setFeatures(String features) {
+		this.features = features;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

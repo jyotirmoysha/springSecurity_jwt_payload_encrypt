@@ -1,0 +1,35 @@
+/**
+ * 
+ */
+package com.livespread.util;
+
+import java.util.List;
+
+/**
+ * @author rk0e884
+ *
+ */
+public class JsonData {
+	private MetaRowInfo metaRowInfo;
+	private List<RecordsData> updateRecordsData;
+	private List<RecordsData> newRecordData;
+	public MetaRowInfo getMetaRowInfo() {
+		return metaRowInfo;
+	}
+	public void setMetaRowInfo(MetaRowInfo metaRowInfo) {
+		this.metaRowInfo = metaRowInfo;
+	}
+	public List<RecordsData> getUpdateRecordsData() {
+		return updateRecordsData;
+	}
+	public void setUpdateRecordsData(List<RecordsData> updateRecordsData) {
+		this.updateRecordsData = updateRecordsData;
+	}
+	public List<RecordsData> getNewRecordData() {
+		return newRecordData;
+	}
+	public void setNewRecordData(List<RecordsData> newRecordData) {
+		this.newRecordData = newRecordData;
+	}
+	
+}

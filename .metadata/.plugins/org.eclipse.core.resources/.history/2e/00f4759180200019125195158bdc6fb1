@@ -1,0 +1,173 @@
+@charset "utf-8";
+/* CSS Document */
+@font-face {
+	font-family: "Lato Regular";
+	src: url("../../css/uic/fonts/OpenSansRegular.eot?") format("eot"),
+		url("../../css/uic/fonts/OpenSansRegular.woff") format("woff"),
+		url("../../css/uic/fonts/OpenSansRegular.ttf") format("truetype"),
+		url("../../css/uic/fonts/OpenSansRegular.ttf#OpenSansRegular") format("ttf");
+	font-weight: normal;
+	font-style: normal;
+}
+html,
+body {
+	font-family: 'Open Sans', sans-serif;
+	background:url(../../css/uic/images/loginScreenBg.jpg) no-repeat;
+	background-size: 100%;
+	font-size: 14px;
+	margin:0;
+    padding:0;
+    height:100%;
+	min-height:100%;
+}
+.LoginWrapper {	
+    position:relative;
+}
+.LoginTopHeader {
+	background-color: #00212f;
+	width: auto;
+	padding: 5px 15px 1px;	
+}
+.LoginTopHeader span:nth-child(1) {
+	background:url(../../css/uic/images/logo.png) no-repeat;
+	width: 142px;
+	height: 61px;
+	display: inline-block;
+}
+.LoginTopHeader span:nth-child(2) {
+	float: right;
+}
+.LoginContainer {
+	width: 30%;
+	margin: 0px auto;
+	margin-top: 10%;
+	margin-bottom: 29.2%;
+}
+.LoginTitle {
+	width: auto;
+	text-align:center;
+	color: #edc95f;
+	font-size: 26px;
+}
+.LoginLabelContainer {
+	width: 100%;
+	margin-top: 13%;
+	float: left;
+}
+.LoginTextLabel {
+	width: 30%;
+	float: left;
+	color: #fff;
+	margin-top:8px;
+}
+.LoginTextBox {
+	width:70%;
+	float:left;	
+}
+.LoginTextBox input {
+	width:97%;
+	height:30px;
+	border-radius: 4px;
+	padding-left: 10px;
+	border: 1px solid #01374c;
+	background: #fff; /* For browsers that do not support gradients */
+    background: -webkit-linear-gradient(#caedf7, #fff); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(#caedf7, #fff); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(#caedf7, #fff); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(#caedf7, #fff); /* Standard syntax */
+	margin-bottom:15px;
+}
+.LoginRemember {
+	width:33%;
+	float:left;
+	color: #fff;
+	font-size: 14px;
+}
+.LoginForgotPwd {
+	width:37%;
+	float:left;
+	text-decoration:underline;
+	color: #fff;
+	text-align: right;
+	font-size: 14px;
+	cursor: pointer;
+}
+.LoginBtn {
+	width:100%;
+	margin-top: 15px;
+	text-align: center;
+	float: left;	
+}
+.LoginBtn input {
+	background: #fff; /* For browsers that do not support gradients */
+    background: -webkit-linear-gradient(#2498c1, #036283); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(#2498c1, #036283); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(#2498c1, #036283); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(#2498c1, #036283); /* Standard syntax */	
+	border: 1px solid #024661;
+	color: #fff;
+	font-size: 16px;
+	padding: 10px 45px;
+	border-radius: 4px;
+	text-align: center;
+	cursor: pointer;
+}
+footer {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 10px 15px;
+  background-color: #00212f;
+  color: #fff;
+}
+footer span:nth-child(1) {
+	float: left;	
+}
+footer span:nth-child(2) {
+	float: right;
+}
+.error {
+	padding: 5px 32px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
+    position: absolute;
+    bottom: 95px;    
+    left: 60px;
+    text-align: center;
+    margin: 0px auto;
+    left: 550px;
+}
+
+.msg {
+	padding: 5px 32px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: #fff;
+    background-color: green;
+    border-color: #ebccd1;
+    position: absolute;
+    bottom: 95px;    
+    left: 60px;
+    text-align: center;
+    margin: 0px auto;
+    left: 550px;
+}
+.error_message{
+	padding: 5px 32px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
+    position: absolute;
+    bottom: 95px;
+    display: none;
+    left: 60px;
+    text-align: center;
+    margin: 0px auto;
+    left: 567px;
+}

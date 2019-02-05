@@ -1,0 +1,406 @@
+/* Sticky footer styles
+-------------------------------------------------- */
+@font-face {
+	font-family: "Lato Regular";
+	src: url("../uic/fonts/Lato-Regular.eot?") format("eot"),
+		url("../uic/fonts/Lato-Regular.woff") format("woff"),
+		url("../uic/fonts/Lato-Regular.ttf") format("truetype"),
+		url("../uic/fonts/Lato-Regular.svg#Lato-Regular") format("svg");
+	font-weight: normal;
+	font-style: normal;
+}
+
+html {
+	position: relative;
+	min-height: 100%;
+}
+
+body {
+	font-family: 'Open Sans', sans-serif !important;
+	/* Margin bottom by footer height */
+	margin-bottom: 60px;
+}
+
+.ui-widget {
+/* 	font-family: 'Lato Regular' !important; */
+	font-size: 12px;
+}
+
+.ui-state-focus {
+	background: #00adcf !important;
+	font-weight: 100 !important;
+	border: none !Important;
+	color: #fff !Important;
+}
+
+.uic_tbl_caption_h2 .glyphicon {
+	font-size: initial;
+	vertical-align: middle;
+}
+
+.UicHeaderSet {
+	padding: 3px 15px !important;
+}
+
+.UicCustomBtnRight {
+	padding: 5px;
+	text-align: right;
+	background: #5BC0E6;
+}
+
+.footer {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	/* Set the fixed height of the footer here */
+	height: 60px;
+	background-color: #343434;
+	border-top: 1px solid #343434;
+	color: #fff;
+	padding: 12px 10px;
+	font-size: 12px;
+	text-align: center;
+}
+
+/* Custom page CSS
+-------------------------------------------------- */
+/* Not required for template or sticky footer method. */
+
+/* body > .container {
+  padding: 60px 15px 0;
+} */
+.container .text-muted {
+	margin: 10px 0;
+}
+
+.footer>.container {
+	padding-right: 15px;
+	padding-left: 15px;
+}
+
+code {
+	font-size: 80%;
+}
+
+.UicColumnDropdown {
+	text-align: left;
+	position: absolute;
+	top: 5px;
+	right: 0px;
+	display: none;
+	background: #ffffff;
+	width: 250px;
+	border: 1px solid #396194;
+	padding: 10px;
+	font-size: 11px;
+	border-radius: 6px;
+	box-shadow: 2px 5px 5px rgba(0, 0, 0, 0.22);
+	color: #000;
+	z-index: 100;
+}
+
+/* checkbox and radio css */
+.checkbox label:after,.radio label:after {
+	content: '';
+	display: table;
+	clear: both;
+}
+
+.checkbox .cr,.radio .cr {
+	position: relative;
+	display: inline-block;
+	border: 1px solid #a9a9a9;
+	border-radius: .25em;
+	width: 1.3em;
+	height: 1.3em;
+	float: left;
+	margin-right: .5em;
+}
+
+.radio .cr {
+	border-radius: 50%;
+}
+
+.checkbox .cr .UicAlignOkIcon {
+	position: absolute;
+	font-size: .8em;
+	line-height: 0;
+	top: 50%;
+	left: 20%;
+}
+
+.radio .cr .UicAlignOkIcon {
+	position: absolute;
+	font-size: 1.2em;
+	line-height: 0;
+	top: 52%;
+	left: -7%;
+}
+
+.radio .cr .UicAlignOkIcon {
+	margin-left: 0.04em;
+}
+
+.checkbox label input[type="checkbox"],.radio label input[type="radio"]
+	{
+	display: none;
+}
+
+.checkbox label input[type="checkbox"]+.cr>.UicAlignOkIcon,.radio label input[type="radio"]+.cr>.UicAlignOkIcon
+	{
+	transform: scale(3) rotateZ(-20deg);
+	opacity: 0;
+	transition: all .3s ease-in;
+}
+
+.checkbox label input[type="checkbox"]:checked+.cr>.UicAlignOkIcon,.radio label input[type="radio"]:checked+.cr>.UicAlignOkIcon
+	{
+	transform: scale(1) rotateZ(0deg);
+	opacity: 1;
+}
+
+.checkbox label input[type="checkbox"]:disabled+.cr,.radio label input[type="radio"]:disabled+.cr
+	{
+	opacity: .5;
+}
+
+/* end */
+.UicBtnRightMargin {
+	margin-right: 10px;
+}
+
+.UicAppendHint {
+	float: right;
+	position: absolute;
+	top: 0px;
+	right: -50px;
+	z-index: 100;
+}
+
+.UicExpandTable {
+	padding-right: 18px;
+	background: transparent url(images/plus_square_black.png) right center
+		no-repeat;
+	cursor: pointer;
+	line-height: 18px;
+	background-size: contain;
+}
+
+.UicCollapseTable {
+	padding-right: 18px;
+	background: transparent url(images/minus_square_black.png) right center
+		no-repeat;
+	cursor: pointer;
+	line-height: 18px;
+	background-size: contain;
+}
+
+.bottom10 {
+	margin-bottom: 5px;
+}
+
+.ui-widget-content {
+	border: 1px solid #ddd;
+	background: #fff;
+	color: #333;
+}
+
+.UicAppnedBtn,.UicAppnedBtn:active,.UicAppnedBtn:focus,.UicAppnedBtn:visited,.UicAppnedBtn:hover
+	{
+	position: relative;
+	/* z-index: 1000; */
+	/* padding: 10px; */
+	width: 20px;
+	height: 20px;
+	background: transparent;
+	float: right;
+	top: 3px;
+	right: 45px;
+	border: none;
+	outline: none;
+}
+
+.padding15 {
+	padding: 15px !Important;
+}
+
+/* .form-control {
+	height: 28px !important;
+	font-size: 12px !important;
+}
+ */
+.btn {
+	padding: 4px 8px !Important;
+	font-size: 13px !important;
+}
+
+label {
+	font-size: 12px !important;
+}
+
+.maintitle {
+	font-size: 15px;
+	padding: 4px 13px;
+}
+
+.checkbox label {
+	margin: 0;
+	padding-left: 0px !important;
+}
+
+.radio label {
+	margin: 0;
+	padding-left: 0px !important;
+}
+
+.UicAccordionCaptionH2 { /* background: #337AB7; */
+	background: #5BC0E6;
+	padding: 3px 0px;
+	color: #000;
+	font-size: 13px;
+	font-weight: 600;
+	border-radius: 3px;
+	/* margin: 10px 0; */
+	margin: 0 0px 10px 0 !important;
+	/* border-radius: 5px; */
+	width: 100%;
+	line-height: 21px;
+}
+
+.csv {
+	background-image: url(images/csv.png);
+	width: 30px;
+	height: 30px;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 20px;
+	padding: 13px;
+}
+
+.xls,.xlsx {
+	background-image: url(images/xls.gif);
+    width: 16px;
+    height: 16px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    padding: 13px;
+}
+
+.UicErrorMsgTable {
+	background-color: red;
+	border: 1px solid red !Important;
+}
+
+.UicErrorMsg {
+	color: red !Important ;
+}
+
+.cbtn {
+	margin: 0 !important;
+	border-radius: 4PX !important;
+	TEXT-ALIGN: LEFT;
+	width: 100% !important;
+	height: 34px;
+}
+
+.cbtn .caret {
+	float: right;
+	margin-top: 7px
+}
+
+.zeropad {
+	padding: 0;
+}
+
+.UicMultiSelectContainer {
+	width: inherit !important;
+	padding: 2px 10px !Important;
+}
+
+.UicMultiSelectContainer {
+	position: absolute;
+	list-style-type: none;
+	margin: 0;
+	padding: 0
+}
+
+.UicMultiSelectContainer .input-group {
+	margin: 5px
+}
+
+.UicMultiSelectContainer>li {
+	padding: 0
+}
+
+.UicMultiSelectContainer>li>a.multiselect-all label {
+	font-weight: bold
+}
+
+.UicMultiSelectContainer>li>label.multiselect-group {
+	margin: 0;
+	padding: 3px 20px 3px 10px;
+	height: 100%;
+	font-weight: bold;
+}
+
+.UicMultiSelectContainer>li>a>label {
+	margin: 0;
+	height: 100%;
+	cursor: pointer;
+	font-weight: normal
+}
+
+.UicMultiSelectContainer>li>a>label.radio,.UicMultiSelectContainer>li>a>label.checkbox
+	{
+	margin: 0
+}
+
+.UicMultiSelectContainer>li>a>label>input[type="checkbox"] {
+	margin-bottom: 5px
+}
+.btn-group>.btn-group:nth-child(2)>.multiselect.btn {
+	border-top-left-radius: 4px;
+	border-bottom-left-radius: 4px
+}
+.glyphicon-repeat{
+	margin-left: 5px;
+	padding-right: 5px;
+	color: #fff;
+	font-size: 14px;
+}
+.glyphicon-floppy-disk{
+	color: #fff;
+	font-size: 14px;
+}
+.componentHdrText input{
+	border: none;
+	border-radius: 3px;
+	font-size: 13px;
+	padding-left: 5px;
+	margin-left: 10px;
+	color: #606060;
+}
+.uicComponentHdrPanel div.UicTblCaptionH2 {
+    padding-left: 15px;
+    padding-right: 10px;
+    height: 28px;
+}
+.uicLeftExport img.xls {
+    top: 17px;
+    position: relative;
+    left: 15px;
+}
+.uicRightExport img.xls {
+    position: relative;
+    left: 60px;
+}
+.uic_layout_caption_h2 {
+    border-radius: 3px 3px 0px 0px;
+    background: #0356a4;
+    margin-bottom: 10px !important;
+    font-size: 13px;
+    padding: 7px 20px;
+    color: #fff;
+    font-weight: 600;
+}

@@ -1,0 +1,224 @@
+/**
+ * 
+ */
+package com.livespread.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import com.livespread.domain.FileUploadModel;
+import com.livespread.domain.ItrExtractionRules;
+import com.livespread.domain.ItrTemplateFormMetadata;
+import com.livespread.domain.ItrTemplateSectionMapping;
+import com.livespread.domain.NamedNativeQueryName;
+import com.livespread.domain.NamedQueryName;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.rage.reusable.constants.ReusableConstant;
+
+/**
+ * @author Ganesh.Holage
+ * 
+ */
+
+@Service("extractionServiceITR")
+public class ExtractionServiceITRImpl implements ExtractionServiceITR {
+
+	private Logger LOGGER = Logger.getLogger(ExtractionServiceITRImpl.class);
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean saveUpadateRulesInExtractor_Table(List<ItrExtractionRules> itrExtractionRulesList, Integer filingId, Integer templateId) throws Exception 
+	{
+		boolean flag=false;
+		LOGGER.info("** Started- saveUpdateRulesInExtractor_Table methode in  ExtractionServiceImpl class---");
+		/** Here we insert or update values in ItrExtractionRules. **/
+		/** Here if extractionRuleId=0 then insert new record or update record. **/
+		Map<String, Object> parameters=null;
+		
+		
+		if(!CollectionUtils.isEmpty(itrExtractionRulesList)){
+			parameters = new HashMap<String, Object>();
+			parameters.put("filingId", filingId);
+			parameters.put("templateId", templateId);
+			genericDaoImpl.removeByNamedQuery(NamedQueryName.deleteItrExtractionRulesByFilingIdAndTemplateId, ItrExtractionRules.class, parameters);
+			
+			for(ItrExtractionRules itrExtractionRules:itrExtractionRulesList)
+			 {
+				 if(itrExtractionRules.getExtractionRuleId()!=null && itrExtractionRules.getExtractionRuleId()!=0)
+				 {
+					
+					parameters.put("extractionRuleId", itrExtractionRules.getExtractionRuleId());
+					List<ItrExtractionRules> extractionRulesObject =(List<ItrExtractionRules>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getItrExtractionRuleByExtractionRuleId, ItrExtractionRules.class, parameters);
+					 
+					if(!CollectionUtils.isEmpty(extractionRulesObject))
+					{
+						ItrExtractionRules selectedExtractionRules = extractionRulesObject.get(0);
+						selectedExtractionRules.setConcept(itrExtractionRules.getConcept());
+						selectedExtractionRules.setModifiedBy(itrExtractionRules.getModifiedBy());
+						selectedExtractionRules.setModifiedOn(itrExtractionRules.getModifiedOn());
+						selectedExtractionRules.setPageNumber(itrExtractionRules.getPageNumber());
+						genericDaoImpl.merge(selectedExtractionRules);
+					}
+					flag=true;
+				 }else{
+					genericDaoImpl.persist(itrExtractionRules);
+					flag=true;
+				}
+			}
+		}
+		return flag;
+	}
+	
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean deleteExtractionRules(List<Integer> extractionRuleId) throws Exception 
+	{
+		boolean flag = false;
+		try {
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("extractionRuleId", extractionRuleId);
+			genericDaoImpl.removeByNamedQuery(NamedQueryName.deleteItrExtractionRulesByExtractionRuleId,ItrExtractionRules.class, parameters);
+		   flag = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return flag;
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.livespread.service.ExtractionServiceITR#getITRExtractionRulesSectionwiseByFilingIdAndTemplateID(java.lang.Integer, java.lang.Integer)
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public Map<Integer, Map<String, List<ItrExtractionRules>>> getITRExtractionRulesSectionwiseByFilingIdAndTemplateID(Integer filingId, Integer templateId,List<String> sectionList) throws Exception 
+	{
+
+		Map<Integer,Map<String,List<ItrExtractionRules>>> extractionDataMapBySection=new LinkedHashMap<>();
+		try{
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("templateId",  templateId);
+		parameters.put("filingId",  filingId);
+		Map<String,List<ItrExtractionRules>> sectionMapTable1=new LinkedHashMap();
+		Map<String,List<ItrExtractionRules>> sectionMapTable2=new LinkedHashMap();
+		List<ItrExtractionRules> itrExtractionRulesList=null;
+		
+		for(String sectionName:sectionList)
+		{
+			itrExtractionRulesList=new ArrayList<>();
+			parameters.put("sectionName", sectionName);
+			List<Object> pdfExtractionMetadataList=genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getItrExtractionRulesByFilingIdSectionIdAndTemplateId,ItrExtractionRules.class,parameters);
+			for(Object obj:pdfExtractionMetadataList){
+				Object[] objIn = (Object[]) obj;
+				ItrExtractionRules itrExtractionRules=new ItrExtractionRules();
+				itrExtractionRules.setExtractionRuleId(objIn[0] == null ? 0 : Integer.parseInt(objIn[0].toString()));
+				itrExtractionRules.setTemplateSectionMappingId(objIn[1] == null ? 0 : Integer.parseInt(objIn[1].toString()));
+				itrExtractionRules.setSectionId(objIn[2] == null ? 0 : Integer.parseInt(objIn[2].toString()));
+				itrExtractionRules.setSectionName(objIn[3] == null ? "" : objIn[3].toString());
+				itrExtractionRules.setPageNumber(objIn[4] == null ? 0 : Integer.parseInt(objIn[4].toString()));
+				itrExtractionRules.setConcept(objIn[5] == null ? "" : objIn[5].toString());
+				itrExtractionRulesList.add(itrExtractionRules);
+
+			}
+			
+			sectionMapTable1.put(sectionName,itrExtractionRulesList);
+		}
+		extractionDataMapBySection.put(1,sectionMapTable1);
+		extractionDataMapBySection.put(2,sectionMapTable2);
+		}catch(Exception e){
+			e.printStackTrace();
+			LOGGER.error("Error:",e);
+		}
+		return extractionDataMapBySection;
+
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see com.livespread.service.ExtractionServiceITR#getTemplateFormMetadataList()
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<ItrTemplateFormMetadata> getTemplateFormMetadataList() throws Exception 
+	{
+		List<ItrTemplateFormMetadata> itrTemplateFormMetadatas=(List<ItrTemplateFormMetadata>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getTemplateFormMetadataList, ItrTemplateFormMetadata.class);
+		return itrTemplateFormMetadatas;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.livespread.service.ExtractionServiceITR#getITRTemplateSectionMappingsByTemplateFormId(java.lang.Integer)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<ItrTemplateSectionMapping> getITRTemplateSectionMappingsByTemplateFormId(Integer templateId)throws Exception 
+	{
+		List<ItrTemplateSectionMapping> sectionList=null;
+		try{
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("templateId",  templateId);
+			sectionList=(ArrayList<ItrTemplateSectionMapping>)(Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getItrTemplateSectionMappingListByTemplateId,ItrTemplateSectionMapping.class,parameters);
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return sectionList;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Integer getselectedTemplateFormId(Integer filingId) throws Exception 
+	{
+		List<Integer> templateFormIdList=null;
+		Integer selectedTemplateFormId = null;
+		try{
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("filingId",  filingId);
+			templateFormIdList=(ArrayList<Integer>)(Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getItrTemplateFormIdByFilingId,ItrExtractionRules.class,parameters);
+			if(!CollectionUtils.isEmpty(templateFormIdList))
+			{
+				selectedTemplateFormId=templateFormIdList.get(0);
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return selectedTemplateFormId;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Integer getFileUploadIdByFilingId(Integer filingId) throws Exception 
+	{
+		List<Integer> fileUploadIdList=null;
+		Integer selectedFileUploadId = null;
+		try{
+			Map<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("filingId",  filingId);
+			fileUploadIdList=(ArrayList<Integer>)(Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getFileUploadIdByFilingId,FileUploadModel.class,parameters);
+			if(!CollectionUtils.isEmpty(fileUploadIdList))
+			{
+				selectedFileUploadId=fileUploadIdList.get(0);
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return selectedFileUploadId;
+	}
+}

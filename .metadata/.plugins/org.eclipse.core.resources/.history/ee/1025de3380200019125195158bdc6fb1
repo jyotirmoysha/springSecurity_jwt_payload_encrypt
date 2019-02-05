@@ -1,0 +1,420 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name="AUDIT_TRAIL_ROLE_SUMMARY")
+@NamedQueries({ @NamedQuery(name = "findAudittrailRoleSummaryByFilingId", query = "select atrsID,seqNo,wqId,caseId,createdDate,caseName,type,userName,pageSize,extBySystem,mapBySystem,extractionAdditions,extraction_additions_per,extractionModifications,extractionModificationsPer,extractionDeletions,extractionDeletionsPer,mappingAdditions,mappingAdditionsPer,mappingModifications,mappingModificationsPer,mappingDeletions,mappingDeletionsPer,extRetained,mapRetained,extRetainedPer,mapRetainedPer,extTotalSystemUser,mapTotalSystemUser from AuditTrailRolesSummary where caseId=:filingId order by caseId,atrsID asc"),
+				@NamedQuery(name = "findAudittrailRoleSummaryByFilingIdStartDateEndDate", query = "select atrsID,seqNo,wqId,caseId,createdDate,caseName,type,userName,pageSize,extBySystem,mapBySystem,extractionAdditions,extraction_additions_per,extractionModifications,extractionModificationsPer,extractionDeletions,extractionDeletionsPer,mappingAdditions,mappingAdditionsPer,mappingModifications,mappingModificationsPer,mappingDeletions,mappingDeletionsPer,extRetained,mapRetained,extRetainedPer,mapRetainedPer,extTotalSystemUser,mapTotalSystemUser from AuditTrailRolesSummary where caseId=:filingId and createdDate BETWEEN :startDate AND :endDate order by caseId,atrsID asc"),
+				@NamedQuery(name = "findAudittrailRoleSummaryByStartDateEndDate", query = "select atrsID,seqNo,wqId,caseId,createdDate,caseName,type,userName,pageSize,extBySystem,mapBySystem,extractionAdditions,extraction_additions_per,extractionModifications,extractionModificationsPer,extractionDeletions,extractionDeletionsPer,mappingAdditions,mappingAdditionsPer,mappingModifications,mappingModificationsPer,mappingDeletions,mappingDeletionsPer,extRetained,mapRetained,extRetainedPer,mapRetainedPer,extTotalSystemUser,mapTotalSystemUser from AuditTrailRolesSummary where createdDate BETWEEN :startDate AND :endDate order by caseId,atrsID asc"),
+				})
+public class AuditTrailRolesSummary implements Serializable,BaseEntity {
+
+	private static final long serialVersionUID = 1L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "ATRS_ID")
+    private Integer atrsID;
+
+    @Column(name = "SEQ_NO")
+    private Integer seqNo;
+	
+    @Column(name = "WQ_ID")
+    private Integer wqId;
+    
+    @Column(name = "CASE_ID")
+    private Integer caseId;
+    
+    @Column(name = "CREATED_DATE")
+    private Date createdDate;
+    
+    @Column(name = "USERNAME")
+    private String userName;
+    
+    @Column(name = "CASE_NAME")
+    private String caseName;
+    
+    @Column(name = "TYPE")
+    private String type;
+       
+    @Column(name = "PAGE_SIZE")
+    private Integer pageSize;
+    
+    @Column(name = "EXT_BY_SYSTEM")
+    private Integer extBySystem;
+    
+    @Column(name = "MAP_BY_SYSTEM")
+    private Integer mapBySystem;
+    
+    @Column(name = "EXTRACTION_ADDITIONS")
+    private Integer extractionAdditions;
+    
+    @Column(name = "EXTRACTION_ADDITIONS_PER")
+    private Double extraction_additions_per;
+    
+    @Column(name = "EXTRACTION_MODIFICATIONS")
+    private Integer extractionModifications;
+    
+    @Column(name = "EXTRACTION_MODIFICATIONS_PER")
+    private Double extractionModificationsPer;
+    
+    @Column(name = "EXTRACTION_DELETIONS")
+    private Integer extractionDeletions;
+
+    @Column(name = "EXTRACTION_DELETIONS_PER")
+    private Double extractionDeletionsPer;
+    
+    @Column(name = "MAPPING_ADDITIONS")
+    private Integer mappingAdditions;
+
+    @Column(name = "MAPPING_ADDITIONS_PER")
+    private Double mappingAdditionsPer;
+    
+    @Column(name = "MAPPING_MODIFICATIONS")
+    private Integer mappingModifications;
+    
+    @Column(name = "MAPPING_MODIFICATIONS_PER")
+    private Double mappingModificationsPer;
+    
+    @Column(name = "MAPPING_DELETIONS")
+    private Integer mappingDeletions;
+    
+    @Column(name = "MAPPING_DELETIONS_PER")
+    private Double mappingDeletionsPer;
+       
+    @Column(name = "EXT_RETAINED")
+    private Integer extRetained;
+    
+    @Column(name = "MAP_RETAINED")
+    private Integer mapRetained;
+    
+    @Column(name = "EXT_RETAINED_PER")
+    private Double extRetainedPer;
+    
+    @Column(name = "MAP_RETAINED_PER")
+    private Double mapRetainedPer;
+    
+    @Column(name = "EXT_TOTAL_SYSTEM_USER")
+    private Integer extTotalSystemUser;
+    
+    @Column(name = "MAP_TOTAL_SYSTEM_USER")
+    private Integer mapTotalSystemUser;
+    
+    
+    public String getType() {
+		return type;
+	}
+
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+
+	public String getCaseName() {
+		return caseName;
+	}
+
+
+	public void setCaseName(String caseName) {
+		this.caseName = caseName;
+	}
+
+
+	public Integer getAtrsID() {
+		return atrsID;
+	}
+
+
+	public void setAtrsID(Integer atrsID) {
+		this.atrsID = atrsID;
+	}
+
+
+	public Integer getSeqNo() {
+		return seqNo;
+	}
+
+
+	public void setSeqNo(Integer seqNo) {
+		this.seqNo = seqNo;
+	}
+
+
+	public Integer getWqId() {
+		return wqId;
+	}
+
+
+	public void setWqId(Integer wqId) {
+		this.wqId = wqId;
+	}
+
+
+	public Integer getCaseId() {
+		return caseId;
+	}
+
+
+	public void setCaseId(Integer caseId) {
+		this.caseId = caseId;
+	}
+
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+
+	public String getUserName() {
+		return userName;
+	}
+
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+
+	public Integer getPageSize() {
+		return pageSize;
+	}
+
+
+	public void setPageSize(Integer pageSize) {
+		this.pageSize = pageSize;
+	}
+
+
+	public Integer getExtBySystem() {
+		return extBySystem;
+	}
+
+
+	public void setExtBySystem(Integer extBySystem) {
+		this.extBySystem = extBySystem;
+	}
+
+
+	public Integer getMapBySystem() {
+		return mapBySystem;
+	}
+
+
+	public void setMapBySystem(Integer mapBySystem) {
+		this.mapBySystem = mapBySystem;
+	}
+
+
+	public Integer getExtractionAdditions() {
+		return extractionAdditions;
+	}
+
+
+	public void setExtractionAdditions(Integer extractionAdditions) {
+		this.extractionAdditions = extractionAdditions;
+	}
+
+
+	public Double getExtraction_additions_per() {
+		return extraction_additions_per;
+	}
+
+
+	public void setExtraction_additions_per(Double extraction_additions_per) {
+		this.extraction_additions_per = extraction_additions_per;
+	}
+
+
+	public Integer getExtractionModifications() {
+		return extractionModifications;
+	}
+
+
+	public void setExtractionModifications(Integer extractionModifications) {
+		this.extractionModifications = extractionModifications;
+	}
+
+
+	public Double getExtractionModificationsPer() {
+		return extractionModificationsPer;
+	}
+
+
+	public void setExtractionModificationsPer(Double extractionModificationsPer) {
+		this.extractionModificationsPer = extractionModificationsPer;
+	}
+
+
+	public Integer getExtractionDeletions() {
+		return extractionDeletions;
+	}
+
+
+	public void setExtractionDeletions(Integer extractionDeletions) {
+		this.extractionDeletions = extractionDeletions;
+	}
+
+
+	public Double getExtractionDeletionsPer() {
+		return extractionDeletionsPer;
+	}
+
+
+	public void setExtractionDeletionsPer(Double extractionDeletionsPer) {
+		this.extractionDeletionsPer = extractionDeletionsPer;
+	}
+
+
+	public Integer getMappingAdditions() {
+		return mappingAdditions;
+	}
+
+
+	public void setMappingAdditions(Integer mappingAdditions) {
+		this.mappingAdditions = mappingAdditions;
+	}
+
+
+	public Double getMappingAdditionsPer() {
+		return mappingAdditionsPer;
+	}
+
+
+	public void setMappingAdditionsPer(Double mappingAdditionsPer) {
+		this.mappingAdditionsPer = mappingAdditionsPer;
+	}
+
+
+	public Integer getMappingModifications() {
+		return mappingModifications;
+	}
+
+
+	public void setMappingModifications(Integer mappingModifications) {
+		this.mappingModifications = mappingModifications;
+	}
+
+
+	public Double getMappingModificationsPer() {
+		return mappingModificationsPer;
+	}
+
+
+	public void setMappingModificationsPer(Double mappingModificationsPer) {
+		this.mappingModificationsPer = mappingModificationsPer;
+	}
+
+
+	public Integer getMappingDeletions() {
+		return mappingDeletions;
+	}
+
+
+	public void setMappingDeletions(Integer mappingDeletions) {
+		this.mappingDeletions = mappingDeletions;
+	}
+
+
+	public Double getMappingDeletionsPer() {
+		return mappingDeletionsPer;
+	}
+
+
+	public void setMappingDeletionsPer(Double mappingDeletionsPer) {
+		this.mappingDeletionsPer = mappingDeletionsPer;
+	}
+
+
+	public Integer getExtRetained() {
+		return extRetained;
+	}
+
+
+	public void setExtRetained(Integer extRetained) {
+		this.extRetained = extRetained;
+	}
+
+
+	public Integer getMapRetained() {
+		return mapRetained;
+	}
+
+
+	public void setMapRetained(Integer mapRetained) {
+		this.mapRetained = mapRetained;
+	}
+
+
+	public Double getExtRetainedPer() {
+		return extRetainedPer;
+	}
+
+
+	public void setExtRetainedPer(Double extRetainedPer) {
+		this.extRetainedPer = extRetainedPer;
+	}
+
+	public Integer getExtTotalSystemUser() {
+		return extTotalSystemUser;
+	}
+
+
+	public void setExtTotalSystemUser(Integer extTotalSystemUser) {
+		this.extTotalSystemUser = extTotalSystemUser;
+	}
+
+
+	public Integer getMapTotalSystemUser() {
+		return mapTotalSystemUser;
+	}
+
+
+	public void setMapTotalSystemUser(Integer mapTotalSystemUser) {
+		this.mapTotalSystemUser = mapTotalSystemUser;
+	}
+
+	
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+
+	/**
+	 * @return the mapRetainedPer
+	 */
+	public Double getMapRetainedPer() {
+		return mapRetainedPer;
+	}
+
+
+	/**
+	 * @param mapRetainedPer the mapRetainedPer to set
+	 */
+	public void setMapRetainedPer(Double mapRetainedPer) {
+		this.mapRetainedPer = mapRetainedPer;
+	}
+	
+	
+
+}

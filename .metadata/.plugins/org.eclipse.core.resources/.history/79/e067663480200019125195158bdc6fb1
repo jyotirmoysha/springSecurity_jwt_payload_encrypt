@@ -1,0 +1,22 @@
+package com.livespread.common;
+
+import java.util.Comparator;
+import java.util.List;
+
+public class SectionWiseComparator implements Comparator<String> {
+
+private List<String> sortOrder;
+
+public SectionWiseComparator(List<String> sortOrder) {
+this.sortOrder = sortOrder;
+}
+
+@Override
+public int compare(String a1,
+		String a2) {
+
+return sortOrder.indexOf(a1) - sortOrder.indexOf(a2);
+}
+
+
+}

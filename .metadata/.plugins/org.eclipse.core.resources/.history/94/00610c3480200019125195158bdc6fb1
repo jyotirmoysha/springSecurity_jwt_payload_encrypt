@@ -1,0 +1,228 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "AS_REP_STATEMENT")
+@NamedNativeQueries({
+	@NamedNativeQuery(name = "getAsRepStatementDetailsByFilingId", query = "select distinct CONVERT(VARCHAR(10),ARS_DATE,101) ars_date,  ars_period,ARS_AUDIT_FLAG,ars_id,ars_date as arsDate,statement_quality from as_rep_statement where filing_id = :filingId "
+				+ "ORDER BY arsDate DESC "),
+	@NamedNativeQuery(name = "getAsRepStatementHeaderDetailsCRTemplate", query = "select distinct CONVERT(VARCHAR(10),ARS_DATE,101) ars_date,  "
+			+ "ars.ars_period, ars.ars_currency,ars.ars_stmt_year,be.e_name,ars.ars_Id,ars.ars_date as arsDate,ars.ARS_UNIT,ars.statement_quality from as_rep_statement ars left join work_queue wq on (ars.filing_id = wq.filing_id) left outer join business_entity be on "
+			+ "wq.eid= be.e_id where ars.filing_id =:filingId ORDER BY arsDate DESC "),
+    @NamedNativeQuery(name = "getStagingAsRepStmnt", query = "select ARS_ID From staging_as_rep_stmnt where filing_id=:filingId and ars_section=:section and dest_ars_id=:arsId order by ARS_ID desc"),
+    @NamedNativeQuery(name="getArsRepStmtByFilingId", query="select * from AS_REP_STATEMENT where filing_id=:filingId order by ars_stmt_year desc"),
+    @NamedNativeQuery(name="getArsRepStmtByFilingIdAsc", query="select * from AS_REP_STATEMENT where filing_id=:filingId order by ars_stmt_year asc") 
+
+
+})
+@NamedQueries({ @NamedQuery(name = "getAsRepStmtByArsId", query = "select asrep from AsRepStatement asrep where asrep.arsId=:arsId and asrep.filingId=:filingId"),
+@NamedQuery(name = "getAsRepStmtByFilingId", query = "select asrep.filingId,asrep.arsId,asrep.arsStmtYear,asrep.arsDate,asrep.arsPeriod from AsRepStatement asrep where asrep.filingId=:filingId order by asrep.arsColumn asc"),
+@NamedQuery(name="getYearByArsID", query="select distinct arsStmtYear from AsRepStatement where arsId in (:arsIdList) and filingId=:filingId"),
+@NamedQuery(name = "getAsRepStmtYearByFilingId", query = "select asrep.arsId,asrep.arsStmtYear from AsRepStatement asrep where asrep.filingId=:filingId order by asrep.arsId asc")
+
+
+})
+public class AsRepStatement implements Serializable, BaseEntity {
+
+	private static final long serialVersionUID = 1L;
+
+	
+	@Column(name = "E_ID")
+	private Integer eId;
+
+	@Column(name = "FILING_ID")
+	private Integer filingId;
+	
+	@Id
+	@Column(name = "ARS_ID")
+	private Integer arsId;
+
+	@Column(name = "ARS_COLUMN")
+	private Integer arsColumn;
+
+	@Column(name = "ARS_DATE")
+	private Date arsDate;
+
+	@Column(name = "ARS_CREATED_ON")
+	private Date arsCreatedOn;
+
+	@Column(name = "ARS_PERIOD")
+	private Integer arsPeriod;
+
+	@Column(name = "ARS_STMT_FOR")
+	private String arsStmtFor;
+
+	@Column(name = "ARS_UNIT")
+	private String arsUnit;
+
+	@Column(name = "ARS_CURRENCY")
+	private String arsCurrency;
+
+	@Column(name = "ARS_AUDIT_FLAG")
+	private String arsAuditFlag;
+
+	@Column(name = "ARS_SECTION")
+	private String arsSection;
+
+	@Column(name = "ARS_SHARE_UNIT")
+	private String arsShareUnit;
+
+	@Column(name = "TEMPLATE_ID")
+	private Integer templateId;
+
+	@Column(name = "ARS_STMT_YEAR")
+	private Integer arsStmtYear;
+	
+	@Transient
+	private String arsDateStr;
+
+	public Integer geteId() {
+		return eId;
+	}
+
+	public void seteId(Integer eId) {
+		this.eId = eId;
+	}
+
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public Integer getArsId() {
+		return arsId;
+	}
+
+	public void setArsId(Integer arsId) {
+		this.arsId = arsId;
+	}
+
+	public Integer getArsColumn() {
+		return arsColumn;
+	}
+
+	public void setArsColumn(Integer arsColumn) {
+		this.arsColumn = arsColumn;
+	}
+
+	public Date getArsDate() {
+		return arsDate;
+	}
+
+	public void setArsDate(Date arsDate) {
+		this.arsDate = arsDate;
+	}
+
+	public Date getArsCreatedOn() {
+		return arsCreatedOn;
+	}
+
+	public void setArsCreatedOn(Date arsCreatedOn) {
+		this.arsCreatedOn = arsCreatedOn;
+	}
+
+	public Integer getArsPeriod() {
+		return arsPeriod;
+	}
+
+	public void setArsPeriod(Integer arsPeriod) {
+		this.arsPeriod = arsPeriod;
+	}
+
+	public String getArsStmtFor() {
+		return arsStmtFor;
+	}
+
+	public void setArsStmtFor(String arsStmtFor) {
+		this.arsStmtFor = arsStmtFor;
+	}
+
+	public String getArsUnit() {
+		return arsUnit;
+	}
+
+	public void setArsUnit(String arsUnit) {
+		this.arsUnit = arsUnit;
+	}
+
+	public String getArsCurrency() {
+		return arsCurrency;
+	}
+
+	public void setArsCurrency(String arsCurrency) {
+		this.arsCurrency = arsCurrency;
+	}
+
+	public String getArsAuditFlag() {
+		return arsAuditFlag;
+	}
+
+	public void setArsAuditFlag(String arsAuditFlag) {
+		this.arsAuditFlag = arsAuditFlag;
+	}
+
+	public String getArsSection() {
+		return arsSection;
+	}
+
+	public void setArsSection(String arsSection) {
+		this.arsSection = arsSection;
+	}
+
+	public String getArsShareUnit() {
+		return arsShareUnit;
+	}
+
+	public void setArsShareUnit(String arsShareUnit) {
+		this.arsShareUnit = arsShareUnit;
+	}
+
+	public Integer getTemplateId() {
+		return templateId;
+	}
+
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+
+	public Integer getArsStmtYear() {
+		return arsStmtYear;
+	}
+
+	public void setArsStmtYear(Integer arsStmtYear) {
+		this.arsStmtYear = arsStmtYear;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+	public String getArsDateStr() {
+		return arsDateStr;
+	}
+
+	public void setArsDateStr(String arsDateStr) {
+		this.arsDateStr = arsDateStr;
+	}
+	
+
+}

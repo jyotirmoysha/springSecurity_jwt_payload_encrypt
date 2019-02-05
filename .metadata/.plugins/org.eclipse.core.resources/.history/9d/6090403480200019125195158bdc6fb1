@@ -1,0 +1,571 @@
+package com.livespread.controller;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.livespread.command.EditFileCommand;
+import com.livespread.domain.FileUploadModel;
+import com.livespread.domain.NamedQueryName;
+import com.livespread.domain.User;
+import com.livespread.service.FileUploadService;
+import com.livespread.service.NormalizationService;
+import com.livespread.service.POCordHighlightDetailsService;
+import com.livespread.util.CipherUtils;
+import com.rage.extendeddao.ExtendedGenericDao;
+
+@Controller
+public class FileInfoTabController {
+
+	private Logger LOGGER = Logger.getLogger(FileInfoTabController.class);
+
+	@Value("${anchorFileInitial}")
+	private String AnchorFileInitial;
+
+	@Value("${apliedrulesInitial}")
+	private String apliedrulesInitial;
+
+	@Value("${anchorFileExt}")
+	private String AnchorFileExt;
+
+	@Value("${anchorFileNtFound}")
+	private String fileNotFound;
+
+	@Value("${globalExcptionMsg}")
+	private String expMessage;
+
+	@Value("${JSStart}")
+	private String jsStart;
+	@Value("${JSEnd}")
+	private String jsEnd;
+	@Value("${CSStart}")
+	private String csStart;
+	@Value("${CSEnd}")
+	private String csEnd;
+
+	@Value("${textAreaStart}")
+	private String textAreaStart;
+
+	@Value("${textAreaEnd}")
+	private String textAreaEnd;
+
+	@Value("${formStart}")
+	private String formStart;
+
+	@Value("${formEnd}")
+	private String formEnd;
+	
+
+	@Value("${homePath.path}")
+	private String homePath;
+	
+	@Autowired
+	private FileUploadService fileUploadService;
+	
+	@Autowired
+	private POCordHighlightDetailsService poCordHighlightDetailsService;
+	
+	@Autowired
+	private NormalizationService normalizationService;
+
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+	
+	
+
+	/*************** Read getOriognal_FileName *****************************************************************/
+	@RequestMapping(value = "/getOriognal_FileName.htm", method = {
+			RequestMethod.GET})
+	public String getOrgionalFileNames(
+			@RequestParam("customerId") String customerId,
+			@RequestParam("wqId") String wqId, Model map) {
+		LOGGER.info("------------------ getOrgionalFileNames request Mapping starts --------------------");
+		try {
+			String decryptedWqId = CipherUtils.decrypt(wqId);
+			String decryptedCustomerId = CipherUtils.decrypt(customerId);
+
+			map.addAttribute("fileList", normalizationService
+					.getOrgionalFileNames(decryptedCustomerId, decryptedWqId));
+			map.addAttribute("wqId", decryptedWqId);
+			map.addAttribute("customerId", decryptedCustomerId);
+			map.addAttribute("encryptedWqId", wqId);
+			map.addAttribute("encryptedcustomerId", customerId);
+		} catch (Exception e) {
+			LOGGER.error("Error:", e);
+			e.printStackTrace();
+		}
+		return "FileList";
+	}
+
+	@RequestMapping(value = "/showOrgionalFile.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public void doDownload(HttpServletRequest request,
+			HttpServletResponse response,
+			@RequestParam("customerId") String customerId,
+			@RequestParam("wqId") String wqId,
+			@RequestParam("fileName") String fileName,
+			@RequestParam("flag") int flag, HttpSession session,HttpServletResponse res) {
+
+		ServletContext context = request.getServletContext();
+
+		customerId = CipherUtils.decrypt(customerId);
+		wqId = CipherUtils.decrypt(wqId);
+		// replace window path / to \\/ for unix path compatibility
+		/*
+		 * flag=2 means show original file and flag=3 means show converted file
+		 */
+		String dbPath="";
+		User user = (User) session.getAttribute("user");
+		String usersGroupName = user.getUsersGroupName();
+		String[] pathArray = null;
+		String tmpdbPath = "";
+		try {
+			OutputStream outStream = null;
+			FileInputStream inputStream = null;
+			if (usersGroupName.equals("CP_SEC")) {
+				tmpdbPath = fileUploadService .getFileUpload(customerId, wqId, flag).replaceAll("/","\\/");
+				pathArray = tmpdbPath.split("LIVESPREAD-FS");
+				if(pathArray!=null && pathArray.length==2)
+				{
+					dbPath = homePath+pathArray[1];	
+				}
+				
+				String fullPath = dbPath + fileName;
+
+				File downloadFile = new File(fullPath).getCanonicalFile();
+				inputStream = new FileInputStream(downloadFile);
+
+				response.setContentType("text/html");
+				response.setContentLength((int) downloadFile.length());
+
+				outStream = response.getOutputStream();
+				byte[] buffer = new byte[1024];
+				int bytesRead = -1;
+				// write bytes read from the input stream into the output stream
+				while ((bytesRead = inputStream.read(buffer)) != -1) {
+					outStream.write(buffer, 0, bytesRead);
+				}
+
+			} else {
+				tmpdbPath = fileUploadService.getFileUpload(customerId, wqId, flag).replaceAll("/","\\/");
+				pathArray = tmpdbPath.split("LIVESPREAD-FS");
+				if(pathArray!=null && pathArray.length==2)
+				{
+					dbPath = homePath+pathArray[1];	
+				}
+				String fullPath = dbPath + fileName;
+				// get MIME type of the file using path
+
+				String mimeType = context.getMimeType(fullPath);
+				// Create fileInput Stream
+				File downloadFile = new File(fullPath).getCanonicalFile();
+				if (!downloadFile.exists()) {
+				PrintWriter out = res.getWriter();
+		        out.println("file not exists on server!");
+		        out.close();
+		        return;
+					}
+				inputStream = new FileInputStream(downloadFile);
+
+				if (mimeType == null) {
+					// set to binary type if MIME mapping not found
+					mimeType = "application/octet-stream";
+				}
+				// set content attributes for the response
+				response.setContentType(mimeType);
+				response.setContentLength((int) downloadFile.length());
+
+				// set headers for the response
+				String headerKey = "Content-Disposition";
+				String headerValue = String.format(
+						"attachment; filename=\"%s\"", downloadFile.getName());
+				response.setHeader(headerKey, headerValue);
+				// get output stream of the response
+				outStream = response.getOutputStream();
+				byte[] buffer = new byte[1024];
+				int bytesRead = -1;
+				// write bytes read from the input stream into the output stream
+				while ((bytesRead = inputStream.read(buffer)) != -1) {
+					outStream.write(buffer, 0, bytesRead);
+				}
+			}
+			inputStream.close();
+			outStream.close();
+
+		} catch (FileNotFoundException fe) {
+			LOGGER.error("Exception Occured", fe);
+			fe.printStackTrace();
+		} catch (Exception e) {
+			LOGGER.error("Error:", e);
+			e.printStackTrace();
+		}
+
+	}
+
+
+
+	@RequestMapping(value = "/editTextFile.htm", method = { RequestMethod.GET,
+			RequestMethod.POST })
+	public @ResponseBody
+	String editTextFile(EditFileCommand editFileCommand) {
+		LOGGER.info(" ** Start-editTextFile methode  ");
+		String msg = "";
+		try {
+
+			// overwrite file
+			FileWriter fstream = new FileWriter(
+					editFileCommand.getFilePathName(), false);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write(editFileCommand.getTextAreaData().toString());
+			// Close the output stream
+			out.close();
+			msg = "File Saved successfully";
+		} catch (Exception e) {// Catch exception if any
+			e.printStackTrace();
+			msg = "File Saved Failed";
+			LOGGER.error("Error:", e);
+
+		}
+
+		LOGGER.info(" ** End-editTextFile methode  ");
+		return msg;
+
+	}
+
+	@RequestMapping(value = "/getConverted_FileNames.htm", method = {
+			RequestMethod.GET})
+	public String getConvertedFileNames(
+			@RequestParam("customerId") String customerId,
+			@RequestParam("wqId") String wqId, Model map, HttpSession session) {
+
+		LOGGER.info("------------------ getConverted_FileNames request Mapping starts --------------------");
+		try {
+			String decryptedWqId = CipherUtils.decrypt(wqId);
+			String decryptedCustomerId = CipherUtils.decrypt(customerId);
+			Integer sessionParserId = (Integer) session.getAttribute("sessionParserId");
+
+			map.addAttribute("fileList", fileUploadService.getConvertedFileNames(decryptedCustomerId, decryptedWqId,sessionParserId));
+
+			map.addAttribute("wqId", decryptedWqId);
+			map.addAttribute("customerId", decryptedCustomerId);
+			map.addAttribute("encryptedWqId", wqId);
+			map.addAttribute("encryptedcustomerId", customerId);
+
+			LOGGER.info("--End--------------- getConverted_FileNames request Mapping starts --------------------");
+		} catch (Exception e) {
+			LOGGER.error("Error:", e);
+			e.printStackTrace();
+
+		}
+		return "convertedFileList";
+	}
+
+	/*
+	 * This function used for get processed file path from file_upload_details
+	 * table based on filing id
+	 */
+	@RequestMapping(value = "/openPdfFile.htm", method = { RequestMethod.GET,
+			RequestMethod.POST })
+	public void openFileInBrowser(HttpServletRequest req,
+			HttpServletResponse res,
+			@RequestParam("filingId") String encryptedfilingId,@RequestParam("uploadId") String uploadId, @RequestParam("pageNo") String pageNo,HttpSession session
+			) throws ServletException, IOException  {
+		LOGGER.info("**start--openFileInBrowser methode");
+		ServletOutputStream out = res.getOutputStream();
+		String filingId = CipherUtils.decrypt(encryptedfilingId);
+		String fileName="";
+		int pageNumber = Integer.parseInt(pageNo);
+		if (uploadId!=null && StringUtils.isNotBlank(uploadId)) {
+		fileName =fileUploadService.f_getProcessedFilePath(Integer.parseInt(filingId), Integer.parseInt(uploadId.trim()));
+		}else{
+			/**
+			 *upload id is null means Pdf Based parser
+			 *for pdf based parser fetch first row processed_file_path column value from file_upload_details table 
+			 */
+		fileName =fileUploadService.f_getProcessedFilePathByFilingId(Integer.parseInt(filingId));	
+		}
+		// ---------------------------------------------------------------
+		// Set the output data's mime type
+		// ---------------------------------------------------------------
+		res.setContentType("application/pdf"); // MIME type for pdf doc
+		// ---------------------------------------------------------------
+		// create an input stream from fileURL
+		// ---------------------------------------------------------------
+	
+		
+		LOGGER.info("** file path=="+fileName);
+		String fileURL = fileName;
+		
+		// ------------------------------------------------------------
+		// Content-disposition header - don't open in browser and
+		// set the "Save As" filename.
+		// *There is reportedly a bug in IE4.0 which ignores this.
+		// ------------------------------------------------------------
+
+		// res.setHeader("Content-disposition","attachment; filename="
+		// +"Example.pdf" );
+
+		// -----------------------------------------------------------------
+		// PROXY_HOST and PROXY_PORT should be your proxy host and port
+		// that will let you go through the firewall without authentication.
+		// Otherwise set the system properties and use
+		// URLConnection.getInputStream().
+		// -----------------------------------------------------------------
+		BufferedInputStream bis = null;
+		BufferedOutputStream bos = null;
+		File file = null;
+		String path = "";
+		try {
+			file = new File(fileURL).getCanonicalFile();
+			if(file.exists())
+			{
+				PDDocument pdDoc = PDDocument.load(file);
+				//Creates a new pdf document  
+				PDDocument document = null;
+				//Adds specific page "i" where "i" is the page number and then saves the new pdf document   
+				try {   
+				    document = new PDDocument();   
+				    document.addPage((PDPage) pdDoc.getDocumentCatalog().getAllPages().get(pageNumber-1));   
+					String absolutePath = file.getAbsolutePath();
+					String filePath = absolutePath.substring(0,absolutePath.lastIndexOf(File.separator));
+								
+			        path = String.format(filePath+File.separator+"%s.pdf", pageNumber-1);
+				    document.save(path);  
+				    document.close();  
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+	
+				FileInputStream fs = new FileInputStream(path);
+				
+				// Use Buffered Stream for reading/writing.
+				bis = new BufferedInputStream(fs);
+				bos = new BufferedOutputStream(out);
+				byte[] buff = new byte[2048];
+				int bytesRead;
+				// Simple read/write loop.
+				while (-1 != (bytesRead = bis.read(buff, 0, buff.length))) {
+					bos.write(buff, 0, bytesRead);
+				}
+			}
+		} catch (final MalformedURLException e) {
+			System.out.println("MalformedURLException.");
+			LOGGER.error("MalformedURLException Error:",e);
+			throw e;
+		} catch (final IOException e) {
+			LOGGER.error("IOException Error:",e);
+			throw e;
+		}catch (final NullPointerException e) {
+			LOGGER.error("NullPointerException Error:",e);
+			throw e;
+		} catch (final NumberFormatException  e) {
+			LOGGER.error("NumberFormatException Error:",e);
+			throw e;
+		} 
+		finally {
+			if (bis != null)
+				bis.close();
+			if (bos != null)
+				bos.close();
+			file = new File(path).getCanonicalFile();
+			file.delete();
+		}
+	}
+
+	/*
+	 * Naveed.Khan
+	 * 
+	 */
+	@RequestMapping(value = "/getCoodinates.htm", method = { RequestMethod.GET,
+			RequestMethod.POST })
+	public @ResponseBody String getCoodinates(@RequestParam("poId") int poId,@RequestParam("coordinateColumn") String coordinateColumn,@RequestParam("filingId") String filingId){
+		
+		String coodinates=poCordHighlightDetailsService.getCoordinateDetails(poId,coordinateColumn);
+		String fileType="PDF" ;
+
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("filingId", new Integer(Integer.parseInt(CipherUtils.decrypt(filingId))));
+	    List<Object> fileUploadModel=genericDaoImpl.findByNamedQuery(NamedQueryName.getProcessedFilePath_By_FilingId, FileUploadModel.class, parameterMap);
+	    FileUploadModel uploadModel=(FileUploadModel)fileUploadModel.get(0);
+	    fileType=FilenameUtils.getExtension(uploadModel.getProcessedFileName());
+	    return coodinates+"||"+fileType;
+	
+	}//getCoodinates
+	
+	/*
+	 * Naveed.Khan
+	 * 
+	 */
+		@RequestMapping("/getpdf.htm")
+		public String  getpdf() throws Exception {	
+		     return "showpdf";
+		}
+	
+		@RequestMapping("/showHTMLpopup.htm")
+		public String  showHTMLpopup(@RequestParam("filingId") String encryptedfilingId,@RequestParam("uploadId") String uploadId,@RequestParam("coordinates") String coordinates, Model map) throws Exception 
+		{
+			map.addAttribute("caseId", encryptedfilingId);
+			map.addAttribute("uploadId", uploadId);
+			map.addAttribute("coordinates", coordinates);
+		    return "showHTML";
+		}
+		
+		
+		@RequestMapping(value = "/getHtmlDocument.htm", method = { RequestMethod.GET,RequestMethod.POST })
+		public void getHtmlDocument(HttpServletRequest req,
+				HttpServletResponse res,
+				@RequestParam("filingId") String encryptedfilingId,@RequestParam("uploadId") String uploadId,HttpSession session) throws ServletException, IOException  {
+			LOGGER.info("**start--openFileInBrowser methode");
+			ServletOutputStream out = res.getOutputStream();
+			String filingId = CipherUtils.decrypt(encryptedfilingId);
+			String fileName="";
+			if (StringUtils.isNotBlank(uploadId)) {
+			fileName =fileUploadService.f_getProcessedFilePath(Integer.parseInt(filingId), Integer.parseInt(uploadId));
+			}else{
+			fileName =fileUploadService.f_getProcessedFilePathByFilingId(Integer.parseInt(filingId));	
+			}
+			res.setContentType("text/html"); 
+			LOGGER.info("** file path=="+fileName);
+			String fileURL = fileName;
+			BufferedInputStream bis = null;
+			BufferedOutputStream bos = null;
+			File file = null;
+			String path = "";
+			try {
+				file = new File(fileURL).getCanonicalFile();
+				FileInputStream fs = new FileInputStream(file);
+				bis = new BufferedInputStream(fs);
+				bos = new BufferedOutputStream(out);
+				byte[] buff = new byte[2048];
+				int bytesRead;
+				// Simple read/write loop.
+				while (-1 != (bytesRead = bis.read(buff, 0, buff.length))) {
+					bos.write(buff, 0, bytesRead);
+				}
+			} catch (final MalformedURLException e) {
+				System.out.println("MalformedURLException.");
+				LOGGER.error("MalformedURLException Error:",e);
+				throw e;
+			} catch (final IOException e) {
+				LOGGER.error("IOException Error:",e);
+				throw e;
+			}catch (final NullPointerException e) {
+				LOGGER.error("NullPointerException Error:",e);
+				throw e;
+			} catch (final NumberFormatException  e) {
+				LOGGER.error("NumberFormatException Error:",e);
+				throw e;
+			} 
+			finally {
+				if (bis != null)
+					bis.close();
+				if (bos != null)
+					bos.close();
+				file = new File(path).getCanonicalFile();
+				file.delete();
+			}
+		}
+		
+		@SuppressWarnings("unchecked")
+		@RequestMapping(value = "/getHighlighted_FileNames.htm", method = {
+				RequestMethod.GET, RequestMethod.POST })
+		public @ResponseBody JSONObject getHighlighted_FileNames(
+				@RequestParam("customerId") String customerId,
+				@RequestParam("wqId") String wqId, Model map, HttpSession session) {
+			JSONObject jsonResponse = new JSONObject();
+			LOGGER.info("------------------ getConverted_FileNames request Mapping starts --------------------");
+			try {
+				String decryptedWqId = CipherUtils.decrypt(wqId);
+				String decryptedCustomerId = CipherUtils.decrypt(customerId);
+				Integer sessionParserId = (Integer) session.getAttribute("sessionParserId");
+				String dbPath="";
+				String[] pathArray = null;
+				String tmpdbPath = "";
+				String fullPath="";
+				boolean flag=false;
+				File downloadFile=null;
+				List<String> highlightFileList=null;
+				List<String> existsHighlightedList=null;
+ 			    List<String> fileList=fileUploadService.getConvertedFileNames(decryptedCustomerId, decryptedWqId,sessionParserId);
+			// added name highlight
+			for (int i = 0; i < fileList.size(); i++) {
+				String fileName = fileList.get(i);
+				if (fileName != null) {
+					highlightFileList = new ArrayList<String>();
+					String[] fName = fileName.split("\\.");
+					String fName1 = fName[0];
+					String fName2 = fName[1];
+					String finalName = fName1+"_Highlighted."+fName2;
+					highlightFileList.add(finalName);
+				}
+			}
+			// get path
+			tmpdbPath = fileUploadService.getFileUpload(decryptedCustomerId, decryptedWqId, 3).replaceAll("/", "\\/");
+			pathArray = tmpdbPath.split("LIVESPREAD-FS");
+			if (pathArray != null && pathArray.length == 2) {
+				dbPath = homePath + pathArray[1];
+			}
+			// Test file Exists or not
+			if (highlightFileList != null) {
+				existsHighlightedList=new ArrayList<String>();
+				for (int i = 0; i < highlightFileList.size(); i++) {
+					fullPath = dbPath + highlightFileList.get(i);
+					downloadFile = new File(fullPath).getCanonicalFile();
+					if (!downloadFile.exists()) {
+					} else {
+						flag = true;
+						existsHighlightedList.add(highlightFileList.get(i));
+					}
+				}
+			}
+		    jsonResponse.put("existsHighlightedList", existsHighlightedList);
+		    jsonResponse.put("wqId", decryptedWqId);
+		    jsonResponse.put("customerId", decryptedCustomerId);
+		    jsonResponse.put("encryptedWqId", wqId);
+		    jsonResponse.put("encryptedcustomerId", customerId);
+			jsonResponse.put("flag", flag);	
+			
+				LOGGER.info("--End--------------- getHighlighted_FileNames request Mapping starts --------------------");
+			} catch (Exception e) {
+				LOGGER.error("Error:", e);
+				e.printStackTrace();
+
+			}
+			return jsonResponse;
+		}		
+}

@@ -1,0 +1,29 @@
+/**
+ * 
+ */
+package com.livespread.exception;
+
+import com.livespread.common.Constant;
+
+@SuppressWarnings("serial")
+public class UserNotLoginException extends Exception {
+
+	private String exceptionMessage = "";
+
+	
+	public UserNotLoginException() {
+	}
+
+	public UserNotLoginException(String useString)
+	{
+		if (useString.trim().length() > 0)
+			exceptionMessage = exceptionMessage + Constant.CR+Constant.LF + useString + Constant.CR+Constant.LF;
+	}
+
+	@Override
+	public String getMessage()
+	{
+		return "Exception: "+Constant.CR+Constant.LF+" Exception Message = " + exceptionMessage + super.getMessage();
+	}
+
+}

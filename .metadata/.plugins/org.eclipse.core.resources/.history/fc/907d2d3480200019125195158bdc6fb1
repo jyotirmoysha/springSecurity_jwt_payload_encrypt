@@ -1,0 +1,88 @@
+package com.livespread.dao;
+
+import java.sql.Types;
+
+import org.hibernate.cfg.Environment;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.SQLServer2008Dialect;
+import org.hibernate.dialect.function.CharIndexFunction;
+import org.hibernate.dialect.function.StandardSQLFunction;
+
+public class SQLServer2012Dialect extends  SQLServer2008Dialect{
+	
+		public SQLServer2012Dialect() {
+			 super();
+
+             registerColumnType(Types.NVARCHAR, "nvarchar($l)");
+             registerHibernateType(Types.NVARCHAR,"string");
+            
+             registerColumnType(Types.REAL,"number($p,$s)");
+             registerHibernateType(Types.REAL,"double");
+            
+             registerColumnType(Types.DATE, "date");
+             registerColumnType(Types.TIME, "time");
+             registerColumnType(Types.TIMESTAMP, "datetime");
+             registerColumnType(Types.BIT, "tinyint"); 
+             registerColumnType(Types.BIGINT, "bigint"); 
+             registerColumnType(Types.SMALLINT, "smallint");
+             registerColumnType(Types.TINYINT, "tinyint");
+             registerColumnType(Types.INTEGER, "int");
+             registerColumnType(Types.CHAR, "char(1)");
+             registerColumnType(Types.VARCHAR, "varchar($l)");
+             registerColumnType(Types.NCHAR, "string");
+             registerColumnType(Types.DECIMAL, "decimal($p,$s)");
+             registerColumnType(Types.FLOAT, "float");
+             registerColumnType(Types.DOUBLE, "double precision");
+             registerColumnType(Types.VARBINARY, "varbinary($l)");
+             registerColumnType(Types.NUMERIC, "numeric($p,$s)");
+             registerColumnType(Types.BLOB, "image");
+             registerColumnType(Types.CLOB, "text");
+             registerColumnType(Types.ROWID, "bigint");
+
+
+             registerFunction("round", new StandardSQLFunction("round"));
+             registerFunction("ceiling", new StandardSQLFunction("ceiling"));
+             registerFunction("floor", new StandardSQLFunction("floor"));
+             registerFunction("isnull", new StandardSQLFunction("isnull"));
+             registerFunction("locate", new CharIndexFunction());
+
+             registerHibernateType(Types.NCHAR, "string");
+             
+             getDefaultProperties().setProperty(Environment.STATEMENT_BATCH_SIZE, Dialect.DEFAULT_BATCH_SIZE);
+		}
+	
+      @Override
+        public boolean supportsSequences() {
+                return true;
+        }
+
+        @Override
+        public boolean supportsPooledSequences() {
+                return true;
+        }
+
+        @Override
+        public String getCreateSequenceString(String sequenceName) {
+                return "create sequence " + sequenceName;
+        }
+
+        @Override
+        public String getDropSequenceString(String sequenceName) {
+                return "drop sequence " + sequenceName;
+        }
+
+        @Override
+        public String getSelectSequenceNextValString(String sequenceName) {
+                return "next value for " + sequenceName;
+        }
+
+        @Override
+        public String getSequenceNextValString(String sequenceName) {
+                return "select " + getSelectSequenceNextValString( sequenceName );
+        }
+
+        @Override
+        public String getQuerySequencesString() {
+                return "select name from sys.sequences";
+        }
+}

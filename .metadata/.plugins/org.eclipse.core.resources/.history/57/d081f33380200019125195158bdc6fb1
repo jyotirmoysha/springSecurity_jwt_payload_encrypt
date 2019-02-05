@@ -1,0 +1,96 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name="DEALERS_METADATA")
+@NamedQueries({
+	@NamedQuery(name = "getDealersList", query = "from DealerMetadata where isActive='Y'"),
+})
+@NamedNativeQueries(value = {
+		@NamedNativeQuery(name = "findDealerNameByFilingId", query = "select DEALER_SHORT_NAME from DEALERS_METADATA where ID in (select dealer_id from CUSTOMER_DETAILS where CUSTOMER_ID in (select CUSTOMER_ID from WORK_QUEUE where FILING_ID=:filingId))")
+})
+
+public class DealerMetadata implements Serializable, BaseEntity{
+private static final long serialVersionUID = 1L;
+
+@Id
+@GeneratedValue(strategy = GenerationType.AUTO)
+@Column(name = "Id")
+private Integer id;
+
+@Column(name = "DEALER_NAME")
+private String dealerName;
+
+@Column(name = "DEALER_SHORT_NAME")
+private String dealerShortName;
+
+
+
+
+@Column(name = "IS_ACTIVE")
+private String isActive;
+
+
+public Integer getId() {
+	return id;
+}
+
+
+public void setId(Integer id) {
+	this.id = id;
+}
+
+
+
+public String getDealerShortName() {
+	return dealerShortName;
+}
+
+public void setDealerShortName(String dealerShortName) {
+	this.dealerShortName = dealerShortName;
+}
+
+
+public String getDealerName() {
+	return dealerName;
+}
+
+
+public void setDealerName(String dealerName) {
+	this.dealerName = dealerName;
+}
+
+
+public String getIsActive() {
+	return isActive;
+}
+
+
+public void setIsActive(String isActive) {
+	this.isActive = isActive;
+}
+
+
+
+@Override
+public EntityType getEntityType() {
+	return EntityType.APPLICATION;
+}
+	
+}

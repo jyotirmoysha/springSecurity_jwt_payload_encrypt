@@ -1,0 +1,691 @@
+package com.livespread.util;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.log4j.Logger;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.servlet.view.document.AbstractJExcelView;
+
+import com.livespread.command.ArsPoMappingCommand;
+import com.livespread.domain.ParserOutputAuditTrail;
+import com.livespread.domain.ReprocessAudit;
+
+import jxl.CellView;
+import jxl.format.Border;
+import jxl.format.BorderLineStyle;
+import jxl.format.Colour;
+import jxl.format.Pattern;
+import jxl.format.VerticalAlignment;
+import jxl.write.Label;
+import jxl.write.Number;
+import jxl.write.WritableCellFormat;
+import jxl.write.WritableFont;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+
+public class BuildAuditReportExcelDocument extends AbstractJExcelView {
+	
+	private Logger LOGGER = Logger.getLogger(BuildAuditReportExcelDocument.class);
+	private WritableCellFormat headcellFormat;
+	private WritableCellFormat cellFormat;
+	private WritableCellFormat cellFormat1;
+	private WritableCellFormat cellFormatWithBorder;
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	protected void buildExcelDocument(Map<String, Object> model,
+			WritableWorkbook workbook, HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+		
+        // get data model which is passed by the Spring container
+		HashMap<String,Object> excelreportMap = (HashMap<String,Object>) model.get("excelreportMap");
+	 	
+         List<ParserOutputAuditTrail> recordList =(List<ParserOutputAuditTrail>) excelreportMap.get("reportList");
+        /**
+         * This list used for reprocess Audit Excel Sheet
+         */
+        List<ReprocessAudit> reprocessAuditList =(List<ReprocessAudit>) excelreportMap.get("reprocessAuditList");
+        
+        /**
+         * This code used for ArsPoMapping audit report.
+         */
+        List<ArsPoMappingCommand> arsPoMappingCommandList =(List<ArsPoMappingCommand>) excelreportMap.get("arsPoMappingRecordList");
+        
+        /**
+         * Below lost used for create excel sheet for Statement and Role Summary
+         */
+        
+        Map<String ,List<Object>> statementAndRoleSummaryMap=(Map<String,List<Object>>) excelreportMap.get("statementAndRoleSummarymap");
+        
+        
+        Map<String ,List<Object>> processingReportTrackermap=(Map<String,List<Object>>) excelreportMap.get("processingReportTrackermap");
+        
+        WritableSheet sheet = null;
+        String fileName="AuditReport.xls";
+        response.reset();
+		response.setContentType("application/vnd.ms-excel");
+		response.setHeader("Content-Disposition", "attachment;filename=\""
+				+ StringEscapeUtils.escapeJava(fileName) + "\"");
+		
+		WritableFont headcellFont = new WritableFont(WritableFont.TAHOMA, 10);
+		headcellFont.setBoldStyle(WritableFont.BOLD);
+		
+		
+		headcellFormat = new WritableCellFormat(headcellFont);
+		headcellFormat.setWrap(true);
+		headcellFormat.setAlignment(jxl.format.Alignment.LEFT);
+		headcellFormat.setVerticalAlignment(VerticalAlignment.TOP);
+		headcellFormat.setBackground(Colour.GRAY_25);
+		
+		WritableFont cellFont = new WritableFont(WritableFont.TAHOMA, 10);
+		cellFormat = new WritableCellFormat(cellFont);
+		cellFormat.setWrap(true);
+		cellFormat.setAlignment(jxl.format.Alignment.LEFT);
+		cellFormat.setVerticalAlignment(VerticalAlignment.TOP);
+		
+		cellFormat1 = new WritableCellFormat(cellFont);
+		cellFormat1.setWrap(true);
+		cellFormat1.setAlignment(jxl.format.Alignment.LEFT);
+		cellFormat1.setVerticalAlignment(VerticalAlignment.TOP);
+		cellFormat1 = new WritableCellFormat(cellFont);
+		cellFormat1.setVerticalAlignment(VerticalAlignment.TOP);
+		cellFormat1.setBorder(Border.ALL, BorderLineStyle.THIN);
+		cellFormat1.setBackground(Colour.YELLOW);
+		
+		cellFormatWithBorder = new WritableCellFormat(cellFont);
+		cellFormatWithBorder.setVerticalAlignment(VerticalAlignment.TOP);
+		cellFormatWithBorder.setBorder(Border.ALL, BorderLineStyle.THIN);
+
+		CellView cellView = new CellView();
+		cellView.setHidden(true); // set hidden
+		
+		
+		sheet = workbook.createSheet("Normalization", 0);
+		sheet=workbook.getSheet("Normalization");
+		if(recordList!=null){
+		if(recordList.size()>0)
+		sheet=f_createSheetForNomralization(sheet, headcellFormat, recordList, cellFormatWithBorder, cellFormat1);
+		}
+		/**
+		* This Sheet used for Rules Management screen
+		*/
+		WritableSheet reprocess_sheet = null;
+		reprocess_sheet= workbook.createSheet("Rules Management", 1);
+		if(reprocessAuditList!=null && reprocessAuditList.size()>0)
+		reprocess_sheet=f_createSheetForReprocessPdfParser(reprocess_sheet,headcellFormat,reprocessAuditList,cellFormatWithBorder,cellFormat1);
+		
+		WritableSheet arspomapping_sheet = null;
+		arspomapping_sheet= workbook.createSheet("Ars Mapping", 2);
+		if(arsPoMappingCommandList!=null && arsPoMappingCommandList.size()>0)
+		reprocess_sheet=f_createSheetForArsPoMapping(arspomapping_sheet,headcellFormat,arsPoMappingCommandList,cellFormatWithBorder,cellFormat1);
+		
+		WritableSheet statementAndRoleSummarySheet = null;
+		statementAndRoleSummarySheet= workbook.createSheet("Statement And Role Summary", 3);
+		if(statementAndRoleSummaryMap!=null && !CollectionUtils.isEmpty(statementAndRoleSummaryMap))
+		{
+		statementAndRoleSummarySheet=StatementAndRoleSummarySheet.f_createSheetForStatementAndRoleSummary(statementAndRoleSummarySheet,headcellFormat,statementAndRoleSummaryMap,cellFormatWithBorder,cellFormat1);
+		}
+		
+		WritableSheet processingReportTrackerSheet = null;
+		processingReportTrackerSheet= workbook.createSheet("Time Stats_Template", 4);
+		if(processingReportTrackermap!=null && !CollectionUtils.isEmpty(processingReportTrackermap))
+		{
+		 processingReportTrackerSheet=ProcessingReportTrackerSheet.f_createSheetForStatementAndRoleSummary(processingReportTrackerSheet,headcellFormat,processingReportTrackermap,cellFormatWithBorder,cellFormat1);
+		}
+	}//end buildExcelDocument() function
+
+	public int getValuesColumnCount(List<ParserOutputAuditTrail> recordList){
+		
+		/**
+		 * Here we set dynamic columns for values column 
+		 */
+		int valueColumnCount=0;
+		for(ParserOutputAuditTrail auditReportCommand:recordList){
+			int tempColValueCount=0;
+			if(auditReportCommand.getPoVal20()!="" || auditReportCommand.getPoVal20()!=null){
+				valueColumnCount=20;
+				break;
+			}else if(auditReportCommand.getPoVal19()!="" || auditReportCommand.getPoVal19()!=null){
+				valueColumnCount=19;
+				tempColValueCount=19;
+			}else if(auditReportCommand.getPoVal18()!="" || auditReportCommand.getPoVal18()!=null){
+				valueColumnCount=18;
+				if(tempColValueCount>valueColumnCount){
+					valueColumnCount=tempColValueCount;
+				}else{
+					tempColValueCount=valueColumnCount;
+				}
+			}else if(auditReportCommand.getPoVal17()!="" || auditReportCommand.getPoVal17()!=null){
+				valueColumnCount=17;
+				if(tempColValueCount>valueColumnCount){
+					valueColumnCount=tempColValueCount;
+				}else{
+					tempColValueCount=valueColumnCount;
+				}
+			}else if(auditReportCommand.getPoVal16()!="" || auditReportCommand.getPoVal16()!=null){
+				valueColumnCount=16;
+				if(tempColValueCount>valueColumnCount){
+					valueColumnCount=tempColValueCount;
+				}else{
+					tempColValueCount=valueColumnCount;
+				}
+			}else if(auditReportCommand.getPoVal15()!="" || auditReportCommand.getPoVal15()!=null){
+				valueColumnCount=15;
+				if(tempColValueCount>valueColumnCount){
+					valueColumnCount=tempColValueCount;
+				}else{
+					tempColValueCount=valueColumnCount;
+				}
+			}else if(auditReportCommand.getPoVal14()!="" || auditReportCommand.getPoVal14()!=null){
+				valueColumnCount=14;
+				if(tempColValueCount>valueColumnCount){
+					valueColumnCount=tempColValueCount;
+				}else{
+					tempColValueCount=valueColumnCount;
+				}
+			}else if(auditReportCommand.getPoVal13()!="" || auditReportCommand.getPoVal13()!=null){
+				valueColumnCount=13;
+				if(tempColValueCount>valueColumnCount){
+					valueColumnCount=tempColValueCount;
+				}else{
+					tempColValueCount=valueColumnCount;
+				}
+			}else if(auditReportCommand.getPoVal12()!="" || auditReportCommand.getPoVal12()!=null){
+				valueColumnCount=12;
+				if(tempColValueCount>valueColumnCount){
+					valueColumnCount=tempColValueCount;
+				}else{
+					tempColValueCount=valueColumnCount;
+				}
+			}else if(auditReportCommand.getPoVal11()!="" || auditReportCommand.getPoVal11()!=null){
+				valueColumnCount=11;
+				if(tempColValueCount>valueColumnCount){
+					valueColumnCount=tempColValueCount;
+				}else{
+					tempColValueCount=valueColumnCount;
+				}
+			}else if(auditReportCommand.getPoVal10()!="" || auditReportCommand.getPoVal10()!=null){
+				valueColumnCount=10;
+				if(tempColValueCount>valueColumnCount){
+					valueColumnCount=tempColValueCount;
+				}else{
+					tempColValueCount=valueColumnCount;
+				}
+			}else if(auditReportCommand.getPoVal9()!="" || auditReportCommand.getPoVal9()!=null){
+				valueColumnCount=9;
+				if(tempColValueCount>valueColumnCount){
+					valueColumnCount=tempColValueCount;
+				}else{
+					tempColValueCount=valueColumnCount;
+				}
+			}else if(auditReportCommand.getPoVal8()!="" || auditReportCommand.getPoVal8()!=null){
+				valueColumnCount=8;
+				if(tempColValueCount>valueColumnCount){
+					valueColumnCount=tempColValueCount;
+				}else{
+					tempColValueCount=valueColumnCount;
+				}
+			}else if(auditReportCommand.getPoVal7()!="" || auditReportCommand.getPoVal7()!=null){
+				valueColumnCount=7;
+				if(tempColValueCount>valueColumnCount){
+					valueColumnCount=tempColValueCount;
+				}else{
+					tempColValueCount=valueColumnCount;
+				}
+			}else if(auditReportCommand.getPoVal6()!="" || auditReportCommand.getPoVal6()!=null){
+				valueColumnCount=6;
+				if(tempColValueCount>valueColumnCount){
+					valueColumnCount=tempColValueCount;
+				}else{
+					tempColValueCount=valueColumnCount;
+				}
+			}else if(auditReportCommand.getPoVal5()!="" || auditReportCommand.getPoVal5()!=null){
+				valueColumnCount=5;
+				if(tempColValueCount>valueColumnCount){
+					valueColumnCount=tempColValueCount;
+				}else{
+					tempColValueCount=valueColumnCount;
+				}
+			}else if(auditReportCommand.getPoVal4()!="" || auditReportCommand.getPoVal4()!=null){
+				valueColumnCount=4;
+				if(tempColValueCount>valueColumnCount){
+					valueColumnCount=tempColValueCount;
+				}else{
+					tempColValueCount=valueColumnCount;
+				}
+			}else if(auditReportCommand.getPoVal3()!="" || auditReportCommand.getPoVal3()!=null){
+				valueColumnCount=3;
+				if(tempColValueCount>valueColumnCount){
+					valueColumnCount=tempColValueCount;
+				}else{
+					tempColValueCount=valueColumnCount;
+				}
+			}else if(auditReportCommand.getPoVal2()!="" || auditReportCommand.getPoVal2()!=null){
+				valueColumnCount=2;
+				if(tempColValueCount>valueColumnCount){
+					valueColumnCount=tempColValueCount;
+				}else{
+					tempColValueCount=valueColumnCount;
+				}
+			}else if(auditReportCommand.getPoVal1()!="" || auditReportCommand.getPoVal1()!=null){
+				valueColumnCount=1;
+				if(tempColValueCount>valueColumnCount){
+					valueColumnCount=tempColValueCount;
+				}else{
+					tempColValueCount=valueColumnCount;
+				}
+			}
+		}
+		
+		
+		return valueColumnCount;
+	}
+	
+	  // Create cell font and format
+	private static WritableCellFormat getCellFormat(Colour colour, Pattern pattern) throws WriteException {
+	    WritableFont cellFont = new WritableFont(WritableFont.TIMES, 16);
+	    WritableCellFormat cellFormat = new WritableCellFormat(cellFont);
+	    cellFormat.setBackground(colour, pattern);
+	    return cellFormat;
+	  }
+	/**
+	 * Below methode is used for create excel sheet for Normazaliation screen.
+	 */
+	public WritableSheet f_createSheetForNomralization(WritableSheet sheet,WritableCellFormat headcellFormat,List<ParserOutputAuditTrail> recordList,WritableCellFormat cellFormatWithBorder,WritableCellFormat cellFormat1) throws Exception{
+		
+		sheet.getSettings().setSelected(true);
+		sheet.setColumnView(0,10);
+		sheet.setColumnView(1,10);
+		sheet.setColumnView(2,20);
+		sheet.setColumnView(3,20);
+		sheet.setColumnView(4,20);
+		sheet.setColumnView(5,10);
+		sheet.setColumnView(6,10);
+		sheet.setColumnView(7,15);
+		sheet.setColumnView(8,30);
+		sheet.setColumnView(9,25);
+		sheet.setColumnView(10,15);
+		sheet.setColumnView(11,10);
+		sheet.setColumnView(12,10);
+		sheet.setColumnView(13,10);
+
+
+		
+		int valuesColumnCount=getValuesColumnCount(recordList);
+		int columnNumber=13;
+		
+		for(int i=1;i<=valuesColumnCount;i++){
+		sheet.setColumnView(columnNumber, 10);
+		columnNumber++;
+		}//end for
+		 
+		
+		sheet.addCell(new Label(0, 0, "Filing Id",headcellFormat));
+		sheet.addCell(new Label(1, 0, "User Name",headcellFormat));
+		sheet.addCell(new Label(2, 0, "User Role",headcellFormat));
+		sheet.addCell(new Label(3, 0, "Modified Date",headcellFormat));
+		sheet.addCell(new Label(4, 0, "Old Status",headcellFormat));
+		sheet.addCell(new Label(5, 0, "New Status",headcellFormat));
+		sheet.addCell(new Label(6, 0, "Sequence",headcellFormat));
+		sheet.addCell(new Label(7, 0, "Operation",headcellFormat));
+		sheet.addCell(new Label(8, 0, "Is Extraction Yes/NO?",headcellFormat));
+		sheet.addCell(new Label(9, 0, "Category",headcellFormat));
+		sheet.addCell(new Label(10, 0, "As Reported Label",headcellFormat));
+		sheet.addCell(new Label(11, 0, "Normalized Label",headcellFormat));
+		sheet.addCell(new Label(12, 0, "Section",headcellFormat));
+		sheet.addCell(new Label(13, 0, "Breakup Flag",headcellFormat));
+		sheet.addCell(new Label(14, 0, "Page No",headcellFormat));
+		
+
+		int valueColumnNumber=15;
+		for(int i=1;i<=valuesColumnCount;i++){
+		sheet.setColumnView(columnNumber, 10);
+		sheet.addCell(new Label(valueColumnNumber , 0, "Value"+i,headcellFormat));
+		valueColumnNumber++;
+		}//end for
+		int rowCount=1;
+		ParserOutputAuditTrail auditReportTemp=new ParserOutputAuditTrail();
+		
+		for(ParserOutputAuditTrail auditReportCommand:recordList){
+		
+			/**
+			 * Here we check where is the exactly difference between old record and modified record
+			 */
+			/**
+			 * Here crud status "O" means records is old
+			 */
+		if(auditReportCommand.getFilingId()!=null)
+		{
+			if(auditReportCommand.getPoCrudStatus().equalsIgnoreCase("O")){
+				auditReportTemp=auditReportCommand;
+			}else if(auditReportCommand.getPoCrudStatus().equalsIgnoreCase("N")){
+				auditReportTemp=auditReportCommand;
+			}
+			sheet.addCell(new Number(0, rowCount, auditReportCommand.getFilingId(), cellFormatWithBorder));
+			sheet.addCell(new Label(1, rowCount, auditReportCommand.getUserName(), cellFormatWithBorder));
+			sheet.addCell(new Label(2, rowCount, auditReportCommand.getUserRole(),cellFormatWithBorder));
+			sheet.addCell(new Label(3, rowCount, auditReportCommand.getCreatedDate().toString(),cellFormatWithBorder));
+			sheet.addCell(new Label(4, rowCount, auditReportCommand.getPoDocOldStatus(), cellFormatWithBorder));
+			sheet.addCell(new Label(5, rowCount, auditReportCommand.getPoDocNewStatus(), cellFormatWithBorder));
+			sheet.addCell(new Number(6, rowCount, auditReportCommand.getPoIndexOrder(), cellFormatWithBorder));
+			sheet.addCell(new Label(7, rowCount, auditReportCommand.getPoCrudStatus(), cellFormatWithBorder));
+			sheet.addCell(new Label(8, rowCount, auditReportCommand.getIsExtraction(), cellFormatWithBorder));
+			/**
+			 * Following fields can edited by user, So need to check difference between old and new for following fields.
+			*/
+			if(auditReportCommand.getArsLabel()!=null && (auditReportCommand.getArsLabel().equalsIgnoreCase(auditReportTemp.getArsLabel()))){
+				sheet.addCell(new Label(10, rowCount, auditReportCommand.getArsLabel(), cellFormatWithBorder));
+			}else{
+				sheet.addCell(new Label(10, rowCount, auditReportCommand.getArsLabel(),cellFormat1));
+			}
+			
+			
+			if(auditReportCommand.getNilLabel()!=null && (auditReportCommand.getNilLabel().equalsIgnoreCase(auditReportTemp.getNilLabel()))){
+			 sheet.addCell(new Label(11, rowCount, auditReportCommand.getNilLabel(), cellFormatWithBorder));
+			}else{
+			 sheet.addCell(new Label(11, rowCount, auditReportCommand.getNilLabel(), cellFormat1));
+			}
+			if(auditReportCommand.getPoSubSection()!=null && (auditReportCommand.getPoSubSection().equalsIgnoreCase(auditReportTemp.getPoSubSection()))){
+			sheet.addCell(new Label( 12, rowCount, auditReportCommand.getPoSubSection(), cellFormatWithBorder));
+			}else{
+			sheet.addCell(new Label(12, rowCount, auditReportCommand.getPoSubSection(), cellFormat1));
+			}
+			
+			if(auditReportCommand.getBreakup()!=null && (auditReportCommand.getBreakup().equalsIgnoreCase(auditReportTemp.getBreakup()))){
+			sheet.addCell(new Label(13, rowCount, auditReportCommand.getBreakup(), cellFormatWithBorder));
+			}else{
+			sheet.addCell(new Label(13, rowCount, auditReportCommand.getBreakup(), cellFormat1));
+			}
+			
+			if(auditReportCommand.getPageNumber().equalsIgnoreCase(auditReportTemp.getPageNumber())){
+			sheet.addCell(new Label(14, rowCount, auditReportCommand.getPageNumber(), cellFormatWithBorder));
+			}else{
+			sheet.addCell(new Label(14, rowCount, auditReportCommand.getPageNumber(), cellFormat1));
+			}
+			
+			
+			int cellColumnCountValue=15;
+			for(int i=1;i<=valuesColumnCount;i++){
+			if(i==1){	
+				if(auditReportCommand.getPoVal1()!=null && (auditReportCommand.getPoVal1().equalsIgnoreCase(auditReportTemp.getPoVal1()))){	
+				sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal1(),cellFormatWithBorder)); 
+				}else{
+				sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal1(), cellFormat1));
+				}
+					
+			}else if(i==2){
+				if(auditReportCommand.getPoVal2()!=null && (auditReportCommand.getPoVal2().equalsIgnoreCase(auditReportTemp.getPoVal2()))){
+				sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal2(), cellFormatWithBorder));
+				}else{	
+				sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal2(), cellFormat1));
+				}
+			}else if(i==3){
+				if(auditReportCommand.getPoVal3()!=null && (auditReportCommand.getPoVal3().equalsIgnoreCase(auditReportTemp.getPoVal3()))){
+				sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal3(), cellFormatWithBorder));
+				}else{
+				sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal3(), cellFormat1));
+				}	
+			}else if(i==4){
+				if(auditReportCommand.getPoVal4()!=null && (auditReportCommand.getPoVal4().equalsIgnoreCase(auditReportTemp.getPoVal4()))){
+				sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal4(), cellFormatWithBorder));
+				}else{
+				sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal4(), cellFormat1));
+				}	
+			}else if(i==5){
+				if(auditReportCommand.getPoVal5()!=null && (auditReportCommand.getPoVal5().equalsIgnoreCase(auditReportTemp.getPoVal5()))){
+				sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal5(), cellFormatWithBorder));
+				}else{
+				sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal5(), cellFormat1));
+				}	
+			}else if(i==6){
+				if(auditReportCommand.getPoVal6()!=null && (auditReportCommand.getPoVal6().equalsIgnoreCase(auditReportTemp.getPoVal6()))){
+				sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal6(), cellFormatWithBorder));
+				}else{
+				sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal6(), cellFormat1));
+				}	
+			}else if(i==7){
+			  if(auditReportCommand.getPoVal7()!=null && (auditReportCommand.getPoVal7().equalsIgnoreCase(auditReportTemp.getPoVal7()))){
+			  sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal7(), cellFormatWithBorder));  
+			  }else{
+			  sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal7(), cellFormat1));
+			  }	
+			}else if(i==8){
+			 if(auditReportCommand.getPoVal8()!=null && (auditReportCommand.getPoVal8().equalsIgnoreCase(auditReportTemp.getPoVal8()))){
+			 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal8(), cellFormatWithBorder));
+			 }else{
+			 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal8(), cellFormat1));
+			 }	
+			}else if(i==9){
+				 if(auditReportCommand.getPoVal9()!=null && (auditReportCommand.getPoVal9().equalsIgnoreCase(auditReportTemp.getPoVal9()))){
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal9(), cellFormatWithBorder));
+				 }else{
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal9(), cellFormat1));
+				 }	
+			}else if(i==10){
+				 if(auditReportCommand.getPoVal10()!=null && (auditReportCommand.getPoVal10().equalsIgnoreCase(auditReportTemp.getPoVal10()))){
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal10(), cellFormatWithBorder));
+				 }else{
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal10(), cellFormat1));
+				 }	
+			}else if(i==11){
+				 if(auditReportCommand.getPoVal11()!=null && (auditReportCommand.getPoVal11().equalsIgnoreCase(auditReportTemp.getPoVal11()))){
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal11(), cellFormatWithBorder));
+				 }else{
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal11(), cellFormat1));
+				 }	
+			}else if(i==12){
+				 if(auditReportCommand.getPoVal12()!=null && (auditReportCommand.getPoVal12().equalsIgnoreCase(auditReportTemp.getPoVal12()))){
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal12(), cellFormatWithBorder));
+				 }else{
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal12(), cellFormat1));
+				 }	
+			}else if(i==13){
+				 if(auditReportCommand.getPoVal13()!=null && (auditReportCommand.getPoVal13().equalsIgnoreCase(auditReportTemp.getPoVal13()))){
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal13(), cellFormatWithBorder));
+				 }else{
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal13(), cellFormat1));
+				 }	
+			}else if(i==14){
+				 if(auditReportCommand.getPoVal14()!=null && (auditReportCommand.getPoVal14().equalsIgnoreCase(auditReportTemp.getPoVal14()))){
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal14(), cellFormatWithBorder));
+				 }else{
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal14(), cellFormat1));
+				 }	
+			}else if(i==15){
+				 if(auditReportCommand.getPoVal15()!=null && (auditReportCommand.getPoVal15().equalsIgnoreCase(auditReportTemp.getPoVal15()))){
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal15(), cellFormatWithBorder));
+				 }else{
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal15(), cellFormat1));
+				 }	
+			}else if(i==16){
+				 if(auditReportCommand.getPoVal16()!=null && (auditReportCommand.getPoVal16().equalsIgnoreCase(auditReportTemp.getPoVal16()))){
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal16(), cellFormatWithBorder));
+				 }else{
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal16(), cellFormat1));
+				 }	
+			}else if(i==17){
+				 if(auditReportCommand.getPoVal17()!=null && (auditReportCommand.getPoVal17().equalsIgnoreCase(auditReportTemp.getPoVal17()))){
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal17(), cellFormatWithBorder));
+				 }else{
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal17(), cellFormat1));
+				 }	
+			}else if(i==18){
+				 if(auditReportCommand.getPoVal18()!=null && (auditReportCommand.getPoVal18().equalsIgnoreCase(auditReportTemp.getPoVal18()))){
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal18(), cellFormatWithBorder));
+				 }else{
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal18(), cellFormat1));
+				 }	
+			}else if(i==19){
+				 if(auditReportCommand.getPoVal19()!=null && (auditReportCommand.getPoVal19().equalsIgnoreCase(auditReportTemp.getPoVal19()))){
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal19(), cellFormatWithBorder));
+				 }else{
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal19(), cellFormat1));
+				 }	
+			}else if(i==20){
+				 if(auditReportCommand.getPoVal20()!=null && (auditReportCommand.getPoVal20().equalsIgnoreCase(auditReportTemp.getPoVal20()))){
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal20(), cellFormatWithBorder));
+				 }else{
+					 sheet.addCell(new Label(cellColumnCountValue, rowCount, auditReportCommand.getPoVal20(), cellFormat1));
+				 }	
+			}
+			/**
+			 * Here we set catagary column whose column number is, In this column we set in which column has changes 
+			 */
+			sheet.addCell(new Label(9, rowCount, auditReportCommand.getCategory(), cellFormatWithBorder));
+			cellColumnCountValue++;
+			}
+			
+			
+			rowCount++;
+		}
+		}
+		return sheet;
+	}
+	/**
+	 * This function used for to create reproces Excel sheet
+	 * @param sheet
+	 * @param headcellFormat
+	 * @param reprocessAuditList
+	 * @param cellFormatWithBorder
+	 * @param cellFormat1
+	 * @return
+	 * @throws Exception
+	 */
+	public WritableSheet f_createSheetForReprocessPdfParser(WritableSheet reprocesssheet,WritableCellFormat headcellFormat,List<ReprocessAudit> reprocessAuditList,WritableCellFormat cellFormatWithBorder,WritableCellFormat cellFormat1) throws Exception{
+		SimpleDateFormat	 sdf = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss a");
+		reprocesssheet.setColumnView(0,15);
+		reprocesssheet.setColumnView(1,20);
+		reprocesssheet.setColumnView(2,20);
+		reprocesssheet.setColumnView(3,20);
+		reprocesssheet.setColumnView(4,15);
+		reprocesssheet.setColumnView(5,25);
+		reprocesssheet.setColumnView(6,25);
+		reprocesssheet.setColumnView(7,25);
+		reprocesssheet.setColumnView(8,25);
+		reprocesssheet.setColumnView(9,30);
+		
+		reprocesssheet.addCell(new Label(0, 0,"Filing Id",headcellFormat));
+		reprocesssheet.addCell(new Label(1, 0, "User Name",headcellFormat));
+		reprocesssheet.addCell(new Label(2, 0, "Modified Date",headcellFormat));
+		reprocesssheet.addCell(new Label(3, 0, "Old Status",headcellFormat));
+		reprocesssheet.addCell(new Label(4, 0, "New Status",headcellFormat));
+		reprocesssheet.addCell(new Label(5, 0, "Operation",headcellFormat));
+		reprocesssheet.addCell(new Label(6, 0, "BEGIN PAGE NUMBER",headcellFormat));
+		reprocesssheet.addCell(new Label(7, 0, "BEGIN KEYWORD",headcellFormat));
+		reprocesssheet.addCell(new Label(8, 0, "END PAGE NUMBER",headcellFormat));
+		reprocesssheet.addCell(new Label(9, 0, "END KEYWORD",headcellFormat));
+		
+		int rowCount=1;
+		ReprocessAudit reprocessAuditTemp=new ReprocessAudit();
+		for(ReprocessAudit reprocessAudit:reprocessAuditList){
+			reprocesssheet.addCell(new Number(0,rowCount,reprocessAudit.getPoaFilingId(), cellFormatWithBorder));
+			reprocesssheet.addCell(new Label(1,rowCount,reprocessAudit.getUserName(),cellFormatWithBorder));
+			Date date=reprocessAudit.getCreatedDate();
+			reprocesssheet.addCell(new Label(2,rowCount,sdf.format(date),cellFormatWithBorder));
+			reprocesssheet.addCell(new Label(3,rowCount,reprocessAudit.getRaDocumentStatusOld(),cellFormatWithBorder));
+			reprocesssheet.addCell(new Label(4,rowCount,reprocessAudit.getRa_DocumentStatusNew(),cellFormatWithBorder));
+			reprocesssheet.addCell(new Label(5,rowCount,reprocessAudit.getRaCrudStatus(),cellFormatWithBorder));
+			if(reprocessAudit.getRaCrudStatus()!=null){
+			if(reprocessAudit.getRaCrudStatus().equalsIgnoreCase("O")){
+				reprocessAuditTemp=reprocessAudit;
+			}else if(reprocessAudit.getRaCrudStatus().equalsIgnoreCase("N")){
+				reprocessAuditTemp=reprocessAudit;
+			}
+			}
+			if(reprocessAudit.getRaPemBeginPageno()!=null){
+			if(reprocessAudit.getRaPemBeginPageno().equals(reprocessAuditTemp.getRaPemBeginPageno())){
+				reprocesssheet.addCell(new Number(6,rowCount,reprocessAudit.getRaPemBeginPageno(),cellFormatWithBorder));
+			}else{
+				reprocesssheet.addCell(new Number(6, rowCount, reprocessAudit.getRaPemBeginPageno(),cellFormat1));	
+			}
+			}
+			if(reprocessAudit.getRaPemBeginKeyword()!=null){
+			if(reprocessAudit.getRaPemBeginKeyword().equalsIgnoreCase(reprocessAuditTemp.getRaPemBeginKeyword())){
+				reprocesssheet.addCell(new Label(7,rowCount,reprocessAudit.getRaPemBeginKeyword(),cellFormatWithBorder));
+			}else{
+				reprocesssheet.addCell(new Label(7, rowCount, reprocessAudit.getRaPemBeginKeyword(),cellFormat1));	
+			}
+			}
+			
+			if(reprocessAudit.getRaPemEndPageno()!=null){
+			if(reprocessAudit.getRaPemEndPageno().equals(reprocessAuditTemp.getRaPemEndPageno())){
+				reprocesssheet.addCell(new Number(8,rowCount,reprocessAudit.getRaPemEndPageno(),cellFormatWithBorder));
+			}else{
+				reprocesssheet.addCell(new Number(8, rowCount, reprocessAudit.getRaPemEndPageno(),cellFormat1));	
+			}
+			}
+			if(reprocessAudit.getRaPemEndKeyword()!=null){
+			if(reprocessAudit.getRaPemEndKeyword().equals(reprocessAuditTemp.getRaPemEndKeyword())){
+				reprocesssheet.addCell(new Label(9,rowCount,reprocessAudit.getRaPemEndKeyword(),cellFormatWithBorder));
+			}else{
+				reprocesssheet.addCell(new Label(9, rowCount, reprocessAudit.getRaPemEndKeyword(),cellFormat1));	
+			}
+			}
+			rowCount++;
+		}//ENd for
+		return reprocesssheet;
+	}
+	
+	/**
+	 * This function used for to create Ars mapping Excel sheet
+	 * @param sheet
+	 * @param headcellFormat
+	 * @param reprocessAuditList
+	 * @param cellFormatWithBorder
+	 * @param cellFormat1
+	 * @return
+	 * @throws Exception
+	 */
+	public WritableSheet f_createSheetForArsPoMapping(WritableSheet arspomappingsheet,WritableCellFormat headcellFormat,List<ArsPoMappingCommand> arsPoMappingCommandList,WritableCellFormat cellFormatWithBorder,WritableCellFormat cellFormat1) throws Exception{
+		arspomappingsheet.setColumnView(0,15);
+		arspomappingsheet.setColumnView(1,20);
+		arspomappingsheet.setColumnView(2,20);
+		arspomappingsheet.setColumnView(3,20);
+		arspomappingsheet.setColumnView(4,15);
+		arspomappingsheet.setColumnView(5,25);
+		arspomappingsheet.setColumnView(6,25);
+		arspomappingsheet.setColumnView(7,25);
+		arspomappingsheet.setColumnView(8,25);
+		arspomappingsheet.setColumnView(9,30);
+		
+		arspomappingsheet.addCell(new Label(0, 0,"Sr No",headcellFormat));
+		arspomappingsheet.addCell(new Label(1, 0, "Filing ID",headcellFormat));
+		arspomappingsheet.addCell(new Label(2, 0, "PO ID",headcellFormat));
+		arspomappingsheet.addCell(new Label(3, 0, "Section",headcellFormat));
+		arspomappingsheet.addCell(new Label(4, 0, "As Rep Lable",headcellFormat));
+		arspomappingsheet.addCell(new Label(5, 0, "Normalized Label",headcellFormat));
+		arspomappingsheet.addCell(new Label(6, 0, "Column Name",headcellFormat));
+		arspomappingsheet.addCell(new Label(7, 0, "Column Value",headcellFormat));
+		arspomappingsheet.addCell(new Label(8, 0, "Statement Period",headcellFormat));
+		arspomappingsheet.addCell(new Label(9, 0, "Statement Year",headcellFormat));
+		
+		int rowCount=1;
+		for(ArsPoMappingCommand arsPoMappingCommand:arsPoMappingCommandList){
+			
+			arspomappingsheet.addCell(new Number(0,rowCount,rowCount, cellFormatWithBorder));
+			arspomappingsheet.addCell(new Number(1,rowCount,arsPoMappingCommand.getArsPoMapping().getFillingId(),cellFormatWithBorder));
+			arspomappingsheet.addCell(new Number(2,rowCount,arsPoMappingCommand.getArsPoMapping().getPoId(),cellFormatWithBorder));
+			arspomappingsheet.addCell(new Label(3,rowCount,arsPoMappingCommand.getSection(),cellFormatWithBorder));
+			arspomappingsheet.addCell(new Label(4,rowCount,arsPoMappingCommand.getAsRepLabel(),cellFormatWithBorder));
+			arspomappingsheet.addCell(new Label(5,rowCount,arsPoMappingCommand.getArsPoMapping().getNilLabel(),cellFormatWithBorder));
+			String colName = arsPoMappingCommand.getArsPoMapping().getPoColumnName();
+			colName=colName.replace("child", "");
+			colName=colName.replace("val", "Value");
+			arspomappingsheet.addCell(new Label(6,rowCount,colName,cellFormatWithBorder));
+			arspomappingsheet.addCell(new Label(7,rowCount,arsPoMappingCommand.getArsPoMapping().getPoColumnVal(),cellFormatWithBorder));
+			arspomappingsheet.addCell(new Number(8,rowCount,arsPoMappingCommand.getStatementPeriod(),cellFormatWithBorder));
+			arspomappingsheet.addCell(new Number(9,rowCount,arsPoMappingCommand.getStatementYear(),cellFormatWithBorder));
+			rowCount++;
+		}//ENd for
+		return arspomappingsheet;
+	}
+}

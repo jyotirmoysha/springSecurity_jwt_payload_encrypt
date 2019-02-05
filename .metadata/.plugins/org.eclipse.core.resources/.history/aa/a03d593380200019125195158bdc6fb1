@@ -1,0 +1,365 @@
+/**
+ * 
+ */
+package com.livespread.util;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.livespread.command.FinancialItemsCommand;
+import com.livespread.command.NormTemplateExtractCommand;
+import com.livespread.command.PdfExtractionMetadatCommand;
+
+/**
+ * @author KP0e1301
+ *
+ */
+public class NormTemplateExtractionUtil {
+	
+	public static String getIndustryType(MultipartFile mpf){
+		  
+		String industryType="";
+		
+		try {
+			XSSFWorkbook workbook=new XSSFWorkbook(mpf.getInputStream());
+			Sheet workSheet=null;
+		    Row row=null;
+		    Cell cell =null;
+		    int rowIndex=4;
+		    String tempStr="";
+		    String errors ="";
+		    boolean fsErrors=true;
+		    boolean niItemErrors=true;
+		    boolean niLabelErrors=true;
+		    boolean categoryErrors=true;
+		    boolean formulaErrors=true;
+		    String category="";
+			if(workbook!=null){
+				workSheet=workbook.getSheetAt(0);
+				if(workSheet!=null){
+					if(workSheet.getLastRowNum()>=4){
+						while(rowIndex<=workSheet.getLastRowNum()){
+							row=workSheet.getRow(rowIndex);
+		    				if(checkIfRowIsEmpty(row)){
+		    					break;
+		    				}
+		    				if(errors.equalsIgnoreCase("") && (fsErrors || niItemErrors || niLabelErrors || categoryErrors || formulaErrors)){
+		    					for (int columnIndex = 1; columnIndex < 8; columnIndex++) {
+			    					cell=row.getCell(columnIndex);
+			    					if(null!=cell){
+			    						cell.setCellType(Cell.CELL_TYPE_STRING);
+										tempStr=cell.getStringCellValue();
+										if(null == tempStr || tempStr.equalsIgnoreCase("")){
+											if(columnIndex==1 && fsErrors){
+												fsErrors=false;
+												errors=errors+"Financial Section Should not be empty.";
+											}else if(columnIndex==3 && niItemErrors){
+												niItemErrors=false;
+												errors=errors+"Normalized Label ID Should not be empty.";
+											}else if(columnIndex==4 && niLabelErrors){
+												niLabelErrors=false;
+												errors=errors+"Normalized Label Should not be empty.";
+											}else if(columnIndex==5 && categoryErrors){
+												categoryErrors=false;
+												errors=errors+"Category Should not be empty.";
+											}else if(columnIndex==6 && formulaErrors){
+												if(category.equalsIgnoreCase("derived")){
+													formulaErrors=false;
+													errors=errors+"Formula Should not be empty for Derived Label.";
+												}
+											}
+											
+										}else if(columnIndex==5){
+											category=tempStr.trim();
+										}
+			    					}
+			    				}
+		    				}
+		    				rowIndex++;
+		    				
+						}
+					}
+					if(errors.equalsIgnoreCase("") ){
+						if(workSheet.getLastRowNum()>=2){
+							row=workSheet.getRow(1);
+							cell=row.getCell(2);
+							if(null!=cell){
+								cell.setCellType(Cell.CELL_TYPE_STRING);
+								tempStr=cell.getStringCellValue();
+								if(null == tempStr){
+									industryType="";
+								}else{
+									industryType=tempStr;
+								}
+							}
+							System.out.println("util industryType " +industryType);
+						}
+					}else{
+						return "errors~"+errors;
+					}
+					
+					
+					
+				}
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return industryType;
+	}
+	
+	
+	public static  Map<String,List<NormTemplateExtractCommand>> extractTemplate(MultipartFile mpf,Map<String,String> sectionMap){
+		
+		List<NormTemplateExtractCommand> normTemplateExtractCommandList=new ArrayList<NormTemplateExtractCommand>();
+		Map<String,List<NormTemplateExtractCommand>> normTemplateExtractCommandMap=new HashMap<String, List<NormTemplateExtractCommand>>();
+		try {
+			XSSFWorkbook workbook=new XSSFWorkbook(mpf.getInputStream());
+			Sheet workSheet=null;
+		    Row row=null;
+		    Cell cell =null;
+		    int rowIndex=4;
+		    String tempStr="";
+		    List<String> rowList=new ArrayList<String>();
+		    NormTemplateExtractCommand normTemplateExtractCommand =null;
+		    if(workbook!=null){
+		    	workSheet=workbook.getSheetAt(0);
+		    	if(workSheet!=null){
+		    		if(workSheet.getLastRowNum()>=4){
+		    			while(rowIndex<=workSheet.getLastRowNum()){
+		    				row=workSheet.getRow(rowIndex);
+		    				if(checkIfRowIsEmpty(row)){
+		    					break;
+		    				}
+		    				rowList=new ArrayList<String>();
+		    				for (int columnIndex = 1; columnIndex < 8; columnIndex++) {
+		    					cell=row.getCell(columnIndex);
+		    					if(null!=cell){
+		    						cell.setCellType(Cell.CELL_TYPE_STRING);
+									tempStr=cell.getStringCellValue();
+									if(null!=tempStr){
+										rowList.add(tempStr);
+									}
+		    					}
+		    				}
+		    				normTemplateExtractCommand= new NormTemplateExtractCommand();
+		    				if(rowList.size()==7){
+		    					normTemplateExtractCommand.setSectionName(rowList.get(0).trim());
+		    					normTemplateExtractCommand.setSubSection(rowList.get(1).trim());
+		    					normTemplateExtractCommand.setNormLabelId(new Integer(rowList.get(2)));
+		    					normTemplateExtractCommand.setNormLabelName(rowList.get(3));
+		    					normTemplateExtractCommand.setCategory(rowList.get(4));
+		    					normTemplateExtractCommand.setDerivedFromula(rowList.get(5));
+		    					normTemplateExtractCommand.setNormQAcheck(rowList.get(6));
+		    					normTemplateExtractCommandList.add(normTemplateExtractCommand);
+		    					if(StringUtils.isEmpty(sectionMap.get(normTemplateExtractCommand.getSectionName()))){
+		    						return null;
+		    					}else{
+		    						normTemplateExtractCommand.setLabelSection(sectionMap.get(normTemplateExtractCommand.getSectionName()));
+		    					}
+		    				}
+		    				rowIndex++;
+		    			}
+		    		}
+		    	}
+		    	normTemplateExtractCommandMap=getNormTemplateMap(normTemplateExtractCommandList);
+		    }
+		   
+		    
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return normTemplateExtractCommandMap;
+		
+	}
+	
+	public static Map<String,List<NormTemplateExtractCommand>> getNormTemplateMap(List<NormTemplateExtractCommand> normTemplateExtractCommandList){
+		
+		String sectionName="";
+		List<NormTemplateExtractCommand> tempNormTemplateExtractCommandList = new ArrayList<NormTemplateExtractCommand>();
+		Map<String,List<NormTemplateExtractCommand>> normTemplateExtractCommandMap = new HashMap<String, List<NormTemplateExtractCommand>>();
+		int index=0;
+		if(normTemplateExtractCommandList!=null && normTemplateExtractCommandList.size()>0){
+    		for(NormTemplateExtractCommand normTemplateExtractCommand :normTemplateExtractCommandList){
+    			if(normTemplateExtractCommand!=null){
+    				
+    				if(normTemplateExtractCommand.getSectionName()!=null && index==0){
+    					sectionName=normTemplateExtractCommand.getSectionName().trim();
+    					index++;
+    				}
+    				if(normTemplateExtractCommand.getSectionName()!=null && normTemplateExtractCommand.getSectionName().trim().equalsIgnoreCase(sectionName)){
+    					tempNormTemplateExtractCommandList.add(normTemplateExtractCommand);
+    				}else{
+    					normTemplateExtractCommandMap.put(sectionName, tempNormTemplateExtractCommandList);
+    					if(normTemplateExtractCommand.getSectionName()!=null ){
+        					sectionName=normTemplateExtractCommand.getSectionName().trim();
+        					tempNormTemplateExtractCommandList = new ArrayList<NormTemplateExtractCommand>();
+        					tempNormTemplateExtractCommandList.add(normTemplateExtractCommand);
+        					index++;
+        				}
+    					
+    					
+    				}
+    			}
+    		}
+    		//to add last list to map
+    		normTemplateExtractCommandMap.put(sectionName, tempNormTemplateExtractCommandList);
+    	}
+		
+		return normTemplateExtractCommandMap;
+	}
+	private static boolean checkIfRowIsEmpty(Row row) {
+	    if (row == null) {
+	        return true;
+	    }
+	    if (row.getLastCellNum() <= 0) {
+	        return true;
+	    }
+	    boolean isEmptyRow = true;
+	    for (int cellNum = row.getFirstCellNum(); cellNum < 8; cellNum++) {
+	        Cell cell = row.getCell(cellNum);
+	        if (null != cell && cell.getCellType() != Cell.CELL_TYPE_BLANK && StringUtils.isNotBlank(cell.toString())) {
+	            isEmptyRow = false;
+	        }
+	    }
+	    return isEmptyRow;
+	}
+	
+
+	
+public static  List<FinancialItemsCommand> extractFinancialITems(MultipartFile mpf){
+		
+		List<FinancialItemsCommand> financialItemsCommandList=new ArrayList<FinancialItemsCommand>();
+		try {
+			XSSFWorkbook workbook=new XSSFWorkbook(mpf.getInputStream());
+			Sheet workSheet=null;
+		    Row row=null;
+		    Cell cell =null;
+		    int rowIndex=1;
+		    String tempStr="";
+		    List<String> rowList=new ArrayList<String>();
+		    FinancialItemsCommand financialItemsCommand =null;
+		    
+		    if(workbook!=null){
+		    	workSheet=workbook.getSheetAt(0);
+		    	if(workSheet!=null){
+		    		if(workSheet.getLastRowNum()>=1){
+		    			while(rowIndex<=workSheet.getLastRowNum()){
+		    				row=workSheet.getRow(rowIndex);
+		    				if(checkIfRowIsEmpty(row)){
+		    					break;
+		    				}
+		    				rowList=new ArrayList<String>();
+		    				for (int columnIndex = 0; columnIndex < 7; columnIndex++) {
+		    					cell=row.getCell(columnIndex);
+		    					if(null!=cell){
+		    						cell.setCellType(Cell.CELL_TYPE_STRING);
+									tempStr=cell.getStringCellValue();
+									if(null!=tempStr){
+										rowList.add(tempStr);
+									}
+		    					}
+		    				}
+		    				financialItemsCommand= new FinancialItemsCommand();
+		    				if(rowList.size()==7){
+		    					if(null!=rowList.get(6).trim() && "Approved".equalsIgnoreCase(rowList.get(6).trim())){
+		    						if(null!=rowList.get(0).trim() && !"".equalsIgnoreCase(rowList.get(0).trim())){
+			    						financialItemsCommand.setFiId(new Integer(rowList.get(0).trim()));
+			    						financialItemsCommand.setFiSection(rowList.get(1).trim());
+			    						financialItemsCommand.setFiSubSection(rowList.get(2).trim());
+			    						financialItemsCommand.setFiIndustry(rowList.get(3).trim());
+			    						financialItemsCommand.setFiLabel(rowList.get(4).trim());
+			    						financialItemsCommand.setNilLabel(rowList.get(5).trim());
+			    						financialItemsCommand.setFiStatus(rowList.get(6).trim());
+			    						financialItemsCommandList.add(financialItemsCommand);
+			    					}
+		    					}
+		    				}
+		    				rowIndex++;
+		    				
+		    			}
+		    		}
+		    	}
+		    }
+		   
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return financialItemsCommandList;
+	}
+
+public static  List<PdfExtractionMetadatCommand> extractPdfExtractionMetadata(MultipartFile mpf){
+	
+	List<PdfExtractionMetadatCommand> pdfExtractionMetadatCommandList=new ArrayList<PdfExtractionMetadatCommand>();
+	try {
+		XSSFWorkbook workbook=new XSSFWorkbook(mpf.getInputStream());
+		Sheet workSheet=null;
+	    Row row=null;
+	    Cell cell =null;
+	    int rowIndex=1;
+	    String tempStr="";
+	    List<String> rowList=new ArrayList<String>();
+	    PdfExtractionMetadatCommand pdfExtractionMetadatCommand =null;
+	    
+	    if(workbook!=null){
+	    	workSheet=workbook.getSheetAt(0);
+	    	if(workSheet!=null){
+	    		if(workSheet.getLastRowNum()>=1){
+	    			while(rowIndex<=workSheet.getLastRowNum()){
+	    				row=workSheet.getRow(rowIndex);
+	    				if(checkIfRowIsEmpty(row)){
+	    					break;
+	    				}
+	    				rowList=new ArrayList<String>();
+	    				for (int columnIndex = 0; columnIndex < 7; columnIndex++) {
+	    					cell=row.getCell(columnIndex);
+	    					if(null!=cell){
+	    						cell.setCellType(Cell.CELL_TYPE_STRING);
+								tempStr=cell.getStringCellValue();
+								if(null!=tempStr){
+									rowList.add(tempStr);
+								}
+	    					}
+	    				}
+	    					    				if(rowList.size()==7){
+	    					if(null!=rowList.get(6) && "Approved".equalsIgnoreCase(rowList.get(6).trim())){
+	    						if(null!=rowList.get(0) && !"".equalsIgnoreCase(rowList.get(0).trim())
+	    								&& null!=rowList.get(1) && !"".equalsIgnoreCase(rowList.get(1).trim())
+	    								&& null!=rowList.get(3) && !"".equalsIgnoreCase(rowList.get(3).trim())){
+	    							pdfExtractionMetadatCommand= new PdfExtractionMetadatCommand();
+	    							pdfExtractionMetadatCommand.setPemId(new Integer(rowList.get(0).trim()));
+	    							pdfExtractionMetadatCommand.setSection(rowList.get(1).trim());
+	    							pdfExtractionMetadatCommand.setLanguage(rowList.get(2)!=null?rowList.get(2).trim():"");
+	    							pdfExtractionMetadatCommand.setBeginKeyword(rowList.get(3).trim());
+	    							pdfExtractionMetadatCommand.setRowSegmentationType(rowList.get(4)!=null?rowList.get(4).trim():"");
+	    							pdfExtractionMetadatCommand.setColumnNoToSplit(rowList.get(5)!=null?rowList.get(5).trim():"0");
+	    							pdfExtractionMetadatCommand.setStatus(rowList.get(6).trim());
+	    							pdfExtractionMetadatCommandList.add(pdfExtractionMetadatCommand);
+		    					}
+	    					}
+	    				}
+	    				rowIndex++;
+	    				
+	    			}
+	    		}
+	    	}
+	    }
+	    
+	}catch (Exception e) {
+		e.printStackTrace();
+	}
+	return pdfExtractionMetadatCommandList;
+}
+}

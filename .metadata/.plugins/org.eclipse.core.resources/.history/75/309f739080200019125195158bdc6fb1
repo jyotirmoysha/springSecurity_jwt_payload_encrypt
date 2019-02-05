@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+ xmlns:context="http://www.springframework.org/schema/context"
+ xmlns:aop="http://www.springframework.org/schema/aop" 
+ xmlns:tx="http://www.springframework.org/schema/tx"
+ xmlns:mvc="http://www.springframework.org/schema/mvc"
+ xmlns:util="http://www.springframework.org/schema/util"
+ xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+           http://www.springframework.org/schema/aop 
+           http://www.springframework.org/schema/aop/spring-aop-3.0.xsd 
+           http://www.springframework.org/schema/tx 
+           http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.2.xsd
+     		http://www.springframework.org/schema/mvc 
+           http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+           http://www.springframework.org/schema/util 
+           http://www.springframework.org/schema/util/spring-util-3.2.xsd"
+ default-autowire="byName">
+		 
+	<mvc:annotation-driven content-negotiation-manager="contentNegotiationManager"/>
+<bean id="contentNegotiationManager" class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+<!-- Turn off working out content type based on URL file extension, should fall back to looking at the Accept headers -->
+    <property name="favorPathExtension" value="false" />
+</bean>
+	
+<aop:aspectj-autoproxy proxy-target-class="true" />
+
+<bean class="org.springframework.security.authentication.encoding.Md5PasswordEncoder"
+		id="passwordEncoder" />
+
+	<!-- COMPONENT-SCAN -->
+		
+	<context:component-scan base-package="com.livespread.controller">
+		<context:include-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>	
+		
+
+	<context:component-scan base-package="com.livespread.service">
+		<context:include-filter type="annotation"
+			expression="org.springframework.stereotype.Service" />
+	</context:component-scan>
+
+  <context:component-scan base-package="com.livespread.dao">
+		<context:include-filter type="annotation"
+			expression="org.springframework.stereotype.Repository" />
+	</context:component-scan>
+
+	<context:component-scan base-package="com.livespread.common.service" />
+	  
+ 	
+ 	<context:component-scan base-package="com.livespread.util" />
+ 	
+	<!-- <tx:annotation-driven transaction-manager="transactionManager" /> -->
+
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    	<property name="ignoreUnresolvablePlaceholders" value="true"/>
+	</bean> 
+  <bean class="org.springframework.web.context.support.ServletContextPropertyPlaceholderConfigurer">
+    <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
+    <property name="searchContextAttributes" value="true"/>
+    <property name="contextOverride" value="true"/>
+    <property name="ignoreResourceNotFound" value="true"/>
+    <property name="locations">
+        <list>
+            <value>classpath:application.properties</value>
+            <value>classpath:jdbc.properties</value>
+             <value>classpath:messages.properties</value>
+        </list>
+    </property>
+</bean>
+
+	<!-- -View Resolver -->
+	
+	<!-- -Jsp Page view Resolver -->
+	
+	<bean id="excelView" class="com.livespread.util.ExcelBuilder" />
+	<bean id="excelViewAccountSummery" class="com.livespread.util.ExcelBuilderAccounSummery" />
+	<bean id="normalizedViewExcelBuilder" class="com.livespread.util.NormalizedViewExcelBuilder" />
+	<bean id="bankNormalizedViewExcelBuilder" class="com.livespread.util.BankNormalizedViewExcelBuilder" />
+	<bean id="genpactProfilesViewExcelBuilder" class="com.livespread.util.GenpactProfilesExcelBuilder" />
+	<bean id="normalizationTemplateExcelBuilder" class="com.livespread.util.NormalizationTemplateExcelBuilder" />
+	<bean id="downloadAuditReportExcel" class="com.livespread.util.BuildAuditReportExcelDocument" />
+
+		<bean id="multipartResolver"
+        class="org.springframework.web.multipart.commons.CommonsMultipartResolver" >
+        <property name="maxUploadSize" value="120097152 "/>
+        </bean>
+		
+
+	<mvc:interceptors>
+		<bean name="loginInterceptor" class="com.livespread.util.LoginInterceptor"></bean>
+		
+		<!-- Application cache controller -->
+		<bean id="webContentInterceptor" class="org.springframework.web.servlet.mvc.WebContentInterceptor">
+ 				<property name="cacheSeconds" value="0"/>
+ 				<property name="useExpiresHeader" value="true"/>
+ 				<property name="useCacheControlHeader" value="true"/>
+ 				<property name="useCacheControlNoStore" value="true"/>
+ 		</bean>
+		
+		
+	</mvc:interceptors>
+
+	<mvc:resources mapping="/css/**" location="/public-resources/" cache-period="31556926"/>
+	<mvc:resources mapping="/js/**" location="/public-resources/" cache-period="31556926"/>
+	<mvc:resources mapping="/images/**" location="/public-resources/" cache-period="31556926"/>
+	<mvc:resources mapping="/assets/**" location="/public-resources/" cache-period="31556926"/>
+	<mvc:resources mapping="/file-upload/**" location="/public-resources/" cache-period="31556926"/>
+	<mvc:resources mapping="/fonts/**" location="/public-resources/" cache-period="31556926"/>
+	<mvc:resources mapping="/img/**" location="/public-resources/" cache-period="31556926"/>
+	<mvc:resources mapping="/LS-Images/**" location="/public-resources/" cache-period="31556926"/>
+	
+	<!-- -JPA Configuration Ends -->
+
+	<bean id="customLogoutSuccessHandler" class="com.livespread.util.CustomLogoutSuccessHandler"></bean>  
+	<bean id="releaseLockedUser" class="com.livespread.util.ReleaseLockedUser"></bean>
+	<bean id="myserbean" class="com.livespread.util.WorkQueueServiceFactory"></bean>
+	
+	<!-- Here we get all rage processed list from Processes table -->
+	<bean id="processListGenerator" class="com.livespread.util.ProcessListGenerator" init-method="initIt" ></bean>    
+	
+	<import resource="WorkqueueComponent-servlet.xml" />
+   <bean id="loggerAspect" class="com.livespread.aspect.LoggerAspect"/>
+</beans>

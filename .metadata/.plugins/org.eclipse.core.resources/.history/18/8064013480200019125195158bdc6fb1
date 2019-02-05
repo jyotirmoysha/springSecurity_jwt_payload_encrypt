@@ -1,0 +1,495 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import com.rage.reusable.dao.QueryName;
+
+/**
+ * This will have only HQL and HQL joins
+ *
+ */
+public enum NamedQueryName implements QueryName {
+
+	/*****************User Details ***********/
+	getUserDetailsList,
+	
+	
+	/********  Customer Details ********/
+	getCustomerDetailsList,
+	getParserIdListByUserGroupId,
+	getParserNameListByParserId,
+	/********** WorkQueue Details *************/
+	getWQStatusList,
+	updateWQStaus,
+	getWQGeneralInfo,
+	findAllWorkQueueRecords,
+	findAllWorkQueueRecordsForSec,
+	findAllWorkQueueCount,
+	findAllWorkQueueCountForSec,
+	findWorkQueueStatusByFilingID,
+	updateByFillingId,
+	
+	getLanguageByFilingId,
+	getLanguageList,
+	findAllWorkQueueStatus,
+	/********** Extraction Rules *************/
+	findExtractionRules,
+
+	
+	/********** Extractor Rules Properties *************/
+
+	findExtractiorRuleProperties,
+	findExtractiorRulePropertiesByUploadId,
+	
+	
+	/************ File Upload Details ******************/
+	getFilePathByCustomerId,
+	getFilePathByCustomerNParserId,
+	getUploadDetailsByFilingId,
+	getProcessedFilePath_By_uploadIdAndFilingId,
+	getProcessedFilePath_By_FilingId,
+	
+	/************ Filings ******************/
+	getFilePathByFilingId,
+	
+	/************ This function used for get Template Id and Template Name based on group id ******************/
+	findNormalizeTemplateList,
+
+	/************ Status Master ******************/
+	findAllStatusList,
+	
+	/************ Normalization ***************/
+	getNormalizedDataByFilingIdandStatementType,
+	//getNormalizedDataByFilingIdandStatementTypeForXsl,
+	getNormalizedDataByFilingIdandStatementTypeOfBanksForXsl,
+	updateNormalizedDataByPoIdFillingIdWqIdStatementType,
+	addNormalizedDataByPoIdandFillingIdandStatementType,
+	updateNormalizedDataViewFlagByPoIdFillingIdWqIdStatementType,
+	updateNormalizedDataViewFlagById,
+	getDataForGlobelLevel,
+	updateNiItemAndNiLabel,
+	updateCustodianMapping,
+	updateLockedByColFromWorkQueueByFilingId,
+	getParserOutputByNormLabelGlobalData,
+	getParserOutputByNormLabelCompanyData,
+	getParserOutputByNormLabelIndustryData,
+	/************ Document table operation***************/
+	findDocumentByFilingId,
+	
+	/*********** QA Check List *************/
+	findQACheckListByFilingId,
+	
+	updateQACheckListCommentsByFilingIdAndCheckId,
+	getNormItemLabelsListBySection,
+	getNormItemLabelsList,
+	
+	/*********** Sub_Section_Master List *************/
+	getsubSectionListBySection,
+	deleteRecordByFillingId,
+
+	updateFilingsByFillingId, 
+	getTemplateId,
+	updateWorkQueueById, 
+	updateAllLockedCaseesForUser,
+	getWorkQueueByWqId,
+	deleteExtractiorRulePropertiesByFilingId,
+	updateWorkQueueByNullId,
+	getFirstParserOutputRecord,
+	/*********** As Rep Statement *************/
+	getAsRepStmtByArsId,
+	/*********** Processes table *************/
+	getAllRageProcess,
+	/******* Work Queue ***********/
+	setlockedByNull,
+	/******* NiBankValues ***********/
+	getNiBankValuesForDebitACH,
+	getBeginningBalance,
+	
+	/******* Normalized Template insert and check availability ***********/
+	checkLableName,
+	maxTemplateId,
+	templateIdforCheckid,
+	/***** Extraction Metadata ***********/
+	findExtractionMetadata,
+	/******* Normalized Template IndustryType by templateid ***********/
+	getNormalizationLableName,
+	
+	/***NormQaChecksMeta **/
+	getNormQAchecksDataByCheckId,
+	
+	/**Business Enity **/
+	checkEntityPresent,
+	getAliasBusinessEntity,
+	getDistinctBusinessList,
+	
+	/***NormQaChecksMeta **/
+	getUserDetailsListByGroupIdb,
+	getUserDetailsListByGroupIdForReports,
+	
+	
+
+	/***changePassword **/
+	updateUserPassword,
+	
+	/***wrongPasswordCount **/
+	updateLastLoginTime,
+	getBeforePasswordCount,
+	updateLockedTime,
+	releaseLockTime,
+	
+	/*
+	 * UserGroups table
+	 */
+	findUserGroupsForDropdown,
+	getAllUserGroups,
+	
+	
+	checkUserExistByEmail,
+	checkUserExistByUsername,
+	
+	getUserActivationDetails,
+	getUserByUserId,
+	
+	getUserActivationDetailsByActId,
+	updateUser,
+	
+	updateParserIdFlag,
+	getDeteltedParserIds,
+	updateNewParserIdFlag,
+	updateGroupName,
+	getParsersList,
+	getOnlyGroupNames,
+	getAddedGroupId,
+	removeGroupId,
+	deleteUser,
+	getGroupNameByGroupId,
+	
+	
+	
+
+	
+	/*
+	 * LS_PDF_EXTRACTION_METADATA
+	 */
+	findPdfExtractionMetadata,
+	deletefromPdfExtrMetaByFillingId,
+	deletefromPdfExtrMetaBy_FillingIdAndTableId,
+	updateGlobalValueColumnBypemPid,
+	findPdfExtractionMetadataByPemPid,
+
+	/*
+	 * User_ROLE
+	 */
+	getUserRoleByGroupId,
+	getUserGroupAccessByGroupId,
+	getUserFeatureMappingByGroupId,
+	getUserCustomFeatureMappingByGroupId,
+	updatePoMergeCloumn,
+	
+	getCompanyId,
+	
+	/*export  NormalizationTemplate*/
+	exportNormItemLabelsList,
+	deleteParserOutput_ByFilingIdAndTableId,
+	
+	/*work_queue custom search*/
+	findFillingId,
+	findCustomerName,
+	findCompanyId,
+	updateMonthYear_period,
+	deleteParserOutputRecordsByFilingId,
+	updateisXMLGenerateCol,
+	getIndustryList,
+	getWorkQueueByLockedCases,
+	getWorkQueueByLockedCasesByGroupId,
+	fetchParserOutputForLanguageMapping,
+	getisXMLGenerateCol,
+	/**
+	 * Following queries used for portfolio and industry list
+	 */
+	getPortFolioList,
+	getMaxTransactionId,
+	getMaxTransactionIdFromPdfExtraction,
+	/*
+	 * Parser_output_audit and reporcess_audit
+	 */
+	findAllFilingIdFromParseroutputAudit,
+	findAllFilingIdFromReprocessAudit,
+	
+	/**
+	 * section_mapping and parser_output table
+	 * Below query are used for dynamic section 
+	 */
+	getSectionMappingListByFilingId,
+	getDistinctSectionListByFilingId,
+	/**
+	 * User Audit functionality queries
+	 */
+	getUserAuditByUserIdStartDateEndDate,
+	getUserAuditByStartDate_EndDate,
+	getUrlList,
+	getUserAuditByUserId,
+	getActiveUserList,
+	getAsRepStmtByFilingId,
+	getNormItemLabelsListByTemplate,
+	updateNormLabelByPoId,
+	getArsPoMappingRecordsByFILINGID,
+	getNiValauesRecordNIID,
+	updateNIValueColumnByNIID,
+	getNiValauesRecordByFILID,
+	updateArsPoMappingRecord,
+	getNrmItmLblByTmplteNiItem,
+	updateNIValueRecordbyNIID,
+	getArsPoMappingRecordByPOID, 
+	
+	/**
+	 * For high light Coordinates
+	 * added By Naveed.Khan
+	 */
+	getCordinateDetails,
+	updateCaseStatusMakerById,
+	updateCaseStatusCheckerById,
+	assignMakerByFillingId,
+	assignCheckerByFillingId,
+	assignChecker2ByFillingId,
+	getWorkQueueByFilingId,
+	updateCaseStatusChecker2ById,
+	updateMakerStartedOn,
+	updateCheckerStartedOn,
+	updateChecker2StartedOn,
+	
+	
+	/**
+	 * For high light Coordinates
+	 */
+	getArsPoMappingdByFilingId,
+	getNotesCheckListRecordsByFillingId,
+	getCountryList,
+	getSectorList,
+	getLeadBankList,
+	getUltimateParentList,
+	getAccountingStandardList,
+	geAccountingStandardById,
+	getCompanyInformationRecordByEId,
+	updateCompanyInformationRecord,
+	getCompanyInformationList,
+	updateWqStatusByWqId,
+	// clickBack on normalization page
+	
+	getNiValuesDetails,
+	getSectionOrderForTemplate,
+	updateRequestQueueSequencer,
+	getRequestQueueSequencer,
+	getParserOutputListByFilingId,
+	
+	/*notes*/
+	getCompanyNotesByWqEid,
+	/*roles for userActivity*/
+	getRolesworkQueue,
+	
+	/**
+	 * Parser_Ouput_Audit_Trail Queries
+	 */
+	getAuditRecordsByFilingId,
+	getAuditRecordsByFilingId_StartDate_EndDate,
+
+	getScaleList,
+	getScaleChangeSignPoMappingListbyFilingId,
+	getScaleChangeSignPoMappingListbypoIdandColumnName,
+
+	getAuditRecordsByStartDate_EndDate,
+	findAudittrailRoleSummaryByFilingId,
+	getAuditTrailProcessingReportTracker,
+	
+	/**
+	 * Company or Global related queries
+	 */
+	updateMappingNameByPoId,
+	getParserOutputByPoID,
+	updateCrudAccountPoId,
+	getCountryByName,
+	getSectorByName,
+	getAccountingStandardByName,
+	getUltimateParentByName,
+	getLeadBankByName,
+	getCurrencyList,
+	getCurrencyByName,
+	updateMappingNameByPoIdandColName, 
+	getCordinateDetailsNew,
+	getFileTypeByFilingId,
+	getParserMasterIdByWqID,
+	getFileNameByCustomerNParserId,
+	getParserIdentifierByCustomerId,
+	getParserOutputByFilingId,
+	getPoIdArslabelByPoIdList,
+	getPoIdArsLabelMapByFilingIdAndRefPoIdIsNotNull,
+	getDistinctCompanyIdsList,
+	findAllFilingIdForAuditTrail,
+	getParserOutputByPoIndexOrder,
+	getSectionListByCategoty,
+	getValuesColumnCount,
+	getNormalizedDataByPOID,
+	getNormalizedDataByFilingIdandStatementTypeForSUPPL,
+	getDealersList,
+	
+	/**
+	 * Download Batch processing document
+	 */
+	
+	findWorkQueueByTransactionId,
+	findWorkQueueByTransactionIdAndStatus,
+	findAllTransIds,
+	getTemplateListByDealerName,
+	getDealerTemplateById,
+	getNormLableByNormItemAndSectionAndIndustry,
+	getDistinctDealerName,
+	getDealerTemplateAuditByDealerName,
+	updateNormLableAndNormIdByid,
+	updateDealerTemplateAuditByDtId,
+	getParserOutPutByPoIdList,
+	getDealerTemplateIdBasedOnDealerType,
+	getDealerTemplateAuditById,
+	getDealerTemplateAuditByActive_DTID,
+	getTemplateList,
+	templeteIdsListByGroupId,
+	updateTemplateIdFlagbyGroupId,
+	getProcessedFileNameByCustomerNParserId,
+	getAllInputField,
+	findAllMappingRecords,
+	getAllDistinctScreenName,
+	findAllDataByGroupId,
+	deleteDataByScreenIdAndGroupId,
+	findAllTemplateDataByGroupId,
+	deleteDataByScreenIdAndTemplateId,
+	getNormalizedDataByFilingIdandStatementType_Q1,
+	updateRefPoIdByPoId,
+	getPoIndexOrderBySection,
+	getLanguageIdByNonEnglishLabel,
+	updateLanguageMappingMetadataByNonEnglishLabel,
+	getNormalizedDataForExcelBySectionAndFilingId,
+	findAudittrailRoleSummaryByFilingIdStartDateEndDate,
+	findAudittrailRoleSummaryByStartDateEndDate,
+	getAuditTrailProcessingReportTrackerByStartDateEndDate,
+	getAuditTrailProcessingReportTrackerByStartDateEndDateFilingId,
+	getExcelExportName,
+	getSheetNamesByExcelId,
+	getTableNamesByExcelId,
+	getSectionList,
+	getListOfFeatures,
+	featuresNameByGroupId,
+	deleteFeatureIdbyGroupId,
+	findCompanyName,
+	updateFinancialItemsRecordbyFiId,
+	getRefPoidsList,
+	findAllFilingIdForAuditTrailForGroupAdmin,
+	getTemplateListForGroupAdmin,
+	findAllMappingRecordsGrpAdmin,
+	getTemplateListByUserGroup,
+	deleteUsersByGroupId,
+	checkActiveOrInActiveUserGroup,
+	setUserSessionId,
+	setUserSessionIdNull,
+	getValuesColumnCountForQaCheck,
+	getPoModifyByList,
+	getPoSubSectionList,
+	deleteFinancialItems,
+	findEIDByFilingId,
+	countFinancialItemByEntityId,
+	countFinancialItemByTemplateId,
+	getfiLabelListByEntityId,
+	getfiLabelListByTemplateId,
+	getPoModifyByMetadataList,
+	getsubSectionList,
+	getNrmItmLblSubSectionByTmplteNiItem,
+	getValuesColumnCountByModifiedBy,
+	findPdfExtractionMetadataBySection,
+	getFinancialItemsbyFiIdlist,
+	updatePDFEXtractionMetdataByFilingId,
+	countExtractiorRulePropertiesByPropName,
+	updateExtractiorRulePropertiesByFilingId,
+
+	deleteExtractorRuleById,
+	updateFinancialItemsStatusbyFiId,
+	findArsIdByCheckIdAndFilingId,
+	getYearByArsID,
+	getNIItemByCheckId,
+	getDownloadTemplateController,
+	getAsRepStmtYearByFilingId,
+	updateNormLabelByPoIdForITR,
+	getAutoCompleteKeywordMetaDataList,
+	getSectionMetaDataList,
+	getLanguageMetaDataList,
+	deleteExtractorITRRuleById,
+	findParserByFilingId,
+	getAllSectionList,
+	getAllSections,
+	deleteParserSectionByParserId,
+	getSubSectionListByTemplateId,
+	countGlobalMetaData,
+	getGlobalDataList,
+	getTransactionIdsList,
+	updateWorkQueueByTransactionId,
+	getBankNameList,
+	getUserGroupbyGroupId,
+	getAccuracyReportByFilingId,
+	getAccuracyReportByFilingIdStartDateEndDate,
+	getAccuracyReportByStartDateEndDateFilingId,
+	getIndustryTypeList,
+	getIndustryTypeIdByFilingId,
+	getfiLabelListByIndustryId,
+	getSectionNameByDisplayName,
+	getTemplateFormMetadataList,
+	getItrTemplateSectionMappingListByTemplateId,
+	getItrExtractionRuleByExtractionRuleId,
+	deleteItrExtractionRulesByExtractionRuleId,
+	deleteItrExtractionRulesByFilingIdAndTemplateId,
+	getItrTemplateFormIdByFilingId,
+	getFileUploadIdByFilingId,
+	getJbossCategory,
+	getRageApplicationIdByRageApplicationName,
+	getAllGoldenSetFeatures,
+	getFeatureCaseMappings,
+	updateWorkQueueByCaseId,
+	getFeatureCaseMappingsJSON,
+	getAutoCompleteKeywordMetaDataListWQ,
+	getAutoCompleteKeywordMetaDataListCN,
+	getGoldenCaseDataByGroupId,
+	getMaxBatchIdWorkQueue,
+	updateGoldenCaseDataByFilingId,
+	getGoldenSetBatchTracker,
+	getDistinctFeatureDataByBatchId,
+	getFeatureDataReportByBatchIdAndCaseId,
+	getFeatureDataReportByBatchId,
+	getisXBRLGenerateCol,
+	getNormItemLabelsByNiItemAndTemplateId,
+	updateWqStatusByFilingId,
+	findFinancialItemListForCompanyLevel,
+	findFinancialItemListForGlobalLevel,
+	findFinancialItemListByParserOutPut,
+	findQACheckListByFilingIdAndCheckStage,
+	getValidationCheckNameListForStatus,
+	getValidationCheckNameListByParserId,
+	getDistcintFilingIdList,
+	getTemplateNameByTemplateId,
+	updateWqStatusAndIndustryNameByFilingId,
+	getFormulaBasedOnTemplateIdAndNiItem,
+	getFileslist,
+	getRulesData,
+	getLanguagelist,
+	getFileslistByLanguage,
+	getTagsDetailsByFileName,
+	getRulesDataByTagId,
+	countClientData,
+	getRulesDataByTagIdValues,
+	getRulesDataByTagIdValuesCount,
+	getRulesDataByTagIdCount,
+	deleteMetaRowValuesByMetaDataId,
+	deleteMetaRowInfoByMetaDataId,
+	getMetaDataValuesByMetaDataId,
+	getMetaRowInfoByTagId,
+	getNextSequencesByIndexSeq,
+
+
+	
+}

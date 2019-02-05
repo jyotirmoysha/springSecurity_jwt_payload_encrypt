@@ -1,0 +1,202 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author KP0e1301
+ *
+ */
+@Entity
+@Table(name = "COMPANY_INFORMATION")
+@NamedNativeQueries({
+	@NamedNativeQuery(name = "getCompanyInfoDetailsByCompanyId", query = "SELECT CI.COMPANY_INFORMATION_ID,CI.E_ID, CI.COMPANY_ID,  CI.COUNTRY_ID, C.COUNTRY_NAME,"
+			+ "CI.FYE_MONTH,CI.FYE_DAY,CI.FYE_YEAR ,CI.SECTOR_ID, BE.E_NAME,CI.INDUSTRY_ID,CI.DEALER_ID,CI.SIC_ID,CI.NAICS_ID,SIC.DESCRIPTION,NAICS.DESCRIPTION as naics_description "
+			+ "FROM COMPANY_INFORMATION CI LEFT OUTER JOIN COUNTRY C ON C.COUNTRY_ID = CI.COUNTRY_ID INNER JOIN BUSINESS_ENTITY BE "
+			+ "ON BE.E_ID =CI.E_ID LEFT OUTER JOIN SIC_DESCRIPTION SIC on SIC.id=CI.SIC_ID LEFT OUTER JOIN NAICS_DESCRIPTION NAICS on NAICS.id=CI.NAICS_ID WHERE CI.COMPANY_ID=:companyId"),
+	@NamedNativeQuery(name = "getCompanyInfoDetailsByEntityId", query = "SELECT CI.COMPANY_INFORMATION_ID,CI.E_ID, CI.COMPANY_ID,  CI.COUNTRY_ID, C.COUNTRY_NAME,"
+			+ "CI.FYE_MONTH,CI.FYE_DAY,CI.FYE_YEAR ,CI.SECTOR_ID, BE.E_NAME,CI.INDUSTRY_ID,CI.DEALER_ID,CI.SIC_ID,CI.NAICS_ID,SIC.DESCRIPTION,NAICS.DESCRIPTION as naics_description "
+			+ "FROM COMPANY_INFORMATION CI LEFT OUTER JOIN COUNTRY C ON C.COUNTRY_ID = CI.COUNTRY_ID INNER JOIN BUSINESS_ENTITY BE "
+			+ "ON BE.E_ID =CI.E_ID LEFT OUTER JOIN SIC_DESCRIPTION SIC on SIC.id=CI.SIC_ID LEFT OUTER JOIN NAICS_DESCRIPTION NAICS on NAICS.id=CI.NAICS_ID WHERE CI.E_ID=:entityId")
+})
+
+@NamedQueries({
+	@NamedQuery(name = "getCompanyInformationList", query = "select companyInformation from CompanyInformation companyInformation"),
+	@NamedQuery(name = "getCompanyInformationRecordByEId", query = "select companyInformation from CompanyInformation companyInformation where eID = :eID"),
+    @NamedQuery(name = "updateCompanyInformationRecord", query = "update CompanyInformation set eID =:eID, companyId =:companyId, countryId =:countryId, fyeMonth =:fyeMonth, fyeDay =:fyeDay, sectorId =:sectorId,fyeYear =:fyeYear,sicId=:sicId,naicsId=:naicsId where companyInformationId=:companyInformationId")
+})
+public class CompanyInformation implements Serializable, BaseEntity {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	/*@GeneratedValue(generator = "sequence")
+	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_ARS_PO_MAPPING_ID") })*/
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "COMPANY_INFORMATION_ID")
+	private Integer companyInformationId;
+	
+	@Column(name = "E_ID")
+	private Integer eID;
+	
+	@Column(name = "COMPANY_ID")
+	private String companyId;
+	
+	@Column(name = "COUNTRY_ID")
+	private Integer countryId;
+	
+	@Column(name = "FYE_MONTH")
+	private String fyeMonth;
+	
+	@Column(name = "FYE_DAY")
+	private Integer fyeDay;
+
+
+	@Column(name = "SECTOR_ID")
+	private Integer sectorId;
+	
+	@Column(name = "INDUSTRY_NAME")
+	private String industryName;
+	
+	@Column(name = "FYE_YEAR")
+	private String fyeYear;
+
+	@Column(name = "INDUSTRY_ID")
+	private String industryId;
+	
+	@Column(name = "DEALER_ID")
+	private Integer dealerId;
+	
+	@Column(name = "SIC_ID")
+	private Integer sicId;
+	@Column(name = "NAICS_ID")
+	private Integer naicsId;
+
+	public Integer getSicId() {
+		return sicId;
+	}
+
+	public void setSicId(Integer sicId) {
+		this.sicId = sicId;
+	}
+
+	public Integer getNaicsId() {
+		return naicsId;
+	}
+
+	public void setNaicsId(Integer naicsId) {
+		this.naicsId = naicsId;
+	}
+	
+	public String getIndustryId() {
+		return industryId;
+	}
+
+	public void setIndustryId(String industryId) {
+		this.industryId = industryId;
+	}
+
+	public Integer getDealerId() {
+		return dealerId;
+	}
+
+	public void setDealerId(Integer dealerId) {
+		this.dealerId = dealerId;
+	}
+
+
+
+	public Integer getSectorId() {
+		return sectorId;
+	}
+
+	public void setSectorId(Integer sectorId) {
+		this.sectorId = sectorId;
+	}
+
+	public Integer getCompanyInformationId() {
+		return companyInformationId;
+	}
+
+	public void setCompanyInformationId(Integer companyInformationId) {
+		this.companyInformationId = companyInformationId;
+	}
+
+	public Integer geteID() {
+		return eID;
+	}
+
+	public void seteID(Integer eID) {
+		this.eID = eID;
+	}
+
+	public String getCompanyId() {
+		return companyId;
+	}
+
+	public void setCompanyId(String companyId) {
+		this.companyId = companyId;
+	}
+
+	public Integer getCountryId() {
+		return countryId;
+	}
+
+	public void setCountryId(Integer countryId) {
+		this.countryId = countryId;
+	}
+
+	public String getFyeMonth() {
+		return fyeMonth;
+	}
+
+	public void setFyeMonth(String fyeMonth) {
+		this.fyeMonth = fyeMonth;
+	}
+
+	public Integer getFyeDay() {
+		return fyeDay;
+	}
+
+	public void setFyeDay(Integer fyeDay) {
+		this.fyeDay = fyeDay;
+	}
+
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+	public String getIndustryName() {
+		return industryName;
+	}
+	public void setIndustryName(String industryName) {
+		this.industryName = industryName;
+	}
+	public String getFyeYear() {
+		return fyeYear;
+	}
+	public void setFyeYear(String fyeYear) {
+		this.fyeYear = fyeYear;
+	}
+	
+}

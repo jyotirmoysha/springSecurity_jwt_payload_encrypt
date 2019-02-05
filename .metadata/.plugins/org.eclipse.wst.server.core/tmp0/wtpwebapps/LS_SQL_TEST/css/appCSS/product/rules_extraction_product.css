@@ -1,0 +1,27 @@
+@media screen and (min-width: 800px) and (min-height: 600px){
+ .td-bg{width:25% !important;}
+ #btn-wrapper{width:66% !important;}
+}
+
+@media screen and (min-width: 1024px) and (min-height: 768px){
+ #btn-wrapper{width:56% !important;}
+}
+
+@media screen and (min-width: 1024px) and (min-height: 1366px){
+ #btn-wrapper{width:56% !important;}
+}
+
+@media screen and (min-width: 1152px){
+ #btn-wrapper{width:56% !important;}
+}
+
+@media screen and (min-width: 1280px){
+ #btn-wrapper{width:56% !important;}
+}
+
+
+.mar-top25{margin-top:-25px;}
+.mar-top12{margin-top:12px}
+.pad-top100{padding-top:100px}
+.status{width:90%; color:#000000; padding:2px;}
+.bg-blue{background:#006995}

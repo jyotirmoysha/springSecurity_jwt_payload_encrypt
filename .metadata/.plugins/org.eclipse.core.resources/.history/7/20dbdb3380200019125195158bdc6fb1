@@ -1,0 +1,80 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author KP0e1301
+ *
+ */
+@Entity
+@Table(name = "ACCOUNTING_STANDARD")
+@NamedQueries({
+	@NamedQuery(name = "getAccountingStandardList", query = "select accountingStandard from AccountingStandard accountingStandard where accountingStandardName is not null and accountingStandardName !=''"),
+	@NamedQuery(name = "geAccountingStandardById", query = "select accountingStandard from AccountingStandard accountingStandard where accountingStandard.accountingStandardId=:accountingStandardId "),
+	@NamedQuery(name = "getAccountingStandardByName", query = "select accountingStandard from AccountingStandard accountingStandard where accountingStandardName is not null "
+			+ "and Upper(accountingStandardName) =Upper(:accountingStandardName)")
+})
+
+public class AccountingStandard implements Serializable, BaseEntity{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	/*@GeneratedValue(generator = "sequence")
+	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_ARS_PO_MAPPING_ID") })*/
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ACCOUNTING_STANDARD_ID")
+	private Integer accountingStandardId;
+	
+	@Column(name = "ACCOUNTING_STANDARD_NAME")
+	private String accountingStandardName;
+	
+	
+	
+	public Integer getAccountingStandardId() {
+		return accountingStandardId;
+	}
+
+
+
+	public void setAccountingStandardId(Integer accountingStandardId) {
+		this.accountingStandardId = accountingStandardId;
+	}
+
+
+
+	public String getAccountingStandardName() {
+		return accountingStandardName;
+	}
+
+
+
+	public void setAccountingStandardName(String accountingStandardName) {
+		this.accountingStandardName = accountingStandardName;
+	}
+
+
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+}

@@ -1,0 +1,7 @@
+package com.livespread.service;
+
+import java.util.Map;
+
+public interface LSRageProcessesService {
+	Map<String, Integer> f_getAllLSRageProcesses(Integer rageApplicationId);
+}

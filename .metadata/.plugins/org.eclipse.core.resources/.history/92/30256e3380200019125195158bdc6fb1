@@ -1,0 +1,53 @@
+package com.livespread.service;
+
+import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
+
+import com.livespread.command.ChangePasswordCommand;
+import com.livespread.domain.User;
+
+public interface ChangePasswordService {
+
+	boolean changePassword(ChangePasswordCommand changePasswordCommand);
+
+	boolean updateLastLoginTime(Long userId);
+
+	boolean wrongPasswordCountAndDate(User user);
+
+	/*
+	 * This methode used for to check user already exist or not by email.
+	 */
+	boolean isUserExistByEmail(String email);
+
+	/*
+	 * This methode used for check user is exist by username.
+	 */
+	boolean isUserExistByUserName(String username);
+
+	/*
+	 * This methode used for check user is exist by username.
+	 */
+	abstract String getUserActivationStatusDetails(String emailId,
+			String activationId,
+			MessageDigestPasswordEncoder messageDigestPasswordEncoder);
+
+	abstract boolean updateUserPassword(
+			ChangePasswordCommand changePasswordCommand,
+			MessageDigestPasswordEncoder messageDigestPasswordEncoder);
+
+	User getUserByUserId(Long userId);
+
+	/*
+	 * This methode used for update user
+	 */
+	Integer editUser(User user);
+
+	/*
+	 * This methode used for delete user
+	 */
+	Integer deleteUser(Long userId, String modifiedBy);
+
+	/* check valid Email */
+
+	User getUserByEmail(String email);
+
+}

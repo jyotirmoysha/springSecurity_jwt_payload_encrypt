@@ -1,0 +1,172 @@
+package com.livespread.command;
+
+/**
+ * @author Ganesh.Dudhade
+ *This class is the combination of parser_output and parser_output_audit
+ *table user for generate audit report for Normalization screen.
+*/
+public class AuditReportCommand{
+	
+	private Integer poaFilingId;
+	private String poaCreatedDate;
+	private String poaDocumentStatusNew;
+	private String poaDocumentStatusOld;
+	private String poaCrudStatus;
+	private String poaIsExtraction;
+	private Integer poIndexOrder;
+	private String poAsRepLabel;
+	private String poNilLABEL;
+	private String poSubSection;
+	private String poBreakUpFlag;
+	private String poPageNumber;
+	private String poVal1;
+	private String poVal2;
+	private String poVal3;
+	private String poVal4;
+	private String poVal5;
+	private String poVal6;
+	private String poVal7;
+	private String poVal8;
+	private String poCreatedBy;
+	private String userRole;
+	
+	public String getPoCreatedBy() {
+		return poCreatedBy;
+	}
+	public void setPoCreatedBy(String poCreatedBy) {
+		this.poCreatedBy = poCreatedBy;
+	}
+	public String getPoPageNumber() {
+		return poPageNumber;
+	}
+	public void setPoPageNumber(String poPageNumber) {
+		this.poPageNumber = poPageNumber;
+	}
+	public Integer getPoaFilingId() {
+		return poaFilingId;
+	}
+	public void setPoaFilingId(Integer poaFilingId) {
+		this.poaFilingId = poaFilingId;
+	}
+	public String getPoaCreatedDate() {
+		return poaCreatedDate;
+	}
+	public void setPoaCreatedDate(String cDate) {
+		this.poaCreatedDate = cDate;
+	}
+	public String getPoaDocumentStatusNew() {
+		return poaDocumentStatusNew;
+	}
+	public void setPoaDocumentStatusNew(String poaDocumentStatusNew) {
+		this.poaDocumentStatusNew = poaDocumentStatusNew;
+	}
+	public String getPoaDocumentStatusOld() {
+		return poaDocumentStatusOld;
+	}
+	public void setPoaDocumentStatusOld(String poaDocumentStatusOld) {
+		this.poaDocumentStatusOld = poaDocumentStatusOld;
+	}
+	public String getPoaCrudStatus() {
+		return poaCrudStatus;
+	}
+	public void setPoaCrudStatus(String poaCrudStatus) {
+		this.poaCrudStatus = poaCrudStatus;
+	}
+	public String getPoaIsExtraction() {
+		return poaIsExtraction;
+	}
+	public void setPoaIsExtraction(String poaIsExtraction) {
+		this.poaIsExtraction = poaIsExtraction;
+	}
+	public Integer getPoIndexOrder() {
+		return poIndexOrder;
+	}
+	public void setPoIndexOrder(Integer poIndexOrder) {
+		this.poIndexOrder = poIndexOrder;
+	}
+	public String getPoAsRepLabel() {
+		return poAsRepLabel;
+	}
+	public void setPoAsRepLabel(String poAsRepLabel) {
+		this.poAsRepLabel = poAsRepLabel;
+	}
+	public String getPoNilLABEL() {
+		return poNilLABEL;
+	}
+	public void setPoNilLABEL(String poNilLABEL) {
+		this.poNilLABEL = poNilLABEL;
+	}
+	public String getPoSubSection() {
+		return poSubSection;
+	}
+	public void setPoSubSection(String poSubSection) {
+		this.poSubSection = poSubSection;
+	}
+	public String getPoVal1() {
+		return poVal1;
+	}
+	public void setPoVal1(String poVal1) {
+		this.poVal1 = poVal1;
+	}
+	public String getPoVal2() {
+		return poVal2;
+	}
+	public void setPoVal2(String poVal2) {
+		this.poVal2 = poVal2;
+	}
+	public String getPoVal3() {
+		return poVal3;
+	}
+	public void setPoVal3(String poVal3) {
+		this.poVal3 = poVal3;
+	}
+	public String getPoVal4() {
+		return poVal4;
+	}
+	public void setPoVal4(String poVal4) {
+		this.poVal4 = poVal4;
+	}
+	public String getPoVal5() {
+		return poVal5;
+	}
+	public void setPoVal5(String poVal5) {
+		this.poVal5 = poVal5;
+	}
+	public String getPoVal6() {
+		return poVal6;
+	}
+	public void setPoVal6(String poVal6) {
+		this.poVal6 = poVal6;
+	}
+	public String getPoVal7() {
+		return poVal7;
+	}
+	public void setPoVal7(String poVal7) {
+		this.poVal7 = poVal7;
+	}
+	public String getPoVal8() {
+		return poVal8;
+	}
+	public void setPoVal8(String poVal8) {
+		this.poVal8 = poVal8;
+	}
+	public String getPoBreakUpFlag() {
+		return poBreakUpFlag;
+	}
+	public void setPoBreakUpFlag(String poBreakUpFlag) {
+		this.poBreakUpFlag = poBreakUpFlag;
+	}
+	/**
+	 * @return the userRole
+	 */
+	public String getUserRole() {
+		return userRole;
+	}
+	/**
+	 * @param userRole the userRole to set
+	 */
+	public void setUserRole(String userRole) {
+		this.userRole = userRole;
+	}
+
+}

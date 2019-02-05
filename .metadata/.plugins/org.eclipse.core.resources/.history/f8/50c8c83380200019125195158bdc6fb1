@@ -1,0 +1,191 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import com.rage.reusable.dao.NativeQueryName;
+
+/**
+ * @author Bilal.Mistri
+ * It will only contain normal SQL and SQL joins 
+ *
+ */
+public enum NamedNativeQueryName implements NativeQueryName {
+	
+	//getNormalizedDataByFilingIdandStatementType,
+	getNormalizedDataByFilingIdandStatementTypeForXsl,
+	getNormalizedDataByFilingIdandStatementTypeOfBanksForXsl,
+	getAsRepStatementDetailsByFilingId, 
+	getNormItemLabelsAndValues,
+	getSubTotalsByArsId,
+	findAllWorkQueueRecordsNative,
+	findAllWorkQueueRecordsNativeForSec,
+	getRecordUsingPOID,
+	getDistinctAccountNo,
+	getDistinctTimePeriod,
+	getDistinctCustodianName,
+	getSearchableNormalizedData,
+	getDistinctTimePeriodByAccountNumber,
+	getDistinctCustodianNameByAccountNumber,
+	getAccountIDByFillingId,
+	getBankHeadersByAccountID,
+	getFirstUploadId,
+	deleteExtractiorRulePropertiesByFilingId,
+	getBankAccountSummaryHeaders,
+	getBankDepositsHeaders,
+	getNormItemLabelsAndIdList,
+	getNormalizedDataByFilingIdandStatementTypeForSUPPLXsl,
+	updateCustodianMapping,
+	getNormalizedDataForSupplementalInfo,
+	getDistinctSubSection,
+	getFirstThreeDistinctDate,
+	getNormItemLabelsAndValuesWithPoRefIds,
+	
+	/*Standard_tags_definition */
+	getDistinctSection,
+	getTagNameBySection,
+	/*
+	 * LS_EXTRACTION_METADATA
+	 */
+	getFirstFileUploadId,
+	findDistinctSubsectionFromExtMetadata,
+	getArvValueByNormItem,
+	
+	/** Business Entity ****/
+	getBusinessListByuserGroupId,
+	getNexSequencValue,
+	
+	/***for AdminGroupData Querys **/
+	findAllGroupNamesWithParsers,
+	findAllGroupNamesWithParsersByGroupId,
+	
+	/* for getData of parserList based on GroupId for Reports for Admin*/
+	getEachStatusCountReportDefault,
+	getEachStatusCountReportDefaultWithDates,
+	getEachStatusCountReportforUserId,
+	getEachStatusCountReportbyDateRange,
+	getEachStatusCountReportforUserIdParserIdAdmin,
+	getEachStatusCountReportDefaultforParserIdAdmin,
+	getEachStatusCountReportDefaultWithDatesParserIdAdmin,
+	getEachStatusCountReportbyDateRangeParserAdmin,
+	getParserListByGroupIdforReportAdmin,
+	
+	
+
+	/*
+	 * Enhance sec parser
+	 */
+	getNormalizedDataByFilingIdandStatementTypeFor_EnhancedPublicParser,
+	
+	getNormalizedDataForDearlerFormParser,
+	getNormalizedDataForDealerFormXsl,
+	getStmtAttrLableList, 
+	findPortfolioName,
+	findIndustryName,
+	getDataByStartDateEndDate_Group_Portfolio_Indusrty_Parser_Analyst,
+	getDataByStartDateEndDate_Group_Portfolio_Indusrty_Parser,
+	getDataByStartDateEndDate_Group_Portfolio_Indusrty,
+	getDataByGroup_Portfolio_Indusrty,
+	getDataByGroup_Portfolio_Indusrty_Parser,
+	getDataByGroup_Portfolio_Indusrty_Analyst,
+	getDataByStartDateEndDate_Group_Portfolio_Parser_Analyst,
+	getDataByStartDateEndDate_Group_Portfolio_Parser,
+	getDataByStartDateEndDate_Group_Portfolio,
+	getDataByStartDateEndDate_Group_Portfolio_Analyst,
+	getDataByGroup_Portfolio_Parser_Analyst,
+	getDataByGroup_Portfolio_Parser,
+	getDataByGroup_Portfolio_Analyst,
+	getDataByGroup_Portfolio,
+	getDataByGroup_Portfolio_Indusrty_Parser_Analyst,
+	
+	/**
+	 * Parser_output_audit table queries
+	 */
+	
+	getReprocessAuditListByFilingId,
+	
+	/**
+	 * LS_REPROCESS_AUDIT table queries
+     */
+	
+	getReprocessAuditListByFilingId_StartDate_EndDate,
+	getReprocessAuditListByStartDate_EndDate,
+	getMaxNIID,
+	createArsPoMappingRecord,
+	deleteByPOID,
+
+	deleteByNIID,
+	
+	getSupplParserOutputRefIDs,
+	getBreakupsParserOutputRefIDs,
+	getCompanyInfoDetailsByCompanyId,
+
+	
+/*	*//**
+	 * For high light Coordinates
+	 *//*
+	getCordinateDetails,	
+	*/
+	//clickback added by sainath
+	getRefPoIds,
+	findArsPoMappingByFilingIdForAuditReport,
+	getNormalizedDataByFilingIdandStatementTypeForSUPPL,
+	getChildRecordsforReviewMapping,
+	findDealerNameByFilingId,
+	findAllUserTemplatesByGroupId,
+	findTemplateIdAndNameByGroupId,
+	findUserGroupsAttributeMappingByUserGroupName,
+	findScreenComponentMappingByTemplateName,
+	totalRows,
+	totalRows_SUPPL,
+	getNormalizedDataForDearlerFormParser_Q2,
+	getNormalizedDataByFilingIdandStatementTypeFor_EnhancedPublicParser_Q3,
+	findAudittrailStatementSummaryByFilingId,
+	findArsPoMappingStartDateEndDate,
+	findArsPoMappingStartDateEndDateFilingId,
+	findAudittrailStatementSummaryByFilingIdStartDateEndDate,
+	findAudittrailStatementSummaryByStartDateEndDate,
+	getAuditRecordsByFilingId,
+	getAuditRecordsByStartDate_EndDate,
+	getAuditRecordsByFilingId_StartDate_EndDate,
+	findAllGroupFeatureByGroupId,
+	findFinancialItemList,
+	findAllUserTemplatesByGroupIdForGrpAdmin,
+	getQANormDataBycheckId,
+	findTemplateIdByFilingId,
+	getsubSectionListBySectionId,
+	getParserNameListByUserGroupId,
+	getAsRepStatementHeaderDetailsCRTemplate,
+	getBusinessEntityCompanyIdAutoComplete,
+	getBusinessEntityCompanyNameAutoComplete,
+	getBusinessEntityCompanyId,
+	getBusinessEntityCompanyName,
+
+	getParserNameByFilingId,
+	getStagingAsRepStmnt,
+	getArvValueByNormItemAndArsId,
+	getArsRepStmtByFilingId,
+	SectionIdentificationBySectionKeyWord,
+	getSicDescription,
+	getNaicsDescription,
+	getCompanyInfoDetailsByEntityId,
+	
+	/*view GlobalMetadataQuerys*/
+	countGlobalMetaData,
+	getGlobalDataList,
+	getSectionListByParserId,
+	getAllParserSectionMapping,
+	findAllParsersWithSection,
+	getAllParserSectionMappingList,
+	getBalancingValue,
+	getNormQAChecksAggregates,
+	getItrExtractionRulesByFilingIdSectionIdAndTemplateId,
+	getSubTotalsByArsIdForClickBack,
+	getArsRepStmtByFilingIdAsc,
+	getArvValueByNormItemAndArsIdFromArsPoMapping,
+	getMappingStatsDataByFilingId,
+	getMappingStatsDataByFilingIdStartDateEndDate,
+	getMappingStatsDataByStartDateEndDate,
+	getNiValuesNiLableDataByNiItem,
+	getNiValuesNiLableDataByNiLable
+}

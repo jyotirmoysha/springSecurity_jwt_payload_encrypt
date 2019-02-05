@@ -1,0 +1,154 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "NI_VALUES_Bank")
+@NamedQueries({
+		@NamedQuery(name = "getNiBankValuesForDebitACH", query = "select ni from NIBankValues ni where ni.filingId=:filingId and ni.accountNumer=:accountNumer "
+				+ "and ni.nilSection=:nilSection and ni.statementDate=:statementDate order by debitAchDate"),
+		@NamedQuery(name = "getBeginningBalance", query = "select ni from NIBankValues ni where ni.niItem=:niItem and ni.filingId=:filingId and ni.accountNumer=:accountNumer and ni.statementDate=:statementDate")
+
+})
+@NamedNativeQueries({
+		@NamedNativeQuery(name = "getAccountIDByFillingId", query = "select distinct ACCOUNT_NUMBER from NI_VALUES_Bank  where FILING_ID = :filingId"),
+
+		@NamedNativeQuery(name = "getBankHeadersByAccountID", query = "select * from NI_VALUES_Bank  where  FILING_ID = :filingId and ACCOUNT_NUMBER= :accountNumer order by ACCOUNT_NUMBER,NIL_SECTION, NI_ITEM, STATEMENT_DATE"),
+
+		@NamedNativeQuery(name = "getFirstThreeDistinctDate", query = "SELECT top 3 statement_date FROM ni_values_bank where account_number=:accountNumber and nil_section=:nil_section and filing_id=:fillingId GROUP BY statement_date ORDER BY statement_date desc")
+})
+
+
+public class NIBankValues implements Serializable, BaseEntity {
+
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@Column(name = "NI_ID")
+	private Integer niId;
+
+	@Column(name = "FILING_ID")
+	private Integer filingId;
+
+	@Column(name = "ACCOUNT_NUMBER")
+	private String accountNumer;
+
+	@Column(name = "TIME_PERIOD")
+	private String timePeriod;
+
+	@Column(name = "NI_ITEM")
+	private Integer niItem;
+
+	@Column(name = "NI_VALUE")
+	private Double niValue;
+
+	@Column(name = "TEMPLATE_ID")
+	private Integer templateId;
+
+	@Column(name = "NIL_SECTION")
+	private String nilSection;
+
+	@Column(name = "STATEMENT_DATE")
+	private Date statementDate;
+
+	@Column(name = "DEBIT_ACH_DATE")
+	private Date debitAchDate;
+
+	public Integer getNiId() {
+		return niId;
+	}
+
+	public void setNiId(Integer niId) {
+		this.niId = niId;
+	}
+
+	public Date getDebitAchDate() {
+		return debitAchDate;
+	}
+
+	public void setDebitAchDate(Date debitAchDate) {
+		this.debitAchDate = debitAchDate;
+	}
+
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public String getAccountNumer() {
+		return accountNumer;
+	}
+
+	public void setAccountNumer(String accountNumer) {
+		this.accountNumer = accountNumer;
+	}
+
+	public String getTimePeriod() {
+		return timePeriod;
+	}
+
+	public void setTimePeriod(String timePeriod) {
+		this.timePeriod = timePeriod;
+	}
+
+	public Integer getNiItem() {
+		return niItem;
+	}
+
+	public void setNiItem(Integer niItem) {
+		this.niItem = niItem;
+	}
+
+	public Double getNiValue() {
+		return niValue;
+	}
+
+	public void setNiValue(Double niValue) {
+		this.niValue = niValue;
+	}
+
+	public Integer getTemplateId() {
+		return templateId;
+	}
+
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+
+	public String getNilSection() {
+		return nilSection;
+	}
+
+	public void setNilSection(String nilSection) {
+		this.nilSection = nilSection;
+	}
+
+	public Date getStatementDate() {
+		return statementDate;
+	}
+
+	public void setStatementDate(Date statementDate) {
+		this.statementDate = statementDate;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+}

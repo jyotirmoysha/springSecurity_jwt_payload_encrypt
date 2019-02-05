@@ -1,0 +1,542 @@
+package com.livespread.controller;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.encryption.StandardDecryptionMaterial;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.livespread.command.PasswordFilesCommand;
+import com.livespread.domain.User;
+import com.livespread.service.ExtractionService;
+import com.livespread.service.FileUploadService;
+import com.livespread.service.NormalizationService;
+import com.livespread.service.ValidationService;
+import com.livespread.util.PDFPasswordChecker;
+import com.livespread.util.UploadUtility;
+
+@Controller
+public class FileUploadController {
+
+	private Logger LOGGER = Logger.getLogger(FileUploadController.class);
+
+	@Value("${globalExcptionMsg}")
+	String globalExcptionMsg;
+	@Value("${upldDcmtRmv}")
+	String documentRemoveMsg;
+	@Value("${upldDcmtNtRmv}")
+	String documentNotRemoveMsg;
+	@Value("${upldDcmtValErr}")
+	String documentNotValidMsg;
+
+	@Value("${uploadTempDirectory.path}")
+	private String tempDirectoryPath;
+	
+	@Value("${masterProcessBank}")
+	private String masterProcessBank;
+
+	@Autowired
+	private FileUploadService fileUploadService;
+
+	@Autowired
+	private ExtractionService extractionService;
+	
+	@Autowired
+	private NormalizationService normalizationService;
+
+	/**** upload_document View Mapping 
+	 * @throws Exception **************/
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/upload_file.htm", method ={RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody
+	String uploadTemp(@RequestParam("customerId") String customerId,
+			@RequestParam("parser") String parser,
+			@RequestParam("fileupload") MultipartFile file, HttpSession session) throws Exception {
+
+		LOGGER.info("--- upload_file request Mapping started--------with: customerId:"
+				+ "" + customerId + " file:" + file.getOriginalFilename());
+		double bytes = file.getSize();
+		double kilobytes = (bytes / 1024);
+		double megabytesDub = (kilobytes / 1024);
+		String megabytesStr = BigDecimal.valueOf(megabytesDub).setScale(4, RoundingMode.HALF_UP).toString();
+		String ret = "";
+		boolean pdfFileFlag = false;
+		String pathUpload = file.getOriginalFilename();
+		LOGGER.info("pathXlst" + pathUpload);
+		boolean validFileFlag=false;
+		boolean filepwdFlag = false;
+		if (pathUpload != null && pathUpload.length() > 0) {
+			String[] parts = pathUpload.split("\\.");
+			if (parts.length > 2) {
+			
+				ret = "{\"files\": [{\"name\": \"" + file.getOriginalFilename()
+						+ "\"," + "\"size\": " + file.getSize() + ","
+						+ "\"error\":\"please  upload valid file \"}]}";
+				validFileFlag=true;
+				return ret;
+			}
+		}
+   
+	       String upLoadFname= file.getOriginalFilename().split("\\.")[0];
+		if(upLoadFname!=null && !upLoadFname.isEmpty()){
+			if(!ValidationService.fileNameCheck(upLoadFname)){
+				ret = "{\"files\": [{\"name\": \"" + file.getOriginalFilename()
+				+ "\"," + "\"size\": " + file.getSize() + ","
+				+ "\"error\":\"Filename  not valid  \"}]}";
+				validFileFlag=true;
+				   return ret;	
+			}
+		}else{
+				ret = "{\"files\": [{\"name\": \"" + file.getOriginalFilename()
+				+ "\"," + "\"size\": " + file.getSize() + ","
+				+ "\"error\":\"please  upload valid file \"}]}";
+				validFileFlag=true;
+				   return ret;	
+		}
+		
+		if(megabytesDub>100)
+		{
+			ret = "{\"files\": [{\"name\": \"" + file.getOriginalFilename()
+			+ "\"," + "\"size\": " + file.getSize() + ","
+			+ "\"error\":\"File size is too large.\"}]}";
+			validFileFlag=true;
+			return ret;
+		}
+		if (!ValidationService.validateUploadDocumentType(file.getOriginalFilename())) {
+		LOGGER.warn("--- validation failed--------");
+					ret = "{\"files\": [{\"name\": \"" + file.getOriginalFilename()
+							+ "\"," + "\"size\": " + file.getSize() + ","
+							+ "\"error\":\"Not Valid file Type\"}]}";
+		   validFileFlag=true;
+		}
+		
+		
+		
+		if (parser.contains(".pdf,") || parser.contains(".pdf")) {
+			parser = parser.replaceAll(".pdf,", ".pdf|");
+			pdfFileFlag = true;
+		}
+		if (parser.contains(".PDF,") || parser.contains(".PDF")) {
+			parser = parser.replaceAll(".PDF,", ".PDF|");
+			pdfFileFlag = true;
+		}
+		if (parser.contains(".doc,")) {
+			parser = parser.replaceAll(".doc,", ".doc|");
+		}
+		if (parser.contains(".DOC,")) {
+			parser = parser.replaceAll(".DOC,", ".DOC|");
+		}
+		if (parser.contains(".docx,")) {
+			parser = parser.replaceAll(".docx,", ".docx|");
+		}
+		if (parser.contains(".DOCX,")) {
+			parser = parser.replaceAll(".DOCX,", ".DOCX|");
+		}
+		if (parser.contains(".xls,")) {
+			parser = parser.replaceAll(".xls,", ".xls|");
+		}
+		if (parser.contains(".XLS,")) {
+			parser = parser.replaceAll(".XLS,", ".XLS|");
+		}
+		if (parser.contains(".ppt,")) {
+			parser = parser.replaceAll(".ppt,", ".ppt|");
+		}
+		if (parser.contains(".PPT,")) {
+			parser = parser.replaceAll(".PPT,", ".PPT|");
+		}
+		if (parser.contains(".txt,")) {
+			parser = parser.replaceAll(".txt,", ".txt|");
+		}
+		if (parser.contains(".TXT,")) {
+			parser = parser.replaceAll(".TXT,", ".TXT|");
+		}
+		if (parser.contains(".jpg,")) {
+			parser = parser.replaceAll(".jpg,", ".jpg|");
+		}
+		if (parser.contains(".JPG,")) {
+			parser = parser.replaceAll(".JPG,", ".JPG|");
+		}
+		if (parser.contains(".jpeg,")) {
+			parser = parser.replaceAll(".jpeg,", ".jpeg|");
+		}
+		if (parser.contains(".JPEG,")) {
+			parser = parser.replaceAll(".JPEG,", ".JPEG|");
+		}
+		if (parser.contains(".gif,")) {
+			parser = parser.replaceAll(".gif,", ".gif|");
+		}
+		if (parser.contains(".GIF,")) {
+			parser = parser.replaceAll(".GIF,", ".GIF|");
+		}
+		if (parser.contains(".bmp,")) {
+			parser = parser.replaceAll(".bmp,", ".bmp|");
+		}
+		if (parser.contains(".BMP,")) {
+			parser = parser.replaceAll(".BMP,", ".BMP|");
+		}
+		if (parser.contains(".tif,")) {
+			parser = parser.replaceAll(".tif,", ".tif|");
+		}
+		if (parser.contains(".TIF,")) {
+			parser = parser.replaceAll(".TIF,", ".TIF|");
+		}
+		if (parser.contains(".xlsx,")) {
+			parser = parser.replaceAll(".xlsx,", ".xlsx|");
+		}
+		if (parser.contains(".XLSX,")) {
+			parser = parser.replaceAll(".XLSX,", ".XLSX|");
+		}
+		parser = parser.replaceAll(",", ":");
+		parser = parser.replaceAll("\\|", ",");
+		List<String> parserArrayList = null;
+		Map<String, String> fileParserMap = null;
+		synchronized(this) {
+		
+		parserArrayList = (ArrayList<String>) session.getAttribute("parserArrayList");
+		fileParserMap = (Map<String, String>) session.getAttribute("fileParserMap");
+		if (parserArrayList != null) {
+			if (parserArrayList.size() < 1)
+				parserArrayList = null;
+		}
+		if (fileParserMap != null) {
+			if (fileParserMap.size() < 1)
+				fileParserMap = null;
+		}
+		if (null == parserArrayList && null == fileParserMap) {
+			String[] parserArrayTemp = parser.split(",");
+			fileParserMap = new LinkedHashMap<String, String>();
+			parserArrayList = new ArrayList<String>();
+			for (int i = 0; i < parserArrayTemp.length; i++) {
+				String[] interNalArray = parserArrayTemp[i].split("~");
+				String parserValue = interNalArray[0] + "~" + interNalArray[1];
+				parserArrayList.add(parserValue);
+				String customKeyFile = interNalArray[2].replaceAll(":", ",");
+				customKeyFile = "_" + customKeyFile;
+				customKeyFile = customKeyFile.replaceAll(" ", "_");
+				fileParserMap.put(customKeyFile, parserValue);
+
+			}
+		} else {
+			String[] parserArrayTemp = parser.split(",");
+			for (int i = 0; i < parserArrayTemp.length; i++) {
+				String[] interNalArray = parserArrayTemp[i].split("~");
+				String parserValue = interNalArray[0] + "~" + interNalArray[1];
+				String customKeyFile = interNalArray[2].replaceAll(":", ",");
+				customKeyFile = "_" + customKeyFile;
+				customKeyFile = customKeyFile.replaceAll(" ", "_");
+
+		if (null != fileParserMap.get(customKeyFile)) {
+					String oldModifiedParserValue = (String) fileParserMap
+							.get(customKeyFile);
+					int k = oldModifiedParserValue.lastIndexOf("~");
+					String oldParserValue = oldModifiedParserValue.substring(0,
+							k);
+					fileParserMap.put(customKeyFile, parserValue);
+					parserArrayList.remove(oldParserValue);
+					parserArrayList.add(parserValue);
+			}else{
+				fileParserMap.put(customKeyFile, parserValue);
+				parserArrayList.add(parserValue);
+			}
+			}
+		}
+		session.setAttribute("parserArrayList", parserArrayList);
+		session.setAttribute("fileParserMap", fileParserMap);
+		
+		}
+		
+		
+		String customOriginalFile = file.getOriginalFilename();
+		customOriginalFile = "_" + customOriginalFile;
+		customOriginalFile = customOriginalFile.replaceAll(" ", "_");
+		String valueByOriginalFileName = fileParserMap.get(customOriginalFile);
+		if (null != valueByOriginalFileName) {
+			fileParserMap.put(customOriginalFile, valueByOriginalFileName + "~"
+					+ megabytesStr);
+		}
+
+		try {
+			if (!validFileFlag) {
+				String fileName = fileUploadService.UploadTempDocument(file,
+						customerId);
+				 /* Here we check if file type is pdf then check file is password protected or not*/
+				if (pdfFileFlag) {
+					filepwdFlag = PDFPasswordChecker
+							.isAvailablePWD(tempDirectoryPath + fileName);
+				}
+				
+				//final return 
+				ret = "{\"files\": [{\"name\": \"" + file.getOriginalFilename()+ "\"," 
+				                  + "\"size\": " + file.getSize() + ","
+				                  +"\"orgName\":\"" + fileName + "\", "
+				                  +"\"error\":\"" +""+ "\","
+					              + "\"filepwdFlag\":\"" + filepwdFlag + "\"" + "}]}";
+				
+
+			} else {
+				LOGGER.warn("--- validation failed--------");
+				ret = "{\"files\": [{\"name\": \"" + file.getOriginalFilename()
+						+ "\"," + "\"size\": " + file.getSize() + ","
+						+ "\"error\":\"Not Valid file Type\"}]}";
+			}
+
+		} catch (Exception e) {
+			ret = "{\"files\": [{\"name\": \"" + file.getOriginalFilename()
+			+ "\"," + "\"size\": " + file.getSize() + ","
+			+ "\"error\":\"file Not Uploaded\"}]}";
+	         e.printStackTrace();
+	      LOGGER.error("Error:",e);
+			
+		} 
+		return ret;
+	}
+
+	/**** upload_document confirmation View Mapping **************/
+	@RequestMapping(value = "/upload_confirm.htm", method = RequestMethod.POST)
+	public String uploadPermanent(HttpServletRequest request,
+			@RequestParam("customerId") String customerId,
+			@RequestParam("parserName") String parserName, Model map,
+			HttpSession session) {
+
+		String[] file = request.getParameterValues("uploadedfiles");
+		LOGGER.info("--- upload_file request Mapping started--------with:"
+				+ customerId);
+		LOGGER.info("-------- List of Files ----" + file.toString());
+		String view = "file_upload_response";
+		ArrayList<String> errorList = new ArrayList<String>();
+		ArrayList<String> fileList = new ArrayList<String>();
+		User user = (User) session.getAttribute("user");
+		Integer entityId = 0;
+
+		String companyId = (String) session.getAttribute("companyId");
+
+		String userName = user.getLogin();
+		if (file != null && file.length > 0) {
+			try {
+				for (String fileName : file) {
+					/************ Upload document and Check **************/
+					if (fileUploadService.UploadPermanantDocument(fileName,
+							customerId, parserName, userName)) {
+						fileList.add(UploadUtility
+								.getOriginalFileName(fileName));
+					} else
+						errorList.add(UploadUtility
+								.getOriginalFileName(fileName)
+								+ " Not Uploaded");
+				}
+
+				Integer requestId = extractionService.saveToRequestQueue(Integer
+						.parseInt(customerId), companyId, user.getUserId()
+						.intValue(), user.getUserGroupId(), entityId,masterProcessBank);
+				normalizationService.saveInvokeProcessTracker(requestId,null,"N",masterProcessBank,user.getUserId());
+
+			} catch (IllegalStateException e) {
+				e.printStackTrace();
+				LOGGER.error("Error:",e);
+				errorList.add(globalExcptionMsg);
+			} catch (IOException e) {
+				e.printStackTrace();
+				LOGGER.error("Error:",e);
+				errorList.add(globalExcptionMsg);
+			} catch (Exception e) {
+				errorList.add(globalExcptionMsg);
+				e.printStackTrace();
+				LOGGER.error("Error:",e);
+			}
+		}
+		map.addAttribute("customerId", customerId);
+		map.addAttribute("errorList", errorList);
+		map.addAttribute("fileList", fileList);
+		LOGGER.info("--- upload_file request Mapping compelted--------with:"+ view);
+		return view;
+	}
+
+	/**** upload_success html View Mapping **************/
+	@RequestMapping(value = "/upload_success.htm", method = { RequestMethod.POST })
+	public String viewfileUploadPage(
+			@RequestParam("customerId") String customerId,
+			@RequestParam("files") String files, Model map) {
+		LOGGER.info("--- upload_success Page request Mapping started--------"
+				+ customerId);
+		map.addAttribute("customerId", customerId);
+		map.addAttribute("files", files);
+		LOGGER.info("--- upload_success Page request Mapping completed with file_upload_confirmation--------");
+		return "file_upload_confirmation";
+	}
+
+	/**** upload_delete Action Mapping **************/
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/upload_delete.htm", method = { RequestMethod.POST })
+	public @ResponseBody
+	String deleteUploadedDocument(@RequestParam("fileName") String fileName,@RequestParam("orgfilename") String orgfilename, 
+			Model map, HttpSession session) {
+		LOGGER.info("--- upload_delete request Mapping started--------");
+		boolean res = false;
+
+		List<String> parserArrayList = (List<String>) session
+				.getAttribute("parserArrayList");
+		Map<String, String> fileParserMap = (Map<String, String>) session
+				.getAttribute("fileParserMap");
+		
+		fileName = "_" + fileName;
+		fileName = fileName.replaceAll(" ", "_");
+		
+		
+		String parserName="";
+		if(fileParserMap!=null){
+		parserName = (String) fileParserMap.get(fileName);
+
+		/**
+		 * if filename coantain double dot then append ~0
+		 * beacuse of in existing logic we split Private Co~1~0.0094 but we want Private
+		 * Co~1
+		 */
+		if(parserName!=null){
+		if(parserName.indexOf('~', parserName.indexOf('~') + 1) == -1) {
+			parserName+="~0"; //there are two or more dots in this string
+		}
+		int first = parserName.indexOf("~");
+		int second = parserName.indexOf("~", first + 1);
+		parserName = parserName.substring(0, second);
+
+		parserArrayList.remove(parserName);
+		fileParserMap.remove(fileName);
+		if (parserArrayList.size() > 0) {
+			session.setAttribute("parserArrayList", parserArrayList);
+		} else {
+			session.setAttribute("parserArrayList", null);
+		}
+		if (fileParserMap.size() > 0) {
+			session.setAttribute("fileParserMap", fileParserMap);
+		} else {
+			session.setAttribute("fileParserMap", null);
+		}
+		}//end fileParserMap if
+		}//end parserName if
+		String message = documentNotRemoveMsg;
+		try {
+
+			if (ValidationService.validateFileName(orgfilename)) {
+				if (fileUploadService.deleteUploadedDocument(orgfilename)) {
+					message = documentRemoveMsg;
+					res = true;
+				}
+			} else
+				message = documentNotValidMsg;
+
+			LOGGER.info("--- upload_delete request Mapping completed with --------");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:",e);
+			message = globalExcptionMsg;
+		}
+		LOGGER.info("--- upload_deleterequest Mapping completed --------");
+		LOGGER.debug("--- upload_deleterequest Mapping completed with --------"
+				+ res + message);
+		return "{\"result\":\"" + res + "\",\"message\":\"" + message + "\"}";
+
+	}
+
+	/*
+	 * This function used for check user entered password is correct or not
+	 */
+	@SuppressWarnings("unused")
+	@RequestMapping(value = "/isPasswordCorrect.htm", method = { RequestMethod.POST })
+	public @ResponseBody
+	String checkPasswordCorrect(
+			@ModelAttribute PasswordFilesCommand passwordFilesCommand,
+			HttpServletRequest request) {
+		LOGGER.info("**Start--checkPasswordCorrect correct or not");
+		boolean correctPwdFlag = false;
+		String result = "";
+		try {
+			Map<String, Object> resultMap = new HashMap<String, Object>();
+			ObjectMapper objectMapper = new ObjectMapper();
+			Integer pwdFileCount = 0;
+			String fileListArray[] = request.getParameterValues("orgfilename");
+			List<String> fileList = Arrays.asList(fileListArray);
+			for (int i = 0; i < fileList.size(); i++) {
+				/* Here if password is "0" is means file has no password */
+				LOGGER.info("Password size="
+						+ passwordFilesCommand.getFilepwd().size());
+				if (passwordFilesCommand.getFilepwd().size() == 0) {
+					List<String> blnakPwdList = new ArrayList<String>();
+					blnakPwdList.add("");
+					passwordFilesCommand.setFilepwd(blnakPwdList);
+				}
+				if (!passwordFilesCommand.getFilepwd().get(i)
+						.equalsIgnoreCase("0")) {
+					if (passwordFilesCommand.getFilepwd().size() > 0) {
+						if (passwordFilesCommand.getFilepwd().get(i) != "") {
+							pwdFileCount++;
+							try {
+								PDDocument document = PDDocument
+										.load(tempDirectoryPath
+												+ passwordFilesCommand
+														.getOrgfilename()
+														.get(i));
+								document.openProtection(new StandardDecryptionMaterial(
+										passwordFilesCommand.getFilepwd()
+												.get(i)));
+								correctPwdFlag = true;
+								LOGGER.info("** User entered password is correct");
+							} catch (Exception e) {
+								e.printStackTrace();
+								resultMap.put("incorrectpwdmsg" + i,
+										"<li>Please enter the correct password for "
+												+ passwordFilesCommand
+														.getUploadfilename()
+														.get(i) + " file</li>");
+								LOGGER.error("** User entered password is incorrect=",e);
+
+							}
+						}// end blank pwd if
+						else {
+							resultMap.put("blankpwd" + i,
+									"<li>Please enter the password for "
+											+ passwordFilesCommand
+													.getUploadfilename().get(i)
+											+ " file</li>");
+							pwdFileCount++;
+						}
+
+					}
+
+				}// End if not passworded file
+				resultMap.put("pwdFileCount", pwdFileCount);
+			}// end for
+			result = objectMapper.writeValueAsString(resultMap);
+			LOGGER.info("**End--checkPasswordCorrect correct or not");
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:",e);
+		}
+		return result;
+	}
+
+	
+
+}

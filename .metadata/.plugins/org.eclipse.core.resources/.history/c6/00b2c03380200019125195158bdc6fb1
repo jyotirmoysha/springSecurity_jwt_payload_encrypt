@@ -1,0 +1,8 @@
+package com.livespread.excel;
+
+import org.apache.poi.ss.usermodel.CellStyle; 
+import org.apache.poi.ss.usermodel.Workbook; 
+ 
+public interface CellStyleFactory { 
+    CellStyle create(Workbook workbook); 
+}

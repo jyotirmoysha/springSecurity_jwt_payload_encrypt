@@ -1,0 +1,81 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author KP0e1301
+ *
+ */
+@Entity
+@Table(name = "QA_CHECK_FILTER_MAPPING")
+@NamedQueries({
+	@NamedQuery(name = "getPoModifyByMetadataList", query = "select qcfm from QACheckFilterMapping qcfm where modifiedBy is not null and displayLabel is not null"),
+	 
+})
+public class QACheckFilterMapping implements Serializable, BaseEntity{
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+/*	@GeneratedValue(generator = "sequence")
+	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_QA_CHECK_FILTER_MAPPING") })*/
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "QCFM_ID")
+	private Integer qcfmId;
+
+	@Column(name = "MODIFIED_BY")
+	private String modifiedBy;
+
+	@Column(name = "DISPLAY_LABEL")
+	private String displayLabel;
+
+	public Integer getQcfmId() {
+		return qcfmId;
+	}
+
+	public void setQcfmId(Integer qcfmId) {
+		this.qcfmId = qcfmId;
+	}
+
+	public String getModifiedBy() {
+		return modifiedBy;
+	}
+
+	public void setModifiedBy(String modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
+	public String getDisplayLabel() {
+		return displayLabel;
+	}
+
+	public void setDisplayLabel(String displayLabel) {
+		this.displayLabel = displayLabel;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+}

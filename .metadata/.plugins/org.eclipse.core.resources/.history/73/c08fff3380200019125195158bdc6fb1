@@ -1,0 +1,85 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+@Entity
+@Table(name = "EXPORT_EXCEL_METADATA")
+@NamedQueries({
+	@NamedQuery(name = "getExcelExportName", query = "from ExportExcelMetadata where exportFunctionalityName=:exportFunctionalityName")
+})
+public class ExportExcelMetadata implements Serializable, BaseEntity{
+	private static final long serialVersionUID = 1L;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "EXCEL_ID")
+	private Integer excelId;
+	
+	@Column(name = "EXPORT_FUNCTIONALITY_NAME")
+	private String exportFunctionalityName;
+	
+	@Column(name = "EXPORT_TEMPLATE_NAME")
+	private String exportTemplateName;
+
+	@Column(name = "START_ROW_NUMBER")
+	private Integer startRowNumber;
+	
+	@Column(name = "START_COLUMN_NUMBER")
+	private Integer startColumnNumber;
+
+	
+	public Integer getStartRowNumber() {
+		return startRowNumber;
+	}
+
+	public void setStartRowNumber(Integer startRowNumber) {
+		this.startRowNumber = startRowNumber;
+	}
+
+	public Integer getStartColumnNumber() {
+		return startColumnNumber;
+	}
+
+	public void setStartColumnNumber(Integer startColumnNumber) {
+		this.startColumnNumber = startColumnNumber;
+	}
+
+	public Integer getExcelId() {
+		return excelId;
+	}
+
+	public void setExcelId(Integer excelId) {
+		this.excelId = excelId;
+	}
+
+	public String getExportFunctionalityName() {
+		return exportFunctionalityName;
+	}
+
+	public void setExportFunctionalityName(String exportFunctionalityName) {
+		this.exportFunctionalityName = exportFunctionalityName;
+	}
+
+	public String getExportTemplateName() {
+		return exportTemplateName;
+	}
+
+	public void setExportTemplateName(String exportTemplateName) {
+		this.exportTemplateName = exportTemplateName;
+	}
+	
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+}

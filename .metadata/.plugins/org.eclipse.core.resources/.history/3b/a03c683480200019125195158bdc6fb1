@@ -1,0 +1,23 @@
+package com.livespread.common;
+
+import java.util.Comparator;
+
+import com.livespread.command.NormalizedDetails;
+
+public class  NormalizedDetailsByDisplaySequenceComparator implements Comparator<NormalizedDetails>
+{
+	@Override
+	public int compare(NormalizedDetails normalizedDetails1, NormalizedDetails normalizedDetails2) 
+	{
+        int returnVal = 0;
+
+	    if(normalizedDetails1.getDisplaySequence() < normalizedDetails2.getDisplaySequence()){
+	        returnVal =  -1;
+	    }else if(normalizedDetails1.getDisplaySequence() > normalizedDetails2.getDisplaySequence()){
+	        returnVal =  1;
+	    }else if(normalizedDetails1.getDisplaySequence() == normalizedDetails2.getDisplaySequence()){
+	        returnVal =  0;
+	    }
+	    return returnVal;
+	}
+}

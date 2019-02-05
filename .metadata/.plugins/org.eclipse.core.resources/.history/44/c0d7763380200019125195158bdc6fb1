@@ -1,0 +1,11 @@
+package com.livespread.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.livespread.domain.WorkQueue;
+
+public interface NormalizationViewService {
+
+	public boolean f_writeNormViewCSVFile(Map<String, Map<String, List<? extends Object>>> dataValMap,Integer colCounter,String fileNameAndPath, WorkQueue workQueue);
+}

@@ -1,0 +1,214 @@
+package com.livespread.util;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionAttributeListener;
+import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
+
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.CollectionUtils;
+
+import com.livespread.domain.User;
+import com.livespread.domain.WorkQueue;
+import com.livespread.service.WorkQueueServiceImpl;
+
+@Controller
+public class ReleaseLockedUser implements HttpSessionAttributeListener,
+		HttpSessionListener {
+
+	public static List<String> sessionIdList=new ArrayList<>();
+	public ReleaseLockedUser() {
+
+	}
+	//used for append user URl 
+	private Logger LOGGER = Logger.getLogger(ReleaseLockedUser.class);
+     int fillingIdCount=0;
+     boolean welFlag=false;
+	 Map<String, String> urlPages=new HashMap<String, String>();
+	@Override
+	public void attributeAdded(HttpSessionBindingEvent event) {
+		if (event.getName().equals("LockedSession")) {
+			Integer i = (Integer) event.getSession().getAttribute(
+					"LockedSession");
+			if (i != null) {
+				// workQueueService.updateLockCaseForNullUser(i);
+			}
+		}
+	}
+
+	@Override
+	public void attributeRemoved(HttpSessionBindingEvent event) {
+		if (event.getName().equals("LockedSession")) {
+			if (event.getValue() != null) {
+				WorkQueueServiceFactory.workQueueService
+						.updateLockCaseForNullUser((Integer) event.getValue());
+			}
+		}
+	}
+
+	@Override
+	public void attributeReplaced(HttpSessionBindingEvent event) {
+    try{
+		String attributeName = event.getName();
+		Object attributeValue = event.getValue();
+		HttpSession session=event.getSession();  
+		String afterSession =event.getSession().getId();
+	    String userSysIp=null;
+		String userRole = null; 
+		Date inTime= null;
+	    User  user = (User) session.getAttribute("user");
+		if (attributeName.equalsIgnoreCase("pageName") && !attributeValue.equals("login.htm")) {
+			if (!welFlag && attributeValue.toString().equalsIgnoreCase("welcome")) {
+			       urlPages=WorkQueueServiceFactory.userAuditService.getUrlsList();	
+			       welFlag=true;
+			}
+			if(welFlag){
+					if (urlPages != null && urlPages.keySet().contains(attributeValue.toString())) {
+						String url = attributeValue.toString();
+						String filling_Id = null;
+						 Calendar endTime=Calendar.getInstance();
+						 userSysIp = (String) session.getAttribute("ipAddress");
+						 LOGGER.info("userSysIp ***"+userSysIp);  
+						if (url!=null && user!=null  && url.equalsIgnoreCase("welcome")) {
+							String tempFillingId = (String) session.getAttribute("decryptedFillingId");
+							System.out.println("userSysIp"+userSysIp);
+							userRole = (String) session.getAttribute("userRole");
+							Date seEndTime  = (Date) session.getAttribute("caseStartTime");
+							session.setAttribute("decryptedFillingId", "");
+ 						    	if(seEndTime!=null && tempFillingId!=null && fillingIdCount==1){
+ 						    		 fillingIdCount=0;  
+ 						    		 inTime= endTime.getTime();
+						    		 long seconds =(inTime.getTime()-seEndTime.getTime())/1000;
+						    		 WorkQueueServiceFactory.userAuditService.insertUserAuditUrls("CaseOut", user, tempFillingId,afterSession,inTime,seconds,userRole,userSysIp);
+						    		 WorkQueueServiceFactory.userAuditService.insertUserAuditUrls(url, user, filling_Id,afterSession,inTime,null,userRole,userSysIp); 	
+						       }else{
+					    		   inTime= endTime.getTime();
+						    	   WorkQueueServiceFactory.userAuditService.insertUserAuditUrls(url, user, filling_Id,afterSession,inTime,null,userRole,userSysIp); 	
+						    	   fillingIdCount=0; 
+						       }
+						} else if(url!=null && user!=null && !url.equalsIgnoreCase("welcome")){
+							 LOGGER.info("userSysIp ***"+userSysIp); 
+							     fillingIdCount=1;   
+							   inTime= endTime.getTime();
+							   filling_Id = (String) session.getAttribute("decryptedFillingId");
+							   String pageName = urlPages.get(attributeValue).toString();
+						       userRole = (String) session.getAttribute("userRole");
+							   WorkQueueServiceFactory.userAuditService.insertUserAuditUrls(pageName, user, filling_Id,
+									afterSession,inTime,null,userRole,userSysIp);       
+						}
+					}
+			}
+		}
+ 		if (event.getName().equals("LockedSession")) {
+			Integer i = (Integer) event.getSession().getAttribute("LockedSession");
+			if (i != null)
+				WorkQueueServiceFactory.workQueueService.updateLockCaseForNullUser(i);
+		}
+}catch (Exception e) {
+	LOGGER.error("Error in ReleaseLockedUser Controller using method append Url to string: "+e);
+}
+	}
+
+	@Override
+	public void sessionCreated(HttpSessionEvent event) {
+		String sessionId =event.getSession().getId();
+		if(!(CollectionUtils.isEmpty(sessionIdList) && sessionIdList.contains(sessionId)))
+		{
+			sessionIdList.add(sessionId);
+		}
+		else
+		{
+			event.getSession().invalidate();
+		}
+	}
+
+	@Override
+	public void sessionDestroyed(HttpSessionEvent event) {
+		{	
+		       HttpSession session=event.getSession();  
+		       User  user = (User) session.getAttribute("user");
+		       String afterSession =event.getSession().getId();
+ 		if(afterSession.equals(afterSession ) && user!=null){
+			try{
+			LOGGER.info("we are in ReleaseLockedUser Controller");	
+			 Calendar inTime = Calendar.getInstance();
+			 Date indate = inTime.getTime();
+			 Long seconds = null;
+			 String filling_Id = (String) session.getAttribute("decryptedFillingId");
+			 String userRole = (String) session.getAttribute("userRole");
+			 String userSysIp = (String) session.getAttribute("ipAddress");
+			 LOGGER.info("userSysIp ***"+userSysIp); 
+			 if(filling_Id!=null && !filling_Id.isEmpty()){ 
+				 		Date seEndTime  = (Date) session.getAttribute("caseStartTime");
+						seconds = (indate.getTime() - seEndTime.getTime()) / 1000;
+						fillingIdCount=0; 
+				 WorkQueueServiceFactory.userAuditService.insertUserAuditUrls("CaseOut", user, filling_Id,afterSession,indate,seconds,userRole,userSysIp);
+			 }
+				WorkQueueServiceFactory.userAuditService.insertUserAuditUrls("logout", user, "",afterSession,indate,null,userRole,userSysIp);
+				String currentSessionId=WorkQueueServiceFactory.userAuditService.getUserSessionId(user);
+				if(session.getId().equalsIgnoreCase(currentSessionId)){
+				WorkQueueServiceFactory.userAuditService.setUserSessionAsNull(user);
+				}
+				
+			}
+			catch (Exception e) {
+				LOGGER.error("Error in ReleaseLockedUser Controller for Audit User functionalty:: "+e);
+			}
+			try{
+			event.getSession().invalidate();
+			}catch (Exception e) {
+				LOGGER.error("Session already invalidated");
+			}
+		}
+			Integer i = (Integer) event.getSession().getAttribute("LockedSession");
+			   welFlag=false;
+			   fillingIdCount=0; 
+	           urlPages=null;
+	           user=null;
+			if (i != null) {
+				WorkQueueServiceFactory.workQueueService
+						.updateLockCaseForNullUser(i);
+			}
+		}
+	}
+
+	
+	
+	
+    public static String caseStatus(WorkQueue workQueue, User user){
+    	String caseStatus=null;
+    if (workQueue != null && workQueue.getCaseStatus().equalsIgnoreCase(WorkQueueServiceImpl.ASSIGN_TO_MAKER)) {
+    	if((workQueue.getMaker()!=null &&  user.getUserId()!=null) && (workQueue.getMaker().intValue()==user.getUserId().intValue())){
+    		 caseStatus=WorkQueueServiceImpl.MAKER;		 
+    	}else{
+    		 caseStatus=WorkQueueServiceImpl.ASSIGN_ADMIN;		 
+    	}		
+    }else  if (workQueue != null && workQueue.getCaseStatus().equalsIgnoreCase(WorkQueueServiceImpl.ASSIGN_TO_CHECKER1)) {
+    	if((workQueue.getChecker()!=null &&  user.getUserId()!=null) && (workQueue.getChecker().intValue()==user.getUserId().intValue())){
+    		 caseStatus=WorkQueueServiceImpl.CHECKER1;		 
+    	}else{
+    		 caseStatus=WorkQueueServiceImpl.ASSIGN_ADMIN;			 
+    	}
+    }else  if (workQueue != null && workQueue.getCaseStatus().equalsIgnoreCase(WorkQueueServiceImpl.ASSIGN_TO_CHECKER2)) {
+    	if((workQueue.getChecker2()!=null &&  user.getUserId()!=null) && (workQueue.getChecker2().intValue()==user.getUserId().intValue())){
+    		 caseStatus=WorkQueueServiceImpl.ASSIGN_QA;				 
+    	}else{
+    		 caseStatus=WorkQueueServiceImpl.ASSIGN_ADMIN;			 
+    	}
+    }else{
+            caseStatus=WorkQueueServiceImpl.ASSIGN_ADMIN;		
+    }
+    return caseStatus;
+    }     
+	
+	
+}

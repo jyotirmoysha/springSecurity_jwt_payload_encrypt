@@ -1,0 +1,94 @@
+/**
+ * 
+ */
+package com.livespread.util;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.springframework.stereotype.Repository;
+
+@Repository("validation")
+public class ValidationUtility {
+
+	public static boolean isNumeric(String number) {
+		String numRegex = "[0-9]+";
+		return number.trim().matches(numRegex);
+	}
+
+	public static boolean isAlphabet(String alphabet) {
+		String alphabetRegex = "[A-Za-z]+";
+		return alphabet.trim().matches(alphabetRegex);
+	}
+
+	public static boolean isAlphabetwithSpace(String alphabet) {
+		String alphabetRegex = "[ A-Za-z]+";
+		return alphabet.trim().matches(alphabetRegex);
+	}
+
+	public static boolean isNumericwithSpace(String number) {
+		String numRegex = "[ 0-9]+";
+		return number.trim().matches(numRegex);
+	}
+
+	public static boolean checkfileName(String fileName) {
+		return isNotempty(fileName);
+
+	}
+
+	public static boolean isNotempty(String string) {
+		if (string == null || string.trim().isEmpty()
+				|| string.equalsIgnoreCase("null"))
+			return false;
+		else
+			return true;
+
+	}
+	
+	public static boolean isDropDownSelected(String selectVal){
+		if(selectVal.equalsIgnoreCase("0"))
+			return false;
+		else
+			return true;	
+	}
+
+	private static final String IMAGE_PATTERN = "(^[a-zA-Z0-9_\\s,-]+(\\.(?i)(pdf|doc|docx|xls|ppt|txt|jpg|jpeg|gif|bmp|tif|xlsx|msg))$)";	 
+
+	private static final String FILE_NAME ="^[-_\"a-zA-Z0-9 ]+$";	 
+
+	/**
+	 * Validate image with regular expression
+	 * 
+	 * @param image
+	 *            image for validation
+	 * @return true valid image, false invalid image
+	 */
+	public static boolean validateFileType(final String image) {
+		java.util.regex.Pattern pattern;
+		java.util.regex.Matcher matcher;
+		pattern = Pattern.compile(IMAGE_PATTERN);
+		matcher = pattern.matcher(image);
+		return matcher.matches();
+
+	}
+	
+	
+	public static boolean fileNameValidation(String value) {
+	    Pattern p = Pattern.compile(FILE_NAME);
+	    Matcher m = p.matcher(value);
+	    return m.matches();
+	}
+	
+
+	public static boolean emailValidation(String email) {
+		String EMAIL_REGEX = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
+		Boolean b = email.matches(EMAIL_REGEX);
+		return b;
+	}
+
+	public static String createToken(String tokenString) {
+		return null;
+	}
+	
+
+}

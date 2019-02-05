@@ -1,0 +1,177 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * The persistent class for the "LS_Financial_Meta_Row_Info" database table.
+ * 
+ */
+@Entity
+@Table(name = "LS_FINANCIAL_META_ROW_INFO")
+@NamedQueries({
+@NamedQuery(name = "getRulesDataByTagId", query ="select distinct rowInfo.metadataId, rowInfo from  LsFinancialMetaRowInfo rowInfo where rowInfo.financialFileInfo.isActive='Y' and rowInfo.financialFileInfo.tagId=:tagId  order by rowInfo.metadataId desc"),
+@NamedQuery(name = "getRulesDataByTagIdCount", query ="select count(metadataId) from  LsFinancialMetaRowInfo rowInfo where rowInfo.financialFileInfo.tagId=:tagId and rowInfo.financialFileInfo.isActive='Y'"),
+@NamedQuery(name = "getRulesDataByTagIdValues", query ="select distinct rowInfo.metadataId, rowInfo  from  LsFinancialMetaRowInfo rowInfo, LsFinancialMetaRowData rowData where rowInfo.metadataId=rowData.lsFinancialMetaRowDataCompositKey.metadataId and rowInfo.financialFileInfo.tagId=:tagId and rowInfo.financialFileInfo.isActive='Y' and rowData.columnValue like CONCAT('%',:columnValue,'%') escape '[' order by rowInfo.metadataId desc"),
+@NamedQuery(name = "getRulesDataByTagIdValuesCount", query ="select count(distinct rowInfo.metadataId) from  LsFinancialMetaRowInfo rowInfo, LsFinancialMetaRowData rowData where rowInfo.metadataId=rowData.lsFinancialMetaRowDataCompositKey.metadataId and rowInfo.financialFileInfo.tagId=:tagId and rowInfo.financialFileInfo.isActive='Y' and rowData.columnValue like CONCAT('%',:columnValue,'%') escape '['") ,
+@NamedQuery(name = "deleteMetaRowInfoByMetaDataId", query ="delete from LsFinancialMetaRowInfo rowInfo where rowInfo.metadataId in :deleteMetadataIds"),
+})
+public class LsFinancialMetaRowInfo implements Serializable ,BaseEntity{
+	public LsFinancialMetaRowInfo(long metadataId, List<LsFinancialMetaRowData> lsFinancialMetaRowDataList) {
+		super();
+		this.metadataId = metadataId;
+		this.lsFinancialMetaRowDataList = lsFinancialMetaRowDataList;
+	}
+
+	public LsFinancialMetaRowInfo() {
+		super();
+	}
+
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name ="METADATA_ID", unique = true, nullable = false, precision = 38)
+	private long metadataId;
+	
+
+	//one to many
+	@OneToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "TAG_ID")
+	private LsFinancialFileInfo financialFileInfo;
+	
+	//many to one
+	@OneToMany(fetch = FetchType.EAGER)
+	@JoinColumn(name = "METADATA_ID")
+	private List<LsFinancialMetaRowData> lsFinancialMetaRowDataList;
+	 
+	@Column(name="FILEINDEXORDER")
+	private Integer fileIndexOrder;
+
+	@Column(name="CREATEDATE")
+	private Date createDate;
+	
+	@Column(name="CREATEDBY")
+	private Long createdBy;
+
+	@Column(name="UPDATEDBY")
+	private Long updatedby;
+
+	@Column(name="UPDATEDATE")
+	private Date updateDate;
+
+	public long getMetadataId() {
+		return metadataId;
+	}
+
+	public void setMetadataId(long metadataId) {
+		this.metadataId = metadataId;
+	}
+
+	
+
+	public Integer getFileIndexOrder() {
+		return fileIndexOrder;
+	}
+
+	public void setFileIndexOrder(Integer fileIndexOrder) {
+		this.fileIndexOrder = fileIndexOrder;
+	}
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+	public LsFinancialFileInfo getFinancialFileInfo() {
+		return financialFileInfo;
+	}
+
+	public void setFinancialFileInfo(LsFinancialFileInfo financialFileInfo) {
+		this.financialFileInfo = financialFileInfo;
+	}
+
+	public List<LsFinancialMetaRowData> getLsFinancialMetaRowDataList() {
+		return lsFinancialMetaRowDataList;
+	}
+
+	public void setLsFinancialMetaRowDataList(List<LsFinancialMetaRowData> lsFinancialMetaRowDataList) {
+		this.lsFinancialMetaRowDataList = lsFinancialMetaRowDataList;
+	}
+
+
+	public Long getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Long createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Long getUpdatedby() {
+		return updatedby;
+	}
+
+	public void setUpdatedby(Long updatedby) {
+		this.updatedby = updatedby;
+	}
+
+	public Date getCreateDate() {
+		return createDate;
+	}
+
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
+	}
+
+	public Date getUpdateDate() {
+		return updateDate;
+	}
+
+	public void setUpdateDate(Date updateDate) {
+		this.updateDate = updateDate;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (metadataId ^ (metadataId >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		LsFinancialMetaRowInfo other = (LsFinancialMetaRowInfo) obj;
+		if (metadataId != other.metadataId)
+			return false;
+		return true;
+	}
+
+	
+	
+	
+	
+}

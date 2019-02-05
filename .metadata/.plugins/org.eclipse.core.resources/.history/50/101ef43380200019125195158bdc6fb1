@@ -1,0 +1,124 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author SD0e482
+ *
+ */
+@Entity
+@Table(name = "INVOKE_PROCESS_TRACKER")
+public class InvokeProcessTracker implements Serializable, BaseEntity{
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	@Column(name = "Request_ID")
+	private Integer requestId;
+	
+	@Column(name = "Filing_ID")
+	private Integer filingId;
+	
+	@Column(name = "Processed_Flag")
+	private String processedFlag;
+	
+	@Column(name = "Process_Name")
+	private String processName;
+	
+	@Column(name = "User_Id")
+	private Long userId;
+	
+	/**
+	 * @return the requestId
+	 */
+	public Integer getRequestId() {
+		return requestId;
+	}
+
+	/**
+	 * @param requestId the requestId to set
+	 */
+	public void setRequestId(Integer requestId) {
+		this.requestId = requestId;
+	}
+
+	/**
+	 * @return the filingId
+	 */
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	/**
+	 * @param filingId the filingId to set
+	 */
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	/**
+	 * @return the processedFlag
+	 */
+	public String getProcessedFlag() {
+		return processedFlag;
+	}
+
+	/**
+	 * @param processedFlag the processedFlag to set
+	 */
+	public void setProcessedFlag(String processedFlag) {
+		this.processedFlag = processedFlag;
+	}
+
+	/**
+	 * @return the processName
+	 */
+	public String getProcessName() {
+		return processName;
+	}
+
+	/**
+	 * @param processName the processName to set
+	 */
+	public void setProcessName(String processName) {
+		this.processName = processName;
+	}
+
+	/**
+	 * @return the userId
+	 */
+	public Long getUserId() {
+		return userId;
+	}
+
+	/**
+	 * @param userId the userId to set
+	 */
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

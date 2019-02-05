@@ -1,0 +1,4 @@
+#Tomcat publish data
+#Tue Jan 29 18:47:52 IST 2019
+org.eclipse.jst.jee.server\:/binary\:C\:\\Workspaces\\LSTEST4\\LIVESPREAD_SQL_DEV\\web\\WEB-INF\\lib\\javamelody-core-1.70.0.jar=WEB-INF/lib/javamelody-core-1.70.0.jar
+org.eclipse.jst.jee.server\:/binary\:C\:\\Workspaces\\LSTEST4\\LIVESPREAD_SQL_DEV\\web\\WEB-INF\\lib\\spring-web-3.2.3.RELEASE.jar=WEB-INF/lib/spring-web-3.2.3.RELEASE.jar

@@ -1,0 +1,1273 @@
+package com.livespread.controller;
+
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.json.stream.JsonGenerationException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.json.simple.JSONObject;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.google.common.collect.Lists;
+import com.livespread.command.CheckIdPopUpDataCommand;
+import com.livespread.command.NormalizationBreakupData;
+import com.livespread.command.NormalizeFormData;
+import com.livespread.command.NotesCheckListCommand;
+import com.livespread.command.ParserOutputCommand;
+import com.livespread.command.ParserOutputDisplayCommand;
+import com.livespread.command.QACheckListData;
+import com.livespread.common.Constant;
+import com.livespread.domain.AsRepStatement;
+import com.livespread.domain.Filings;
+import com.livespread.domain.NIValues;
+import com.livespread.domain.NormItemLabels;
+import com.livespread.domain.POCordHighlightDetails;
+import com.livespread.domain.ParserOutput;
+import com.livespread.domain.QACheckFilterMapping;
+import com.livespread.domain.QAMessageChecklist;
+import com.livespread.domain.StatusMaster;
+import com.livespread.domain.User;
+import com.livespread.domain.WorkQueue;
+import com.livespread.service.BulkUploadService;
+import com.livespread.service.ClickBackService;
+import com.livespread.service.NormalizationService;
+import com.livespread.service.POCordHighlightDetailsService;
+import com.livespread.service.QAMessageChecklistService;
+import com.livespread.service.StatusMasterService;
+import com.livespread.service.WorkQueueService;
+import com.livespread.util.CipherUtils;
+import com.livespread.util.LiveSpreadUtil;
+import com.livespread.util.ReplaceSpace;
+
+@Controller
+public class QAMessageChecklistController {
+
+	private Logger LOGGER = Logger
+			.getLogger(QAMessageChecklistController.class);
+
+	@Autowired
+	private StatusMasterService statusMasterService;
+
+	@Autowired
+	private WorkQueueService workQueueService;
+
+	@Autowired
+	private QAMessageChecklistService qaMessageChecklistService;
+	
+	@Autowired
+	private NormalizationService normalizationService;
+	
+	@Autowired
+	private BulkUploadService bulkUploadService;
+	@Autowired
+	private ClickBackService clickBackService;
+	
+	@Autowired
+	private POCordHighlightDetailsService poCordHighlightDetailsService;
+	@Value("${checkStage}")
+	String checkStage;
+
+	@Value("${checkStageNormValidation}")
+	String checkStageNormValidation;
+	
+	@Value("${checkStageStmtAttrVal}")
+	String checkStageStmtAttrVal;
+	
+	@Value("${modifiedByForBreakupQaChecks}")
+	private String modifiedBy;
+
+
+	@RequestMapping(value = "/showQACheckList", method = RequestMethod.GET)
+	public String showQAMessageCheckList() {
+		return "qamessage_checklist";
+	}
+
+	@RequestMapping(value = "/qamessage_checklist.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public String getQAMessageCheckList(HttpServletRequest request,
+			HttpServletResponse response,
+			@RequestParam("fillingId") String fillingId,
+			@RequestParam("WqId") String wqId,
+			@RequestParam("customerName") String customerName,
+			@RequestParam("businessName") String businessName,
+			@RequestParam("fileName") String fileName,
+			@RequestParam("compIdOrCik") String compIdOrCik,
+			@RequestParam("customerId") String customerId,
+			HttpSession session,
+			Model map) {
+
+		LOGGER.info("************Inside QaMessageCheckListController******************");
+		String decryptedFillingId = CipherUtils.decrypt(fillingId);
+		map.addAttribute("caseId", fillingId);
+		map.addAttribute("fillingId", fillingId);
+		map.addAttribute("wqId", wqId);
+		map.addAttribute("customerName", customerName);
+		map.addAttribute("businessName", businessName);
+		map.addAttribute("fileName", fileName);
+		map.addAttribute("customerId", customerId);
+		map.addAttribute("compIdOrCik", compIdOrCik);
+
+		String decryptedCustomerName = CipherUtils.decrypt(customerName);
+		String decryptedCompIdOrCik = CipherUtils.decrypt(compIdOrCik);
+		map.addAttribute("decryptedCustomerName", decryptedCustomerName);
+		map.addAttribute("decryptedFillingId", decryptedFillingId);
+		map.addAttribute("decryptedCompIdOrCik", decryptedCompIdOrCik);
+		
+		/**
+		 * Added code to implement locked by.
+		 */
+
+		/** Code ends here */
+
+		try {
+
+			/*
+			 * This function used for get all status list from status master
+			 */
+			List<StatusMaster> statusList = statusMasterService
+					.getAllStatusList();
+			map.addAttribute("statusList", statusList);
+
+			/*
+			 * This function used for fetch status(WQ_STATUS) using filingId
+			 * from WORK_QUEUE table
+			 */
+			String statusName = workQueueService.findStatusByFilingId(Integer
+					.parseInt(decryptedFillingId));
+			map.addAttribute("currentStatus", statusName);
+			/**
+			 * Here we are fetching data from section_mapping and parser_output table based on section 
+			     */
+			Map<String,String> sectionMappingList=normalizationService.f_fetchSectionListByFilingId(Integer.parseInt(decryptedFillingId),(Integer) session.getAttribute("sessionParserId"));
+			session.setAttribute("sessionSectionList",sectionMappingList);
+			map.addAttribute("sectionMap", sectionMappingList);
+			session.setAttribute("decryptedFillingId",decryptedFillingId.toString());
+			
+			// additionalQAchecksBtn and additionalQAcheck_BreakupBtn hide show on userGroupID
+
+			User user = (User) session.getAttribute("user");
+			Map<String,String> userGrpAttrMappingMap=bulkUploadService.getUserGrpAttrMappingList(user.getUserGroupId(),"Qa CheckList");
+			map.addAttribute("userGrpAttrMappingMap", userGrpAttrMappingMap);
+			
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Exception occured in qaCheckListController", e);
+		}
+		return "qamessage_checklist";
+
+	}
+
+	@RequestMapping(value = "/qamessages.htm", method = { RequestMethod.GET,
+			RequestMethod.POST })
+	public String getUpdateQAMessageCheckList(
+			@RequestParam("fillingId") String fillingId,
+			@RequestParam("WqId") String wqId,
+			@RequestParam("customerName") String customerName,
+			@RequestParam("businessName") String businessName,
+			@RequestParam("fileName") String fileName,
+			@RequestParam("customerId") String customerId,
+			@RequestParam("compIdOrCik") String compIdOrCik, Model map,HttpServletRequest request,
+			HttpServletResponse response,HttpSession session) {
+
+		String decryptedFillingId = CipherUtils.decrypt(fillingId);
+		LOGGER.info("************Inside getUpdateQAMessageCheckList******************");
+		
+		map.addAttribute("caseId", fillingId);
+		map.addAttribute("fillingId", fillingId);
+		map.addAttribute("wqId", wqId);
+		map.addAttribute("customerName", customerName);
+		map.addAttribute("businessName", businessName);
+		map.addAttribute("fileName", fileName);
+		map.addAttribute("customerId", customerId);
+		map.addAttribute("compIdOrCik", compIdOrCik);
+
+		List<QAMessageChecklist> qaList = new ArrayList<QAMessageChecklist>();
+
+		List<QACheckListData> qaCheckDataList = new ArrayList<QACheckListData>();
+
+		try {
+
+			User user = (User) session.getAttribute("user");
+			Map<String,String> userGrpAttrMappingMap=bulkUploadService.getUserGrpAttrMappingList(user.getUserGroupId(),"Qa CheckList");
+			map.addAttribute("userGrpAttrMappingMap", userGrpAttrMappingMap);
+			// Get all qa check messages corresponding to a particular file id
+			qaList = qaMessageChecklistService.findAllQAMessagesBasedOnFilingId(Integer.parseInt(decryptedFillingId));
+			Map<Integer,Integer> asRepStatementYearMap= new LinkedHashMap<Integer, Integer>();
+
+			LOGGER.info("The list of qaChecks for filingId" + fillingId+ "is of size:" + qaList.size());
+			if(!CollectionUtils.isEmpty(userGrpAttrMappingMap) && userGrpAttrMappingMap.containsKey("Horizontal_QA_Checks")){
+				if (!qaList.isEmpty()) {
+					List<AsRepStatement> asrepStatementList=normalizationService.getAsRepStmtByFilingId(Integer.parseInt(decryptedFillingId),"");
+					if(!CollectionUtils.isEmpty(asrepStatementList)){
+						for(AsRepStatement asRepStatement : asrepStatementList){
+							asRepStatementYearMap.put(asRepStatement.getArsId(), asRepStatement.getArsStmtYear());
+						}
+					}
+					map.addAttribute("asRepStatementYearMap", asRepStatementYearMap);
+					map.addAttribute("qaCheckList", LiveSpreadUtil.prepareHorizontalQaCheckListData(qaList));
+				}
+				
+			}else{
+				
+				if (!qaList.isEmpty()) {
+					for (QAMessageChecklist qaCheck : qaList) {
+						if(qaCheck!=null)
+						{
+							QACheckListData qaCheckData = new QACheckListData();
+							qaCheckData.setQaMessageId(qaCheck.getqaMessageId() != null ? qaCheck.getqaMessageId() : null);
+							qaCheckData.setQaMessageIdString(qaCheck.getqaMessageId() != null ? CipherUtils.encrypt(qaCheck.getqaMessageId().toString()) : null);
+							qaCheckData.setCheckId(qaCheck.getCheckId() != null ? qaCheck.getCheckId() : null);
+							qaCheckData.setCheckIdString(qaCheck.getCheckId() != null ? CipherUtils.encrypt(qaCheck.getCheckId().toString()): null);
+							qaCheckData.setCheckStage(qaCheck.getCheckStage() != null ? qaCheck.getCheckStage() : "");
+							qaCheckData.setCheckName(qaCheck.getCheckName() != null ? qaCheck.getCheckName() : "");
+							qaCheckData.setCheckStatus(qaCheck.getCheckStatus() != null ? qaCheck.getCheckStatus() : "");
+							qaCheckData.setQaMessage(qaCheck.getQaMessage() != null ? qaCheck.getQaMessage() : "");
+							qaCheckData.setActionType(qaCheck.getActionType() != null ? qaCheck.getActionType() : "");
+							qaCheckData.setSection(qaCheck.getSection() != null ? qaCheck.getSection() : "");
+							qaCheckData.setReviewFlag(qaCheck.getReviewFlag());
+							qaCheckData.setComments(qaCheck.getComments() != null ? qaCheck.getComments() : "");
+							qaCheckData.setArsId(qaCheck.getArsId() != null ? qaCheck.getArsId() : 0);
+							qaCheckDataList.add(qaCheckData);
+						}
+					}
+					map.addAttribute("qaCheckList", qaCheckDataList);
+				}
+			}
+			
+			
+
+			
+			List<NotesCheckListCommand> notesCheckListCommandList = normalizationService.getNotesCheckList(Integer.parseInt(decryptedFillingId));
+			map.addAttribute("notesCheckListCommandList", notesCheckListCommandList);
+
+
+		} catch (Exception e) {
+			LOGGER.error("Exception occured in qaCheckListController", e);
+			e.printStackTrace();
+		}
+		return "qamessages";
+	}
+
+	@RequestMapping(value = "/update_qachecklist.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String updateQACheckList(QACheckListData data) {
+		LOGGER.info("------------------ udpateQACheckStarted  starts --------------------");
+		String result = "";
+		int count = 0;
+		try {
+			count = qaMessageChecklistService.updateQACheckListComment(data);
+
+			result += count > 0 ? count + " Row Updated "+Constant.CR+Constant.LF : "";
+			LOGGER.info(result);
+			/********** call service to insert object *************/
+
+		} catch (Exception e) {
+			LOGGER.error("Error:",e);
+			e.printStackTrace();
+
+		}
+
+		LOGGER.info("------------------ updateQACheck request Completed --------------------");
+		if (result.isEmpty()) {
+			result = "No Information Updated";
+		}
+		return result;
+
+	}
+
+	@RequestMapping(value = "showTotalValues", method = { RequestMethod.GET,RequestMethod.POST })
+	public @ResponseBody Map<String,List<CheckIdPopUpDataCommand>> getSubTotalsByArsId(
+			@RequestParam("checkId") String checkId,
+			@RequestParam("qaMessageId") String qaMessageId,
+			@RequestParam("fillingId") String filingId,
+			@RequestParam("arsId") String arsId, Model map) {
+
+		LOGGER.info("Inside showTotalValues in QACheckListController");
+		Map<String,List<CheckIdPopUpDataCommand>> checkIdpopupData=new LinkedHashMap<>();	
+		try {
+			
+		Integer checkIdNumeric=Integer.parseInt(CipherUtils.decrypt(checkId));
+		Integer filingIdNumeric=Integer.parseInt(CipherUtils.decrypt(filingId));
+		 checkIdpopupData=qaMessageChecklistService.f_getQACheckListDataPopUpHeader(checkIdNumeric, filingIdNumeric);
+
+		} catch (Exception e) {
+			LOGGER.error("Error:",e);
+			e.printStackTrace();
+		}
+		return checkIdpopupData;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/showAdditionalQAChecks.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public String showAdditionalQAChecks(@RequestParam("filingId") String filingId,@RequestParam("docStatus") String docStatus, Model map,HttpSession session){
+		 try{
+			  LOGGER.info("** start-showAdditionalQAChecks method");
+			  Map<String,String> sectionMap=(Map<String,String>) session.getAttribute("sessionSectionList");
+			  if(CollectionUtils.isEmpty(sectionMap)){
+				  sectionMap = new HashMap<String,String>();
+			  }
+			  map.addAttribute("sectionMap", sectionMap);
+			  map.addAttribute("filingId", filingId);
+			  map.addAttribute("docStatus", docStatus);
+		 }catch(Exception e){
+			 e.printStackTrace();
+		 }
+		 LOGGER.info("** end-showAdditionalQAChecks method");
+		return "additionalQAChecksPopup";
+	}
+
+@RequestMapping(value = "/updateNormDetailsQAChecks.htm", method = {RequestMethod.GET,RequestMethod.POST})
+public @ResponseBody String updateNormDetailsQAChecks(@RequestParam("paramData") String paramData,@RequestParam("fillingIdParam") String fillingIdParam,@RequestParam("poId") String poIdParam,HttpSession session,HttpServletRequest request){
+	String msg="Transactions mapping failed";
+	try{
+	
+	if(paramData!=null && !paramData.isEmpty() && paramData.trim()!=""){
+		String inputParamArray[]=paramData.split("~");	
+		int niItem=Integer.parseInt(inputParamArray[0]);
+		String normLabel=inputParamArray[1];
+		Integer fillingId=Integer.parseInt(CipherUtils.decrypt(fillingIdParam));
+		int poId=Integer.parseInt(poIdParam);
+		User user = (User) session.getAttribute("user");
+		/**
+		 * In normalizeFormData object we have set all required parameters
+		 */
+		NormalizeFormData normalizeFormData=new NormalizeFormData();
+		//for using set userRoll column update parser_output_audit
+		WorkQueue  wq = workQueueService.getCompanyId(fillingId);
+	    String caseStatus=workQueueService.caseStatus(wq,user);
+	    normalizeFormData.setCaseStatus(caseStatus);
+		normalizeFormData.setAddPoId(Lists.newArrayList(poId));
+		normalizeFormData.setFillingId(fillingId);
+		normalizeFormData.setDocumentStatus(workQueueService.findStatusByFilingId(fillingId));
+		normalizeFormData.setTransactionId(normalizationService.f_getMaxTransactionId());
+		normalizeFormData.setCreatedBy(user.getUserId().intValue());
+		normalizeFormData.setNormLableId(niItem);
+		normalizeFormData.setNormLable(normLabel);
+		boolean flag=normalizationService.updateNormalizedLabelByPoID(normalizeFormData);
+		if(flag){
+			msg = "Transactions mapping done successfully";
+		}else{
+			msg = "Transactions mapping failed";
+		}
+	}
+	
+	}catch(Exception ex){
+		ex.printStackTrace();
+	}
+	return msg;
+}
+
+
+
+@RequestMapping(value = "/qaChecklistDetails.htm", method = {
+		RequestMethod.GET, RequestMethod.POST })
+public String qaChecklistDetails(HttpServletRequest request, HttpServletResponse response,
+		@RequestParam("caseID") String caseIdStr,
+		@RequestParam("wqId") String wqId,
+		@RequestParam("customerName") String customerName,
+		@RequestParam("businessName") String businessName,
+		@RequestParam("fileName") String fileName,
+		@RequestParam("customerId") String customerId,
+		@RequestParam("compIdOrCik") String compIdOrCik
+		
+		
+		,Model map){
+	String errorMessage="Y";		
+	Integer caseId = Integer.parseInt(CipherUtils.decrypt(caseIdStr!=null?caseIdStr:"0"));
+	map.addAttribute("message", errorMessage);
+	try{
+		Filings filings = normalizationService.getFilingsByFillingId(caseId);
+		Integer templateId = filings.getTemplateId();
+		String templateName=filings.getTemplateIndustry()!=null?filings.getTemplateIndustry():"";
+		 map.addAttribute("filingId", caseId);
+		 map.addAttribute("encryptedFilingId", caseIdStr);
+		 map.addAttribute("encryptedCheckId", "0");
+		 map.addAttribute("qaCheckSection","N");
+		 map.addAttribute("qaCheckName", "N");
+		 map.addAttribute("coOrdinates", "0");
+		 map.addAttribute("xCoordinate", "0");
+		 map.addAttribute("yCoordinate", "0");
+		 map.addAttribute("x2", "0");
+		 map.addAttribute("y1", "0");
+		 map.addAttribute("pageNo", "0");
+		 map.addAttribute("NiValueForTotal", "0");
+		 map.addAttribute("caseId", caseIdStr);
+		 map.addAttribute("wqId", wqId);
+		 map.addAttribute("customerName", customerName);
+		 map.addAttribute("businessName", businessName);
+		 map.addAttribute("fileName", fileName);
+		 map.addAttribute("customerId", customerId);
+		 map.addAttribute("compIdOrCik", compIdOrCik);
+		 
+			
+		
+
+		 //Fourth tab
+		 List<QAMessageChecklist> qaList = new ArrayList<QAMessageChecklist>();
+		 List<QACheckListData> qaCheckDataList = new ArrayList<QACheckListData>();
+		 List<String> checkStageList = new ArrayList<String>();
+		 String[] checkStageArray=checkStage.split(",");
+		 if(null!=checkStageArray && checkStageArray.length>=1)
+		 {
+			 checkStageList.addAll(Arrays.asList(checkStageArray));
+			 qaList = qaMessageChecklistService.findAllQAMessagesBasedOnFilingIdCheckStage(caseId,checkStageList);
+			 Set<Integer> qaCheckIdSet= new HashSet<Integer>();
+			 Map<Integer,String> checkIdLabelMap =new HashMap<Integer,String>();
+			 String sectionName="";
+			 QACheckListData qaCheckData=null;
+			 if (!qaList.isEmpty()) {
+				 for (QAMessageChecklist qaCheck : qaList) {
+					 qaCheckIdSet.add(qaCheck.getCheckId() != null ? qaCheck.getCheckId() : 0);
+				 }
+				 checkIdLabelMap=qaMessageChecklistService.findLineItemsByCheckId(templateId, qaCheckIdSet);
+					for (QAMessageChecklist qaCheck : qaList) {
+						if(qaCheck!=null)
+						{
+							sectionName =qaCheck.getSection() != null ? qaCheck.getSection().trim() : "";
+							qaCheckData = new QACheckListData();
+							qaCheckData.setQaMessageId(qaCheck.getqaMessageId() != null ? qaCheck.getqaMessageId() : null);
+							qaCheckData.setQaMessageIdString(qaCheck.getqaMessageId() != null ? CipherUtils.encrypt(qaCheck.getqaMessageId().toString()) : null);
+							qaCheckData.setCheckId(qaCheck.getCheckId() != null ? qaCheck.getCheckId() : 0);
+							qaCheckData.setCheckIdString(qaCheck.getCheckId() != null ? CipherUtils.encrypt(qaCheck.getCheckId().toString()): null);
+							qaCheckData.setCheckStage(qaCheck.getCheckStage() != null ? qaCheck.getCheckStage() : "");
+							qaCheckData.setCheckName(qaCheck.getCheckName() != null ? qaCheck.getCheckName() : "");
+							qaCheckData.setCheckStatus(qaCheck.getCheckStatus() != null ? qaCheck.getCheckStatus() : "");
+							qaCheckData.setQaMessage(qaCheck.getQaMessage() != null ? qaCheck.getQaMessage() : "");
+							qaCheckData.setActionType(qaCheck.getActionType() != null ? qaCheck.getActionType() : "");
+							qaCheckData.setSection(sectionName);
+							qaCheckData.setReviewFlag(qaCheck.getReviewFlag());
+							qaCheckData.setComments(qaCheck.getComments() != null ? qaCheck.getComments() : "");
+							qaCheckData.setArsId(qaCheck.getArsId() != null ? qaCheck.getArsId() : 0);
+							if(!CollectionUtils.isEmpty(checkIdLabelMap))
+							{
+							if(checkIdLabelMap.get(qaCheckData.getCheckId())!=null && !checkIdLabelMap.get(qaCheckData.getCheckId()).isEmpty())
+							{
+							qaCheckData.setLinetItemLabel(checkIdLabelMap.get(qaCheckData.getCheckId()));
+							qaCheckDataList.add(qaCheckData);
+							}
+							}
+						}
+					}
+					map.addAttribute("qaCheckList", qaCheckDataList);
+				}
+			}else{
+				 map.addAttribute("qaCheckList", qaCheckDataList);
+			 }
+		 
+			//start Qa validation
+			List<QACheckListData>   normValidationList=null;
+			if(caseId!=null && caseId!=0 && checkStageNormValidation!=null){
+				normValidationList=  qaMessageChecklistService.getNormValidationList(caseId,checkStageNormValidation,templateName);
+			}
+			List<QACheckListData> stmtAttrValidationList=null;
+			if(caseId!=null && caseId!=0 && checkStageStmtAttrVal!=null){
+				stmtAttrValidationList=qaMessageChecklistService.f_stmtAttrValidationList(caseId,checkStageStmtAttrVal);
+				
+			}
+			map.addAttribute("normValidationList", normValidationList);
+			map.addAttribute("stmtAttrValidationList", stmtAttrValidationList);
+		map.addAttribute("message", errorMessage);
+		return "qamessages";
+	}catch(Exception e){
+		LOGGER.error("Error..."+e);
+		e.printStackTrace();
+		map.addAttribute("message", "Click back not available for this label.");
+		return "qamessages";
+	}
+}
+
+
+@RequestMapping(value = "/showQacheckSubTotal.htm", method = { RequestMethod.GET,RequestMethod.POST })
+public @ResponseBody Map<String,List<CheckIdPopUpDataCommand>> showQacheckSubTotal(
+		@RequestParam("checkId") String checkId,
+		@RequestParam("fillingId") String filingId,Model map) {
+
+	LOGGER.info("Inside showTotalValues in QACheckListController");
+	DateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+	System.out.println("QA check execution starts "+sf.format(new Date()));
+	Map<String,List<CheckIdPopUpDataCommand>> checkIdpopupData=new LinkedHashMap<>();	
+	try {
+		Integer checkIdNumeric=null;
+		Integer filingIdNumeric=null;
+		if(checkId!=null && !"".equalsIgnoreCase(checkId)){
+			checkIdNumeric=Integer.parseInt(CipherUtils.decrypt(checkId));
+			filingIdNumeric=Integer.parseInt(CipherUtils.decrypt(filingId));
+		}
+	 checkIdpopupData=qaMessageChecklistService.f_getQACheckListDataPopUpHeaderAsc(checkIdNumeric, filingIdNumeric);
+	 System.out.println("End of Qa checks "+sf.format(new Date()));
+	} catch (Exception e) {
+		LOGGER.error("Error:",e);
+		e.printStackTrace();
+	}
+	return checkIdpopupData;
+}
+
+@SuppressWarnings("unchecked")
+@RequestMapping(value = "/getQAcheckNormDataPopUp.htm", method = {RequestMethod.GET, RequestMethod.POST })
+public @ResponseBody JSONObject getQAcheckNormDataPopUp(Model map,HttpServletRequest request,HttpSession httpSession) {
+	JSONObject jsonResponse = new JSONObject();
+	List<ParserOutputCommand> parserOutPutCommandList=new ArrayList<ParserOutputCommand>();
+	String isSubSection = "N";
+	Integer displayRecords = 10;
+	Integer totalRecords = 0;
+	Integer totalPages = 0;
+	Integer page = 0;
+	Integer firstRecord = 0;
+    if(request.getParameter("currentPageNo")!=null){
+    int	currentPageNo=Integer.parseInt(request.getParameter("currentPageNo"));
+    DateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    System.out.println("start executing unmapped label "+sf.format(new Date()));
+    if(currentPageNo==0){
+    	currentPageNo=1;
+    }
+    firstRecord=(currentPageNo-1)*displayRecords;
+	 }
+	 try{
+		Method method = null;
+		Object objectValue = null;
+		Class<?> parserOutputClass = null;
+		Class<?> poCordHighlightDetailsClass =null;
+		try {
+			parserOutputClass = Class.forName("com.livespread.domain.ParserOutput");
+			poCordHighlightDetailsClass = Class.forName("com.livespread.domain.POCordHighlightDetails");
+		} catch (ClassNotFoundException e1) {
+			LOGGER.error("Error..."+e1);
+			e1.printStackTrace();
+		}
+		 
+		 Integer checkId=null;
+		 Integer fillingId=null;
+		 String poSection=null;
+		 if(request.getParameter("checkId")!=null && !"".equalsIgnoreCase(request.getParameter("checkId"))){
+			 checkId=Integer.parseInt(CipherUtils.decrypt(request.getParameter("checkId")));
+		 }
+		 if(request.getParameter("fillingId")!=null && !"".equalsIgnoreCase(request.getParameter("fillingId"))){
+			 fillingId=Integer.parseInt(CipherUtils.decrypt(request.getParameter("fillingId")));
+		 }if(request.getParameter("poSection")!=null){
+			 poSection=request.getParameter("poSection");
+		 }if(request.getParameter("isSubSection")!=null){
+			 isSubSection=request.getParameter("isSubSection");
+		 }
+		 int colCountValue=0;
+		 if(null!=fillingId){
+			 colCountValue=normalizationService.f_findOutValuesColumnCount(fillingId, poSection);  
+		 }
+		      
+		    if(isSubSection.equalsIgnoreCase("Y")){
+		    firstRecord=0;
+		    displayRecords=0;
+		    }else{
+	    	/**Here we need total records count for pagination*/
+		    if(null!=fillingId)	{
+		    	 totalRecords=normalizationService.f_getQANormDataCountBycheckId(fillingId,poSection,colCountValue);
+	  		    httpSession.setAttribute("totalRecords", totalRecords);
+	      		 httpSession.setAttribute("colCountValue", colCountValue);	
+		    }
+		   
+		    }
+		  ParserOutput parserOutPutStetement =null;
+		  List<ParserOutput> parserOutPutDataList=null;
+		 
+		  if(null!=fillingId && null!=checkId){
+			 parserOutPutStetement = normalizationService.f_getStatementYearParserOutputData(fillingId,poSection,colCountValue);
+			 parserOutPutDataList =normalizationService.f_getQANormDataBycheckIdForSubTotal(checkId,fillingId,poSection,isSubSection,firstRecord,displayRecords,colCountValue);
+		  }
+		    
+		    List<ParserOutput> parserOutPutList =new ArrayList<>();
+		    List<Integer> poIdList = new ArrayList<Integer>();;
+		    Map<Integer, POCordHighlightDetails> seletedPoCordDetailsMap = new HashMap<Integer, POCordHighlightDetails>();
+		   List<String> isCoordinateExists = null;
+		   String asRepLabel="";
+		   List<ParserOutput> parserOutPutDataNewList=new ArrayList<ParserOutput>();
+		    if(!CollectionUtils.isEmpty(parserOutPutDataList))
+		    {
+		    	parserOutPutList.add(parserOutPutStetement);
+		    	
+  		    for(ParserOutput parserOutput : parserOutPutDataList){
+  		    	asRepLabel=parserOutput.getPoAsRepLabel()!=null?parserOutput.getPoAsRepLabel():"";
+  		    	if(asRepLabel.toLowerCase().indexOf("total")<0)
+  		    	{
+  		    		parserOutPutDataNewList.add(parserOutput);
+  		    	}
+  		    	poIdList.add(parserOutput.getPoId());
+  		    }
+		    }
+		    int diffrenceValueRowCount=parserOutPutDataNewList.size();
+		    parserOutPutList.addAll(parserOutPutDataNewList);
+		    
+		ParserOutputCommand parserOutputCommand =null;
+		 if(!CollectionUtils.isEmpty(parserOutPutList)){
+			 
+			 seletedPoCordDetailsMap = poCordHighlightDetailsService.getCoordinateDetailsMap(poIdList);
+			 POCordHighlightDetails seletedPoCordDetails = null;
+			 String[] cordinateArry=null;
+			 Map<Integer,String> asRepValMap=null;
+			 Map<Integer,String> coordinateList=null;
+			 int percentageValCount=0;
+    		 for(ParserOutput parserOutput : parserOutPutList){
+    			 isCoordinateExists = new ArrayList<String>();
+    			 coordinateList = new LinkedHashMap<Integer,String>();
+				 parserOutputCommand=new ParserOutputCommand();
+				 BeanUtils.copyProperties(parserOutput, parserOutputCommand);
+	 			 asRepValMap=new LinkedHashMap<Integer,String>();
+	 			 percentageValCount=0;
+	 			 for (int i = 1 ; i<= colCountValue; i++){
+					method = parserOutputClass.getDeclaredMethod("getPoAsRepVal"+i);
+					objectValue = method.invoke (parserOutput);
+					if(objectValue!=null && !objectValue.toString().isEmpty())
+					{
+						if(objectValue.toString().trim().contains("%") || objectValue.toString().lastIndexOf("-")>0){
+							percentageValCount++;
+							asRepValMap.put(i, "");
+						}else{
+							asRepValMap.put(i, objectValue.toString().trim());
+						}
+					}
+					if(null!=seletedPoCordDetailsMap){
+						seletedPoCordDetails = seletedPoCordDetailsMap.get(parserOutput.getPoId());
+					}
+					if(seletedPoCordDetails!=null)
+					{
+						if(seletedPoCordDetails.getUploadId()!=null)
+						{
+							parserOutputCommand.setUploadId(seletedPoCordDetails.getUploadId());
+						}
+						else
+						{
+							parserOutputCommand.setUploadId(0);
+						}
+						method = poCordHighlightDetailsClass.getDeclaredMethod("getCordDetailsVAL"+i);
+						objectValue = method.invoke (seletedPoCordDetails);
+						if(objectValue!=null && objectValue.toString().trim()!="" && !objectValue.toString().trim().contains("0,0,0,0"))
+						{
+							parserOutputCommand.setCoordinateString(objectValue.toString().trim());
+							cordinateArry = objectValue.toString().trim().split(",");
+							 if(null != cordinateArry && cordinateArry.length == 5){
+								 isCoordinateExists.add("Y");
+								 coordinateList.put(i,objectValue.toString().trim());
+							 }else{
+								 isCoordinateExists.add("N");
+							 }
+						}
+						else
+						{
+							isCoordinateExists.add("N");
+						}
+					}else{
+						isCoordinateExists.add("N");
+					}
+				}
+	 			if(!CollectionUtils.isEmpty(isCoordinateExists))
+				{
+	 				parserOutputCommand.setIsCoordinateExists(isCoordinateExists);
+	 				parserOutputCommand.setCoordinateList(coordinateList);
+				}
+				parserOutputCommand.setPoAsRepVal(asRepValMap);	
+				parserOutputCommand.setPoId(parserOutput.getPoId());
+				parserOutputCommand.setPoIndexOrder(parserOutput.getPoIndexOrder());
+				parserOutputCommand.setPoAsRepLabel(parserOutput.getPoAsRepLabel());
+				parserOutputCommand.setPoBreakup(parserOutput.getPoBreakup());
+				parserOutputCommand.setNilLabel(parserOutput.getNilLabel());
+				parserOutputCommand.setNiItem(parserOutput.getNiItem());
+				parserOutputCommand.setPoSubSection(parserOutput.getPoSubSection());
+				if(percentageValCount<colCountValue){
+					parserOutPutCommandList.add(parserOutputCommand);
+				}
+	    		
+    		 }//end for loop
+		 }
+		List<NormItemLabels> listOfNormItemLabels = normalizationService.getListOfNormItemLabels(poSection,fillingId);
+    	jsonResponse.put("listOfNormItemLabels", listOfNormItemLabels);   
+	   
+    	jsonResponse.put("poObject", parserOutPutCommandList);
+	   
+	   jsonResponse.put("colCountValue", colCountValue);
+	   jsonResponse.put("status", "ok");
+		if (isSubSection.equalsIgnoreCase("N")) {
+					if (totalRecords > 0) {
+				page = 1;
+				totalPages = totalRecords / displayRecords;
+				if ((totalRecords % displayRecords) > 0) {
+					totalPages++;
+				}
+			}
+			jsonResponse.put("totalPages", totalPages);
+			jsonResponse.put("page", page);
+			jsonResponse.put("displayRecords", displayRecords);
+		}else{
+		   totalRecords= parserOutPutList.size();
+	   }
+		 jsonResponse.put("totalRecords", totalRecords);
+		 /**
+		  * This count shows row in diffrence values exist or not
+		  */
+		jsonResponse.put("diffrenceValueRowCount", diffrenceValueRowCount);
+		  
+	 } catch(Exception ex){
+		 LOGGER.error("Error..."+ex);
+	        ex.printStackTrace();  
+	 }
+	 DateFormat sf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+	 System.out.println("end executing unmapped label "+sf1.format(new Date()));
+	 return jsonResponse;
+}
+
+@SuppressWarnings({ "unchecked" })
+@RequestMapping(value = "/showChiledItems.htm", method = {RequestMethod.GET, RequestMethod.POST })
+public @ResponseBody JSONObject showChiledItems(@RequestParam(value="nivId") Integer niId,@RequestParam(value="niItem") Integer niItem) 
+{
+	JSONObject jsonResponse = new JSONObject();
+	 try{
+		 NIValues niValues = new NIValues();
+		 niValues.setNiId(niId);
+		 List<NormalizationBreakupData> normalizationBreakupDataList =normalizationService.getchildNormalizedDataByNiIdForClickBack(niValues,niItem);
+		 jsonResponse.put("poObject", normalizationBreakupDataList);
+		 jsonResponse.put("status", "ok");   
+		 String nonEnglishLabelFlag="N";
+		 if(!CollectionUtils.isEmpty(normalizationBreakupDataList)){
+			 String coOrdinates="";
+			 String cordinateArry[]=null;
+			 Map<String,String> sectionMap = new HashMap<String,String>();
+			 sectionMap=clickBackService.getSectionMap();
+			 List<NormalizationBreakupData> normBrkpDataWthCordnteList=new ArrayList<NormalizationBreakupData>();
+			 for(NormalizationBreakupData normalizationBreakupData :normalizationBreakupDataList){
+				 coOrdinates=normalizationBreakupData.getCoordinate();
+				 normalizationBreakupData.setSection(sectionMap.get(normalizationBreakupData.getSection().trim()));
+				 cordinateArry = coOrdinates.split(",");
+				 if(null != cordinateArry && cordinateArry.length == 5){
+					 normalizationBreakupData.setClickbackCoordinates(coOrdinates);
+					 normalizationBreakupData.setIsCoordinateExists("Y");
+				 }else{
+					 normalizationBreakupData.setIsCoordinateExists("N");
+				 }
+				 normBrkpDataWthCordnteList.add(normalizationBreakupData);
+			 }
+			 
+			 jsonResponse.put("poObject", normBrkpDataWthCordnteList); 
+			 jsonResponse.put("totalNiValue", clickBackService.getNiValuesByNiId(niId).getNiValue().toString());
+			 
+			 
+			 WorkQueue workQueue = null;
+			try {
+				Integer decryptedFillingId = Integer.parseInt(CipherUtils.decrypt(normalizationBreakupDataList.get(0).getFilingId()));
+				 workQueue = workQueueService.getWorkQueueDetailsUsingFilingId(decryptedFillingId);
+			} catch (Exception e) {
+				LOGGER.error("Error..."+e);
+				e.printStackTrace();
+			}	
+			 if(workQueue!=null){
+				 if(workQueue.getLanguage()!=null && !workQueue.getLanguage().equalsIgnoreCase("") && !workQueue.getLanguage().equalsIgnoreCase("English")){
+					 nonEnglishLabelFlag = "Y";
+				 }
+			 }
+		 }else{
+			 jsonResponse.put("poObject", normalizationBreakupDataList);
+		 }
+		 String balancingValue = normalizationService.checkBalancingValue(niId);
+		 jsonResponse.put("nonEnglishLabelFlag",nonEnglishLabelFlag); 
+		 jsonResponse.put("balancingValue",balancingValue);
+	 } catch(Exception ex){
+		 LOGGER.error("Error..."+ex);
+			ex.printStackTrace();  
+	 }
+	 return jsonResponse;
+}
+
+@RequestMapping(value = "/parserOutputForQAChecks.htm")
+public @ResponseBody
+Map<String, String> parserOutputForQAChecks(
+		@RequestParam("fillingId") String fillingId,
+		@RequestParam("statementFormat") String statementFormat,@RequestParam("isBreakup") String isBreakup, 
+		Model map,HttpServletRequest request,HttpSession session) {
+	    String parserList = "";
+		User user = (User) session.getAttribute("user");
+		String usersGroupName = user.getUsersGroupName();
+		LOGGER.info("--- parserOutputForQAChecks started--------");
+		Map<String, String> data = new HashMap<String, String>();
+		List<ParserOutput> parserOutput = null; 
+		List<ParserOutputDisplayCommand> listOfNormalisedParserOutput = new ArrayList<ParserOutputDisplayCommand>();
+		String modifiedById="";
+		Integer decryptedFillingId=Integer.parseInt(CipherUtils.decrypt(fillingId));
+		int columnCount=0;
+		if(null!=isBreakup && isBreakup.equalsIgnoreCase("Y")){
+			modifiedById=modifiedBy;
+			columnCount=normalizationService.f_findOutValuesColumnCountForQaCheckBreakup(decryptedFillingId, statementFormat,modifiedById);
+		}else{
+			modifiedById="";
+			columnCount=normalizationService.f_findOutValuesColumnCount(decryptedFillingId, statementFormat);
+		}
+		
+		String listOfNormItemLabelsString="";
+		String poModifyByListString="";
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			parserOutput = normalizationService.getNormalizedDataForQAChecks(statementFormat,decryptedFillingId,modifiedById);
+			if(null!=isBreakup && isBreakup.equalsIgnoreCase("Y")){
+				prepareParserOutPutListForBreakup(parserOutput,usersGroupName,listOfNormalisedParserOutput,columnCount,statementFormat,decryptedFillingId);
+			}else{
+				prepareParserOutPutList(parserOutput,usersGroupName,listOfNormalisedParserOutput,columnCount,statementFormat,decryptedFillingId);
+			}
+			
+			parserList = mapper.writeValueAsString(listOfNormalisedParserOutput);
+			data.put("parserList", parserList);
+			List<QACheckFilterMapping> poModifyByList = normalizationService.getPoModifyByList();
+			
+			if(!CollectionUtils.isEmpty(poModifyByList)){
+				poModifyByListString = mapper.writeValueAsString(poModifyByList);
+				data.put("poModifyByList", poModifyByListString);
+			}else{
+				data.put("poModifyByList", "");
+			}
+			
+			List<NormItemLabels> listOfNormItemLabels = normalizationService.getListOfNormItemLabels(statementFormat,Integer.parseInt(CipherUtils.decrypt(fillingId)));
+			if(!CollectionUtils.isEmpty(listOfNormItemLabels)){
+				listOfNormItemLabelsString = mapper.writeValueAsString(listOfNormItemLabels);
+				data.put("listOfNormItemLabels", listOfNormItemLabelsString);
+			}else{
+				data.put("listOfNormItemLabels", "");
+			}
+			
+			data.put("columnCount", columnCount+"");
+			
+			if(!CollectionUtils.isEmpty(listOfNormalisedParserOutput)){
+				data.put("totalRecords", new Integer(listOfNormalisedParserOutput.size()).toString());
+			}else{
+				data.put("totalRecords", "0");
+			}
+			
+		} catch (JsonGenerationException e) {
+			LOGGER.error("Error:", e);
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			LOGGER.error("Error:", e);
+			e.printStackTrace();
+		} catch (IOException e) {
+			LOGGER.error("Error:", e);
+
+			LOGGER.error("Exception Occured class:NormalizationController; method: parserOutputForQAChecks ",e);
+		}catch (Exception e) {
+			LOGGER.error("Exception Occured class:NormalizationController; method: parserOutputForQAChecks ",e);
+			e.printStackTrace();
+		}
+	return data;
+
+}
+private void  prepareParserOutPutListForBreakup(List<ParserOutput> parserOutput,String usersGroupName, List<ParserOutputDisplayCommand> listOfNormalisedParserOutput,Integer colCountValue,String statementFormat,Integer filingId) 
+{
+	Method  method = null;
+	Object objectValue = null;
+	Class<?> parserOutputClass =null;
+	try {
+		parserOutputClass = Class.forName("com.livespread.domain.ParserOutput");
+	} catch (ClassNotFoundException e1) {
+		e1.printStackTrace();
+	}
+	try {
+		/**Dynamic val1,val2...val30 functionality
+		 * Here we find out how many column exist in table based on section and filing id*/
+		ParserOutputDisplayCommand normalisedParserOutputTemp = new ParserOutputDisplayCommand();
+		ParserOutputDisplayCommand normalisedParserOutput = null;
+		if(!CollectionUtils.isEmpty(parserOutput)){
+			String tempAsRepLabel="";  
+			String tempSubSection=""; 
+			Map<Integer,String> asRepValMap=null;
+			String tempModifyBy="";
+			for (ParserOutput objIn : parserOutput) {
+				tempAsRepLabel=objIn.getPoAsRepLabel() != null ? ReplaceSpace.replaceSpac(objIn.getPoAsRepLabel().toString()) : "";
+				tempSubSection=objIn.getPoSubSection() != null ? objIn.getPoSubSection() : "";
+				if(!tempAsRepLabel.contains("STATEMENT") && !tempSubSection.equalsIgnoreCase("ATTR")) {
+					normalisedParserOutput = new ParserOutputDisplayCommand();
+					normalisedParserOutput.setPoId(objIn.getPoId() != null ? Integer.parseInt(objIn.getPoId().toString()) : 0);
+					normalisedParserOutput.setRefPoId(objIn.getRefPoId() != null ? Integer.parseInt(objIn.getRefPoId().toString()) : 0);
+	                normalisedParserOutput.setMappingName(objIn.getMappingName());
+					normalisedParserOutput.setMappingType(objIn.getMappingType());
+					normalisedParserOutput.setPoAsRepLabel(objIn.getPoAsRepLabel() != null ? ReplaceSpace.replaceSpac(objIn.getPoAsRepLabel().toString()) : "");
+					normalisedParserOutput.setPoIndexOrder(objIn.getPoIndexOrder() != null ? Integer.parseInt(objIn.getPoIndexOrder().toString()) : 0);
+					asRepValMap=new LinkedHashMap<Integer,String>();
+					for (int i = 1 ; i<= colCountValue; i++){
+						method = parserOutputClass.getDeclaredMethod("getPoAsRepVal"+i);
+						objectValue = method.invoke (objIn);
+						asRepValMap.put(i, objectValue!=null?objectValue.toString().trim():"");
+					}
+					normalisedParserOutput.setPoAsRepVal(asRepValMap);	
+					normalisedParserOutput.setPoSubSection(objIn.getPoSubSection() != null ? objIn.getPoSubSection() : "");
+					normalisedParserOutput.setNormalizedLabel(objIn.getNilLabel() != null ? objIn.getNilLabel().toString() : "");
+					normalisedParserOutput.setNiItem(objIn.getNiItem().intValue()+"");
+					// Account number and Time Period Required for Banks Parser
+					normalisedParserOutput.setPoAccountNumber(objIn.getAccountNumber() != null ? objIn.getAccountNumber().toString() : "");
+					normalisedParserOutput.setPoTimePeriod(objIn.getTimePeriod() != null ? objIn.getTimePeriod().toString() : "");
+					normalisedParserOutput.setPoCustodianName(objIn.getCustodianName() != null ? objIn.getCustodianName().toString() : "");
+					normalisedParserOutput.setPoBreakup(objIn.getPoBreakup() != null ? objIn.getPoBreakup().toString() : "");
+					tempModifyBy=objIn.getModifiedBy()!=null?objIn.getModifiedBy():"";
+					if(!normalisedParserOutput.getPoBreakup().equalsIgnoreCase("Y")){
+						normalisedParserOutput.setTrClass(" ParentParserRecord "+tempModifyBy);
+					}else{
+						normalisedParserOutput.setTrClass(tempModifyBy);
+					}
+					
+					normalisedParserOutput.setPageNo(objIn.getPageNo() != null ? objIn.getPageNo().toString() : "");
+					normalisedParserOutput.setNote(objIn.getNote() != null ? objIn.getNote().toString() : "");
+				
+					if (usersGroupName.equals("CP_SEC")) {
+						normalisedParserOutput.setPoSubTotal(objIn.getPoSubTotal() != null ? objIn.getPoSubTotal().toString() : "");
+					}
+				
+					normalisedParserOutput.setNonEnglishLabel(objIn.getNonEnglishLable() != null ? objIn.getNonEnglishLable().toString() : "");
+					normalisedParserOutput.setPoAsRepLabel(normalisedParserOutput.getPoAsRepLabel());
+
+					if (normalisedParserOutputTemp.getPoId() != null) {
+						if (normalisedParserOutputTemp.getPoIndexOrder().intValue() != normalisedParserOutput.getPoIndexOrder().intValue()) {
+							listOfNormalisedParserOutput.add(normalisedParserOutput);
+						}
+					} else {
+						listOfNormalisedParserOutput.add(normalisedParserOutput);
+					}
+					normalisedParserOutputTemp = normalisedParserOutput;
+				}
+			}
+		
+		
+		}
+	} catch (Exception e) {
+		LOGGER.error("Exception Occured", e);
+		e.printStackTrace();
+	}
+}
+
+private void  prepareParserOutPutList(List<ParserOutput> parserOutput,String usersGroupName, List<ParserOutputDisplayCommand> listOfNormalisedParserOutput,Integer colCountValue,String statementFormat,Integer filingId) 
+{
+	Method  method = null;
+	Object objectValue = null;
+	Class<?> parserOutputClass =null;
+	try {
+		parserOutputClass = Class.forName("com.livespread.domain.ParserOutput");
+	} catch (ClassNotFoundException e1) {
+		e1.printStackTrace();
+	}
+	try {
+		/**Dynamic val1,val2...val30 functionality
+		 * Here we find out how many column exist in table based on section and filing id*/
+		ParserOutputDisplayCommand normalisedParserOutputTemp = new ParserOutputDisplayCommand();
+		ParserOutputDisplayCommand normalisedParserOutput = null;
+		if(!CollectionUtils.isEmpty(parserOutput)){
+			//Added for enable hyperling when child poId's are existing
+			//End of Adding for enable hyperling when child poId's are existing
+			String tempAsRepLabel="";  
+			String tempSubSection=""; 
+			Map<Integer,String> asRepValMap=null;
+			String tempModifyBy="";
+			for (ParserOutput objIn : parserOutput) {
+				tempAsRepLabel=objIn.getPoAsRepLabel() != null ? ReplaceSpace.replaceSpac(objIn.getPoAsRepLabel().toString()) : "";
+				tempSubSection=objIn.getPoSubSection() != null ? objIn.getPoSubSection() : "";
+				if(!tempAsRepLabel.contains("STATEMENT") && !tempSubSection.equalsIgnoreCase("ATTR")) {
+					normalisedParserOutput = new ParserOutputDisplayCommand();
+					normalisedParserOutput.setPoId(objIn.getPoId() != null ? Integer.parseInt(objIn.getPoId().toString()) : 0);
+					normalisedParserOutput.setRefPoId(objIn.getRefPoId() != null ? Integer.parseInt(objIn.getRefPoId().toString()) : 0);
+	                normalisedParserOutput.setMappingName(objIn.getMappingName());
+					normalisedParserOutput.setMappingType(objIn.getMappingType());
+					tempModifyBy=objIn.getModifiedBy()!=null?objIn.getModifiedBy():"";
+					normalisedParserOutput.setTrClass(tempModifyBy);
+					normalisedParserOutput.setPoAsRepLabel(objIn.getPoAsRepLabel() != null ? ReplaceSpace.replaceSpac(objIn.getPoAsRepLabel().toString()) : "");
+					normalisedParserOutput.setPoIndexOrder(objIn.getPoIndexOrder() != null ? Integer.parseInt(objIn.getPoIndexOrder().toString()) : 0);
+					asRepValMap=new LinkedHashMap<Integer,String>();
+					for (int i = 1 ; i<= colCountValue; i++){
+						method = parserOutputClass.getDeclaredMethod("getPoAsRepVal"+i);
+						objectValue = method.invoke (objIn);
+						asRepValMap.put(i, objectValue!=null?objectValue.toString().trim():"");
+					}
+					normalisedParserOutput.setPoAsRepVal(asRepValMap);	
+					normalisedParserOutput.setPoSubSection(objIn.getPoSubSection() != null ? objIn.getPoSubSection() : "");
+					normalisedParserOutput.setNormalizedLabel(objIn.getNilLabel() != null ? objIn.getNilLabel().toString() : "");
+					normalisedParserOutput.setNiItem(objIn.getNiItem().intValue()+"");
+					// Account number and Time Period Required for Banks Parser
+					normalisedParserOutput.setPoAccountNumber(objIn.getAccountNumber() != null ? objIn.getAccountNumber().toString() : "");
+					normalisedParserOutput.setPoTimePeriod(objIn.getTimePeriod() != null ? objIn.getTimePeriod().toString() : "");
+					normalisedParserOutput.setPoCustodianName(objIn.getCustodianName() != null ? objIn.getCustodianName().toString() : "");
+					normalisedParserOutput.setPoBreakup(objIn.getPoBreakup() != null ? objIn.getPoBreakup().toString() : "");
+					normalisedParserOutput.setPageNo(objIn.getPageNo() != null ? objIn.getPageNo().toString() : "");
+					normalisedParserOutput.setNote(objIn.getNote() != null ? objIn.getNote().toString() : "");
+				
+					if (usersGroupName.equals("CP_SEC")) {
+						normalisedParserOutput.setPoSubTotal(objIn.getPoSubTotal() != null ? objIn.getPoSubTotal().toString() : "");
+					}
+				
+					normalisedParserOutput.setNonEnglishLabel(objIn.getNonEnglishLable() != null ? objIn.getNonEnglishLable().toString() : "");
+					normalisedParserOutput.setPoAsRepLabel(normalisedParserOutput.getPoAsRepLabel());
+
+					if (normalisedParserOutputTemp.getPoId() != null) {
+						if (normalisedParserOutputTemp.getPoIndexOrder().intValue() != normalisedParserOutput.getPoIndexOrder().intValue()) {
+							listOfNormalisedParserOutput.add(normalisedParserOutput);
+						}
+					} else {
+						listOfNormalisedParserOutput.add(normalisedParserOutput);
+					}
+					normalisedParserOutputTemp = normalisedParserOutput;
+				}
+			}
+		}
+	} catch (Exception e) {
+		LOGGER.error("Exception Occured", e);
+		e.printStackTrace();
+	}
+}
+@SuppressWarnings("unchecked")
+@RequestMapping(value = "/getQANormDataPopUp.htm", method = {RequestMethod.GET, RequestMethod.POST })
+public @ResponseBody JSONObject getQANormDataPopUp(Model map,HttpServletRequest request,HttpSession httpSession) {
+	
+	 String isSubSection = "N";
+	 Integer displayRecords = 0;
+	 Integer totalRecords = 0;
+	 Integer totalPages = 0;
+	 Integer page=0;
+	 Integer firstRecord=0;
+	 int colCountValue=0;
+	 Integer checkId=null;
+	 Integer fillingId=null;
+	 String poSection=null;
+	 List<NormItemLabels> listOfNormItemLabels =null;
+ List<ParserOutputCommand> parserOutPutCommandList=null;
+ JSONObject jsonResponse = new JSONObject();
+	 try{
+			Method method = null;
+			Object objectValue = null;
+			Class<?> parserOutputClass = null;
+			try {
+				parserOutputClass = Class.forName("com.livespread.domain.ParserOutput");
+			} catch (ClassNotFoundException e1) {
+				e1.printStackTrace();
+			}
+	 if(request.getParameter("checkId")!=null){
+		 checkId=Integer.parseInt(CipherUtils.decrypt(request.getParameter("checkId")));
+	 }if(request.getParameter("fillingId")!=null){
+		 fillingId=Integer.parseInt(CipherUtils.decrypt(request.getParameter("fillingId")));
+	 }if(request.getParameter("poSection")!=null){
+		 poSection=request.getParameter("poSection");
+	 }if(request.getParameter("isSubSection")!=null){
+		 isSubSection=request.getParameter("isSubSection");
+	 }if(request.getParameter("currentPageNo")!=null){
+		page=Integer.parseInt(request.getParameter("currentPageNo"));
+	 }if(request.getParameter("totalRecords")!=null){
+		totalRecords=Integer.parseInt(request.getParameter("totalRecords"));
+	 }if(request.getParameter("colCountValue")!=null){
+		 colCountValue=Integer.parseInt(request.getParameter("colCountValue"));   
+	 }if(request.getParameter("displayRecords")!=null){
+		 displayRecords=Integer.parseInt(request.getParameter("displayRecords"));   
+	 }
+	 
+	
+ 
+	    if(isSubSection.equalsIgnoreCase("Y")){
+	    	firstRecord=0;
+		    displayRecords=0;
+		 }else{
+	    	/**Here we need total records count for pagination*/
+		   if(totalRecords == 0){
+			colCountValue=normalizationService.f_findOutValuesColumnCount(fillingId, poSection); 
+			totalRecords=normalizationService.f_getQANormDataCountBycheckId(fillingId,poSection,colCountValue);
+		   }
+			listOfNormItemLabels = normalizationService.getListOfNormItemLabels(poSection,fillingId);
+		 }
+	    firstRecord=(page-1)*displayRecords;
+	    ParserOutput parserOutPutStetement = normalizationService.f_getStatementYearParserOutputData(fillingId,poSection,colCountValue);
+	    List<ParserOutput> parserOutPutDataList =normalizationService.f_getQANormDataBycheckId(checkId,fillingId,poSection,isSubSection,firstRecord,displayRecords,colCountValue);
+	    List<ParserOutput> parserOutPutList =new ArrayList<>();
+	    if(!CollectionUtils.isEmpty(parserOutPutDataList))
+	    {
+	    	parserOutPutList.add(parserOutPutStetement);
+	    }
+	    parserOutPutList.addAll(parserOutPutDataList);
+		ParserOutputCommand parserOutputCommand =null;
+		 if(!CollectionUtils.isEmpty(parserOutPutList)){ 
+			parserOutPutCommandList=new ArrayList<ParserOutputCommand>();
+		 for(ParserOutput parserOutput : parserOutPutList){
+		 parserOutputCommand=new ParserOutputCommand();
+		 BeanUtils.copyProperties(parserOutput, parserOutputCommand);
+		 Map<Integer,String> asRepValMap=new LinkedHashMap<Integer,String>();
+			for (int i = 1 ; i<= colCountValue; i++){
+				method = parserOutputClass.getDeclaredMethod("getPoAsRepVal"+i);
+				objectValue = method.invoke (parserOutput);
+				if(objectValue!=null && !objectValue.toString().isEmpty())
+				{
+					objectValue.toString().trim();
+					asRepValMap.put(i, objectValue.toString().trim());
+				}
+			}
+			parserOutputCommand.setPoAsRepVal(asRepValMap);	
+			parserOutputCommand.setPoId(parserOutput.getPoId());
+			parserOutputCommand.setPoIndexOrder(parserOutput.getPoIndexOrder());
+			parserOutputCommand.setPoAsRepLabel(parserOutput.getPoAsRepLabel());
+			parserOutputCommand.setPoBreakup(parserOutput.getPoBreakup());
+			parserOutputCommand.setNilLabel(parserOutput.getNilLabel());
+			parserOutputCommand.setNiItem(parserOutput.getNiItem());
+			parserOutputCommand.setPoSubSection(parserOutput.getPoSubSection());
+			parserOutputCommand.setEncryptedFilingId(CipherUtils.encrypt(parserOutput.getFillingId().toString()));
+			
+			parserOutPutCommandList.add(parserOutputCommand);
+		 }//end for loop
+		 }
+		 	jsonResponse.put("poObject", parserOutPutCommandList);
+		 	jsonResponse.put("colCountValue", colCountValue);
+		 	jsonResponse.put("status", "ok");
+			jsonResponse.put("listOfNormItemLabels", listOfNormItemLabels);
+	if (isSubSection.equalsIgnoreCase("N")) {
+			if (totalRecords > 0) {
+			totalPages = totalRecords / displayRecords;
+			if ((totalRecords % displayRecords) > 0) {
+				totalPages++;
+			}
+		}	
+		jsonResponse.put("totalPages", totalPages);
+		jsonResponse.put("page", page);
+		jsonResponse.put("displayRecords", displayRecords);
+	}else{
+	   totalRecords= parserOutPutList.size();
+     }
+	 jsonResponse.put("totalRecords", totalRecords);
+	 }catch(Exception e){
+		 
+	 }
+	 return jsonResponse;
+}
+@SuppressWarnings("unchecked")
+@RequestMapping(value = "/getQANormDataPopUpPagination.htm", method = {RequestMethod.GET, RequestMethod.POST })
+public @ResponseBody JSONObject getQANormDataPopUpPagination(Model map,HttpServletRequest request) {
+	JSONObject jsonResponse = new JSONObject();
+	 List<ParserOutputCommand> parserOutPutCommandList=new ArrayList<ParserOutputCommand>();
+	 String isSubSection="N";
+	 Integer displayRecords =10;
+	Integer totalRecords=0;
+	Integer totalPages = 0;
+	Integer page=0;
+    Integer firstRecord=0;
+    if(request.getParameter("currentPageNo")!=null){
+    int	currentPageNo=Integer.parseInt(request.getParameter("currentPageNo"));
+    if(currentPageNo==0){
+    	currentPageNo=1;
+    }
+     firstRecord=(currentPageNo-1)*displayRecords;
+	  }
+
+	 try{
+			Method  method = null;
+			Object objectValue = null;
+			Class<?> parserOutputClass =null;
+			try {
+				parserOutputClass = Class.forName("com.livespread.domain.ParserOutput");
+			} catch (ClassNotFoundException e1) {
+				e1.printStackTrace();
+			}
+		 
+		 Integer checkId=null;
+		 Integer fillingId=null;
+		 String poSection=null;
+		 if(request.getParameter("checkId")!=null){
+			 checkId=Integer.parseInt(CipherUtils.decrypt(request.getParameter("checkId")));
+		 }if(request.getParameter("fillingId")!=null){
+			 fillingId=Integer.parseInt(CipherUtils.decrypt(request.getParameter("fillingId")));
+		 }if(request.getParameter("poSection")!=null){
+			 poSection=request.getParameter("poSection");
+		 }if(request.getParameter("isSubSection")!=null){
+			 isSubSection=request.getParameter("isSubSection");
+		 }
+		
+		/**Here we need total records count for pagination*/
+		 if(request.getSession().getAttribute("totalRecords")!=null){
+		 totalRecords = Integer.parseInt(request.getSession().getAttribute("totalRecords").toString()); 
+		 }
+		 int colCountValue = 0;
+		 if(request.getSession().getAttribute("colCountValue")!=null){
+			 colCountValue = Integer.parseInt(request.getSession().getAttribute("colCountValue").toString()); 
+		 }
+	    ParserOutput parserOutPutStetement = normalizationService.f_getStatementYearParserOutputData(fillingId,poSection,colCountValue);
+	    List<ParserOutput> parserOutPutDataList =normalizationService.f_getQANormDataBycheckId(checkId,fillingId,poSection,isSubSection,firstRecord,displayRecords,colCountValue);
+	    List<ParserOutput> parserOutPutList =new ArrayList<>();
+	    if(!CollectionUtils.isEmpty(parserOutPutDataList))
+	    {
+	    	parserOutPutList.add(parserOutPutStetement);
+	    }
+	    parserOutPutList.addAll(parserOutPutDataList);
+    		   
+		 ParserOutputCommand parserOutputCommand =null;
+		 if(!CollectionUtils.isEmpty(parserOutPutList)){
+		 for(ParserOutput parserOutput : parserOutPutList){
+		 parserOutputCommand=new ParserOutputCommand();
+		 BeanUtils.copyProperties(parserOutput, parserOutputCommand);
+			 Map<Integer,String> asRepValMap=new LinkedHashMap<Integer,String>();
+				for (int i = 1 ; i<= colCountValue; i++){
+				method = parserOutputClass.getDeclaredMethod("getPoAsRepVal"+i);
+				objectValue = method.invoke (parserOutput);
+				if(objectValue!=null && !objectValue.toString().isEmpty())
+				{
+					objectValue.toString().trim();
+					asRepValMap.put(i, objectValue.toString().trim());
+				}
+			}
+			parserOutputCommand.setPoAsRepVal(asRepValMap);	
+			parserOutputCommand.setPoId(parserOutput.getPoId());
+			parserOutputCommand.setPoIndexOrder(parserOutput.getPoIndexOrder());
+			parserOutputCommand.setPoAsRepLabel(parserOutput.getPoAsRepLabel());
+			parserOutputCommand.setPoBreakup(parserOutput.getPoBreakup());
+			parserOutputCommand.setNilLabel(parserOutput.getNilLabel());
+			parserOutputCommand.setNiItem(parserOutput.getNiItem());
+			parserOutputCommand.setEncryptedFilingId(CipherUtils.encrypt(parserOutput.getFillingId().toString()));
+			parserOutPutCommandList.add(parserOutputCommand);
+		 }//end for loop
+		 }
+	
+	   jsonResponse.put("poObject", parserOutPutCommandList);
+	   jsonResponse.put("colCountValue", colCountValue);
+	   jsonResponse.put("status", "ok");
+	      
+	   if (totalRecords >0) {
+	    	page=1;
+	    	totalPages = totalRecords / displayRecords;
+	    	if ((totalRecords % displayRecords)> 0) {
+				totalPages++;
+			}
+	   }
+	   
+	   List<NormItemLabels> listOfNormItemLabels = normalizationService.getListOfNormItemLabels(poSection,fillingId);
+   		jsonResponse.put("listOfNormItemLabels", listOfNormItemLabels);   
+	   jsonResponse.put("totalPages", totalPages);
+	   jsonResponse.put("page", page);
+	   jsonResponse.put("displayRecords", displayRecords);
+	jsonResponse.put("totalRecords", totalRecords);
+	 } catch(Exception ex){
+	        ex.printStackTrace();  
+	 }
+	    
+	 return jsonResponse;
+}
+
+
+
+}
+

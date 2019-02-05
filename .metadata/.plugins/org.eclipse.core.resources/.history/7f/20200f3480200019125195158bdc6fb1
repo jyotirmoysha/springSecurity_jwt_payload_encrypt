@@ -1,0 +1,67 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "EXCEL_SHEET_METADATA")
+@NamedQueries({
+	@NamedQuery(name = "getSheetNamesByExcelId", query = "from ExcelSheetMetadata where excelId=:excelId")
+})
+public class ExcelSheetMetadata implements Serializable, BaseEntity{
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "SHEET_ID")
+	private Integer sheetId;
+
+	@Column(name = "EXCEL_ID")
+	private Integer excelId;
+
+	@Column(name = "SHEET_NAME")
+	private String sheetName;
+
+	public Integer getSheetId() {
+		return sheetId;
+	}
+
+	public void setSheetId(Integer sheetId) {
+		this.sheetId = sheetId;
+	}
+
+	public Integer getExcelId() {
+		return excelId;
+	}
+
+	public void setExcelId(Integer excelId) {
+		this.excelId = excelId;
+	}
+
+	public String getSheetName() {
+		return sheetName;
+	}
+
+	public void setSheetName(String sheetName) {
+		this.sheetName = sheetName;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+
+
+}

@@ -1,0 +1,71 @@
+package com.livespread.controller;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonWriter;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.livespread.domain.User;
+import com.livespread.service.WorkQueueService;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Controller
+public class CustomSearchWorkQueueController {
+	protected final Log logger = LogFactory.getLog(getClass());
+	
+	@Autowired
+	WorkQueueService workQueueService;
+	
+	@RequestMapping(value="/customAutoComplete.htm")
+	public void autoComplete(HttpServletRequest request, HttpServletResponse response,HttpSession session) throws IOException {
+try{
+	logger.info("--- CustomSearchWorkQueueController request Mapping started--------");
+		User user = (User) session.getAttribute("user");
+		Integer userGroupId = user.getUserGroupId();
+		String searchVal = request.getParameter(ReusableConstant.AC_TERM);
+		String fieldName = request.getParameter(ReusableConstant.AC_FIELD);
+		if(userGroupId!=null && !fieldName.isEmpty()){
+		HashMap<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("user_group_id", userGroupId);
+		/**
+		 * Here we append %search value% for dynamic search functionality
+		 */
+		parameters.put("searchVal","%"+ searchVal + "%");
+		List<Object> results = workQueueService.getAutoComplete(parameters, fieldName);
+		JsonArrayBuilder jaBuilder = Json.createArrayBuilder();
+		if(results!=null){
+		for (Object result : results) {
+			jaBuilder.add(result.toString());
+		}
+		}
+		JsonArray ja = jaBuilder.build();
+		PrintWriter out = response.getWriter();
+		JsonWriter jsonWriter = Json.createWriter(out);
+		jsonWriter.writeArray(ja);
+		jsonWriter.close();
+		out.flush();
+		}
+	}
+catch (Exception e) {
+	logger.error(
+			"Exception Occured CustomSearchWorkQueueController; method: autoComplete ",
+			e);
+}
+	}
+	
+	
+}

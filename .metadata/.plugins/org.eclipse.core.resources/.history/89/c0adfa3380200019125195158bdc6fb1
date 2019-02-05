@@ -1,0 +1,84 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "EXCEL_TABLE_METADATA")
+@NamedQueries({
+	@NamedQuery(name = "getTableNamesByExcelId", query = "from ExcelTableMetadata where sheetId=:sheetId")
+})
+public class ExcelTableMetadata implements Serializable, BaseEntity{
+	
+	private static final long serialVersionUID = 1L;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "TABLE_ID")
+	private Integer tableId;
+	@Column(name = "SHEET_ID")
+	private Integer sheetId;
+	@Column(name = "TABLE_NAME")
+	private String tableName;
+
+	@Column(name = "START_ROW_NUMBER")
+	private Integer startRowNumber;
+
+	@Column(name = "START_COLUMN_NUMBER")
+	private Integer startColumnNumber;
+
+	public Integer getTableId() {
+		return tableId;
+	}
+
+	public void setTableId(Integer tableId) {
+		this.tableId = tableId;
+	}
+
+	public Integer getSheetId() {
+		return sheetId;
+	}
+
+	public void setSheetId(Integer sheetId) {
+		this.sheetId = sheetId;
+	}
+
+	public String getTableName() {
+		return tableName;
+	}
+
+	public void setTableName(String tableName) {
+		this.tableName = tableName;
+	}
+
+	public Integer getStartRowNumber() {
+		return startRowNumber;
+	}
+
+	public void setStartRowNumber(Integer startRowNumber) {
+		this.startRowNumber = startRowNumber;
+	}
+
+	public Integer getStartColumnNumber() {
+		return startColumnNumber;
+	}
+
+	public void setStartColumnNumber(Integer startColumnNumber) {
+		this.startColumnNumber = startColumnNumber;
+	}
+	
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+}

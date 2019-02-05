@@ -1,0 +1,19 @@
+/**
+ * 
+ */
+package com.livespread.service;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public interface ReportService {
+
+	Map<Integer, String> getAnalystNamesByUserGroupId(Long groupId);
+
+	HashMap<String, Long> getAllStatusForReports(Long groupId);
+
+	HashMap<String, Long> getAllStatusForReportsOnChange(Long groupId,
+			Long user_Id, String startDate, String endDate, String Period,
+			String docptId,String portfolio,String industryType);
+
+}

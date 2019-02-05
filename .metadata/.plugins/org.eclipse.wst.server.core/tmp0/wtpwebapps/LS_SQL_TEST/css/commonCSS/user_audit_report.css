@@ -1,0 +1,16 @@
+.chosen-container-active.chosen-with-drop .chosen-single {
+border: 1px solid #ccc !important;
+background: #fff !important;
+border-radius:0px !important;
+padding:0 0 5px 4px !important;
+}
+
+.chosen-container-single .chosen-single{
+border: 1px solid #ccc !important;
+background: #fff !important;
+border-radius:0px !important;
+padding:0 0 5px 4px !important;
+}
+.tblstyle th, .tblstyle1 th {background: #6dbcbf !important; color: #333 !important; font-weight: bold; text-align: center; border-collapse: collapse; border: solid 1px #fff;}
+table th, td {border: none; border-top: none; line-height: 18px; font: 0.7em/18px Helvetica Neue, Helvetica, Arial, sans-serif !important; padding:5px !important; color:#333 !important}
+.newtable tr td{color:#333 !important}

@@ -1,0 +1,33 @@
+package com.livespread.util;
+
+public class GetHrMinSecBYSecond {
+	
+	/**
+	 * Used for finding out Hours,Minutes and seconds by seconds
+	 * @param seconds
+	 * @return 00Hr:10:Min:10sec
+	 */
+	public static String getDurationString(int seconds) {
+
+	    int hours = seconds / 3600;
+	    int minutes = (seconds % 3600) / 60;
+	    seconds = seconds % 60;
+
+	    return twoDigitString(hours)+"Hr"+":" + twoDigitString(minutes)+"Min"+":" + twoDigitString(seconds)+"sec";
+	    	   
+	}
+
+	public static String twoDigitString(int number) {
+
+	    if (number == 0) {
+	        return "00";
+	    }
+
+	    if (number / 10 == 0) {
+	        return "0" + number;
+	    }
+
+	    return String.valueOf(number);
+	}
+
+}

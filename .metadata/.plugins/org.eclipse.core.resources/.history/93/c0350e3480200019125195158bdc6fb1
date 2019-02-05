@@ -1,0 +1,147 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "PARSER_SECTION_MAPPING")
+
+@NamedQueries({
+@NamedQuery(name="deleteParserSectionByParserId",query="delete from ParserSectionMapping where psmParserId=:parserId")	
+})
+@NamedNativeQueries({
+ @NamedNativeQuery(name = "getSectionListByParserId", query = "select SM.SECTION_NAME from SECTION_MAPPING SM left outer join PARSER_SECTION_MAPPING PSM on SM.SM_ID=PSM.PSM_SECTION_ID where PSM.PSM_PARSER_ID=:parserId and PSM.IS_ACTIVE_FLAG='Y' order by PSM_ID"),
+ @NamedNativeQuery(name = "getAllParserSectionMapping",query="select PM.PARSER_MASTER_ID,PM.PARSER_NAME,SM.SECTION_NAME "
+ 		+ "from PARSER_MASTER PM left outer join PARSER_SECTION_MAPPING PSM on PM.PARSER_MASTER_ID=PSM.PSM_PARSER_ID "
+ 		+ "left outer join SECTION_MAPPING SM on PSM.PSM_SECTION_ID=SM.SM_ID")
+})
+
+public class ParserSectionMapping implements Serializable, BaseEntity {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "PSM_ID")
+	private Integer psmId;
+
+	@Column(name = "PSM_PARSER_ID")
+	private Integer psmParserId;
+
+	@Column(name = "PSM_SECTION_ID")
+	private Integer psmSectionId;
+
+	@Column(name = "IS_ACTIVE_FLAG")
+	private String isActiveFlag;
+	
+	@Column(name = "CREATED_DATE")
+	private Date createdDate;
+	
+	@Column(name = "CREATED_BY")
+	private Integer createdBy;
+
+	@Column(name = "MODIFIED_DATE")
+	private Date modifiedDate;
+	
+	@Column(name = "MODIFIED_BY")
+	private Integer modifiedBy;
+
+	
+	public Integer getPsmId() {
+		return psmId;
+	}
+
+
+	public void setPsmId(Integer psmId) {
+		this.psmId = psmId;
+	}
+
+
+	public Integer getPsmParserId() {
+		return psmParserId;
+	}
+
+
+	public void setPsmParserId(Integer psmParserId) {
+		this.psmParserId = psmParserId;
+	}
+
+
+	public Integer getPsmSectionId() {
+		return psmSectionId;
+	}
+
+
+	public void setPsmSectionId(Integer psmSectionId) {
+		this.psmSectionId = psmSectionId;
+	}
+
+
+	public String getIsActiveFlag() {
+		return isActiveFlag;
+	}
+
+
+	public void setIsActiveFlag(String isActiveFlag) {
+		this.isActiveFlag = isActiveFlag;
+	}
+
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+
+	public Date getModifiedDate() {
+		return modifiedDate;
+	}
+
+
+	public void setModifiedDate(Date modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+
+	public Integer getModifiedBy() {
+		return modifiedBy;
+	}
+
+
+	public void setModifiedBy(Integer modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

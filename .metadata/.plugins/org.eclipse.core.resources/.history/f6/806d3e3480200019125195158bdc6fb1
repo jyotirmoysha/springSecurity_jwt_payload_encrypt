@@ -1,0 +1,216 @@
+package com.livespread.controller;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.livespread.domain.SubPortfolioModel;
+import com.livespread.domain.User;
+import com.livespread.service.BulkUploadService;
+import com.livespread.service.ReportService;
+import com.livespread.service.UserGroupService;
+import com.livespread.service.WorkQueueService;
+
+@Controller
+public class ReportController {
+	private Logger LOGGER = Logger.getLogger(ReportController.class);
+
+	@Autowired
+	ReportService reportServ;
+
+	@Autowired
+	WorkQueueService workQueueService;
+
+	@Autowired
+	UserGroupService userGroupService;
+	
+	@Autowired
+	BulkUploadService bulkUploadService;
+	
+	/**** viewReportPage Page View Mapping **************/
+	@RequestMapping(value = "/report.htm")
+	public String viewReportPage(HttpServletRequest request,
+			HttpServletResponse response, Model map) {
+		LOGGER.info("--- viewReportPage request Mapping started--------");
+		LOGGER.debug("--- viewReportPage request Mapping started--------");
+
+		/**
+		 * Added code to implement locked by.
+		 */
+		String ret = "";
+		User user = (User) request.getSession().getAttribute("user");
+		Map<String, Long> analystReportList = null;
+		workQueueService.updateAllLockedCaseesForUser(user.getLogin());
+		try {
+			if (request.getSession().getAttribute("LockedSession") != null) {
+				Integer loggedSessionwq = (Integer) request.getSession()
+						.getAttribute("LockedSession");
+				workQueueService.updateLockCaseForNullUser(loggedSessionwq);
+				request.getSession().removeAttribute("LockedSession");
+			}
+			// superAdmin access val
+
+			Integer userAccess = user.getUserAccess();
+			Integer user_GroupId = user.getUserGroupId();
+			Long userGroupId = new Long(user_GroupId);
+			Map<String, Integer> groupNames = new HashMap<String, Integer>();
+			Map<Integer, String> ParserNames = new HashMap<Integer, String>();
+			ObjectMapper mapper = new ObjectMapper();
+			if (userAccess != null && userAccess == 1) {
+				groupNames = userGroupService.getGroupNamesforReportAdmin(user.getUserGroupId());
+				map.addAttribute("userAccess", userAccess);
+				map.addAttribute("groupNames", groupNames);
+			}
+			ParserNames = userGroupService.getParserNamesByGroupIdforReportAdmin(user_GroupId);
+			map.addAttribute("ParserNames", ParserNames);
+			
+			groupNames.put(user.getUsersGroupName(), user.getUserGroupId());
+			map.addAttribute("groupNames", groupNames);
+			
+			Map<Integer, String> analystList = reportServ.getAnalystNamesByUserGroupId(userGroupId);
+			map.addAttribute("analystList", analystList);
+			
+			/**
+			 * here we fetch subportfolio list from Sub_Portfolio table based on user group id
+			 */
+			List<SubPortfolioModel> portFolioList= bulkUploadService.f_getPortFolioListByGroupId(user_GroupId);
+			map.addAttribute("portFolioList", portFolioList);
+			
+			map.addAttribute("user_GroupId", user_GroupId);
+			
+			LOGGER.debug("--- viewReportPage request Mapping completed with viewReportPage and--------"
+					+ analystList.toString());
+			LOGGER.info("--- viewReportPage request Mapping completed with viewReportPage--------");
+			analystReportList = reportServ.getAllStatusForReports(userGroupId);
+
+			try {
+				ret = mapper.writeValueAsString(analystReportList);
+
+			} catch (JsonGenerationException e) {
+				LOGGER.error("Error:", e);
+				e.printStackTrace();
+			} catch (JsonMappingException e) {
+				LOGGER.error("Error:", e);
+				e.printStackTrace();
+			} catch (IOException e) {
+				LOGGER.error("Error:", e);
+				e.printStackTrace();
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error(
+					"Exception Occured class:ReportController; method: viewReportPage ",
+					e);
+		}
+
+		/** Code ends here */
+
+		map.addAttribute("analystReportList", analystReportList);
+		map.addAttribute("ReportStatusValues", ret);
+
+		return "report";
+	}
+
+	/****
+	 * get AnalystProcessSummery By requesting Id Mapping
+	 * 
+	 * @throws ParseException
+	 **************/
+	@RequestMapping(value = "/getAnalystSummery.htm")
+	public @ResponseBody
+	String getAnalystSummery(@RequestParam("analystId") String analystId,
+			String startDate, String endDate, String Period,
+			String groupNameId, String docptId,String portfolio,String industryType, Model map,
+			HttpServletRequest request) {
+		LOGGER.info("--- getAnalystSummery request Mapping started--------");
+		LOGGER.debug("--- getAnalystSummery request Mapping started with analystId:--------"
+				+ analystId);
+
+		Map<String, Long> analystReportList = null;
+		String ret = "";
+		Long user_Id = new Long(analystId);
+		if (groupNameId != null && !groupNameId.isEmpty()) {
+
+			LOGGER.info("--- viewReportPage request Mapping completed with viewReportPage--------");
+			Long userGroupId = Long.parseLong(groupNameId);
+			analystReportList = reportServ.getAllStatusForReportsOnChange(
+					userGroupId, user_Id, startDate, endDate, Period, docptId,portfolio,industryType);
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				ret = mapper.writeValueAsString(analystReportList);
+
+			} catch (JsonGenerationException e) {
+				LOGGER.error("Error:", e);
+				e.printStackTrace();
+			} catch (JsonMappingException e) {
+				LOGGER.error("Error:", e);
+				e.printStackTrace();
+			} catch (IOException e) {
+				LOGGER.error("Error:", e);
+
+				LOGGER.error(
+						"Exception Occured class:ReportController; method: getAnalystSummery ",
+						e);
+			}
+		}
+		map.addAttribute("analystReportList", analystReportList);
+		map.addAttribute("ReportStatusValues", ret);
+
+		return ret;
+
+	}
+
+	@RequestMapping(value = "/getParserListByGroupIdforAdmin.htm")
+	public @ResponseBody
+	Map<String, Map<Integer, String>> getParserListByGroupId(
+			HttpServletRequest request, HttpServletResponse response) {
+		Map<String, Map<Integer, String>> data = new HashMap<String, Map<Integer, String>>();
+		try {
+			Map<Integer, String> ParserNames = null;
+			Map<Integer, String> analystList = null;
+			Map<Integer, String> portFolioMap = new HashMap<Integer, String>();
+			Integer groupId = Integer.parseInt(request
+					.getParameter("groupIdVal"));
+			LOGGER.info("GroupId" + groupId);
+			if (groupId != null && groupId != 0) {
+				Long groupIdVal = Long.parseLong(request
+						.getParameter("groupIdVal"));
+				ParserNames = userGroupService
+						.getParserNamesByGroupIdforReportAdmin(groupId);
+				analystList = reportServ
+						.getAnalystNamesByUserGroupId(groupIdVal);
+				
+			List<SubPortfolioModel> portfolioList=bulkUploadService.f_getPortFolioListByGroupId(groupId);
+			for(SubPortfolioModel subPortfolioModel:portfolioList){
+				portFolioMap.put(subPortfolioModel.getSubPortFolioId(), subPortfolioModel.getSubPortFolioName());	
+			}
+				
+			}
+			data.put("parserNames", ParserNames);
+			data.put("analystList", analystList);
+			data.put("portFolioMap", portFolioMap);
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:", e);
+		}
+		return data;
+	}
+
+}

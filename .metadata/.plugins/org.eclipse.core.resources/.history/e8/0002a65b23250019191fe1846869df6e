@@ -1,0 +1,4 @@
+spring:
+  resources:
+    chain:
+      enabled: true

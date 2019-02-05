@@ -1,0 +1,15 @@
+/**
+ * 
+ */
+package com.livespread.common;
+
+/**
+ * @author sd0e482
+ *
+ */
+public class Constant 
+{
+	public final static char CR  = (char) 0x0D;
+	public final static char LF  = (char) 0x0A; 
+	public static final String BLANK = "";
+}

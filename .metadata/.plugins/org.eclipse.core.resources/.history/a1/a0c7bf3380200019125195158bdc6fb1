@@ -1,0 +1,85 @@
+package com.livespread.excel;
+
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+
+
+public class StyleBuilder {
+
+	short fillPattern;
+	short backgroundColor=IndexedColors.WHITE.getIndex();
+	short fontColor;
+	boolean isItalic=false;
+	short boldWeight=XSSFFont.BOLDWEIGHT_NORMAL;
+	short cellAllignment=CellStyle.ALIGN_LEFT;
+	short fontHeights=(short) 10;
+	String fontName="Tahoma";
+    
+	public short getFontHeights() {
+		return fontHeights;
+	}
+
+	public void setFontHeights(short fontHeights) {
+		this.fontHeights = fontHeights;
+	}
+
+	public String getFontName() {
+		return fontName;
+	}
+
+	public void setFontName(String fontName) {
+		this.fontName = fontName;
+	}
+
+	public short getCellAllignment() {
+		return cellAllignment;
+	}
+
+	public void setCellAllignment(short cellAllignment) {
+		this.cellAllignment = cellAllignment;
+	}
+
+	public boolean isItalic() {
+		return isItalic;
+	}
+
+	public short getBoldWeight() {
+		return boldWeight;
+	}
+
+	public void setBoldWeight(short boldWeight) {
+		this.boldWeight = boldWeight;
+	}
+
+	public void setItalic(boolean isItalic) {
+		this.isItalic = isItalic;
+	}
+
+	public short getFontColor() {
+		return fontColor;
+	}
+
+	public void setFontColor(short fontColor) {
+		this.fontColor = fontColor;
+	}
+
+	public short getBackgroundColor() {
+		return backgroundColor;
+	}
+
+	public void setBackgroundColor(short backgroundColor) {
+		this.backgroundColor = backgroundColor;
+	}
+
+	public short getFillPattern() {
+		return fillPattern;
+	}
+
+	public void setFillPattern(short fillPattern) {
+		this.fillPattern = fillPattern;
+	}
+	
+	
+}

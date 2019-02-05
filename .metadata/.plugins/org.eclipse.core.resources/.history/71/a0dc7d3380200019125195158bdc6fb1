@@ -1,0 +1,624 @@
+package com.livespread.service;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
+import com.livespread.command.NormTemplateExtractCommand;
+import com.livespread.command.NormalizationTemplateCommand;
+import com.livespread.dao.LSExtendedGenericDao;
+import com.livespread.domain.NamedNativeQueryName;
+import com.livespread.domain.NamedQueryName;
+import com.livespread.domain.NormItemLabels;
+import com.livespread.domain.NormQaChecksAggregates;
+import com.livespread.domain.NormQaChecksMeta;
+import com.livespread.domain.SectionMappingModel;
+import com.livespread.domain.SubSectionMetadata;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Service("normalizationTemplateService")
+public class NormalizationTemplateServiceImpl implements
+		NormalizationTemplateService {
+	private Logger LOGGER = Logger
+			.getLogger(NormalizationTemplateServiceImpl.class);
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+	@Autowired
+	private LSExtendedGenericDao extendedExtendedGenericDao;
+
+	@Override
+	public boolean checkIndustryType(String industryType) {
+		boolean available = true;
+
+		List<Object> listObjs = new ArrayList<Object>();
+		listObjs = genericDaoImpl.findByNamedQuery(
+				NamedQueryName.checkLableName, NormItemLabels.class);
+		Set<String> set = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+		for (Object object : listObjs) {
+			set.add(object != null ? object.toString().trim() : null);
+		}
+		if (set.contains(industryType.trim())) {
+			available = true;
+		} else {
+			available = false;
+		}
+		return available;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public int addNormalizationRows(
+			NormalizationTemplateCommand normalizationTemplateCommand) {
+		int insertedRows = 0;
+		List<Object> list = genericDaoImpl.findByNamedQuery(
+				NamedQueryName.maxTemplateId, NormItemLabels.class);
+		List<Integer> maxTempleVal = new ArrayList<Integer>();
+		for (Object object : list) {
+			maxTempleVal.add(object != null ? Integer.parseInt(object
+					.toString()) : 0);
+		}
+		Integer maxTempleIdVal = maxTempleVal.get(0).intValue() + 10;
+		Integer displaySeq = 1;
+		if (null != normalizationTemplateCommand.getNormalizedLabelId()) {
+			for (int i = 0; i < normalizationTemplateCommand
+					.getNormalizedLabelId().size(); i++) {
+				NormItemLabels normItemLabels = new NormItemLabels();
+				normItemLabels.setTemplateId(maxTempleIdVal);
+				normItemLabels.setNiItem(normalizationTemplateCommand
+						.getNormalizedLabelId().get(i));
+				normItemLabels.setNilLabel(normalizationTemplateCommand
+						.getNormalizedLabel().get(i));
+				normItemLabels.setNilIndexOrder(normalizationTemplateCommand
+						.getNormalizedLabelId().get(i));
+				normItemLabels.setNilSignCode("No Change");
+				normItemLabels.setNilSection(normalizationTemplateCommand
+						.getFinancialSection().get(i));
+				normItemLabels.setNilSubSection(normalizationTemplateCommand.getSubSectionList().get(i).equals("-")?null:normalizationTemplateCommand.getSubSectionList().get(i));
+				normItemLabels.setNilDisplay("Y");
+				normItemLabels.setNilIndentation(null);
+				normItemLabels.setNilField(null);
+				normItemLabels.setMandatoryFlag(null);
+				normItemLabels.setCreatedBy(normalizationTemplateCommand.getUserGroupId()+"");
+				normItemLabels.setCreateDate(new Date());
+				normItemLabels.setModifiedBy("");
+				normItemLabels.setModifyDate(new Date());
+				normItemLabels.setNilDatatype(null);
+				normItemLabels.setDisplaySeq(displaySeq);
+				normItemLabels.setHeader(normalizationTemplateCommand.getCategiry().get(i));
+				normItemLabels.setDisplayFormat(normalizationTemplateCommand.getDispalyFormat().get(i));
+				normItemLabels.setDisplayLocation("Right");
+				normItemLabels.setqId(0);
+				normItemLabels.setIsCurrency("N");
+				normItemLabels.setNilLanguage("English");
+				normItemLabels.setLabelSection(normalizationTemplateCommand.getLabelSectionList().get(i));
+				normItemLabels.setNilIndustry(normalizationTemplateCommand
+						.getIndustryType());
+				normItemLabels.setUserGroupId(normalizationTemplateCommand
+						.getUserGroupId());
+				normItemLabels.setBUMappReq("N");
+				normItemLabels.setAssociationFlag("N");
+				normItemLabels.setParentFlag("N");
+				normItemLabels.setModifiedBy(" ");
+				genericDaoImpl.persist(normItemLabels);
+				++displaySeq;
+				++insertedRows;
+			}
+
+			for (int i = 0; i < normalizationTemplateCommand
+					.getNormalizedLabelId().size(); i++) {
+				if (!normalizationTemplateCommand.getDerived().get(i)
+						.equalsIgnoreCase(" ")
+						&& !normalizationTemplateCommand.getFormula().get(i)
+								.equalsIgnoreCase(" ")) {
+					NormQaChecksMeta normQaChecksMeta = new NormQaChecksMeta();
+					normQaChecksMeta.setCheckName(normalizationTemplateCommand
+							.getNormalizedLabel().get(i));
+					normQaChecksMeta.setCategory(normalizationTemplateCommand
+							.getDerived().get(i));
+					normQaChecksMeta.setSection(normalizationTemplateCommand
+							.getFinancialSection().get(i));
+					normQaChecksMeta.setNiItem(normalizationTemplateCommand
+							.getNormalizedLabelId().get(i));
+					normQaChecksMeta.setFailureMessage(null);
+					normQaChecksMeta.setIsActive("Y");
+					normQaChecksMeta.setCheckActionType(null);
+					normQaChecksMeta.setCheckType("Derivation");
+					normQaChecksMeta.setSuccessMessage(null);
+					normQaChecksMeta.setTemplateId(maxTempleIdVal);
+					genericDaoImpl.persist(normQaChecksMeta);
+
+				}
+			}
+			
+			if(normalizationTemplateCommand.getSubTotalChek()!=null && !normalizationTemplateCommand.getSubTotalChek().isEmpty()){
+				for (int i = 0; i < normalizationTemplateCommand
+						.getNormalizedLabelId().size(); i++) {
+					if (!normalizationTemplateCommand.getDerived().get(i)
+							.equalsIgnoreCase(" ")
+							&& !normalizationTemplateCommand.getFormula().get(i)
+									.equalsIgnoreCase(" ") && normalizationTemplateCommand.getSubTotalChek().get(i).equalsIgnoreCase("checked")) {
+						
+						NormQaChecksMeta normQaChecksMeta = new NormQaChecksMeta();
+						normQaChecksMeta.setCheckName(normalizationTemplateCommand
+								.getNormalizedLabel().get(i));
+						normQaChecksMeta.setCategory("Subtotal");
+						normQaChecksMeta.setSection(normalizationTemplateCommand
+								.getFinancialSection().get(i));
+						normQaChecksMeta.setNiItem(normalizationTemplateCommand
+								.getNormalizedLabelId().get(i));
+						normQaChecksMeta.setFailureMessage(normalizationTemplateCommand
+								.getNormalizedLabel().get(i)+" does not match with as reported "+normalizationTemplateCommand
+								.getNormalizedLabel().get(i));
+						normQaChecksMeta.setIsActive("Y");
+						normQaChecksMeta.setCheckActionType(null);
+						normQaChecksMeta.setCheckType("Normalization Validation");
+						normQaChecksMeta.setSuccessMessage(normalizationTemplateCommand
+								.getNormalizedLabel().get(i)+" matches with as reported "+normalizationTemplateCommand
+								.getNormalizedLabel().get(i));
+						normQaChecksMeta.setTemplateId(maxTempleIdVal);
+						genericDaoImpl.persist(normQaChecksMeta);
+
+					}
+				}
+			}
+			
+			
+		}
+		return insertedRows;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public int addDerivedrows(
+			NormalizationTemplateCommand normalizationTemplateCommand) {
+		List<Object> list = genericDaoImpl.findByNamedQuery(
+				NamedQueryName.maxTemplateId, NormItemLabels.class);
+		List<Integer> maxTempleVal = new ArrayList<Integer>();
+		NormQaChecksAggregates normQaChecksAggregates =null;
+		for (Object object : list) {
+			maxTempleVal.add(object != null ? Integer.parseInt(object
+					.toString()) : 0);
+		}
+		Integer maxTempleIdVal = maxTempleVal.get(0).intValue();
+		HashMap<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("maxTempleIdVal", maxTempleIdVal);
+		List<Object> listCheckId = genericDaoImpl.findByNamedQuery(
+				NamedQueryName.templateIdforCheckid, NormQaChecksMeta.class,
+				parameters);
+		List<Integer> listTemplateId = new ArrayList<Integer>();
+		List<Integer> qaCheckList = new ArrayList<Integer>();
+		for (Object object : listCheckId) {
+			Object[] obj = (Object[]) object;
+			if(obj[1]!=null){
+				if(obj[1].toString().equalsIgnoreCase("derived")){
+					listTemplateId.add(obj[0] != null ? Integer.parseInt(obj[0].toString()) : 0);
+				}else{
+					qaCheckList.add(obj[0] != null ? Integer.parseInt(obj[0].toString()) : 0);
+				}
+			}
+			
+			
+		}
+		List<String> formula = normalizationTemplateCommand.getFormula();
+		Integer derived = 0;
+		Integer qaCheck=0;
+		for (int k = 0; k < normalizationTemplateCommand.getDerived().size(); k++) {
+			if (!normalizationTemplateCommand.getDerived().get(k)
+					.equalsIgnoreCase(" ")
+					&& !normalizationTemplateCommand.getFormula().get(k)
+							.equalsIgnoreCase(" ")) {
+				String myString = formula.get(k);
+				List<String> operatorList = new ArrayList<String>();
+				List<String> operandList = new ArrayList<String>();
+				List<Integer>  LabelVal=new ArrayList<Integer>();
+				String temp = myString.replace("]", "]~");
+				String temp1 = temp.replace("~ ", "~");
+				String[] tempss = temp1.split("~");
+				for (int i = 0; i < tempss.length; i++) {
+					String token = Character.toString(tempss[i].charAt(0))
+							.trim();
+					if (token.trim().equalsIgnoreCase("+")) {
+						operatorList.add("Positive");
+					}
+					if (token.trim().equalsIgnoreCase("-")) {
+						operatorList.add("Negative");
+					}
+					if (token.trim().equalsIgnoreCase("*")) {
+						operatorList.add("Positive");
+					}
+					if (token.trim().equalsIgnoreCase("/")) {
+						operatorList.add("Positive");
+					}
+					String operendLabel = tempss[i].substring(1,
+							tempss[i].length());
+					if(operendLabel.contains("[")){
+						String label=operendLabel.replace( ']',' ' ).replace("[", "~").trim();
+						String [] labelVal=label.split("\\~");
+			               if(labelVal.length==2){
+			            	   operandList.add(labelVal[0]);
+			            	   LabelVal.add(Integer.parseInt(labelVal[1]));
+			                }
+					}
+				}
+
+				for (int m = 0; m < operatorList.size(); m++) {
+					normQaChecksAggregates = new NormQaChecksAggregates();
+					normQaChecksAggregates.setCheckId(listTemplateId.get(derived).intValue());
+					normQaChecksAggregates.setAggregateType(operatorList.get(m));
+					normQaChecksAggregates.setNiItem(LabelVal.get(m));
+					normQaChecksAggregates.setItemLabel(operandList.get(m).trim());
+					genericDaoImpl.persist(normQaChecksAggregates);
+					
+				}
+				if(normalizationTemplateCommand.getSubTotalChek().get(k).equalsIgnoreCase("checked")){
+					for (int m = 0; m < operatorList.size(); m++) {
+						normQaChecksAggregates = new NormQaChecksAggregates();
+						normQaChecksAggregates.setCheckId(qaCheckList.get(qaCheck).intValue());
+						normQaChecksAggregates.setAggregateType(operatorList.get(m));
+						normQaChecksAggregates.setNiItem(LabelVal.get(m));
+						normQaChecksAggregates.setItemLabel(operandList.get(m).trim());
+						genericDaoImpl.persist(normQaChecksAggregates);
+						
+					}
+					qaCheck++;
+				}
+				
+				derived++;
+				
+			}
+		}
+		return derived;
+	}
+
+	@Override
+	public Map<Long, String> getNilIndustryList(Integer userGroupId) {
+		Map<Long, String> nilIndustryList = new HashMap<Long, String>();
+		HashMap<String, Object> parameters = new HashMap<String, Object>();
+		if (userGroupId == 3) {
+			List<Integer> list = new ArrayList<Integer>();
+			list.add(1);
+			list.add(2);
+			list.add(3);
+			list.add(4);
+			list.add(5);
+			list.add(6);
+			parameters.put("userGroupId", list);
+		} else {
+			parameters.put("userGroupId", userGroupId);
+		}
+		List<Object> resultData = genericDaoImpl.findByNamedQuery(
+				NamedQueryName.findNormalizeTemplateList, NormItemLabels.class,
+				parameters);
+		if (!resultData.isEmpty()) {
+			for (Object object : resultData) {
+				Object[] obj = (Object[]) object;
+				nilIndustryList.put(
+						(long) (obj[0] != null ? Long.parseLong(obj[0]
+								.toString()) : 0),
+						obj[1] != null ? obj[1].toString() : "");
+			}
+		}
+		return nilIndustryList;
+	}
+
+	@Override
+	public List<NormalizationTemplateCommand> exportToExcelNormItemLableData(
+			Integer industryTypeVal) {
+		LOGGER.info("className:NormalizationTemplateServiceImpl>> methodName:");
+		List<NormalizationTemplateCommand> list = new ArrayList<NormalizationTemplateCommand>();
+		if (industryTypeVal != null && industryTypeVal != 0) {
+			HashMap<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("templateId", industryTypeVal);
+			List<Object> resultData = genericDaoImpl.findByNamedQuery(
+					NamedQueryName.exportNormItemLabelsList,
+					NormItemLabels.class, parameters);
+			if (resultData != null) {
+				for (Object object : resultData) {
+					Object[] obj = (Object[]) object;
+					NormalizationTemplateCommand normItemLabel = new NormalizationTemplateCommand();
+					normItemLabel.setTemplateId(obj[0] != null ? Long
+							.parseLong(obj[0].toString()) : 0);
+					normItemLabel.setNilIndustry(obj[1] != null ? obj[1]
+							.toString() : "");
+					normItemLabel.setNilSection(obj[2] != null ? obj[2]
+							.toString() : "");
+					normItemLabel.setNiItem(obj[3] != null ? Long
+							.parseLong(obj[3].toString()) : 0);
+					normItemLabel.setNil_label(obj[4] != null ? obj[4]
+							.toString() : "");
+					list.add(normItemLabel);
+				}
+			}
+		}
+		return list;
+	}
+	
+	
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public int addNormalizationTemplateRows(Map<String,List<NormTemplateExtractCommand>> normTemplateExtractCommandMap,String industryType,Integer userGroupId) {
+		int insertedRows = 0;
+		List<Object> templateIdList = genericDaoImpl.findByNamedQuery(
+				NamedQueryName.maxTemplateId, NormItemLabels.class);
+		List<Integer> maxTempleVal = new ArrayList<Integer>();
+		NormItemLabels normItemLabels=null;
+		NormQaChecksMeta normQaChecksMeta=null;
+		Map<String,Integer> nItemLabelMap = new HashMap<String, Integer>();
+		List<NormTemplateExtractCommand> normTemplateExtractCommandList=null;
+		String formulaString="";
+		String[] formulaStringArr=null;
+		boolean formulaExist=true;
+		String token="";
+		List<NormQaChecksAggregates> normQaChecksAggregateList=new ArrayList<NormQaChecksAggregates>();
+		
+		for (Object object : templateIdList) {
+			maxTempleVal.add(object != null ? Integer.parseInt(object
+					.toString()) : 0);
+		}
+		Integer maxTempleIdVal = maxTempleVal.get(0).intValue() + 10;
+		Integer displaySeq = 1;
+		List<NormItemLabels> normItemLabelList = new ArrayList<NormItemLabels>();
+		List<NormQaChecksMeta> normQaChecksDerivedMetaList = new ArrayList<NormQaChecksMeta>();
+		List<NormQaChecksMeta> normQaChecksSubTotalMetaList = new ArrayList<NormQaChecksMeta>();
+		if(null!=normTemplateExtractCommandMap && normTemplateExtractCommandMap.size()>0){
+			Iterator<Map.Entry<String, List<NormTemplateExtractCommand>>> it = normTemplateExtractCommandMap.entrySet().iterator();
+		    while (it.hasNext()) {
+		    	 nItemLabelMap = new HashMap<String, Integer>();
+		    	 normTemplateExtractCommandList=null;
+		    	 Map.Entry<String, List<NormTemplateExtractCommand>> pair = (Map.Entry<String, List<NormTemplateExtractCommand>>)it.next();
+		    	 normTemplateExtractCommandList = pair.getValue();
+		    	
+		    	 if(normTemplateExtractCommandList!=null && normTemplateExtractCommandList.size()>0){
+		    		 for(NormTemplateExtractCommand normTemplateExtractCommand : normTemplateExtractCommandList){
+		    			 nItemLabelMap.put(normTemplateExtractCommand.getNormLabelName().trim(), normTemplateExtractCommand.getNormLabelId());
+		    		 }
+		    		 for(NormTemplateExtractCommand normTemplateExtractCommand : normTemplateExtractCommandList){
+		    			normItemLabels = new NormItemLabels();
+		    			normItemLabels.setTemplateId(maxTempleIdVal);
+		    			normItemLabels.setNiItem(normTemplateExtractCommand.getNormLabelId());
+		    			normItemLabels.setNilLabel(normTemplateExtractCommand.getNormLabelName());
+		    			normItemLabels.setNilIndexOrder(normTemplateExtractCommand.getNormLabelId());
+		    			normItemLabels.setNilSignCode("No Change");
+		    			normItemLabels.setNilSection(normTemplateExtractCommand.getSectionName());
+		    			normItemLabels.setNilSubSection(normTemplateExtractCommand.getSubSection());
+		    			normItemLabels.setNilDisplay("Y");
+		 				normItemLabels.setNilIndentation(null);
+		 				normItemLabels.setNilField(null);
+		 				normItemLabels.setMandatoryFlag(null);
+		 				normItemLabels.setCreatedBy(userGroupId+"");
+		 				normItemLabels.setCreateDate(new Date());
+		 				normItemLabels.setModifiedBy("");
+		 				normItemLabels.setModifyDate(new Date());
+		 				normItemLabels.setNilDatatype(null);
+		 				normItemLabels.setDisplaySeq(displaySeq);
+		 				normItemLabels.setBUMappReq("N");
+						normItemLabels.setAssociationFlag("N");
+						normItemLabels.setParentFlag("N");
+						normItemLabels.setModifiedBy(" ");
+						normItemLabels.setLabelSection(normTemplateExtractCommand.getLabelSection());
+		 				if(normTemplateExtractCommand.getCategory()!=null && normTemplateExtractCommand.getCategory().trim().equalsIgnoreCase("Header")){
+		 					normItemLabels.setHeader("A");
+		 				}else{
+		 					normItemLabels.setHeader("");
+		 				}
+		 				if(normTemplateExtractCommand.getCategory()!=null && normTemplateExtractCommand.getCategory().trim().equalsIgnoreCase("Derived")){
+		 					normItemLabels.setDisplayFormat("B");
+		 					
+		 					normQaChecksMeta = new NormQaChecksMeta();
+							normQaChecksMeta.setCheckName(normTemplateExtractCommand.getNormLabelName());
+							normQaChecksMeta.setCategory(normTemplateExtractCommand.getCategory());
+							normQaChecksMeta.setSection(normTemplateExtractCommand.getSectionName());
+							normQaChecksMeta.setNiItem(normTemplateExtractCommand.getNormLabelId());
+							normQaChecksMeta.setFailureMessage(null);
+							normQaChecksMeta.setIsActive("Y");
+							normQaChecksMeta.setCheckActionType(null);
+							normQaChecksMeta.setCheckType("Derivation");
+							normQaChecksMeta.setSuccessMessage(null);
+							normQaChecksMeta.setTemplateId(maxTempleIdVal);
+							
+							
+							formulaString=normTemplateExtractCommand.getDerivedFromula();
+							formulaString =formulaString.replace("+ ", "+").replace("- ",  "-").replace("* ",  "*").replace("/ ",  "~/");
+							formulaString =formulaString.replace("+", "~+").replace("-",  "~-").replace("*",  "~*").replace("/",  "~/");
+							
+							formulaStringArr =formulaString.split("~");
+							normQaChecksAggregateList=new ArrayList<NormQaChecksAggregates>();
+							for(int i=0;i< formulaStringArr.length;i++){
+								NormQaChecksAggregates normQaChecksAggregates = new NormQaChecksAggregates();
+								if(i==0){
+									normQaChecksAggregates.setItemLabel(formulaStringArr[i]);
+									normQaChecksAggregates.setNiItem(nItemLabelMap.get(formulaStringArr[i].trim()));
+									normQaChecksAggregates.setAggregateType("Positive");
+									normQaChecksAggregateList.add(normQaChecksAggregates);
+								}else{
+									token = Character.toString(formulaStringArr[i].charAt(0))
+											.trim();
+									if (token.trim().equalsIgnoreCase("+")) {
+										normQaChecksAggregates.setAggregateType("Positive");
+										formulaExist=true;
+									}else if (token.trim().equalsIgnoreCase("-")) {
+										normQaChecksAggregates.setAggregateType("Negative");
+										formulaExist=true;
+									}else if (token.trim().equalsIgnoreCase("*")) {
+										normQaChecksAggregates.setAggregateType("Positive");
+										formulaExist=true;
+									}else if (token.trim().equalsIgnoreCase("/")) {
+										normQaChecksAggregates.setAggregateType("Positive");
+										formulaExist=true;
+									}else{
+										formulaExist=false;
+									}
+									if(formulaExist){
+										normQaChecksAggregates.setItemLabel(formulaStringArr[i].trim().substring(1));
+										normQaChecksAggregates.setNiItem(nItemLabelMap.get(normQaChecksAggregates.getItemLabel()));
+										normQaChecksAggregateList.add(normQaChecksAggregates);
+									}else{
+										return -1;
+									}
+								}
+							}
+							normQaChecksMeta.setNormQaChecksAggregateList(normQaChecksAggregateList);
+							normQaChecksDerivedMetaList.add(normQaChecksMeta);
+							
+							if(normTemplateExtractCommand.getNormQAcheck()!=null && normTemplateExtractCommand.getNormQAcheck().trim().equalsIgnoreCase("Yes")){
+			 					normQaChecksMeta = new NormQaChecksMeta();
+			 					normQaChecksMeta.setCheckName(normTemplateExtractCommand.getNormLabelName());
+								normQaChecksMeta.setCategory("Subtotal");
+								normQaChecksMeta.setSection(normTemplateExtractCommand.getSectionName());
+								normQaChecksMeta.setNiItem(normTemplateExtractCommand.getNormLabelId());
+								
+								normQaChecksMeta.setFailureMessage(normTemplateExtractCommand.getNormLabelName()+" does not match with as reported "
+																			+normTemplateExtractCommand.getNormLabelName());
+								normQaChecksMeta.setIsActive("Y");
+								normQaChecksMeta.setCheckActionType(null);
+								normQaChecksMeta.setCheckType("Normalization Validation");
+								normQaChecksMeta.setSuccessMessage(normTemplateExtractCommand.getNormLabelName()+" matches with as reported "+
+										normTemplateExtractCommand.getNormLabelName());
+								normQaChecksMeta.setTemplateId(maxTempleIdVal);
+								
+								
+								formulaString=normTemplateExtractCommand.getDerivedFromula();
+								formulaString =formulaString.replace("+ ", "+").replace("- ",  "-").replace("* ",  "*").replace("/ ",  "~/");
+								formulaString =formulaString.replace("+", "~+").replace("-",  "~-").replace("*",  "~*").replace("/",  "~/");
+								
+								formulaStringArr =formulaString.split("~");
+								normQaChecksAggregateList=new ArrayList<NormQaChecksAggregates>();
+								for(int i=0;i< formulaStringArr.length;i++){
+									NormQaChecksAggregates normQaChecksAggregates = new NormQaChecksAggregates();
+									if(i==0){
+										normQaChecksAggregates.setItemLabel(formulaStringArr[i]);
+										normQaChecksAggregates.setNiItem(nItemLabelMap.get(formulaStringArr[i].trim()));
+										normQaChecksAggregates.setAggregateType("Positive");
+										normQaChecksAggregateList.add(normQaChecksAggregates);
+									}else{
+										token = Character.toString(formulaStringArr[i].charAt(0))
+												.trim();
+										if (token.trim().equalsIgnoreCase("+")) {
+											normQaChecksAggregates.setAggregateType("Positive");
+											formulaExist=true;
+										}else if (token.trim().equalsIgnoreCase("-")) {
+											normQaChecksAggregates.setAggregateType("Negative");
+											formulaExist=true;
+										}else if (token.trim().equalsIgnoreCase("*")) {
+											normQaChecksAggregates.setAggregateType("Positive");
+											formulaExist=true;
+										}else if (token.trim().equalsIgnoreCase("/")) {
+											normQaChecksAggregates.setAggregateType("Positive");
+											formulaExist=true;
+										}else{
+											formulaExist=false;
+										}
+										if(formulaExist){
+											normQaChecksAggregates.setItemLabel(formulaStringArr[i].trim().substring(1));
+											normQaChecksAggregates.setNiItem(nItemLabelMap.get(normQaChecksAggregates.getItemLabel()));
+											normQaChecksAggregateList.add(normQaChecksAggregates);
+										}else{
+											return -1;
+										}
+									}
+								}
+								
+								normQaChecksMeta.setNormQaChecksAggregateList(normQaChecksAggregateList);
+								
+								normQaChecksSubTotalMetaList.add(normQaChecksMeta);
+			 					
+			 				}
+						}else{
+		 					normItemLabels.setDisplayFormat("");
+		 				}
+		 				normItemLabels.setDisplayLocation("Right");
+						normItemLabels.setqId(0);
+						normItemLabels.setIsCurrency("N");
+						normItemLabels.setNilLanguage("English");
+						normItemLabels.setNilIndustry(industryType);
+						normItemLabels.setUserGroupId(userGroupId);
+						normItemLabelList.add(normItemLabels);
+		    		 }
+		    	 }
+		    }
+		}
+		try{
+			if(normItemLabelList!=null && normItemLabelList.size()>0){
+				insertedRows=extendedExtendedGenericDao.saveNormLabelList(normItemLabelList);
+			}
+			if(normQaChecksDerivedMetaList!=null && normQaChecksDerivedMetaList.size()>0){
+				extendedExtendedGenericDao.saveNormLabelChecksMetaList(normQaChecksDerivedMetaList);
+			}
+			if(normQaChecksDerivedMetaList!=null && normQaChecksDerivedMetaList.size()>0){
+				extendedExtendedGenericDao.saveNormLabelChecksMetaList(normQaChecksSubTotalMetaList);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			return 0;
+		}
+		return insertedRows;
+	}
+	
+	@Override
+	public Map<String, String> getSectionList() {
+		Map<String, String> sectionMap = null;
+		
+		List<Object> resultData = genericDaoImpl.findByNamedQuery(
+				NamedQueryName.getSectionList, SectionMappingModel.class);
+		if (!CollectionUtils.isEmpty(resultData)) {
+			sectionMap = new LinkedHashMap<String, String>();
+			for (Object object : resultData) {
+				Object[] obj = (Object[]) object;
+				if(!StringUtils.isEmpty(obj[0]) && !StringUtils.isEmpty(obj[1])){
+					sectionMap.put(obj[1].toString(),obj[0].toString());
+				}
+			}
+		}
+		return sectionMap;
+	}
+	
+	@Override
+	public List<SubSectionMetadata> getSubSectionList(String statementFormat) {
+		
+		try{
+			HashMap<String, Object> parameters = new HashMap<String, Object>();
+			parameters.put("sectionName", statementFormat);
+			List<SubSectionMetadata> subSectionList = new LinkedList<SubSectionMetadata>();
+			List<Object> subSectionObjList = genericDaoImpl
+					.findByNativeNamedQuery(NamedNativeQueryName.getsubSectionListBySectionId, SubSectionMetadata.class,parameters);
+			SubSectionMetadata subSectionMetadata =null;
+			if (!CollectionUtils.isEmpty(subSectionObjList)) {
+				for (Object object : subSectionObjList) {
+					subSectionMetadata=new SubSectionMetadata();
+					Object[] objIn = (Object[]) object;
+					if(null!=objIn[0]){
+						subSectionMetadata.setSubSectionName(objIn[0].toString());
+					}	
+					if(null!=objIn[1]){
+						subSectionMetadata.setSectionId(new Integer(objIn[1].toString()));
+					}
+					if(null!=objIn[2]){
+						subSectionMetadata.setSectionName(objIn[2].toString());
+					}	
+					subSectionList.add(subSectionMetadata);
+				}
+			}
+			return subSectionList;
+		}catch(Exception e){
+			e.printStackTrace();
+			return null;
+		}
+	}
+}

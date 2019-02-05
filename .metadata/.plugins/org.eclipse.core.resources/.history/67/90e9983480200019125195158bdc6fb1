@@ -1,0 +1,37 @@
+package com.livespread.command;
+
+import java.util.List;
+
+public class ClientFeatureMappingCmd {
+	
+	List<String> featureNames;
+	List<String> featureIds;
+	Long userGroupId;
+	String userGroupName;
+	
+	public List<String> getFeatureNames() {
+		return featureNames;
+	}
+	public void setFeatureNames(List<String> featureNames) {
+		this.featureNames = featureNames;
+	}
+	public List<String> getFeatureIds() {
+		return featureIds;
+	}
+	public void setFeatureIds(List<String> featureIds) {
+		this.featureIds = featureIds;
+	}
+	public Long getUserGroupId() {
+		return userGroupId;
+	}
+	public void setUserGroupId(Long userGroupId) {
+		this.userGroupId = userGroupId;
+	}
+	public String getUserGroupName() {
+		return userGroupName;
+	}
+	public void setUserGroupName(String userGroupName) {
+		this.userGroupName = userGroupName;
+	}
+
+}

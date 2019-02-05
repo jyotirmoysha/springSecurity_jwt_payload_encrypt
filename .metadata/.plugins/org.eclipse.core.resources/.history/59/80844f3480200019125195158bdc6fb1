@@ -1,0 +1,701 @@
+package com.livespread.controller;
+
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.json.simple.JSONValue;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.livespread.command.CompanyInformationCommand;
+import com.livespread.command.FileUploadCommand;
+import com.livespread.domain.AliasBusinessEntity;
+import com.livespread.domain.BusinessEntity;
+import com.livespread.domain.Country;
+import com.livespread.domain.CustomerDetails;
+import com.livespread.domain.DealerMetadata;
+import com.livespread.domain.GoldenSetMetadata;
+import com.livespread.domain.IndustryTypeModel;
+import com.livespread.domain.LanguageMaster;
+import com.livespread.domain.ParserMaster;
+import com.livespread.domain.Sector;
+import com.livespread.domain.User;
+import com.livespread.domain.UsersGroup;
+import com.livespread.domain.WorkQueue;
+import com.livespread.service.BulkUploadService;
+import com.livespread.service.CustomerDetailsService;
+import com.livespread.service.GoldenFeatureCaseMappingService;
+import com.livespread.service.UserGroupService;
+import com.livespread.service.ValidationService;
+import com.livespread.util.LiveSpreadUtil;
+import com.livespread.util.UploadUtility;
+
+@Controller
+public class BulkUpLoadController {
+
+	private Logger LOGGER = Logger.getLogger(BulkUpLoadController.class);
+
+	@Value("${globalExcptionMsg}")
+	String globalExcptionMsg;
+	@Value("${upldDcmtRmv}")
+	String documentRemoveMsg;
+	@Value("${upldDcmtNtRmv}")
+	String documentNotRemoveMsg;
+	@Value("${upldDcmtValErr}")
+	String documentNotValidMsg;
+
+	
+	@Value("${workque.status}")
+	String workqueStatus;
+	
+	@Value("${workque.case.status}")
+	String workqueCaseStatus;
+
+	@Autowired
+	private BulkUploadService bulkUploadService;
+
+
+	@Autowired
+	private ValidationService validationServ;
+	
+	@Autowired
+	private UserGroupService userGroupService;
+
+	@Autowired
+	private CustomerDetailsService customerDetailsServ;
+	@Autowired
+	private GoldenFeatureCaseMappingService goldenFeatureCaseMappingService;
+
+
+
+	@RequestMapping(value = "/documentUpload.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public String bulkUpload(Model map, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) {
+		LOGGER.info("------------------ bulkUpload  starts --------------------");
+		try {
+			List<ParserMaster> parserMasterList = null;
+			User user = (User) session.getAttribute("user");
+			Integer userGroupId = user.getUserGroupId();
+			
+			parserMasterList = bulkUploadService.getParserListByUserGroupId(String.valueOf(userGroupId));
+			map.addAttribute("parserMasterList", parserMasterList);	
+			/*
+			 * Start--Get All business name list and convert in javascript array
+			 * format
+			 */
+	
+			/**
+			 * Here we are fetching Language from Language_master table
+			 */
+			List<LanguageMaster> languageList=bulkUploadService.f_getLanguageList();
+			map.addAttribute("languageList", languageList);
+			session.setAttribute("customerInfoSessionList", null);		
+			/**
+			 * 1:Here we required group name based current user id.
+			*/
+			UsersGroup usersGroup=userGroupService.getUserGroupbyGroupId(userGroupId);			
+			map.addAttribute("groupName", usersGroup.getUsersGroupName());
+			/** 1:Based on group id we required sub portfolio list and indusrty list
+			 *  2:Based on portfolio id fetch industry name and id.
+			 */
+			
+			//Added for country and section
+			List<Country> countryList=bulkUploadService.getCountryList();
+			StringBuilder countryName = new StringBuilder("");
+			StringBuilder jsonCountry=new StringBuilder("");
+			Map<String, String> jsonMap = new LinkedHashMap<String, String>();
+			for (Country country : countryList) {
+				jsonMap.put("countryId", Integer.toString(country.getCountryId()));
+				jsonMap.put("countryName", country.getCountryName());
+				jsonCountry.append(JSONValue.toJSONString(jsonMap));
+				countryName.append("\"").append(country.getCountryName()).append("\"");
+				countryName.append(",");
+				jsonCountry.append(",");
+			}
+			map.addAttribute("countryNameList", countryName.toString().substring(0, countryName.length()-1));
+			map.addAttribute("jsonCountry", jsonCountry.toString().substring(0, jsonCountry.length()-1));
+			Map<Integer,String> templateIdNameListMap=userGroupService.f_getTemplateIdAndNameByGroupId(userGroupId);
+			map.addAttribute("templateIdNameList",templateIdNameListMap);
+			map.addAttribute("monthList",getMonthList());
+			Map<String,String> userGrpAttrMappingMap =bulkUploadService.getUserGrpAttrMappingList(userGroupId,"Document Upload");
+			map.addAttribute("userGrpAttrMappingMap", userGrpAttrMappingMap);
+			if(null!=userGrpAttrMappingMap.get("Dealer_Name") && userGrpAttrMappingMap.get("Dealer_Name").equalsIgnoreCase("Dealer_Name")){
+				List<DealerMetadata> dealerList=(List<DealerMetadata>) bulkUploadService.f_getDealsersList();
+				map.addAttribute("dealerList", dealerList);
+			}else{
+				map.addAttribute("dealerList", new ArrayList<DealerMetadata>());
+			}
+			if(null!=userGrpAttrMappingMap.get("Sector") && userGrpAttrMappingMap.get("Sector").equalsIgnoreCase("Sector")){
+				List<Sector> sectorList=bulkUploadService.getSectorList();
+				map.addAttribute("sectorList", sectorList);
+			}else{
+				map.addAttribute("sectorList", new ArrayList<Sector>());
+			}
+						
+			List<IndustryTypeModel> industryTypeList=bulkUploadService.f_getIndustryTypeList();
+			map.addAttribute("industryTypeList", industryTypeList);
+			
+			if(usersGroup.getGoldenSetGroup()!=null){
+				if(usersGroup.getGoldenSetGroup().equalsIgnoreCase("Y")){
+				map.addAttribute("isGoldenCaseUser", "Y");
+				List<GoldenSetMetadata> goldenSetMetadatasList=goldenFeatureCaseMappingService.f_getGoldenCaseFeatures();
+				if(!goldenSetMetadatasList.isEmpty() && goldenSetMetadatasList.size()>0)
+				map.addAttribute("goldenSetMetadatasList", LiveSpreadUtil.populateFeatureListMetaData(goldenSetMetadatasList));
+				}else{
+					map.addAttribute("isGoldenCaseUser", "N");
+				}
+			}else{
+				map.addAttribute("isGoldenCaseUser", "N");
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:" ,e);
+		}
+		return "bulkUpload";
+	}
+
+
+	/**** upload_document confirmation View Mapping **************/
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/bulk_upload_confirm.htm",  method = {RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody Map<String, String> uploadPermanent(@RequestParam("c-name") String customerName,
+			@RequestParam("company_id") String companyId,
+			@RequestParam("parserName") String parserName,
+			@RequestParam("finalListOfFiles") String finalListOfFiles,
+			@RequestParam("language") String language,
+			@RequestParam("countryId") String countryId,
+			@RequestParam("countryName") String countryName,
+			@RequestParam("fYEDay") String fYEDay,
+			@RequestParam("fYEMonth") String fYEMonth,
+			@RequestParam("sectorId") String sectorId,
+			@RequestParam("fYEYear") String fYEYear,
+			@RequestParam("industryId") String industryId,
+			@RequestParam("dealerId") String dealerId,
+			@RequestParam("templateName") String templateName,
+			@RequestParam("sicId") String sicId,
+			@RequestParam("naicsId") String naicsId,
+			@RequestParam("industryType") String industryType,
+			@RequestParam("goldenCaseId") String goldenCaseId,
+			Model map1,HttpSession session, HttpServletRequest request) {
+		
+		String[] finalFileArrayTemp = finalListOfFiles.split(",");
+		String[] finalFileArray = new String[finalFileArrayTemp.length];
+		String[] file = request.getParameterValues("orgfilename");
+		String[] filepwd = request.getParameterValues("filepwd");
+		List<String> tempParserArrayList = new ArrayList<String>();
+		ArrayList<String> errorList = new ArrayList<String>();
+		ArrayList<String> fileList = new ArrayList<String>();
+		User user = (User) session.getAttribute("user");
+		Map<String, String> data = new HashMap<String, String>();
+		
+		Integer entityId = 0;
+		int dealerIdNumeric=0;
+		Integer eId = null;
+		String tempCustId = null;
+		Integer customerId = null;
+		boolean isEntityExist = false;
+		String errorListInfo="";
+		Map<String, String> fileParserMap = null;
+		FileUploadCommand fileUploadCommand=null;
+		WorkQueue workQueue =null;
+		String parserNameNId="";
+		String[] parserNameNIdArray = null;
+		String parserKey="";
+		Set<Integer> parserIdSet = new HashSet<Integer>();
+		Map<Integer,Integer> wqParserMap = new HashMap<Integer, Integer>();
+		int fileCount = 0;
+		String userName = user.getLogin();
+		
+		try {
+			for (int m = 0; m < finalFileArrayTemp.length; m++) {
+				String customOriginalFile = finalFileArrayTemp[m].trim();
+				customOriginalFile = "_" + customOriginalFile;
+				customOriginalFile = customOriginalFile.replaceAll(" ", "_");
+				finalFileArray[m] = customOriginalFile;
+			}
+			if(dealerId!=null && !dealerId.isEmpty()){
+					dealerIdNumeric=Integer.parseInt(dealerId);
+			}
+			/*
+			 * Here we take business name and company id if they contain & symbol
+			 */
+	        Map<String, String> fileParserMapTemp = (Map<String, String>) session.getAttribute("fileParserMap");
+			session.setAttribute("fileParserMap", null);
+			if (finalFileArray.length < fileParserMapTemp.size()) {
+				fileParserMap = new HashMap<String, String>();
+				for (int l = 0; l < finalFileArray.length; l++) {
+					fileParserMap.put(finalFileArray[l],fileParserMapTemp.get(finalFileArray[l]));
+					tempParserArrayList.add(fileParserMapTemp.get(finalFileArray[l]));
+				}
+			} else {
+				fileParserMap = fileParserMapTemp;
+				tempParserArrayList = (ArrayList<String>) session.getAttribute("parserArrayList");
+			}
+			session.setAttribute("parserArrayList", null);
+			String parserNameToDisplay = "";
+			Set<String> tempSet = new HashSet<String>();
+			
+			if (null != tempParserArrayList) {
+				for (int k = 0; k < tempParserArrayList.size(); k++) {
+					String tempParserStr = tempParserArrayList.get(k);
+					String[] tempParserStr2 = tempParserStr.split("~");
+					tempSet.add(tempParserStr2[0]);
+				}
+				if (null != tempSet) {
+					for (String s : tempSet) {
+						if (parserNameToDisplay == "") {
+							parserNameToDisplay = s;
+						} else {
+							parserNameToDisplay = parserNameToDisplay + ", " + s;
+						}
+					}
+				}
+			}
+			//error
+			
+			errorList = validationServ.validateCustomerDetails(customerName,"", "", companyId,0,industryId);
+			if (errorList.isEmpty()) {
+				//TO BE VALIDATE
+				customerId = customerDetailsServ.addCustomerDetails(customerName, "", "", userName,companyId,0,user.getUserGroupId(),language,industryId,dealerIdNumeric);
+				tempCustId = "" + customerId;
+				
+				if (customerId > 0) {
+					data.put("customerId", customerId.toString());
+					data.put("customerName", customerName);
+					data.put("businessName", "");
+					data.put("accountNo", "");
+				
+					CustomerDetails customerDetails = new CustomerDetails();
+					customerDetails.setCustomerName(customerName);
+					customerDetails.setBusinessName("");
+					customerDetails.setCompanyId(companyId);
+					customerDetails.setSubPortFolioId(0);
+					customerDetails.setIndustryId(industryId);
+					customerDetails.setUserGroupId(user.getUserGroupId());
+					customerDetails.setParserName(parserNameToDisplay);
+					
+					List<CustomerDetails> customerInfoSessionList = (List<CustomerDetails>) session.getAttribute("customerInfoSessionList");
+					String customerInfo="";
+					if (customerInfoSessionList != null) {
+						customerInfoSessionList.add(customerDetails);
+					} else {
+						customerInfoSessionList = new ArrayList<CustomerDetails>();
+						customerInfoSessionList.add(customerDetails);
+					}
+		 			ObjectMapper mapper = new ObjectMapper();
+		 			customerInfo = mapper.writeValueAsString(customerInfoSessionList);
+		 			data.put("customerInfo", customerInfo);
+
+					/*
+					 * 1:Check if Business name is present in
+					 * business_entity table if present then fetch e_id if
+					 * not then insert new entry in business_entity table
+					 */
+					BusinessEntity businessEntity = customerDetailsServ.checkEntity(customerName.trim());
+					if (businessEntity != null && businessEntity.getEid()!=null) {
+						isEntityExist = true;
+						eId = businessEntity.getEid();
+					}
+
+					if (!isEntityExist) {
+						/*
+						 * This methode used for save entity in Business_entity
+						 * and alias_business_entity table using group id
+						 */
+						    businessEntity = new BusinessEntity();
+							businessEntity.setEname(customerName.trim());
+							businessEntity.setCreatedDate(new Date());
+							businessEntity.setCreatedBy(user.getUserId().intValue());
+							businessEntity.setUserGroupId(user.getUserGroupId());
+							businessEntity = customerDetailsServ.saveBusinessEntity(businessEntity);
+						/*
+						 * Here check company_id present for entity id,company
+						 * id,user group id
+						 */
+					}
+					AliasBusinessEntity aliasBusinessEntity = new AliasBusinessEntity();
+					aliasBusinessEntity.setCompanyId(companyId);
+					aliasBusinessEntity.seteId(businessEntity.getEid());
+					aliasBusinessEntity.setUserGroupId(user.getUserGroupId());
+					aliasBusinessEntity = customerDetailsServ.getAliasBusinessEntity(aliasBusinessEntity);
+					if (aliasBusinessEntity == null || aliasBusinessEntity.getAbeId() == null) {
+						/*
+						 * insert new entry in alias_business_entity tbale
+						 */
+						aliasBusinessEntity = new AliasBusinessEntity();
+						aliasBusinessEntity.seteId(businessEntity.getEid());
+						aliasBusinessEntity.setCompanyId(companyId);
+						aliasBusinessEntity.setUserGroupId(user.getUserGroupId());
+						aliasBusinessEntity.setUserId(user.getUserId());
+						aliasBusinessEntity.setCreatedDate(new Date());
+						aliasBusinessEntity = customerDetailsServ.saveAliasBusinessEntity(aliasBusinessEntity);
+					}
+
+					if (businessEntity!= null) {
+						if(businessEntity.getEid() != null)
+						entityId = businessEntity.getEid();
+					}
+					
+					fileUploadCommand = new FileUploadCommand();
+					fileUploadCommand.seteID(entityId);
+					fileUploadCommand.setCompanyId(companyId);
+					
+					Country country = null;
+					if(countryId!=null && !countryId.isEmpty())
+					{
+						country = new Country();
+						country.setCountryId(new Integer(countryId));
+						country.setCountryName(countryName);
+						fileUploadCommand.setCountry(country);
+					}
+					else
+					{
+						if(countryName!=null && !countryName.isEmpty())
+						{
+							country = bulkUploadService.getCountryByName(countryName);
+							if(country!=null)
+							{
+								fileUploadCommand.setCountry(country);
+							}
+							else
+							{
+								country = new Country();
+								country.setCountryId(0);
+								country.setCountryName("");
+								fileUploadCommand.setCountry(country);
+							}
+						}
+						else
+						{
+							country = new Country();
+							country.setCountryId(0);
+							country.setCountryName("");
+							fileUploadCommand.setCountry(country);
+						}
+					}
+
+					fileUploadCommand.setIndustryId(industryId);
+					fileUploadCommand.setDealerId(dealerIdNumeric);
+					if(sectorId!=null && !sectorId.isEmpty()){
+					fileUploadCommand.setSectorId(Integer.parseInt(sectorId));
+					}
+					fileUploadCommand.setfYEYear(fYEYear);
+					fileUploadCommand.setfYEMonth(fYEMonth);
+					fileUploadCommand.setfYEDay( (fYEDay!=null && !fYEDay.isEmpty()) ? new Integer(fYEDay) :0);
+					if(fileUploadCommand.getfYEDay().intValue() == 0)
+					{
+						fileUploadCommand.setfYEDay(null);
+					}
+					if (sicId != null && !sicId.isEmpty()) {
+						try {
+							fileUploadCommand.setSicId(Integer.parseInt(sicId));
+						} catch (Exception exception) {
+
+						}
+					}
+					if (naicsId != null && !naicsId.isEmpty()) {
+						try {
+							fileUploadCommand.setNaicsId(Integer.parseInt(naicsId));
+						} catch (Exception exception) {
+
+						}
+					}
+					bulkUploadService.saveCompanyInformation(fileUploadCommand);
+
+				}
+			} else {
+				ObjectMapper mapper1 = new ObjectMapper();
+				errorListInfo = mapper1.writeValueAsString(errorList);
+				data.put("errorList", errorListInfo);
+			}
+			
+			if (file != null && file.length > 0) {
+				if(eId ==null){	
+					BusinessEntity businessEntity = customerDetailsServ.checkEntity(customerName.trim());
+					if (businessEntity != null && businessEntity.getEid()!=null) {
+						eId = businessEntity.getEid();
+					}
+				}
+				for (String fileName : file) {
+					parserKey = UploadUtility.getOriginalFileName(fileName);
+					parserNameNId = fileParserMap.get(parserKey);
+					if (null != parserNameNId) {
+						parserNameNIdArray = parserNameNId.split("~");
+						parserIdSet.add(Integer.parseInt( parserNameNIdArray[1]));
+					}
+				}
+				Integer dealerVal=null;
+				for (Integer parserId : parserIdSet) {
+					workQueue = new WorkQueue();
+					workQueue.setWqCustomerName(customerName);
+					workQueue.setCustomerId(customerId);
+					workQueue.setCompanyId(companyId);
+					workQueue.setUserGroupId(user.getUserGroupId());
+					workQueue.setUserId(user.getUserId().intValue());
+					workQueue.setSearcher(user.getUserId().intValue());
+					workQueue.setSearcherName(user.getLogin());
+					workQueue.setWqStatus(workqueStatus);
+					workQueue.setCaseStatus(workqueCaseStatus);
+					workQueue.setCreatedBy(user.getUserId()+"");
+					workQueue.setLanguage(language);
+					workQueue.setCreateDate(new Timestamp(new Date().getTime()));
+					workQueue.setWqCreatedOn(new Date());
+					workQueue.setParserMasterId(parserId);
+					workQueue.setFyeMonth(fYEMonth);
+					workQueue.setFyeDay((fYEDay!=null && !fYEDay.isEmpty())? new Integer(fYEDay) :0);
+					workQueue.setFyeYear(fYEYear);
+					workQueue.setIndustryName(templateName);
+					workQueue.seteId(eId);
+					workQueue.setIndustryId(industryId);
+					if(dealerId!=null && !dealerId.isEmpty()){
+					 dealerVal=dealerIdNumeric;	
+					}
+					if(industryType!=null && industryType.length()>0 )
+					{
+						Integer inputIndustryType = Integer.parseInt(industryType);
+						if(inputIndustryType.intValue()!=0)
+						{
+							workQueue.setIndustryType(Integer.parseInt(industryType));
+						}
+					}
+					
+					workQueue.setDealerId(dealerVal);
+					try{
+					workQueue.setCaseID(Integer.parseInt(goldenCaseId));
+					workQueue.setGoldenFlag("N");
+					}catch(NumberFormatException nfe){
+						LOGGER.error(nfe);
+					}
+					wqParserMap.put(parserId, bulkUploadService.saveWorkque(workQueue));
+				}
+
+				for (String fileName : file) {
+					// ************ Upload document and Check **************//*
+					parserKey = UploadUtility.getOriginalFileName(fileName);
+				
+					if (null != fileParserMap.get(parserKey)) {
+						//Adding to WorkQueue
+						if (bulkUploadService.uploadPermanantDocument(fileName,tempCustId, parserName, userName,fileParserMap, parserKey, filepwd[fileCount],wqParserMap)) 
+						{
+							fileList.add(UploadUtility.getOriginalFileName(fileName));
+						} else
+							errorList.add(UploadUtility.getOriginalFileName(fileName) + " Not Uploaded");
+					}
+					fileCount++;
+				}
+			}	
+			
+		}catch (IllegalStateException e) {
+			e.printStackTrace();
+			LOGGER.error("Error:",e);
+			errorList.add(globalExcptionMsg);
+		} catch (IOException e) {
+			e.printStackTrace();
+			LOGGER.error("Error",e);
+			errorList.add(globalExcptionMsg);
+		} catch (Exception e) {
+			LOGGER.error("Error:",e);
+			errorList.add(globalExcptionMsg);
+			e.printStackTrace();
+		}
+		//map.addAttribute("customerId", tempCustId);
+		data.put("customerId", tempCustId);
+		return data;
+	}
+		
+	@RequestMapping(value = "/documentUploadList.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public String bulkUploadList(HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) {
+		LOGGER.info("------------------ documentUploadList  starts --------------------");
+		return "bulkUploadList";
+	}
+
+
+	/**
+	 * 
+	 * @param portFolioId-passed by UI
+	 * @return industry type list
+	 */
+	
+	
+	@RequestMapping(value = "/getIndustryList.htm", method = {RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody List<IndustryTypeModel> getIndustryList(@RequestParam("portFolioId") Integer portFolioId,Model map) {
+		List<IndustryTypeModel> industryList=new ArrayList<IndustryTypeModel>();
+		
+		LOGGER.info("**Start--getIndustryList started");
+		try{
+			 industryList=bulkUploadService.f_getIndustryListByPortfolioId(portFolioId);	
+		}catch (Exception e) {
+		e.printStackTrace();
+		LOGGER.error(e);
+		}
+		
+		LOGGER.info("**End--getIndustryList started");
+		return industryList;
+}
+	
+private String getMonthList(){
+		
+		StringBuilder monthString = new StringBuilder();
+		String quote="\"";
+		monthString.append(quote).append("January").append(quote).append(",")
+				.append(quote).append("February").append(quote).append(",")
+				.append(quote).append("March").append(quote).append(",")
+				.append(quote).append("April").append(quote).append(",")
+				.append(quote).append("May").append(quote).append(",")
+				.append(quote).append("June").append(quote).append(",")
+				.append(quote).append("July").append(quote).append(",")
+				.append(quote).append("August").append(quote).append(",")
+				.append(quote).append("September").append(quote).append(",")
+				.append(quote).append("October").append(quote).append(",")
+				.append(quote).append("November").append(quote).append(",")
+				.append(quote).append("December").append(quote);
+		
+		
+		return monthString.toString();
+	}
+
+@RequestMapping(value = "/getCompanyInfoByCompanyId.htm", method = {RequestMethod.POST,RequestMethod.GET})
+public @ResponseBody CompanyInformationCommand getCompanyInfoByCompanyId(@RequestParam("companyId") String companyId,Model map,
+		HttpServletRequest request, HttpSession session) {
+	CompanyInformationCommand companyIdInformation=null;
+	LOGGER.info("**Start--getCompanyInfoByCompanyId started");
+	try{
+		String basedon="companyId";
+		 companyIdInformation=bulkUploadService.f_getCompanyInfoList(companyId,basedon);
+		
+		if(null == companyIdInformation){
+			companyIdInformation=new CompanyInformationCommand();
+			companyIdInformation.setCompanyId("~new");
+		}
+		 //companyInformationCommand=bulkUploadService.getCompanyInfoByCompanyId(companyId);	
+	}catch (Exception e) {
+	e.printStackTrace();
+	LOGGER.error(e);
+	}
+	
+	LOGGER.info("**End--getCompanyInfoByCompanyId started");
+	return companyIdInformation;
+}
+
+
+@RequestMapping(value = "/getCompanyInfoByCompanyName.htm", method = {RequestMethod.POST,RequestMethod.GET})
+public @ResponseBody CompanyInformationCommand getCompanyInfoByCompanyName(@RequestParam("entityId") String entityId,Model map,
+		HttpServletRequest request, HttpSession session) {
+	CompanyInformationCommand companyInformationCommand=null;
+	LOGGER.info("**Start--getCompanyInfoByCompanyId started");
+	try{
+		
+		if(entityId!=null && !entityId.equalsIgnoreCase("") && !entityId.isEmpty())
+		{
+		String basedon="companyName";
+		companyInformationCommand=bulkUploadService.f_getCompanyInfoList(entityId,basedon);
+		
+		}
+		if(null == companyInformationCommand){
+			companyInformationCommand=new CompanyInformationCommand();
+			companyInformationCommand.setCompanyName("~new");
+	   }
+	}catch (Exception e) {
+	e.printStackTrace();
+	LOGGER.error(e);
+	}
+	
+	LOGGER.info("**End--getCompanyInfoByCompanyId started");
+	return companyInformationCommand;
+}
+
+@RequestMapping(value = "/getSicDescription.htm", method = { RequestMethod.GET, RequestMethod.POST })
+public @ResponseBody String getSicDescription(HttpServletRequest request, HttpServletResponse response,
+		HttpSession session, @RequestParam("sic_description") String sicDescription) throws IOException {
+	String result = "";
+	if(sicDescription!=null){
+		sicDescription=sicDescription.toLowerCase();
+	}
+	try {
+		LOGGER.info("--- getSicDescription request Mapping started--------");
+		ObjectMapper objectMapper = new ObjectMapper();
+		Map<String, String> resultMap = bulkUploadService.f_getSicDescription(sicDescription);
+		result = objectMapper.writeValueAsString(resultMap);
+	} catch (Exception e) {
+		e.printStackTrace();
+		LOGGER.error("Exception Occured getSicDescription method ", e);
+	}
+	return result;
+}
+
+@RequestMapping(value = "/getNaicsDescription.htm", method = { RequestMethod.GET, RequestMethod.POST })
+public @ResponseBody String getNaicsDescription(HttpServletRequest request, HttpServletResponse response,
+		HttpSession session, @RequestParam("naics_description") String naicsDescription) throws IOException {
+	String result = "";
+	if(naicsDescription!=null){
+	naicsDescription=naicsDescription.toLowerCase();
+	}
+	try {
+		LOGGER.info("---start ** getNaicsDescription request Mapping started--------");
+		ObjectMapper objectMapper = new ObjectMapper();
+		Map<String, String> resultMap = bulkUploadService.f_getNaicsDescription(naicsDescription);
+		result = objectMapper.writeValueAsString(resultMap);
+	} catch (Exception e) {
+		e.printStackTrace();
+		LOGGER.error("End-- Exception Occured getNaicsDescription method ", e);
+	}
+	return result;
+}
+	
+	@RequestMapping(value = "/getcompanyIdsList.htm", method = { RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody String getcompanyIdsList(HttpServletRequest request, HttpServletResponse response,
+			HttpSession session, @RequestParam("companyId") String companyId) throws IOException {
+		String result = "";
+		try {
+			LOGGER.info("---start ** getcompanyIdsList request Mapping started--------");
+			ObjectMapper objectMapper = new ObjectMapper();
+			List<String> companyIdsList=bulkUploadService.getDistinctCompanyIdList(companyId);
+			result = objectMapper.writeValueAsString(companyIdsList);
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("End-- Exception Occured getNaicsDescription method ", e);
+		}
+		return result;
+	}
+	
+	@RequestMapping(value = "/getBusinessNameList.htm", method = { RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody String getBusinessNameList(HttpServletRequest request, HttpServletResponse response,
+			HttpSession session, @RequestParam("cName") String cName) throws IOException {
+		String result = "";
+		try {
+			LOGGER.info("---start ** getBusinessNameList request Mapping started--------");
+			ObjectMapper objectMapper = new ObjectMapper();
+			Map<String, String> businessNameMap= bulkUploadService.getDistinctBusinessList(cName);
+			result = objectMapper.writeValueAsString(businessNameMap);
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("End-- Exception Occured getNaicsDescription method ", e);
+		}
+		return result;
+	}
+
+}

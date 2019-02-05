@@ -1,0 +1,70 @@
+package com.livespread.util;
+
+import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+public class AESEncryptDecrypt {
+
+	static Log log = LogFactory.getLog(AESEncryptDecrypt.class);
+
+	private static byte[] key = Base64
+			.decodeBase64("9Ij9WE5J280gtJ3kkQc2azNsOA1FHQ98iLMcfFstjvY=");
+
+	private static Cipher cipher = null;
+	final static SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
+
+	private static Cipher getCipherObject() {
+		if (cipher == null) {
+			try {
+				cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+			} catch (NoSuchPaddingException e) {
+				e.printStackTrace();
+			}
+		}
+		return cipher;
+	}
+
+	public static String filePasswordencrypt(String strToEncrypt) {
+		try {
+			cipher = getCipherObject();
+			if (cipher != null) {
+				cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+
+				byte[] encryptedString = cipher
+						.doFinal(strToEncrypt.getBytes());
+				return Base64.encodeBase64String(encryptedString);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error("Error while encrypting", e);
+		}
+		return null;
+
+	}
+
+	public static String filePassworddecrypt(String strToDecrypt) {
+		try {
+			cipher = getCipherObject();
+			if (cipher != null) {
+				cipher.init(Cipher.DECRYPT_MODE, secretKey);
+				final String decryptedString = new String(cipher.doFinal(Base64.decodeBase64(strToDecrypt)));
+				return decryptedString;
+			}
+		} catch (Exception e) {
+			log.error("Error while decrypting", e);
+
+		}
+		return null;
+	}
+	
+
+}

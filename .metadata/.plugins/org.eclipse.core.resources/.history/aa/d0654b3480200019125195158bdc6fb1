@@ -1,0 +1,207 @@
+package com.livespread.controller;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.livespread.domain.StatusMaster;
+import com.livespread.domain.User;
+import com.livespread.domain.WorkQueue;
+import com.livespread.service.NormalizationService;
+import com.livespread.service.StatusMasterService;
+import com.livespread.service.WorkQueueService;
+import com.livespread.util.ProcessListGenerator;
+
+@Controller
+public class DownloadBatchProcessingController {
+	private Logger LOGGER = Logger.getLogger(DownloadBatchProcessingController.class);
+
+	@Autowired
+	private WorkQueueService workQueueService;
+	
+	@Autowired
+	private StatusMasterService statusMasterService;
+	@Autowired
+	private NormalizationService normalizationService;
+	
+
+	@Value("${xmlExcelbatchProcessingPath}")
+	private String xmlExcelbatchProcessingPath;
+	
+	@Value("${batchExecution}")
+	private String batchExecution;
+	
+	/**
+	 * This method used for download batch processing document(xml and excel) 
+	 */
+	@RequestMapping(value = "/showBatchProcessing.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public String showBatchProcessingPage(HttpServletRequest request,
+			HttpServletResponse response,Model map,HttpSession session){
+		try{
+		LOGGER.info("** start-showBatchProcessingPage methode");
+		/**
+		 *Here we fetch data from work queue which has Transaction id exist
+		 */
+		session = request.getSession(true);
+		User user = (User) session.getAttribute("user");
+
+		List<WorkQueue> workQueueList=workQueueService.f_getWorkQueueByTranactionId(user.getUserGroupId());
+	
+		/**
+		 * here we set unique transaction id in set
+		 */
+		List<Integer> distinctTransIds=workQueueService.f_getAllTransIdList(user.getUserGroupId());
+		List<StatusMaster> statusList = statusMasterService.getAllStatusList();
+	
+		map.addAttribute("statusList", statusList);
+		map.addAttribute("workQueueList", workQueueList);
+		map.addAttribute("distinctTransIds", distinctTransIds);
+		map.addAttribute("userAccess", user.getUserAccess());
+
+		}catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error", e);
+		}
+		LOGGER.info("** End-showBatchProcessingPage methode");
+		return "showBatchProcessingPage";
+		
+	}
+	
+	
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/createXMLAndExcelDocument.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public @ResponseBody String createXMLAndExcelDocument(
+			@RequestParam("transIdArray") String transIdArray,HttpSession session) {
+		String msg = null;
+		LOGGER.info("** Start-createXMLAndExcelDocument methode");
+		try {
+		User user = (User) session.getAttribute("user");
+	 Map<String, Integer> processNameList = ProcessListGenerator.getProcessMap();
+	 String parameters = "<Parameters><Parameter><Name>TRANS_ID</Name><Value>"+transIdArray+"</Value></Parameter></Parameters>";
+			
+		LOGGER.info("parameters :"+parameters);
+			Integer cmptSeqId=null;
+			if(processNameList.get(batchExecution)!=null){
+				cmptSeqId=processNameList.get(batchExecution);
+			}
+			/**
+		     * Save request in request_queue table
+		    */
+			Integer requestId = normalizationService.rageProcessRequestQueue(batchExecution,parameters);
+			normalizationService.saveInvokeProcessTracker(requestId,null,"N",batchExecution,user.getUserId());
+			msg="Create document request has been submitted successfully";
+		} catch (NullPointerException npe) {
+			npe.printStackTrace();
+			LOGGER.error("Error", npe);
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error", e);
+		}
+		LOGGER.info("** End-createXMLAndExcelDocument methode");
+		return msg;
+	}
+	
+	
+	@RequestMapping(value = "/searchBatchProcessingResult.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public String searchBatchProcessingResult(HttpServletRequest request,HttpServletResponse response,Model map,HttpSession session){
+		try{
+		LOGGER.info("** start-searchBatchProcessingResult methode");
+		/**
+		 *Here we fetch data from work queue which has Transaction id exist
+		 */
+		Integer transactionId=null;
+		if(request.getParameter("transactionId")!=null && !request.getParameter("transactionId").isEmpty()){
+			try{
+			transactionId=Integer.parseInt(request.getParameter("transactionId"));
+			}catch(NumberFormatException nfe){
+				nfe.printStackTrace();
+				LOGGER.error("Error:"+nfe);
+			}
+		}
+		String status=null;
+		if(request.getParameter("status")!=null && !request.getParameter("status").isEmpty()){
+			status=request.getParameter("status");
+		}
+		session = request.getSession(true);
+		User user = (User) session.getAttribute("user");
+		
+		List<WorkQueue> workQueueList=workQueueService.f_getWorkQueueByTranactionIdAndStatus(transactionId,status,user.getUserGroupId());
+		/**
+		 * here we set unique transaction id in set
+		 */
+		List<Integer> distinctTransIds=workQueueService.f_getAllTransIdList(user.getUserGroupId());
+		List<StatusMaster> statusList = statusMasterService.getAllStatusList();
+	
+		map.addAttribute("statusList", statusList);
+		map.addAttribute("workQueueList", workQueueList);
+		map.addAttribute("distinctTransIds", distinctTransIds);
+		map.addAttribute("selectedstatus", status);
+		map.addAttribute("selectedtransactionId", transactionId);
+		}catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error", e);
+		}
+		LOGGER.info("** End-showBatchProcessingPage methode");
+		//return "showBatchProcessingPage";
+		return "batchProcessingTableRender";
+		
+	}
+	
+	@RequestMapping(value = "/isDocumentsExist.htm", method = { RequestMethod.GET,RequestMethod.POST })
+	public @ResponseBody String isDocumentsExist(@RequestParam("transIdArray") String transIdList) {
+
+		LOGGER.info("** Start-- isDocumentsExist methode");
+		String result1 = "";
+	
+		ObjectMapper objectMapper = new ObjectMapper();
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		
+		
+		try {
+			/*
+			 * Here we check if folder exist or not with respective transaction id list
+			 */
+			String[] transIdArry=null;
+			if(transIdList!=null){
+			 transIdArry=transIdList.split(",");
+			}
+			for (String transId: transIdArry) {           
+		       
+				String directoryName=xmlExcelbatchProcessingPath+transId;
+				File theDir = new File(directoryName).getCanonicalFile(); 
+				if (theDir.exists()){
+					resultMap.put(transId, "Y");
+				}else{
+					resultMap.put(transId, "N");
+				}
+				result1 = objectMapper.writeValueAsString(resultMap);
+		    }
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error", e);
+		}
+		LOGGER.info("** Start-- isDocumentsExist methode");
+		return result1;
+
+	}
+	
+	
+}

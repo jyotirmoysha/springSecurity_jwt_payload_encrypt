@@ -1,0 +1,282 @@
+package com.livespread.service;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.livespread.dao.ExtendedGenericDaoImpl;
+import com.livespread.domain.DealerMetadata;
+import com.livespread.domain.DealerTemplate;
+import com.livespread.domain.DealerTemplateAudit;
+import com.livespread.domain.NamedNativeQueryName;
+import com.livespread.domain.NamedQueryName;
+import com.livespread.domain.NormItemLabels;
+import com.livespread.domain.ParserOutput;
+import com.livespread.domain.User;
+
+@Service("dealerTemplateService")
+public class DealerTemplateServiceImpl implements DealerTemplateService {
+
+	private Logger LOGGER = Logger.getLogger(DealerTemplateServiceImpl.class);
+
+	@Autowired
+	private ExtendedGenericDaoImpl genericDaoImpl;
+
+	
+	
+
+	
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public String f_getDealerName(int filingId) {
+     LOGGER.info("start-- f_getDealerName methode for filing id="+filingId);
+     
+     HashMap<String, Object> parameters = new HashMap<String, Object>();
+	 parameters.put("filingId", filingId);
+     
+	 String dealerName="";
+    List<String> dealerNameList=(List<String>)(Object)genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.findDealerNameByFilingId, DealerMetadata.class, parameters);
+    if(!dealerNameList.isEmpty()){
+    	dealerName=dealerNameList.get(0);
+    }
+	
+	 
+     LOGGER.info("end-- f_getDealerName methode");
+    	return dealerName;
+	}
+
+
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Collection<DealerTemplate> f_getExtractRulesByDealerName(String dealerName) {
+		LOGGER.info("**start-- f_getExtractRulesByDealerName methode+"+dealerName);
+		 
+		HashMap<String, Object> parameters = new HashMap<String, Object>();
+		 parameters.put("dealerName", dealerName);
+	     
+	    Collection<DealerTemplate> dealerTemplatesList=(Collection<DealerTemplate>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getTemplateListByDealerName, DealerTemplate.class, parameters);
+		
+		LOGGER.info("**end-- f_getExtractRulesByDealerName methode="+dealerName);
+		return dealerTemplatesList;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Collection<NormItemLabels> f_normItemLabelsListByTemplateId(int templateId) {
+		LOGGER.info("**start---- f_normItemLabelsListByTemplateId methode");
+		HashMap<String, Object> parameters = new HashMap<String, Object>(); 
+		parameters.put("templateId", templateId);
+		List<NormItemLabels> normItemLabelsList = null;
+			normItemLabelsList = (ArrayList<NormItemLabels>) (Object) genericDaoImpl
+					.findByNamedQuery(
+							NamedQueryName.getNormItemLabelsListByTemplate,
+							NormItemLabels.class, parameters);
+			LOGGER.info("**end---- f_normItemLabelsListByTemplateId methode");
+		return normItemLabelsList;
+		
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<DealerTemplate> f_getDealerTemplateDetailsById(List<Integer> dtId) {
+		LOGGER.info("**start---- f_getDealerTemplateDetailsById methode");
+
+		
+		
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("dtList", dtId);
+		List<DealerTemplate> dealerTemplateList = (ArrayList<DealerTemplate>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getDealerTemplateById,DealerTemplate.class, parameterMap);
+
+		LOGGER.info("**end---- f_getDealerTemplateDetailsById methode");
+		
+		return dealerTemplateList;
+		
+	}
+
+
+	@Override
+	public Map<Integer,String> f_getnormItemLableList(List<Integer> ni_item,String section,String nil_industry) {
+		LOGGER.info("**start---- f_normItemLableList methode");
+
+		Map<Integer,String> normLableMap=new HashMap<Integer,String>();
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("niItem", ni_item);
+		parameterMap.put("nilSection", section);
+		parameterMap.put("nilIndustry", nil_industry);
+		List<Object> normLabelList =  genericDaoImpl.findByNamedQuery(NamedQueryName.getNormLableByNormItemAndSectionAndIndustry,NormItemLabels.class, parameterMap);
+		for(Object object: normLabelList){
+			Object[] obj = (Object[]) object;
+			normLableMap.put(obj[0] == null ? 0 : new Integer(obj[0].toString()),obj[1] == null ? "" : obj[1].toString());
+		}
+		
+		LOGGER.info("**end---- f_normItemLableList methode");
+		
+		return normLableMap;
+		
+	}
+
+
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<String> f_getDistinctDealerName() {
+		LOGGER.info("**start---- f_getDistinctDealerName methode");
+		
+		List<String> dealerNameList=(List<String>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getDistinctDealerName,DealerTemplateAudit.class);
+		
+		LOGGER.info("size dealerNameList="+dealerNameList.size());
+		LOGGER.info("**end---- f_getDistinctDealerName methode");
+		return dealerNameList;
+	}
+
+
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<DealerTemplateAudit> f_getDealerTemplateAudit(String dealerName) {
+		LOGGER.info("**start---- f_getDealerTemplateAudit methode");
+		LOGGER.info("DealerName="+dealerName);
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("dealerName", dealerName);
+		List<Object> objList=((List<Object>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getDealerTemplateAuditByDealerName, DealerTemplateAudit.class, parameterMap));
+		List<DealerTemplateAudit> dealerTemplateAuditsList=new ArrayList<DealerTemplateAudit>();
+		for(Object object : objList){
+			Object[] obj = (Object[]) object;
+			DealerTemplateAudit dealerTemplateAudit=(DealerTemplateAudit) obj[0];	
+			dealerTemplateAudit.setUserName(obj[1] == null ? "" : obj[1].toString());
+			dealerTemplateAuditsList.add(dealerTemplateAudit);
+			}
+		
+		LOGGER.info("**size="+dealerTemplateAuditsList.size());
+		
+		LOGGER.info("**end---- f_getDealerTemplateAudit methode");
+		return dealerTemplateAuditsList;
+	}
+
+
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public boolean f_RulesAuthenticationProcess(List<Integer> idList) {
+		LOGGER.info("**Start---- f_RulesAuthenticationProcess methode");
+		/**
+		 * Here we fetch DelaerTemplateAuduit object List based on id list 
+		 */
+		boolean flag=false;
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("idList", idList);
+	   
+		List<DealerTemplateAudit> templateAuditsList=(List<DealerTemplateAudit>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getDealerTemplateAuditById, DealerTemplateAudit.class, parameterMap);
+	   
+		for(DealerTemplateAudit dealerTemplateAudit:templateAuditsList){
+			Map<String, Object> updateMapPara = new HashMap<String, Object>();
+			updateMapPara.put("normLabel",dealerTemplateAudit.getNewNormLabel());
+			updateMapPara.put("normId",dealerTemplateAudit.getNormItem());
+			updateMapPara.put("dtId",dealerTemplateAudit.getDtId());
+
+			//Here update norm_lable and norm_id in dealer_template table
+			genericDaoImpl.updateByNamedQuery(NamedQueryName.updateNormLableAndNormIdByid, DealerTemplate.class,updateMapPara);
+			/**
+			 * Here we fetch DealerTemplateAuditList whose crud_status=N (new) and IS_APROVED=N(No) means record is active 
+			 */
+			List<DealerTemplateAudit> dealerTemplateListByDTId=(List<DealerTemplateAudit>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getDealerTemplateAuditByActive_DTID, DealerTemplateAudit.class, updateMapPara);
+			for(DealerTemplateAudit dealerTemplateAudit2:dealerTemplateListByDTId){
+			//Here update isApproved to 'Y' for checked radio button and 'R' for rejected rows and crud account by dtid
+			if(idList.contains(dealerTemplateAudit2.getId())){
+			 updateMapPara.put("isApproved","Y");	
+			}else{
+			 updateMapPara.put("isApproved","R");
+			}
+			updateMapPara.put("id",dealerTemplateAudit2.getId());
+		    updateMapPara.put("crudStatus","D");;
+			genericDaoImpl.updateByNamedQuery(NamedQueryName.updateDealerTemplateAuditByDtId, DealerTemplateAudit.class,updateMapPara);
+			}//end for  
+		}//main for
+		flag=true;
+		LOGGER.info("**end---- f_RulesAuthenticationProcess methode");
+		return flag;
+	}
+
+
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public boolean f_UpdateDealerLevelMappingProcess(List<DealerTemplateAudit> templateAudits,User user) {
+	 LOGGER.info("**Start---- f_UpdateDealerLevelMappingProcess methode");
+	 boolean flag=false;
+	 Map<String, Object> parameters = new HashMap<String, Object>();
+	List<Integer> poIdList=new ArrayList<Integer>();
+
+	
+	 for(DealerTemplateAudit dealerTemplateAudit:templateAudits){
+		 poIdList.add(dealerTemplateAudit.getId());
+	 }
+	 
+	parameters.put("poIdList", poIdList);
+	List<Object> objList=genericDaoImpl.findByNamedQuery(NamedQueryName.getParserOutPutByPoIdList, ParserOutput.class, parameters);
+	List<DealerTemplateAudit> templateAuditFinalList=new ArrayList<DealerTemplateAudit>();
+	int counter=0;
+	for(Object object:objList){
+	Object[] obj = (Object[]) object;
+	DealerTemplateAudit dealerTemplateAudit=new DealerTemplateAudit();
+	
+	dealerTemplateAudit.setDealerName(templateAudits.get(counter).getDealerName());
+	dealerTemplateAudit.setNewNormItem(templateAudits.get(counter).getNewNormItem());
+	dealerTemplateAudit.setNewNormLabel(templateAudits.get(counter).getNewNormLabel());
+	dealerTemplateAudit.setAsRepLabel(obj[0] == null ? "" : obj[0].toString());
+	dealerTemplateAudit.setNormLabel(obj[1] == null ? "" : obj[1].toString());
+	dealerTemplateAudit.setNormItem(obj[2] == null ? 0 : new Integer(obj[2].toString()));
+	dealerTemplateAudit.setCrudStatus("N");
+	/**
+	 * Here we get dealer_template_id(dtid) from dealer_template table based on id 
+     */
+	Map<String, Object> parametersMap = new HashMap<String, Object>();
+	parametersMap.put("dealerType", templateAudits.get(counter).getDealerName());
+	parametersMap.put("asRepLabel", obj[0] == null ? "" : obj[0].toString());
+	List<Object> idList=genericDaoImpl.findByNamedQuery(NamedQueryName.getDealerTemplateIdBasedOnDealerType, DealerTemplate.class, parametersMap);
+	for(Object obj1:idList){
+		try{
+		if(obj1!=null)
+		dealerTemplateAudit.setDtId((Integer) obj1);
+		}catch (NumberFormatException e) {
+		LOGGER.info("Number Format Error:"+e);
+		}
+	}
+	templateAuditFinalList.add(dealerTemplateAudit);
+	}
+	genericDaoImpl.persist(templateAuditFinalList);
+	
+	
+	/**
+	 * if user is admin then approve rules by default
+	 */
+	if(user.getUserAccess()!=null){
+		if(user.getUserAccess()==1){
+			List<Integer> auditIdList=new ArrayList<Integer>();
+			for(DealerTemplateAudit dealerTemplateAudit:templateAuditFinalList){
+				auditIdList.add(dealerTemplateAudit.getId());
+			}
+			boolean authProcessFlag=f_RulesAuthenticationProcess(auditIdList);
+			if(authProcessFlag)
+			LOGGER.info("**Success--Rules Authentication process has been completed");
+			else
+			LOGGER.info("**Failed--Rules Authentication process has been faild");
+		}
+	}
+	flag=true;
+	LOGGER.info("**End---- f_UpdateDealerLevelMappingProcess methode");
+	
+	return flag;
+	}
+}

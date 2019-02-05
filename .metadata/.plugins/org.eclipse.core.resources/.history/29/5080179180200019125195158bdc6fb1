@@ -1,0 +1,6 @@
+table th, td {border: none; border-top: none; line-height: 18px; font: 0.7em/18px Helvetica Neue, Helvetica, Arial, sans-serif !important; padding:5px !important}
+.custom-margin{margin:0 5px 10px 5px}
+.custom-button{margin:-5px !important;}
+.bg-blue-new{background:#006995; color:fff !important}
+.white-strip{font-size:13px !important; color:#333 !important; background:#fff}
+   

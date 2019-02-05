@@ -1,0 +1,76 @@
+package com.livespread.command;
+
+public class ExportCommand {
+	private Integer wqId;
+	private Integer fillingId;
+	private Integer customerId;
+	private String statementFormat;
+	private String customerName;
+	private String encryptedWqId;
+	private String encryptedFillingId;
+	private String encryptedCustomerId;
+
+	public String getEncryptedWqId() {
+		return encryptedWqId;
+	}
+
+	public void setEncryptedWqId(String encryptedWqId) {
+		this.encryptedWqId = encryptedWqId;
+	}
+
+	public String getEncryptedFillingId() {
+		return encryptedFillingId;
+	}
+
+	public void setEncryptedFillingId(String encryptedFillingId) {
+		this.encryptedFillingId = encryptedFillingId;
+	}
+
+	public String getEncryptedCustomerId() {
+		return encryptedCustomerId;
+	}
+
+	public void setEncryptedCustomerId(String encryptedCustomerId) {
+		this.encryptedCustomerId = encryptedCustomerId;
+	}
+
+	public String getCustomerName() {
+		return customerName;
+	}
+
+	public void setCustomerName(String customerName) {
+		this.customerName = customerName;
+	}
+
+	public Integer getWqId() {
+		return wqId;
+	}
+
+	public void setWqId(Integer wqId) {
+		this.wqId = wqId;
+	}
+
+	public Integer getFillingId() {
+		return fillingId;
+	}
+
+	public void setFillingId(Integer fillingId) {
+		this.fillingId = fillingId;
+	}
+
+	public Integer getCustomerId() {
+		return customerId;
+	}
+
+	public void setCustomerId(Integer customerId) {
+		this.customerId = customerId;
+	}
+
+	public String getStatementFormat() {
+		return statementFormat;
+	}
+
+	public void setStatementFormat(String statementFormat) {
+		this.statementFormat = statementFormat;
+	}
+}

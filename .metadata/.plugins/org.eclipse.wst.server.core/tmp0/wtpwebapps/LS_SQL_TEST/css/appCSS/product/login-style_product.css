@@ -1,0 +1,103 @@
+.login-block{
+background: #DE6262;  /* fallback for old browsers */
+background: -webkit-linear-gradient(to bottom,  #00adcf, #1b3e6f);  /* Chrome 10-25, Safari 5.1-6 */
+background: linear-gradient(to bottom, #00adcf, #1b3e6f); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+float:left;
+width:100%;
+height:100%;
+padding : 38px 0;
+}
+label {font-weight: 600 !important; color: #1B3C6D; font-size: 14px; font-family: open sans;}
+.wdt{width:100% !important}
+.login-logo {background: url(../../../LS-Images/Genpact-Livespread-Logo.png) no-repeat center left; height: 55px; padding: 5px 15px; margin-left:-20px;}
+.banner-sec{background-size:cover; min-height:480px; border-radius: 0 10px 10px 0; padding:0;}
+.container{background:#f3f8fb; border-radius: 10px; box-shadow:15px 20px 0px rgba(0,0,0,0.1);}
+.carousel-inner{border-radius:10px 0px 0px 10px;}
+.carousel-caption{text-align:left; left:5%;}
+.login-img{background:url(../images/login-bg-new.jpg) no-repeat; height:562px;}
+.login-sec{padding:18px 40px 0px 0px; position:relative;}
+.login-sec .copy-text{position:absolute; width:80%; bottom:20px; font-size:13px; text-align:center;}
+.login-sec .copy-text i{color:#FEB58A;}
+.login-sec .copy-text a{color:#E36262;}
+.login-sec h2{margin-bottom:30px; font-weight:800; font-size:30px; color: #DE6262;}
+.login-sec h2:after{content:" "; width:100px; height:5px; background:#FEB58A; display:block; margin-top:20px; border-radius:3px; margin-left:auto;margin-right:auto}
+.btn-login{background: #DE6262; color:#fff; font-weight:600;}
+.banner-text{width:70%; position:absolute; bottom:40px; padding-left:20px;}
+.banner-text h2{color:#fff; font-weight:600;}
+.banner-text h2:after{content:" "; width:100px; height:5px; background:#FFF; display:block; margin-top:20px; border-radius:3px;}
+.banner-text p{color:#fff;}
+.btn-primary{background:#00adcf !important; border:1px solid #00adcf !important}
+.err_msg1{visibility:visible; width: 100%; margin:65px auto; padding-left: 0px; color: #CC0000 !important; font-weight: bold; font-size: 12px; font-family: Helvetica Neue, Helvetica, Arial, sans-serif; top:0px; position: relative; text-align: center;}
+.err_msg{width:100%; margin:65px auto; padding-left:0px !important; color:#CC0000; font-weight:bold; font-size:12px; font-family:Helvetica Neue, Helvetica, Arial, sans-serif; top:0px !important; position: relative; text-align: center;}
+.mar-top20{margin-top:20px !important}
+
+@media screen and (min-width: 800px) and (min-height: 600px){
+.d-block{height:350px !important} 	
+.login-block{padding:120px 0px !important}
+.login-sec{padding:18px 19px 63px 30px; margin: -484px 0 0px 514px;}
+.modal-dialog{margin-top:23%; margin-left:71px; width:61%;}
+}
+
+@media screen and (min-width: 1024px) and (min-height: 768px){
+.d-block{height:562px !important} 	
+.login-block{padding:100px 0px !important}
+.login-sec{padding:18px 40px 0px 30px; margin:0px}
+.modal-dialog{margin-top:20%; margin-left:157px}
+}
+
+@media screen and (min-width: 1024px) and (min-height: 1366px){
+ .login-block{padding:401px 0px !important}
+ .login-sec{padding:18px 40px 0px 27px}
+ .modal-dialog{margin-top:40%}
+}
+
+@media screen and (min-width: 1152px) and (min-height: 864px){
+ .login-block{padding:151px 0px !important}
+ .login-sec{padding:18px 40px 0px 27px;}
+ .modal-dialog{margin-top:20%; margin-left:213px}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 600px){
+.d-block{height:562px !important} 		
+.login-block{padding:18px 0px !important}
+.login-sec{padding:18px 40px 0px 27px; margin:0px;}
+.modal-dialog{margin-top:8%; width:41%; margin-left:380px;}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 720px){
+.login-block{padding:79px 0px !important}
+.modal-dialog{width:41%; margin-top:15%; margin-left:380px;}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 768px){
+.login-block{padding:103px 0px !important}
+.modal-dialog{width:41%; margin-top:15%;}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 800px){
+ .login-block{padding:119px 0px !important}
+ .modal-dialog{width:41%; margin-top:17%; margin-left:380px;}
+}
+
+@media screen and (min-width: 1360px) and (min-height: 637px){
+ .login-block{padding:37px 0px !important}
+ .modal-dialog{width:41%; margin-top:10%; margin-left:390px;}
+}
+
+@media screen and (min-width: 1360px) and (min-height: 662px){
+ .login-block{padding:50px 0px !important}
+ .modal-dialog{width:41%; margin-top:10%; margin-left:390px;}
+}
+
+@media screen and (min-width: 1440px) and (min-height: 900px){
+ .login-block{padding:169px 0px !important}
+ .modal-dialog{width:41%; margin-top:18%; margin-left:390px;}
+}
+
+@media screen and (min-width: 1600px) and (min-height: 900px){
+ .login-block{padding:169px 0px !important}
+}
+
+@media screen and (min-width: 1680px) and (min-height: 1050px){
+ .login-block{padding:240px 0px !important}
+}

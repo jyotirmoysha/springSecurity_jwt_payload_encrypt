@@ -1,0 +1,1321 @@
+package com.livespread.dao;
+
+
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Required;
+import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
+
+import com.livespread.command.ArsPoCommand;
+import com.livespread.command.FinancialItemsCommand;
+import com.livespread.command.NormInputParamers;
+import com.livespread.command.NormalizationBreakupData;
+import com.livespread.command.PdfExtractionMetadatCommand;
+import com.livespread.domain.POCordHighlightDetails;
+import com.livespread.domain.ParserOutput;
+import com.livespread.domain.User;
+import com.livespread.util.CipherUtils;
+
+@Repository
+public class NormalizationViewDAOImpl implements NormalizationViewDAO {
+
+	private Logger LOGGER = Logger.getLogger(NormalizationViewDAOImpl.class);
+
+	private EntityManager entityManager;
+	private EntityManager rageEntityManager;
+	
+	@Required
+	@PersistenceContext(unitName="uicRagePunit")
+	public void setRageEntityManager(EntityManager rageEntityManager) {
+		this.rageEntityManager = rageEntityManager;
+	}
+
+	@Required
+	@PersistenceContext(unitName="uicAppPunit")
+	public void setApplicationEntityManager(EntityManager applicationEntityManager) {
+		this.entityManager = applicationEntityManager;
+	}
+	
+	
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public NormalizationBreakupData normalizationBreakupDetails(Integer selectedPoId, String columnName,String coordinateColumn) 
+	{
+		List<Object[]> normalizationBreakupDetailsObjectList = new ArrayList<Object[]>();
+		NormalizationBreakupData normalizationBreakupData = null;
+		String sql = "select po.PO_ID,po.PO_INDEX_ORDER,po.PO_AS_REP_LABEL,po.PO_SECTION,"+columnName+","+coordinateColumn+",po.FILING_ID,po.NON_ENGLISH_LABEL,po.PO_FILER_REPORTED,po.NIL_LABEL,POCH.UPLOAD_ID from PARSER_OUTPUT po left join PO_CORD_HIGHLIGHT_DETAILS POCH on (po.PO_ID = POCH.PO_ID) where po.PO_ID = :poId";
+		Query query = entityManager.createNativeQuery(sql);
+		query.setParameter("poId", selectedPoId);
+		try {
+			normalizationBreakupDetailsObjectList = query.getResultList();
+			if(normalizationBreakupDetailsObjectList!=null && !normalizationBreakupDetailsObjectList.isEmpty())
+			{
+				
+			Object[] normalizationBreakupDetailsObjectArray = normalizationBreakupDetailsObjectList.get(0);	
+				
+				if(normalizationBreakupDetailsObjectArray[4]!=null && !normalizationBreakupDetailsObjectArray[4].toString().isEmpty())
+				{
+					normalizationBreakupData = new NormalizationBreakupData();
+					normalizationBreakupData.setPoId(new Integer(normalizationBreakupDetailsObjectArray[0].toString()));
+					normalizationBreakupData.setPoIndex(normalizationBreakupDetailsObjectArray[1] == null ? 0 : new Integer(normalizationBreakupDetailsObjectArray[1].toString()));
+					normalizationBreakupData.setAsRepLabel(normalizationBreakupDetailsObjectArray[2] == null ? "" : normalizationBreakupDetailsObjectArray[2].toString());
+					normalizationBreakupData.setSection(normalizationBreakupDetailsObjectArray[3] == null ? "" : normalizationBreakupDetailsObjectArray[3].toString());
+					normalizationBreakupData.setAsRepValue(normalizationBreakupDetailsObjectArray[4] == null ? "" : normalizationBreakupDetailsObjectArray[4].toString());
+					normalizationBreakupData.setCoordinate(normalizationBreakupDetailsObjectArray[5] == null ? "" : normalizationBreakupDetailsObjectArray[5].toString());
+					normalizationBreakupData.setIsCoordinateExists(normalizationBreakupDetailsObjectArray[5] == null ? "N" : "Y");
+					Integer filingId = normalizationBreakupDetailsObjectArray[6] == null ? 0 : new Integer(normalizationBreakupDetailsObjectArray[6].toString());
+					normalizationBreakupData.setNonEnglishLable(normalizationBreakupDetailsObjectArray[7] == null ? "" : normalizationBreakupDetailsObjectArray[7].toString());
+					String encryptedFilingId = CipherUtils.encrypt(filingId.toString());
+					normalizationBreakupData.setFilingId(encryptedFilingId);
+					normalizationBreakupData.setPoFilerReported(normalizationBreakupDetailsObjectArray[8] == null ? "C" : normalizationBreakupDetailsObjectArray[8].toString());
+					normalizationBreakupData.setNiLabel(normalizationBreakupDetailsObjectArray[9] == null ? "" : normalizationBreakupDetailsObjectArray[9].toString());
+					Integer uploadId = normalizationBreakupDetailsObjectArray[10] == null ? 0 : new Integer(normalizationBreakupDetailsObjectArray[10].toString());
+					normalizationBreakupData.setUploadId(uploadId);
+				}
+			}
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+			return normalizationBreakupData;
+		}
+		return normalizationBreakupData;	
+	}
+	
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<ArsPoCommand> f_fetchArsPoMAppingBYFilingIdandSectionList(Integer filingId, List<String> sectionList)throws Exception 
+	{
+		List<Object[]> arsPoCommandObjectList = new ArrayList<Object[]>();
+		List<ArsPoCommand> arsPoCommandList = null; 
+		ArsPoCommand arsPoCommand = null;
+		String sql = "select apm.po_id,po.PO_AS_REP_LABEL,PO.po_section,po.PO_SUBSECTION,apm.NIL_LABEL,apm.PO_COLUMN_NAME, apm.mapping_name,apm.HEADER_LABEL,apm.TABLE_LABEL from ars_po_mapping apm LEFT JOIN PARSER_OUTPUT po ON (apm.po_id = PO.PO_ID) where apm.FILING_ID = :FILING_ID and PO.PO_SECTION in :sectionList";
+	  //String sql = "select apm.PO_ID,po.PO_AS_REP_LABEL,apm.SECTION,apm.SUB_SECTION,apm.NIL_LABEL,apm.PO_COLUMN_NAME,apm.MAPPING_NAME,apm.HEADER_LABEL,apm.TABLE_LABEL from ARS_PO_MAPPING apm LEFT JOIN PARSER_OUTPUT po ON (apm.PO_ID = PO.PO_ID) where apm.FILING_ID = :FILING_ID and PO.PO_SECTION in :sectionList";
+		Query query = entityManager.createNativeQuery(sql);
+		query.setParameter("FILING_ID", filingId);
+		query.setParameter("sectionList", sectionList);
+		try {
+			arsPoCommandObjectList = query.getResultList();
+			if(arsPoCommandObjectList!=null && !arsPoCommandObjectList.isEmpty())
+			{
+				arsPoCommandList = new ArrayList<>();
+				for (Object[] selectedObject : arsPoCommandObjectList) 
+				{
+					arsPoCommand = new ArsPoCommand();
+					arsPoCommand.setPoId(new Integer(selectedObject[0].toString()));
+					arsPoCommand.setPoAsRepLabel(selectedObject[1] == null ? "" : selectedObject[1].toString());
+					arsPoCommand.setPoSection(selectedObject[2] == null ? "" : selectedObject[2].toString());
+					arsPoCommand.setPoSubSection(selectedObject[3] == null ? "" : selectedObject[3].toString());
+					arsPoCommand.setNilLabel(selectedObject[4] == null ? "" : selectedObject[4].toString());
+					arsPoCommand.setColName(selectedObject[5] == null ? "" : selectedObject[5].toString());
+					arsPoCommand.setMappingName(selectedObject[6] == null ? "" : selectedObject[6].toString());
+					arsPoCommand.setHeaderLabel(selectedObject[7] == null ? "" : selectedObject[7].toString());
+					arsPoCommand.setTabelLabel(selectedObject[8] == null ? "" : selectedObject[8].toString());
+					arsPoCommandList.add(arsPoCommand);
+				}
+			}
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+			return arsPoCommandList;
+		}
+		return arsPoCommandList;	
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public ArsPoCommand f_fetchArsPoMappingBYPoIdAndColName(Integer poId, String colName) throws Exception 
+	{
+		List<Object[]> arsPoCommandObjectList = new ArrayList<Object[]>();
+		ArsPoCommand arsPoCommand = null;
+		//String sql = "select apm.po_id,po.PO_AS_REP_LABEL,apm.SECTION,apm.SUB_SECTION,apm.NI_ITEM,po.PO_INDEX_ORDER,apm.PO_COLUMN_NAME, apm.mapping_name,apm.HEADER_LABEL,apm.TABLE_LABEL from ars_po_mapping apm LEFT JOIN PARSER_OUTPUT po ON (apm.po_id = PO.PO_ID) where apm.po_Id = :poId and apm.PO_COLUMN_NAME = :colName";
+		String sql = "select apm.po_id,po.PO_AS_REP_LABEL,PO.po_section,po.PO_SUBSECTION,apm.NI_ITEM,po.PO_INDEX_ORDER,apm.PO_COLUMN_NAME, apm.mapping_name,apm.HEADER_LABEL,apm.TABLE_LABEL from ars_po_mapping apm LEFT JOIN PARSER_OUTPUT po ON (apm.po_id = PO.PO_ID) where apm.po_Id = :poId and apm.PO_COLUMN_NAME = :colName";
+		
+		Query query = entityManager.createNativeQuery(sql);
+		query.setParameter("poId", poId);
+		query.setParameter("colName", colName);
+		try {
+			arsPoCommandObjectList = query.getResultList();
+			if(arsPoCommandObjectList!=null && !arsPoCommandObjectList.isEmpty())
+			{
+				    Object[] selectedObject = arsPoCommandObjectList.get(0);
+					arsPoCommand = new ArsPoCommand();
+					arsPoCommand.setPoId(new Integer(selectedObject[0].toString()));
+					arsPoCommand.setPoAsRepLabel(selectedObject[1] == null ? "" : selectedObject[1].toString());
+					arsPoCommand.setPoSection(selectedObject[2] == null ? "" : selectedObject[2].toString());
+					arsPoCommand.setPoSubSection(selectedObject[3] == null ? "" : selectedObject[3].toString());
+					arsPoCommand.setNiItem(selectedObject[4] == null ? 0 : Integer.parseInt(selectedObject[4].toString()));
+					arsPoCommand.setPoIndexOrder(selectedObject[5] == null ? 0 : Integer.parseInt(selectedObject[5].toString()));
+					arsPoCommand.setColName(selectedObject[6] == null ? "" : selectedObject[6].toString());
+					arsPoCommand.setMappingName(selectedObject[7] == null ? "" : selectedObject[7].toString());
+					arsPoCommand.setHeaderLabel(selectedObject[8] == null ? "" : selectedObject[8].toString());
+					arsPoCommand.setTabelLabel(selectedObject[9] == null ? "" : selectedObject[9].toString());
+			}
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+			return arsPoCommand;
+		}
+		return arsPoCommand;	
+	}
+
+
+	@Override
+	public int f_updateParserOutputByDynamicColValues(ParserOutput parserOutput,boolean nonEnglishFlag) throws Exception {
+		LOGGER.info("** start--f_updateParserOutputByDynamicColValues function");
+		int updateCount=0;
+		/**
+		 * Create update values dynamic
+		 */
+		StringBuilder subParamter = new StringBuilder();
+		Map<String,String> upValMap=null;
+		if(parserOutput.getPo_valColMap()!=null){
+		 upValMap=parserOutput.getPo_valColMap();
+		for (Map.Entry<String, String> entry : upValMap.entrySet()) {
+			if(subParamter.toString().equals("")){
+			subParamter.append(entry.getKey()+"=:"+entry.getKey());
+			}else{
+			subParamter.append(",");
+			subParamter.append(entry.getKey()+"=:"+entry.getKey());
+			}
+		}
+		}
+		StringBuilder sql=new StringBuilder("");
+
+		String sql1="UPDATE ParserOutput SET poAsRepLabel=:poLable,poIndexOrder =:indexOrder,poCrudAccount=:poCrud,niItem=:niItem,nilLabel=:nilLabel,"
+ 	           +"poSubSection=:poSubSection,accountNumber =:accountNumber,timePeriod =:timePeriod,custodianName=:custodianName,"
+ 			   +"poBreakup=:poBreakup,poSubTotal=:subtotal,note=:note,niItemSuggstive = :niItemSuggstive";
+    	String sql2="";
+    	if(nonEnglishFlag){
+    		sql2=",nonEnglishLable=:nonEnglishLable";
+    	}
+		sql.append(sql1);
+		sql.append(sql2);
+		if(!subParamter.equals("")){
+		sql.append(","+subParamter);	
+		}
+		sql.append(" "+"where PO_ID=:poId and filing_id=:filingId");
+
+		Query query = entityManager.createQuery(sql.toString());
+		query.setParameter("poLable", parserOutput.getPoAsRepLabel());
+		query.setParameter("indexOrder", parserOutput.getPoIndexOrder());
+		query.setParameter("poCrud", parserOutput.getPoCrudAccount());
+		query.setParameter("niItem", parserOutput.getNiItem());
+		query.setParameter("nilLabel", parserOutput.getNilLabel());
+		query.setParameter("poSubSection", parserOutput.getPoSubSection());
+		query.setParameter("accountNumber", parserOutput.getAccountNumber());
+		query.setParameter("timePeriod", parserOutput.getTimePeriod());
+		query.setParameter("custodianName", parserOutput.getCustodianName());
+		query.setParameter("poBreakup", parserOutput.getPoBreakup());
+		query.setParameter("subtotal", parserOutput.getPoSubTotal());
+		query.setParameter("note", parserOutput.getNote());
+		query.setParameter("niItemSuggstive", parserOutput.getNiItemSuggstive());
+		query.setParameter("poId", parserOutput.getPoId());
+		query.setParameter("filingId", parserOutput.getFillingId());
+		if(nonEnglishFlag){
+			query.setParameter("nonEnglishLable", parserOutput.getNonEnglishLable());
+		}
+		
+		if(upValMap!=null){
+		for (Map.Entry<String, String> entry : upValMap.entrySet()) {
+		query.setParameter(entry.getKey(),entry.getValue());
+		}
+		}
+		updateCount=query.executeUpdate();
+		
+		LOGGER.info("** End--f_updateParserOutputByDynamicColValues function");
+		return updateCount;
+	}
+
+	
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<ParserOutput> getParserOutputByFilingIdandStatementType(NormInputParamers inputParameters) throws Exception 
+	{
+		List<Integer> updatedPoidsList =null;
+		String finalSqlQuery= null;
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		//common for updated List
+		if (!StringUtils.isEmpty(inputParameters.getUpdatedPoidsList())) {
+			updatedPoidsList = new ArrayList<Integer>();
+			for (String s : inputParameters.getUpdatedPoidsList().split(",")) {
+				updatedPoidsList.add(Integer.parseInt(s.trim()));
+			}
+		}
+		ResourceBundle sqlQuery = ResourceBundle.getBundle("oracleSqlQuerys");
+	    /*based on sections executing query's 
+	     using one query for updated records and selected records  in parser output */	
+		if(inputParameters.getSection().equalsIgnoreCase("SUPPL"))
+		{
+			//conditions for updated records
+			if (!StringUtils.isEmpty(inputParameters.getUpdatedPoidsList())) {
+				finalSqlQuery =sqlQuery.getString("updateRulesNormalizationList");	
+			}else{
+				finalSqlQuery = "with cte as( "
+						+" select  PO_ID, WQ_ID,PO_SECTION,PO_AS_REP_LABEL,PO_INDEX_ORDER,NIL_LABEL,NI_ITEM,PO_SUBSECTION,PO_BREAKUP,PO_SUBTOTAL1,CUSTODIAN_NAME,TIME_PERIOD, PO_YCOORDINATES,PO_MERGE,PO_TABLE_ID,page_no,PO_CRUD_ACCOUNT,"
+						+"filing_id,NON_ENGLISH_LABEL, PO_ANCHOR,TEMPLATE_ID,REF_PO_ID,UPLOAD_ID ,PO_NOTE,MAPPING_NAME,MAPPING_TYPE ,IS_DUPLICATE ,NI_ITEM_SUGGESTIVE,PO_VAL1, PO_VAL2,PO_VAL3,PO_VAL4,PO_VAL5,PO_VAL6,PO_VAL7,PO_VAL8,"
+						+"PO_VAL9,PO_VAL10,PO_VAL11,PO_VAL12,PO_VAL13,PO_VAL14,PO_VAL15,PO_VAL16,PO_VAL17,PO_VAL18,PO_VAL19,PO_VAL20,ACCOUNT_NUMBER,PO_MODIFIED_BY,MODIFIED_BY , ROW_NUMBER() OVER(ORDER BY PO_INDEX_ORDER ) AS srno from PARSER_OUTPUT where  "
+						+" filing_id=:filingId and PO_SECTION=:statementType  and PO_CRUD_ACCOUNT not like 'D' and (REF_PO_ID=-1 or REF_PO_ID is null ) )  "
+						+" select * from cte where srno between :startNum and :endNum ";
+			}
+		}
+		else
+		{
+			if (!StringUtils.isEmpty(inputParameters.getUpdatedPoidsList())) {
+				finalSqlQuery =sqlQuery.getString("updateRulesNormalizationList");
+			} else{
+				String asRepLabel="";
+	            if(inputParameters!=null && !StringUtils.isEmpty(inputParameters.getAsRepLabel()) ){
+	            	String asRepLabelVal=inputParameters.getAsRepLabel().replace("'", "''");
+        	        asRepLabelVal=asRepLabelVal.replace("[", "[[");
+	          	    asRepLabel=" and t.PO_AS_REP_LABEL like CONCAT('%',:asRepLable,'%') escape '[' ";
+	          	    parameterMap.put("asRepLable", asRepLabelVal);
+	            }
+		        if(inputParameters.getRecordType().equalsIgnoreCase("parentOnly"))
+				{
+					finalSqlQuery =sqlQuery.getString("getParentParserOutputList");
+				}
+				else
+				{
+					finalSqlQuery =sqlQuery.getString("getRulesNormalizationList");
+				}
+	            finalSqlQuery =finalSqlQuery.replace("$DymanicSearch", asRepLabel);
+			}
+		}
+		try {
+			if(!StringUtils.isEmpty(inputParameters.getUpdatedPoidsList()) && updatedPoidsList!=null){
+				parameterMap.put("updatedPoids",updatedPoidsList);	
+			}else{
+				parameterMap.put("filingId", inputParameters.getFillingId());
+				parameterMap.put("statementType", inputParameters.getSection());
+				parameterMap.put("startNum", inputParameters.getStartNum());
+				parameterMap.put("endNum",inputParameters.getEndNum());
+			}
+			Query query = entityManager.createNativeQuery(finalSqlQuery);
+			if(parameterMap!=null && !parameterMap.isEmpty()){
+				for (Entry<String, Object> entry : parameterMap.entrySet()) {
+					query.setParameter(entry.getKey(), entry.getValue());
+				}
+			}	
+			List<Object[]> parserOutputList = query.getResultList();
+			List<ParserOutput> parserList=new ArrayList<ParserOutput>();
+			parserList=prepareParserOutputList(parserOutputList);	
+			return parserList;
+		}catch(Exception e)
+		{
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see com.livespread.dao.NormalizationViewDAO#getNormalizedDataForExcel(int, java.util.Set)
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public List<Object> getNormalizedDataForExcel(int filingId, Set<String> sectionSet) throws Exception 
+	{
+			ResourceBundle sqlQuery = ResourceBundle.getBundle("oracleSqlQuerys");
+			String sql =sqlQuery.getString("getNormalizedDataForExcel");	
+		
+		try {
+			Query query = entityManager.createNativeQuery(sql);
+			query.setParameter("filingId", filingId);
+			query.setParameter("sectionSet", sectionSet);
+			List parserOutputList = query.getResultList();
+			return parserOutputList;
+		}catch(Exception e)
+		{
+			e.printStackTrace();
+			return null;
+		}
+	
+	}
+
+@SuppressWarnings("unchecked")
+@Override													 
+public List<ParserOutput> getNormalizedSearchDataForBankParser(int filingId, String statementType,int startNum,int endNum,String accountNumber,String timePeriod, String custodianName,String updatedPoids) throws Exception 
+{
+	
+	    String sqlQuery1 = null;
+	    String sqlQuery2 = null;
+	    String sqlQuery3 = null;
+	    String finalSqlQuery = null;
+	    List<Integer> updatedPoidsList =null;
+	  ResourceBundle sqlQueryFetch = ResourceBundle.getBundle("oracleSqlQuerys");
+	
+	if(!StringUtils.isEmpty(updatedPoids)){
+		updatedPoidsList= new ArrayList<Integer>();
+		for (String s :updatedPoids.split(",") ) {
+			updatedPoidsList.add(Integer.parseInt(s.trim()));
+		}
+      finalSqlQuery =sqlQueryFetch.getString("updateRulesNormalizationList");
+	}else{
+		sqlQuery1 =sqlQueryFetch.getString("searchRulesNormalizationListByFilter1");	
+		sqlQuery2 =sqlQueryFetch.getString("searchRulesNormalizationListByFilter2");	
+		sqlQuery3 =sqlQueryFetch.getString("searchRulesNormalizationListByFilter3");	
+		if(accountNumber!=null && accountNumber.trim().length()>0){
+			sqlQuery1=sqlQuery1+" and t.ACCOUNT_NUMBER=:accountNumber ";
+			sqlQuery2=sqlQuery2+" and po.ACCOUNT_NUMBER=:accountNumber ";
+		}
+		if(timePeriod!=null && timePeriod.trim().length()>0){
+			sqlQuery1=sqlQuery1+" and t.TIME_PERIOD=:timePeriod ";
+			sqlQuery2=sqlQuery2+" and po.TIME_PERIOD=:timePeriod ";
+		}
+		if(custodianName!=null && custodianName.trim().length()>0){
+			sqlQuery1=sqlQuery1+" and t.CUSTODIAN_NAME=:custodianName ";
+			sqlQuery2=sqlQuery2+" and po.CUSTODIAN_NAME=:custodianName ";
+		}
+		finalSqlQuery=sqlQuery1+ " "+ sqlQuery2 + " "+sqlQuery3;
+	}
+	try {
+		Query query = entityManager.createNativeQuery(finalSqlQuery);
+		if(!StringUtils.isEmpty(updatedPoids) && updatedPoidsList!=null){
+			query.setParameter("updatedPoids",updatedPoidsList);	
+		}else{
+		query.setParameter("filingId", filingId);
+		query.setParameter("statementType", statementType);
+		query.setParameter("startNum", startNum);
+		query.setParameter("endNum", endNum);
+		if(accountNumber!="" && accountNumber!=null && !accountNumber.isEmpty()){
+			query.setParameter("accountNumber", accountNumber);
+			}
+			if(timePeriod!="" && timePeriod!=null && !timePeriod.isEmpty()){
+			query.setParameter("timePeriod", timePeriod);
+			}
+			if(custodianName!="" && custodianName!=null && !custodianName.isEmpty()){
+			query.setParameter("custodianName", custodianName);
+			}
+		
+		}
+		
+		
+		List<Object[]> parserOutputList = query.getResultList();
+		List<ParserOutput> parserList=new ArrayList<ParserOutput>();
+		ParserOutput  parser=null;
+		if(parserOutputList!=null && !parserOutputList.isEmpty()){
+		for (Object object : parserOutputList) {
+			Object[] objIn = (Object[]) object;
+			parser=new ParserOutput();
+			parser.setPoId(objIn[0]!=null? new Integer(objIn[0].toString()) :0);
+			parser.setWqId(objIn[1]!=null? new Integer(objIn[1].toString()) :0);
+			parser.setPoSection(objIn[2]!=null? objIn[2].toString() :"");
+			parser.setPoAsRepLabel(objIn[3]!=null? objIn[3].toString() :"");
+			parser.setPoIndexOrder(objIn[4]!=null? new Integer(objIn[4].toString()) :0);
+			parser.setNilLabel(objIn[5]!=null? objIn[5].toString() :"");
+			parser.setNiItem(objIn[6]!=null? new Integer(objIn[6].toString()) :0);
+			parser.setPoSubSection(objIn[7]!=null? objIn[7].toString() :"");
+			parser.setPoBreakup(objIn[8]!=null? objIn[8].toString() :"");
+			parser.setPoSubTotal(objIn[9]!=null? objIn[9].toString() :"");
+			parser.setCustodianName(objIn[10]!=null? objIn[10].toString() :"");
+			parser.setTimePeriod(objIn[11]!=null? objIn[11].toString() :"");
+			parser.setPoYcoordinates(objIn[12]!=null? objIn[12].toString() :"");
+			parser.setPoMerge(objIn[13]!=null? objIn[13].toString() :"");
+			parser.setPoTableId(objIn[14]!=null? objIn[14].toString() :"");
+			parser.setPageNo(objIn[15]!=null? objIn[15].toString() :"");
+			parser.setPoCrudAccount(objIn[16]!=null? objIn[16].toString() :"");
+			parser.setFillingId(objIn[17]!=null? new Integer(objIn[17].toString()) :0);
+			parser.setNonEnglishLable(objIn[18]!=null? objIn[18].toString() :"");
+			parser.setPoAnchor(objIn[19]!=null? objIn[19].toString() :"");
+			parser.setTemplateId(objIn[20]!=null? new Integer(objIn[20].toString()) :0);	
+			parser.setRefPoId(objIn[21]!=null? new Integer(objIn[21].toString()) :0);
+			parser.setUploadId(objIn[22]!=null? new Integer(objIn[22].toString()) :0);
+			parser.setNote(objIn[23]!=null? objIn[23].toString() :"");
+			parser.setMappingName(objIn[24]!=null? objIn[24].toString() :"");
+			parser.setMappingType(objIn[25]!=null? objIn[25].toString() :"");
+			parser.setIsDuplicate(objIn[26]!=null? objIn[26].toString() :"");
+			parser.setNiItemSuggstive(objIn[27]!=null? objIn[27].toString() :"");
+			parser.setPoAsRepVal1(objIn[28]!=null? objIn[28].toString() :"");
+			parser.setPoAsRepVal2(objIn[29]!=null? objIn[29].toString() :"");
+			parser.setPoAsRepVal3(objIn[30]!=null? objIn[30].toString() :"");
+			parser.setPoAsRepVal4(objIn[31]!=null? objIn[31].toString() :"");
+			parser.setPoAsRepVal5(objIn[32]!=null? objIn[32].toString() :"");
+			parser.setPoAsRepVal6(objIn[33]!=null? objIn[33].toString() :"");
+			parser.setPoAsRepVal7(objIn[34]!=null? objIn[34].toString() :"");
+			parser.setPoAsRepVal8(objIn[35]!=null? objIn[35].toString() :"");
+			parser.setPoAsRepVal9(objIn[36]!=null? objIn[36].toString() :"");
+			parser.setPoAsRepVal10(objIn[37]!=null? objIn[37].toString() :"");
+			parser.setPoAsRepVal11(objIn[38]!=null? objIn[38].toString() :"");
+			parser.setPoAsRepVal12(objIn[39]!=null? objIn[39].toString() :"");
+			parser.setPoAsRepVal13(objIn[40]!=null? objIn[40].toString() :"");
+			parser.setPoAsRepVal14(objIn[41]!=null? objIn[41].toString() :"");
+			parser.setPoAsRepVal15(objIn[42]!=null? objIn[42].toString() :"");
+			parser.setPoAsRepVal16(objIn[43]!=null? objIn[43].toString() :"");
+			parser.setPoAsRepVal17(objIn[44]!=null? objIn[44].toString() :"");
+			parser.setPoAsRepVal18(objIn[45]!=null? objIn[45].toString() :"");	
+			parser.setPoAsRepVal19(objIn[46]!=null? objIn[46].toString() :"");
+			parser.setPoAsRepVal20(objIn[47]!=null? objIn[47].toString() :"");
+			parser.setAccountNumber(objIn[48]!=null? objIn[48].toString() :"");
+			parserList.add(parser);	
+		}
+		}
+		return parserList;
+	}catch(Exception e)
+	{
+		e.printStackTrace();
+		return null;
+	}	
+	
+}
+
+@Override
+public Integer updateUserSessionId(User user,String sessionId){
+	Integer updateCount=0;
+	try{
+		StringBuilder sql=new StringBuilder("");
+		sql.append("UPDATE USERS SET USER_SESSION_ID=:sessionId WHERE USER_ID =:userId");
+		Query query = entityManager.createNativeQuery(sql.toString());
+		query.setParameter("sessionId", sessionId);
+		query.setParameter("userId", user.getUserId());
+		updateCount=query.executeUpdate();
+		
+	}catch(Exception e){
+		e.printStackTrace();
+	}
+	return updateCount;
+}
+@Override
+public Integer updateUserSessionIdAsNull(User user){
+	Integer updateCount=0;
+	try{
+		StringBuilder sql=new StringBuilder("");
+		sql.append("UPDATE USERS SET USER_SESSION_ID=null WHERE USER_ID =:userId");
+		Query query = entityManager.createNativeQuery(sql.toString());
+		query.setParameter("userId", user.getUserId());
+		updateCount=query.executeUpdate();
+		
+	}catch(Exception e){
+		e.printStackTrace();
+	}
+	return updateCount;
+}
+
+
+@Override
+public String getUserSessionId(User user){
+	String sessionId="";
+	try{
+		StringBuilder sql=new StringBuilder("");
+		sql.append("SELECT USER_SESSION_ID FROM USERS WHERE USER_ID =:userId");
+		Query query = entityManager.createNativeQuery(sql.toString());
+		query.setParameter("userId", user.getUserId());
+		
+		Object obj=query.getSingleResult();
+		if(obj!=null){
+			sessionId=obj.toString();
+		}
+		
+	}catch(Exception e){
+		e.printStackTrace();
+		return "";
+	}
+	return sessionId;
+}
+
+@Override
+public Integer updateUserSessionIdAsNullForAllUser(){
+	Integer updateCount=0;
+	try{
+		StringBuilder sql=new StringBuilder("");
+		sql.append("UPDATE USERS SET USER_SESSION_ID=null ");
+		Query query = entityManager.createNativeQuery(sql.toString());
+		
+		updateCount=query.executeUpdate();
+		
+	}catch(Exception e){
+		e.printStackTrace();
+	}
+	return updateCount;
+}
+@SuppressWarnings("unchecked")
+@Override
+public List<ParserOutput> getParserOutputByFilingAndSectionForQACheck(Integer filingId, String statementType,String modifiedBy) throws Exception 
+{
+	
+	String sql = null;
+	if(statementType.equalsIgnoreCase("SUPPL"))
+	{
+		if(modifiedBy.equalsIgnoreCase("")){
+			sql = "select  PO_ID, WQ_ID,PO_SECTION,PO_AS_REP_LABEL,PO_INDEX_ORDER,NIL_LABEL,NI_ITEM,PO_SUBSECTION,PO_BREAKUP,PO_SUBTOTAL1,CUSTODIAN_NAME,TIME_PERIOD, PO_YCOORDINATES,PO_MERGE,PO_TABLE_ID,page_no,PO_CRUD_ACCOUNT,"
+		            +"filing_id,NON_ENGLISH_LABEL, PO_ANCHOR,TEMPLATE_ID,REF_PO_ID,UPLOAD_ID ,PO_NOTE,MAPPING_NAME,MAPPING_TYPE ,IS_DUPLICATE ,NI_ITEM_SUGGESTIVE,PO_VAL1, PO_VAL2,PO_VAL3,PO_VAL4,PO_VAL5,PO_VAL6,PO_VAL7,PO_VAL8,"
+		            +"PO_VAL9,PO_VAL10,PO_VAL11,PO_VAL12,PO_VAL13,PO_VAL14,PO_VAL15,PO_VAL16,PO_VAL17,PO_VAL18,PO_VAL19,PO_VAL20,ACCOUNT_NUMBER,PO_MODIFIED_BY,MODIFIED_BY from PARSER_OUTPUT where "
+		            +"filing_id=:filingId and PO_SECTION=:statementType AND MODIFIED_BY IS NOT NULL AND PO_CRUD_ACCOUNT NOT like 'D' and (REF_PO_ID=-1 or REF_PO_ID is null) order by PO_INDEX_ORDER";
+		}else{
+			sql = "select  PO_ID, WQ_ID,PO_SECTION,PO_AS_REP_LABEL,PO_INDEX_ORDER,NIL_LABEL,NI_ITEM,PO_SUBSECTION,PO_BREAKUP,PO_SUBTOTAL1,CUSTODIAN_NAME,TIME_PERIOD, PO_YCOORDINATES,PO_MERGE,PO_TABLE_ID,page_no,PO_CRUD_ACCOUNT,"
+		            +"filing_id,NON_ENGLISH_LABEL, PO_ANCHOR,TEMPLATE_ID,REF_PO_ID,UPLOAD_ID ,PO_NOTE,MAPPING_NAME,MAPPING_TYPE ,IS_DUPLICATE ,NI_ITEM_SUGGESTIVE,PO_VAL1, PO_VAL2,PO_VAL3,PO_VAL4,PO_VAL5,PO_VAL6,PO_VAL7,PO_VAL8,"
+		            +"PO_VAL9,PO_VAL10,PO_VAL11,PO_VAL12,PO_VAL13,PO_VAL14,PO_VAL15,PO_VAL16,PO_VAL17,PO_VAL18,PO_VAL19,PO_VAL20,ACCOUNT_NUMBER,PO_MODIFIED_BY,MODIFIED_BY from PARSER_OUTPUT where "
+		            +"filing_id=:filingId and PO_SECTION=:statementType AND (MODIFIED_BY IS NOT NULL AND MODIFIED_BY=:modifiedBy) AND PO_CRUD_ACCOUNT NOT like 'D' and (REF_PO_ID=-1 or REF_PO_ID is null) order by PO_INDEX_ORDER";
+		}
+		
+	}else
+	{
+		ResourceBundle sqlQuery = ResourceBundle.getBundle("oracleSqlQuerys");
+		if(!modifiedBy.equalsIgnoreCase("")){
+			sql =sqlQuery.getString("getParserOutPutForQAChecksBreakup");	
+		}else{
+			sql =sqlQuery.getString("getParserOutPutForQAChecks");	
+		}
+		
+	}
+	try {
+		
+		Query query = entityManager.createNativeQuery(sql);
+		if(!modifiedBy.equalsIgnoreCase("")){
+			query.setParameter("modifiedBy", modifiedBy);
+		}
+		query.setParameter("filingId", filingId);
+		query.setParameter("statementType", statementType);
+		List<Object[]> parserOutputList = query.getResultList();
+		List<ParserOutput> parserList=new ArrayList<ParserOutput>();
+		parserList=prepareParserOutputList(parserOutputList);
+		
+		return parserList;
+	}catch(Exception e)
+	{
+		e.printStackTrace();
+		return null;
+	}
+}
+
+@SuppressWarnings("unchecked")
+@Override
+public List<ParserOutput> f_getParserOutputByFilingIdandStatementTypeForNormQACheck(Integer filingId, String statementType,String subSection,String isSubSection,Integer firstRecord,Integer displayRecords,Integer colCountValue, String numberFormatCheckForMappedUnmappedItems)
+{
+		String sql = null;
+		String finalQuery = null;
+		String isNotNullColumns1="";
+		String isNotNullColumns2="";
+		List<Object[]> parserOutputList=new ArrayList<>();
+		ResourceBundle sqlQuery = ResourceBundle.getBundle("oracleSqlQuerys");
+		ResourceBundle jdbcProperties = ResourceBundle.getBundle("jdbc");
+		String dataBase =jdbcProperties.getString("app.jdbc.database");
+		//common for both for this logic for append poval  is not null
+		if(colCountValue!=null && colCountValue!=0){
+		String nullConditionPoValuesss=nullCoditionPoValues(colCountValue,dataBase);
+		   isNotNullColumns1=nullConditionPoValuesss.replace("x", "t");
+	       isNotNullColumns2=nullConditionPoValuesss.replace("x", "po");	
+		}	
+		//end
+		
+		if(isSubSection.equalsIgnoreCase("Y")){
+			if(numberFormatCheckForMappedUnmappedItems.equalsIgnoreCase("Y"))
+			{
+				sql =sqlQuery.getString("getRulesNormalizationListForNormQAChecksBySubSectionClientSpecific");
+			}
+			else
+			{
+				sql =sqlQuery.getString("getRulesNormalizationListForNormQAChecksBySubSection");
+			}
+		
+		finalQuery=sql.replace("$:notNullColumns1",isNotNullColumns1).replace("$:notNullColumns2",isNotNullColumns2);
+		}else{
+	    sql =sqlQuery.getString("getRulesNormalizationListForNormQAChecks");
+	    finalQuery=sql.replace("$:notNullColumns1",isNotNullColumns1).replace("$:notNullColumns2",isNotNullColumns2);
+	    }
+	try {
+		Query query = entityManager.createNativeQuery(finalQuery);
+		query.setParameter("filingId", filingId);
+		query.setParameter("statementType", statementType);
+		if(isSubSection.equalsIgnoreCase("Y")){
+		//eg: IS-Rev~IS-cogs~IS-exp~IS-Nonop
+		String[] subSectionArrray=subSection.split("~");
+		if(subSectionArrray!=null && subSectionArrray.length>0){
+			query.setParameter("subSectionList", Arrays.asList(subSectionArrray));
+		}else{
+			query.setParameter("subSectionList", "");
+		}
+		}else
+		{
+			if(dataBase!=null && dataBase.equalsIgnoreCase("ORACLE"))
+			{
+			query.setFirstResult(firstRecord);
+			query.setMaxResults(displayRecords);
+		   }else{
+			query.setParameter("FirstResult",firstRecord);
+			query.setParameter("MaxResults",displayRecords);
+		   }
+		}
+		parserOutputList = query.getResultList();	
+		List<ParserOutput> parserList=new ArrayList<ParserOutput>();
+		List<ParserOutput> finalParserList=new ArrayList<ParserOutput>();
+		List<ParserOutput> tempParserList=null;
+		parserList=prepareParserOutputList(parserOutputList);
+		boolean isNonNumaric=false;
+		if(isSubSection.equalsIgnoreCase("Y") && numberFormatCheckForMappedUnmappedItems.equalsIgnoreCase("Y") && !CollectionUtils.isEmpty(parserList))
+		{
+			tempParserList=new ArrayList<ParserOutput>();
+			Method  method = null;
+			Object objectValue = null;
+			Class<?> parserOutputClass =null;
+			try {
+				parserOutputClass = Class.forName("com.livespread.domain.ParserOutput");
+			} catch (ClassNotFoundException e1) {
+				e1.printStackTrace();
+			}
+			
+			for(int count=0;count<parserList.size();count++)
+			{
+				isNonNumaric=false;
+				ParserOutput selectdParserOutput = parserList.get(count);
+				if(selectdParserOutput.getNiItem()!=null && selectdParserOutput.getNiItem().intValue()!=0)
+				{
+					for (int i = 1 ; i<= colCountValue; i++){
+						method = parserOutputClass.getDeclaredMethod("getPoAsRepVal"+i);
+						objectValue = method.invoke (selectdParserOutput);
+						if(objectValue!=null && !objectValue.toString().isEmpty());
+						{
+							String value=objectValue.toString().trim();
+							
+							if(value!=null && value.length()>0 && !checkNumaricRules(value))
+							{
+								isNonNumaric=true;
+								break;
+							}
+						}
+					}
+					if(isNonNumaric)
+					{
+						tempParserList.add(selectdParserOutput);
+					}
+				}
+				else
+				{
+					tempParserList.add(selectdParserOutput);
+				}
+				
+			}
+			finalParserList.addAll(tempParserList);
+		}
+		else
+		{
+			finalParserList.addAll(parserList);
+		}
+		return finalParserList;
+	}catch(Exception e)
+	{
+		e.printStackTrace();
+		LOGGER.error("error in f_getParserOutputByFilingIdandStatementTypeForNormQACheck  method "+e);
+		return null;
+	}
+}
+
+	//login for null values add into Query					   
+private String nullCoditionPoValues(Integer colCountValue,String dataBase) {
+	String isNotNullClmn1="";
+	StringBuilder isNotNullVals=new StringBuilder();
+	isNotNullVals.append(" and (");
+for(int i=1;i<=colCountValue;i++){
+	if(dataBase!=null && dataBase.equalsIgnoreCase("ORACLE")){
+				if (i == colCountValue) {
+					isNotNullVals.append("(trim(x.PO_VAL"+i+") is not null)");
+				} else {
+					isNotNullVals.append("(trim(x.PO_VAL"+i+") is not null) or ");
+				}
+	}else{
+				if(i==colCountValue){
+					isNotNullVals.append("(x.PO_VAL"+i+" is not null and x.PO_VAL"+i+"!='')");		
+				}else{
+					isNotNullVals.append("(x.PO_VAL"+i+" is not null and x.PO_VAL"+i+"!='')  or ");		
+				}		
+	}
+}	
+    isNotNullVals.append(")");
+		   isNotNullClmn1=isNotNullVals.toString();
+	return isNotNullClmn1;
+}
+
+private List<ParserOutput> prepareParserOutputList(List<Object[]> parserOutputList){
+
+try {
+	
+	List<ParserOutput> parserList=new ArrayList<ParserOutput>();
+	ParserOutput  parser=null;
+	if(!CollectionUtils.isEmpty(parserOutputList)){
+		for (Object object : parserOutputList) {
+			Object[] objIn = (Object[]) object;
+			parser=new ParserOutput();
+			parser.setPoId(objIn[0]!=null? new Integer(objIn[0].toString()) :0);
+			parser.setWqId(objIn[1]!=null? new Integer(objIn[1].toString()) :0);
+			parser.setPoSection(objIn[2]!=null? objIn[2].toString() :"");
+			parser.setPoAsRepLabel(objIn[3]!=null? objIn[3].toString() :"");
+			parser.setPoIndexOrder(objIn[4]!=null? new Integer(objIn[4].toString()) :0);
+			parser.setNilLabel(objIn[5]!=null? objIn[5].toString() :"");
+			parser.setNiItem(objIn[6]!=null? new Integer(objIn[6].toString()) :0);
+			parser.setPoSubSection(objIn[7]!=null? objIn[7].toString() :"");
+			parser.setPoBreakup(objIn[8]!=null? objIn[8].toString() :"");
+			parser.setPoSubTotal(objIn[9]!=null? objIn[9].toString() :"");
+			parser.setCustodianName(objIn[10]!=null? objIn[10].toString() :"");
+			parser.setTimePeriod(objIn[11]!=null? objIn[11].toString() :"");
+			parser.setPoYcoordinates(objIn[12]!=null? objIn[12].toString() :"");
+			parser.setPoMerge(objIn[13]!=null? objIn[13].toString() :"");
+			parser.setPoTableId(objIn[14]!=null? objIn[14].toString() :"");
+			parser.setPageNo(objIn[15]!=null? objIn[15].toString() :"");
+			parser.setPoCrudAccount(objIn[16]!=null? objIn[16].toString() :"");
+			parser.setFillingId(objIn[17]!=null? new Integer(objIn[17].toString()) :0);
+			parser.setNonEnglishLable(objIn[18]!=null? objIn[18].toString() :"");
+			parser.setPoAnchor(objIn[19]!=null? objIn[19].toString() :"");
+			parser.setTemplateId(objIn[20]!=null? new Integer(objIn[20].toString()) :0);	
+			parser.setRefPoId(objIn[21]!=null? new Integer(objIn[21].toString()) :0);
+			parser.setUploadId(objIn[22]!=null? new Integer(objIn[22].toString()) :0);
+			parser.setNote(objIn[23]!=null? objIn[23].toString() :"");
+			parser.setMappingName(objIn[24]!=null? objIn[24].toString() :"");
+			parser.setMappingType(objIn[25]!=null? objIn[25].toString() :"");
+			parser.setIsDuplicate(objIn[26]!=null? objIn[26].toString() :"");
+			parser.setNiItemSuggstive(objIn[27]!=null? objIn[27].toString() :"");
+			parser.setPoAsRepVal1(objIn[28]!=null? objIn[28].toString() :"");
+			parser.setPoAsRepVal2(objIn[29]!=null? objIn[29].toString() :"");
+			parser.setPoAsRepVal3(objIn[30]!=null? objIn[30].toString() :"");
+			parser.setPoAsRepVal4(objIn[31]!=null? objIn[31].toString() :"");
+			parser.setPoAsRepVal5(objIn[32]!=null? objIn[32].toString() :"");
+			parser.setPoAsRepVal6(objIn[33]!=null? objIn[33].toString() :"");
+			parser.setPoAsRepVal7(objIn[34]!=null? objIn[34].toString() :"");
+			parser.setPoAsRepVal8(objIn[35]!=null? objIn[35].toString() :"");
+			parser.setPoAsRepVal9(objIn[36]!=null? objIn[36].toString() :"");
+			parser.setPoAsRepVal10(objIn[37]!=null? objIn[37].toString() :"");
+			parser.setPoAsRepVal11(objIn[38]!=null? objIn[38].toString() :"");
+			parser.setPoAsRepVal12(objIn[39]!=null? objIn[39].toString() :"");
+			parser.setPoAsRepVal13(objIn[40]!=null? objIn[40].toString() :"");
+			parser.setPoAsRepVal14(objIn[41]!=null? objIn[41].toString() :"");
+			parser.setPoAsRepVal15(objIn[42]!=null? objIn[42].toString() :"");
+			parser.setPoAsRepVal16(objIn[43]!=null? objIn[43].toString() :"");
+			parser.setPoAsRepVal17(objIn[44]!=null? objIn[44].toString() :"");
+			parser.setPoAsRepVal18(objIn[45]!=null? objIn[45].toString() :"");	
+			parser.setPoAsRepVal19(objIn[46]!=null? objIn[46].toString() :"");
+			parser.setPoAsRepVal20(objIn[47]!=null? objIn[47].toString() :"");
+			parser.setAccountNumber(objIn[48]!=null? objIn[48].toString() :"");
+			parser.setModifiedBy(objIn[50]!=null? objIn[50].toString() :"");
+			parserList.add(parser);	
+		}
+	}
+	return parserList;
+}catch(Exception e)
+{
+	e.printStackTrace();
+	return null;
+}
+	
+
+}
+
+
+
+@Override
+public Integer f_getCountParserOutputByFilingIdandStatementTypeForNormQACheck(Integer filingId, String statementType,Integer colCountValue)
+{
+		String sql = null;
+		String finalQuery = null;
+		String isNotNullColumns1="";
+		String isNotNullColumns2="";	
+		ResourceBundle sqlQuery = ResourceBundle.getBundle("oracleSqlQuerys");
+		ResourceBundle jdbcProperties = ResourceBundle.getBundle("jdbc");
+	   String dataBase =jdbcProperties.getString("app.jdbc.database");
+		//common for both for this logic
+		if(colCountValue!=null && colCountValue!=0){
+		String nullConditionPoValuesss=nullCoditionPoValues(colCountValue,dataBase);
+		   isNotNullColumns1=nullConditionPoValuesss.replace("x", "t");
+	       isNotNullColumns2=nullConditionPoValuesss.replace("x", "po");	
+		}	
+		//end	
+	    sql =sqlQuery.getString("getCountRulesNormalizationListForNormQAChecks");
+		finalQuery=sql.replace("$:notNullColumns1",isNotNullColumns1).replace("$:notNullColumns2",isNotNullColumns2);
+	try {
+		Query query = entityManager.createNativeQuery(finalQuery);
+		query.setParameter("filingId", filingId);
+		query.setParameter("statementType", statementType);
+		Object queryResultCount=query.getResultList().get(0);
+		 if(null!=queryResultCount && queryResultCount instanceof BigDecimal){
+			BigDecimal count = (BigDecimal) queryResultCount;
+			return count.intValue();
+		 }
+		return (Integer) queryResultCount;
+	
+	}catch(Exception e)
+	{
+		e.printStackTrace();
+		LOGGER.error("Error:",e);
+	}
+
+	return 0;
+}
+
+@SuppressWarnings("unchecked")
+@Override
+public List<Object> getAsRepStmtByFilingId(Integer filingId,String stmtFormat){
+	try{
+		String sql = "";
+		ResourceBundle sqlQuery = ResourceBundle.getBundle("oracleSqlQuerys");
+		sql =sqlQuery.getString("getAsRepStatementByFilingIdAuditFlag");	
+		Query query = entityManager.createNativeQuery(sql);
+		query.setParameter("filingId", filingId);
+		List<Object> objectList = query.getResultList();	
+		return objectList;
+	}catch(Exception e){
+		e.printStackTrace();
+		LOGGER.error("Error:",e);
+	}
+	return null;
+}
+
+@SuppressWarnings("unchecked")
+@Override
+public List<Object> getFinancialItemsByFilter(FinancialItemsCommand financialItemsCommand){
+	try{
+		StringBuilder sqlBuilder =new StringBuilder();
+		sqlBuilder.append("SELECT FI.FI_ID,FI.FI_SECTION,FI.FI_SUB_SECTION,FI.FI_INDUSTRY,FI.FI_LABEL,NIL.NIL_LABEL,FI.FI_STATUS ")
+				  .append("FROM FINANCIAL_ITEMS FI LEFT JOIN NORM_ITEM_LABELS NIL on FI.NI_ITEM=NIL.NI_ITEM and FI.TEMPLET_ID=NIL.TEMPLATE_ID ")
+		          .append(" INNER JOIN USERS U ON FI.ANALYST_ID= U.USER_ID AND U.USERS_GROUP_ID=:userGroup ");
+		StringBuilder conditionBuilder =new StringBuilder("");
+		
+		if(null != financialItemsCommand.geteId() && financialItemsCommand.geteId().intValue()>0){
+			conditionBuilder.append(" FI.E_ID =:companyId ");
+		}
+		
+		if(null != financialItemsCommand.getStardDate() && null != financialItemsCommand.getEndDate()){
+			if(conditionBuilder.toString().length()>0){
+				conditionBuilder.append(" AND ");
+			}
+			conditionBuilder.append(" FI.CREATE_DATE BETWEEN :startDate AND :endDate ");
+		}
+		
+		if(conditionBuilder.toString().length()>0){
+			sqlBuilder.append(" WHERE upper(FI.FI_STATUS)=upper('Pending') AND").append(conditionBuilder.toString());
+		}else{
+			sqlBuilder.append(" WHERE upper(FI.FI_STATUS)=upper('Pending') ");
+		}
+		
+		Query query = entityManager.createNativeQuery(sqlBuilder.toString());
+		if(null != financialItemsCommand.geteId() && financialItemsCommand.geteId().intValue()>0){
+			query.setParameter("companyId", financialItemsCommand.geteId());
+		}
+		if(null != financialItemsCommand.getStardDate() && null != financialItemsCommand.getEndDate()){
+			query.setParameter("startDate", financialItemsCommand.getStardDate());
+			query.setParameter("endDate", financialItemsCommand.getEndDate());
+		}
+		query.setParameter("userGroup", financialItemsCommand.getUser().getUserGroupId());
+		List<Object> fiObjectList = query.getResultList();	
+		return fiObjectList;
+	}catch(Exception e){
+		e.printStackTrace();
+		LOGGER.error("Error:",e);
+	}
+	
+	return null;
+	
+}
+
+@Override
+public int bulkUpdateFinancialItems(List<FinancialItemsCommand> financialItemsCommandList){
+	
+	int i=1;
+	Query query=entityManager.createNativeQuery("UPDATE FINANCIAL_ITEMS SET FI_STATUS =:fiStatus where FI_ID=:fiId");
+	for(FinancialItemsCommand financialItemsCommand :financialItemsCommandList){
+		query.setParameter("fiStatus", "Approved");
+		query.setParameter("fiId", financialItemsCommand.getFiId());
+		  i++;
+		  if ( i % 15 == 0 ){
+			  entityManager.flush();
+			  entityManager.clear();
+		  }
+		  query.executeUpdate();
+		
+	}
+	return financialItemsCommandList.size();
+	
+}
+
+
+
+@SuppressWarnings("unchecked")
+@Override
+public ParserOutput f_getParserOutputStatementYearByFilingIdandStatementTypeForNormQACheck(Integer filingId,String poSection, Integer colCountValue) 
+{
+
+		String sql = null;
+		List<Object[]> parserOutputList=new ArrayList<>();
+		ResourceBundle sqlQuery = ResourceBundle.getBundle("oracleSqlQuerys");
+		if(colCountValue!=null && colCountValue!=0)
+		{
+			sql =sqlQuery.getString("getStatementYearForNormQAChecks");
+			try {
+				Query query = entityManager.createNativeQuery(sql);
+				query.setParameter("filingId", filingId);
+				query.setParameter("poSection", poSection);
+				parserOutputList = query.getResultList();	
+				List<ParserOutput> parserList=new ArrayList<ParserOutput>();
+				parserList=prepareParserOutputList(parserOutputList);
+				if(!CollectionUtils.isEmpty(parserList))
+				{
+					return parserList.get(0);	
+				}
+				else
+				{
+					return null;
+				}
+				
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+				LOGGER.error("error in f_getParserOutputStatementYearByFilingIdandStatementTypeForNormQACheck  method "+e);
+				return null;
+			}
+		}
+		else
+		{
+			return null;
+		}
+}
+
+@SuppressWarnings("unchecked")
+@Override
+public List<Object> getPdfExtractionMetaDataListByByFilter(PdfExtractionMetadatCommand pdfExtractionMetadatCommand){
+	try{
+		
+		StringBuilder usersSqlBuilder =new StringBuilder();
+		usersSqlBuilder.append("SELECT USER_ID FROM USERS WHERE USERS_GROUP_ID=:userGroup");
+		Query query = entityManager.createNativeQuery(usersSqlBuilder.toString());
+		query.setParameter("userGroup", pdfExtractionMetadatCommand.getUser().getUserGroupId());
+		List<Integer> userList = (ArrayList<Integer>) (Object) query.getResultList();
+		
+		query=null;
+		StringBuilder processLogsqlBuilder =new StringBuilder();
+		processLogsqlBuilder.append("SELECT PLT.FILLING_ID ")
+				  .append("FROM PROCESS_LOG_TRACKER PLT INNER JOIN USERS U ON PLT.USER_ID= U.USER_ID AND U.USERS_GROUP_ID=:userGroup WHERE UPPER(ACTIVITY) ='REPROCESS' ");
+		
+		query = entityManager.createNativeQuery(processLogsqlBuilder.toString());
+		query.setParameter("userGroup", pdfExtractionMetadatCommand.getUser().getUserGroupId());
+		List<Integer> fillingListObj1 = (ArrayList<Integer>) (Object) query.getResultList();
+		Set<Integer> fillingListObj = new HashSet<Integer>();
+		for(Integer filingId : fillingListObj1){
+			fillingListObj.add(filingId);
+		}
+		query=null;
+		if(!CollectionUtils.isEmpty(fillingListObj)){
+			StringBuilder sqlBuilder =new StringBuilder();
+			sqlBuilder.append("SELECT PEM.PEM_PID,PEM.PEM_SECTION,PEM.LANGUAGE,PEM.PEM_BEGIN_KEYWORD,PEM.PEM_ROW_SEGMENTATION_TYPE,PEM.PEM_COLUMN_NUMBER_TO_SPLIT,PEM.STATUS ")
+					  .append("FROM LS_PDF_EXTRACTION_METADATA PEM ");
+			StringBuilder conditionBuilder =new StringBuilder("");
+			
+			if(null != pdfExtractionMetadatCommand.geteId() && pdfExtractionMetadatCommand.geteId().intValue()>0){
+				conditionBuilder.append(" PEM.PEM_EID =:companyId ");
+			}
+			
+			if(null != pdfExtractionMetadatCommand.getStardDate() && null != pdfExtractionMetadatCommand.getEndDate()){
+				if(conditionBuilder.toString().length()>0){
+					conditionBuilder.append(" AND ");
+				}
+				conditionBuilder.append(" PEM.CREATE_DATE BETWEEN :startDate AND :endDate ");
+			}
+			
+			if(conditionBuilder.toString().length()>0){
+				sqlBuilder.append(" WHERE upper(PEM.STATUS)=upper('Pending') AND PEM.PEM_FILINGID IN (:pemFilingIdList) AND PEM.CREATED_BY in (:userList) AND ").append(conditionBuilder.toString());
+			}else{
+				sqlBuilder.append(" WHERE upper(PEM.STATUS)=upper('Pending') AND PEM.PEM_FILINGID IN (:pemFilingIdList) PEM.CREATED_BY in (:userList) ");
+			}
+			
+			query = rageEntityManager.createNativeQuery(sqlBuilder.toString());
+			if(null != pdfExtractionMetadatCommand.geteId() && pdfExtractionMetadatCommand.geteId().intValue()>0){
+				query.setParameter("companyId", pdfExtractionMetadatCommand.geteId());
+			}
+			
+			if(null != pdfExtractionMetadatCommand.getStardDate() && null != pdfExtractionMetadatCommand.getEndDate()){
+				query.setParameter("startDate", pdfExtractionMetadatCommand.getStardDate());
+				query.setParameter("endDate", pdfExtractionMetadatCommand.getEndDate());
+			}
+			query.setParameter("pemFilingIdList", fillingListObj);
+			query.setParameter("userList", userList);
+			List<Object> pdfExtractionMetadaList = query.getResultList();	
+			return pdfExtractionMetadaList;
+		}
+	}catch(Exception e){
+		e.printStackTrace();
+		LOGGER.error("Error:",e);
+	}
+	return null;
+}
+
+@Override
+public int bulkUpdateExtractionRules(List<PdfExtractionMetadatCommand> pdfExtractionMetadatCommandList){
+	
+	int i=1;
+	Query query=rageEntityManager.createNativeQuery("UPDATE LS_PDF_EXTRACTION_METADATA SET STATUS =:pemStatus, GLOBAL_LEVEL='Y' where PEM_PID=:pemId");
+	query.setParameter("pemStatus", "Approved");
+	for(PdfExtractionMetadatCommand pdfExtractionMetadatCommand :pdfExtractionMetadatCommandList){
+		query.setParameter("pemId", pdfExtractionMetadatCommand.getPemId());
+		  i++;
+		  if ( i % 15 == 0 ){
+			  rageEntityManager.flush();
+			  rageEntityManager.clear();
+		  }
+		  query.executeUpdate();
+	}
+	return pdfExtractionMetadatCommandList.size();
+}
+
+@SuppressWarnings("unchecked")
+public Long getCountResult(String dynamicQuery,Map<String,Object> parameters){
+	Number records=0;
+	try{
+		Query countQuery = rageEntityManager.createNativeQuery(dynamicQuery);	
+	if(parameters!=null && !parameters.isEmpty())
+	for (Entry<String, Object> entry : parameters.entrySet()) {
+		countQuery.setParameter(entry.getKey(), entry.getValue());
+	}
+	List<Number> countVal=countQuery.getResultList();
+	records=countVal.get(0);
+	}
+	catch(Exception e){
+		e.printStackTrace();
+		LOGGER.error("Error getCountResult:",e);
+	}
+	return records.longValue();
+	}
+
+@SuppressWarnings("unchecked")
+public Long getECountResult(String dynamicQuery,Map<String,Object> parameters){
+	Number records=0;
+	try{
+		Query countQuery = entityManager.createNativeQuery(dynamicQuery);	
+	if(parameters!=null && !parameters.isEmpty())
+	for (Entry<String, Object> entry : parameters.entrySet()) {
+		countQuery.setParameter(entry.getKey(), entry.getValue());
+	}
+	List<Number> countVal=countQuery.getResultList();
+	records=countVal.get(0);
+	}
+	catch(Exception e){
+		e.printStackTrace();
+		LOGGER.error("Error getCountResult:",e);
+	}
+	return records.longValue();
+	}
+
+@SuppressWarnings("unchecked")
+@Override
+public List<Object> getListOfObjects(String dynamicQuery,Map<String, Object> parameters) {
+	List<Object>  listObjects=null;
+	try{
+	Query querySelect = rageEntityManager.createNativeQuery(dynamicQuery);
+	if(parameters!=null){
+		for (Entry<String, Object> entry : parameters.entrySet()) {
+			querySelect.setParameter(entry.getKey(), entry.getValue());
+		}
+	}
+	listObjects=querySelect.getResultList();
+	}catch(Exception e){
+		e.printStackTrace();
+		LOGGER.error("Error getListOfObjects:",e);
+	}
+	return listObjects;
+}
+
+@SuppressWarnings("unchecked")
+@Override
+public List<Object> getEListOfObjects(String dynamicQuery,Map<String, Object> parameters) {
+	List<Object>  listObjects=null;
+	try{
+	Query querySelect = entityManager.createNativeQuery(dynamicQuery);
+	if(parameters!=null){
+		for (Entry<String, Object> entry : parameters.entrySet()) {
+			querySelect.setParameter(entry.getKey(), entry.getValue());
+		}
+	}
+	listObjects=querySelect.getResultList();
+	}catch(Exception e){
+		e.printStackTrace();
+		LOGGER.error("Error getListOfObjects:",e);
+	}
+	return listObjects;
+}
+
+private boolean checkNumaricRules(String value)
+{
+	if(checkNumber(value))
+		{
+			return true;			
+		}
+	if(checkNumber(generateNumberForSpanish(value)))
+		{
+			return true;
+		}
+	return false;
+}
+
+private String generateNumberForSpanish(String value)
+{
+    value = value.replaceAll("\\.","/*/");
+    value = value.replaceAll(",","\\.");
+    value = value.replaceAll("/*/",",");
+    return value;
+}
+
+private boolean checkNumber(String number)
+{
+	String regex = "(?=.)^\\$?^[-]?(([1-9][0-9]{0,2}(,[0-9]{3})*)|[0-9]+)?(\\.[0-9]{1,10})?$";
+	Pattern p = Pattern.compile(regex);
+	Matcher m = p.matcher(number);  
+	return m.matches();
+}
+
+@Override
+public List<POCordHighlightDetails> getCoordinateDetailByPoIdList(List<List<Integer>> outputPoIdList) 
+{
+	String queryString = "SELECT poc FROM POCordHighlightDetails poc WHERE ";
+	List<POCordHighlightDetails> finalCordHighlightDetails = null;
+	List<POCordHighlightDetails> cordHighlightDetails = null;
+	
+	TypedQuery<POCordHighlightDetails> queryquery=null;
+	String poIdString ="poIdString";
+	TypedQuery<POCordHighlightDetails> query=null;
+	if(!CollectionUtils.isEmpty(outputPoIdList))
+	{
+		finalCordHighlightDetails = new ArrayList<>();
+		for (int count=0;count<outputPoIdList.size();count++) 
+		{
+			String finalQueryString = queryString+" poc.poId in :"+poIdString+count;
+			query=entityManager.createQuery(finalQueryString,POCordHighlightDetails.class);
+			query.setParameter(poIdString+count, outputPoIdList.get(count));
+			cordHighlightDetails = query.getResultList();
+			if(!CollectionUtils.isEmpty(cordHighlightDetails))
+			{
+				finalCordHighlightDetails.addAll(cordHighlightDetails);
+			}
+		}
+	}
+	return finalCordHighlightDetails;
+}
+
+@SuppressWarnings("unchecked")
+@Override
+public NormalizationBreakupData normalizationBreakupDetailsForClickBack(Integer selectedPoId, String columnName,String coordinateColumn) 
+{
+	List<Object[]> normalizationBreakupDetailsObjectList = new ArrayList<Object[]>();
+	NormalizationBreakupData normalizationBreakupData = null;
+	String sql = "select po.PO_ID,po.PO_INDEX_ORDER,po.PO_AS_REP_LABEL,po.PO_SECTION,"+columnName+","+coordinateColumn+",po.FILING_ID,po.NON_ENGLISH_LABEL,po.PO_FILER_REPORTED,po.NIL_LABEL,po.NI_ITEM from PARSER_OUTPUT po left join PO_CORD_HIGHLIGHT_DETAILS POCH on (po.PO_ID = POCH.PO_ID) where po.PO_ID = :poId";
+	Query query = entityManager.createNativeQuery(sql);
+	query.setParameter("poId", selectedPoId);
+	try {
+		normalizationBreakupDetailsObjectList = query.getResultList();
+		if(normalizationBreakupDetailsObjectList!=null && !normalizationBreakupDetailsObjectList.isEmpty())
+		{
+			
+		Object[] normalizationBreakupDetailsObjectArray = normalizationBreakupDetailsObjectList.get(0);	
+			
+			if(normalizationBreakupDetailsObjectArray[4]!=null && !normalizationBreakupDetailsObjectArray[4].toString().isEmpty())
+			{
+				normalizationBreakupData = new NormalizationBreakupData();
+				normalizationBreakupData.setPoId(new Integer(normalizationBreakupDetailsObjectArray[0].toString()));
+				normalizationBreakupData.setPoIndex(normalizationBreakupDetailsObjectArray[1] == null ? 0 : new Integer(normalizationBreakupDetailsObjectArray[1].toString()));
+				normalizationBreakupData.setAsRepLabel(normalizationBreakupDetailsObjectArray[2] == null ? "" : normalizationBreakupDetailsObjectArray[2].toString());
+				normalizationBreakupData.setSection(normalizationBreakupDetailsObjectArray[3] == null ? "" : normalizationBreakupDetailsObjectArray[3].toString());
+				normalizationBreakupData.setAsRepValue(normalizationBreakupDetailsObjectArray[4] == null ? "" : normalizationBreakupDetailsObjectArray[4].toString());
+				normalizationBreakupData.setCoordinate(normalizationBreakupDetailsObjectArray[5] == null ? "" : normalizationBreakupDetailsObjectArray[5].toString());
+				normalizationBreakupData.setIsCoordinateExists(normalizationBreakupDetailsObjectArray[5] == null ? "N" : "Y");
+				Integer filingId = normalizationBreakupDetailsObjectArray[6] == null ? 0 : new Integer(normalizationBreakupDetailsObjectArray[6].toString());
+				normalizationBreakupData.setNonEnglishLable(normalizationBreakupDetailsObjectArray[7] == null ? "" : normalizationBreakupDetailsObjectArray[7].toString());
+				String encryptedFilingId = CipherUtils.encrypt(filingId.toString());
+				normalizationBreakupData.setFilingId(encryptedFilingId);
+				normalizationBreakupData.setPoFilerReported(normalizationBreakupDetailsObjectArray[8] == null ? "C" : normalizationBreakupDetailsObjectArray[8].toString());
+				normalizationBreakupData.setNiLabel(normalizationBreakupDetailsObjectArray[9] == null ? "" : normalizationBreakupDetailsObjectArray[9].toString());
+				normalizationBreakupData.setNiItem(normalizationBreakupDetailsObjectArray[10] == null ? 0 : new Integer(normalizationBreakupDetailsObjectArray[10].toString().trim()));
+			}
+		}
+	} catch (NumberFormatException e) {
+		e.printStackTrace();
+		LOGGER.error("Error:",e);
+		return normalizationBreakupData;
+	}
+	return normalizationBreakupData;	
+}
+
+@Override
+public Map<Integer,String> findLineItemsByCheckId(Integer templateId,Set<Integer> checkIdList) {
+	try{
+	String sql = "SELECT NQC.CHECK_ID,NIL.NIL_LABEL from NORM_ITEM_LABELS NIL,NORM_QA_CHECKS_META NQC WHERE NIL.NI_ITEM=NQC.NI_ITEM AND NIL.TEMPLATE_ID =:templateId "
+			+ "AND NQC.CHECK_ID IN (:checkIdList)";
+	Query query = entityManager.createNativeQuery(sql);
+	query.setParameter("templateId", templateId);
+	query.setParameter("checkIdList", checkIdList);
+	List<Object> itemLabelList = query.getResultList();
+	Map<Integer,String> checkIdLabelMap =new HashMap<Integer,String>();
+	
+	if(!CollectionUtils.isEmpty(itemLabelList)){
+		Object[] objArray=null;
+		for (Object objIn : itemLabelList){
+			objArray =(Object[]) objIn;
+			if(objArray!=null && objArray[0]!=null){
+				
+				checkIdLabelMap.put(new Integer(objArray[0].toString()), objArray[1]!=null?objArray[1].toString():"");
+			}
+			
+		}
+		
+		return checkIdLabelMap;
+		
+		
+     }else{
+    	 return null;
+     }
+	}catch(Exception e){
+		e.printStackTrace();
+		 return null;
+	}
+}
+
+@Override
+public List<ParserOutput> getParserOutputByFilingIdAndSectionAndRefPoId(NormInputParamers inputParams)throws Exception 
+{
+	String finalSqlQuery= null;
+	String asRepLabel="";
+	ResourceBundle sqlQuery = ResourceBundle.getBundle("oracleSqlQuerys");
+	finalSqlQuery =sqlQuery.getString("getChildRecordsByRefPoId");
+	Map<String, Object> parameterMap = new HashMap<String, Object>();
+	parameterMap.put("filingId", inputParams.getFillingId());
+	parameterMap.put("statementType", inputParams.getSection());
+	parameterMap.put("refPoId", inputParams.getPoId());
+    if(inputParams!=null && !StringUtils.isEmpty(inputParams.getAsRepLabel()) ){
+    	String asRepLabelVal=inputParams.getAsRepLabel().replace("'", "''");
+        asRepLabelVal=asRepLabelVal.replace("[", "[[");
+        asRepLabel=" and t.PO_AS_REP_LABEL like CONCAT('%',:asRepLable,'%') escape '[' ";
+  	    parameterMap.put("asRepLable", asRepLabelVal);
+    }
+    finalSqlQuery =finalSqlQuery.replace("$DymanicSearch", asRepLabel);
+	try {
+		Query query = entityManager.createNativeQuery(finalSqlQuery);
+		if(parameterMap!=null && !parameterMap.isEmpty()){
+			for (Entry<String, Object> entry : parameterMap.entrySet()) {
+				query.setParameter(entry.getKey(), entry.getValue());
+			}
+		}
+		List<Object[]> parserOutputList = query.getResultList();
+		List<ParserOutput> parserList=new ArrayList<ParserOutput>();
+		parserList=prepareParserOutputList(parserOutputList);	
+		return parserList;
+	}catch(Exception e)
+	{
+		e.printStackTrace();
+		return null;
+	}
+
+}
+
+}
+

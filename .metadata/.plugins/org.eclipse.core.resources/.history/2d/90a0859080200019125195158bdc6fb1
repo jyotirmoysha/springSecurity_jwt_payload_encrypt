@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" 
+xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" 
+xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" id="WebApp_ID" 
+version="3.0">
+
+
+<!-- start code for removing below http methods -->
+<security-constraint>
+<web-resource-collection>
+<web-resource-name>restricted methods</web-resource-name>
+<url-pattern>/*</url-pattern>
+<http-method>TRACE</http-method>
+<http-method>PUT</http-method>
+<http-method>DELETE</http-method>
+<http-method>OPTIONS</http-method>
+</web-resource-collection>
+</security-constraint>
+<!--End -->
+
+
+
+
+  <display-name>LiveSpread_VTA</display-name>
+    <listener>
+    <listener-class>
+        com.livespread.common.service.CustomContextListener
+    </listener-class>
+  </listener>  
+ 
+  <listener>
+    <description>HttpSessionAttributeListener</description>
+    <listener-class>com.livespread.util.ReleaseLockedUser</listener-class>
+  </listener>
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>
+			/WEB-INF/livespread-servlet.xml
+			/WEB-INF/livespread-security-context.xml
+		</param-value>
+  </context-param>
+    <context-param>
+	<param-name>javamelody.storage-directory</param-name>
+	<param-value>${catalina.base}/javamelody</param-value>
+  </context-param>
+   <servlet>
+    <servlet-name>livespread</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet>
+    <servlet-name>updateUser</servlet-name>
+    <servlet-class>com.livespread.util.UpdateUser</servlet-class>
+    <load-on-startup>2</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>livespread</servlet-name>
+    <url-pattern>*.htm</url-pattern>
+  </servlet-mapping>
+  
+  
+  <filter>
+	     <filter-name>javamelody</filter-name>
+		<filter-class>net.bull.javamelody.MonitoringFilter</filter-class>
+		<init-param>
+       	 	<param-name>authorized-users</param-name>
+        	<param-value>20f8e986-2c0c-4914-8290-e149310c34d9:67238ab6-768d-4406-81f0-ce31e68de820</param-value>
+    	</init-param>
+	</filter>
+	<filter-mapping>
+	    <filter-name>javamelody</filter-name>
+	    <url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	<listener>
+	        <listener-class>net.bull.javamelody.SessionListener</listener-class>
+	</listener>
+	
+<filter> 
+  <filter-name>ResponseHeaderFilter</filter-name> 
+  <filter-class>com.livespread.vta.ResponseHeaderFilter</filter-class> 
+</filter>
+
+<filter-mapping> 
+  <filter-name>ResponseHeaderFilter</filter-name> 
+  <url-pattern>/*</url-pattern> 
+</filter-mapping>
+	
+<filter> 
+  <filter-name>ExceptionHadnlerFilter</filter-name> 
+  <filter-class>com.livespread.vta.ExceptionHadnlerFilter</filter-class> 
+</filter>
+
+<filter-mapping> 
+  <filter-name>ExceptionHadnlerFilter</filter-name> 
+  <url-pattern>/*</url-pattern> 
+</filter-mapping>
+  
+
+<!-- This filter us used for resolve Cross Site Scripting (Stored) findings -->
+<filter> 
+  <filter-name>XSSFilter</filter-name> 
+  <filter-class>com.livespread.vta.XSSFilter</filter-class> 
+</filter>
+
+<filter-mapping> 
+  <filter-name>XSSFilter</filter-name> 
+  <url-pattern>/*</url-pattern> 
+</filter-mapping>
+<!-- End Cross Site Scripting (Stored) -->
+
+<!-- This filter us used for resolve Referer header validation fails findings -->
+	 <filter>
+		<display-name>ReferrerFilter</display-name>
+		<filter-name>ReferrerFilter</filter-name>
+		<filter-class>com.livespread.vta.ReferrerFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>ReferrerFilter</filter-name>
+		<url-pattern>*.htm</url-pattern>
+	</filter-mapping> 
+<!-- End Referer header validation fails -->
+ 
+  
+  <filter>
+    <filter-name>CSRF</filter-name>
+    <filter-class>com.livespread.common.CCSRFFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>CSRF</filter-name>
+    <url-pattern>*.htm</url-pattern>
+  </filter-mapping>
+  <filter>
+    <filter-name>Cache</filter-name>
+    <filter-class>com.samaxes.filter.CacheFilter</filter-class>
+    <init-param>
+      <param-name>static</param-name>
+      <param-value>true</param-value>
+    </init-param>
+    <init-param>
+      <param-name>expirationTime</param-name>
+      <param-value>28800</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>Cache</filter-name>
+    <url-pattern>*.png</url-pattern>
+    <url-pattern>*.swf</url-pattern>
+    <url-pattern>*.gif</url-pattern>
+    <url-pattern>*.css</url-pattern>
+    <url-pattern>*.js</url-pattern>
+    <url-pattern>*.xml</url-pattern>
+    <url-pattern>/images/*</url-pattern>
+  </filter-mapping>
+  <filter>
+    <filter-name>springSecurityFilterChain</filter-name>
+    <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>springSecurityFilterChain</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  <filter>
+    <filter-name>Compress</filter-name>
+    <filter-class>com.planetj.servlet.filter.compression.CompressingFilter</filter-class>
+  </filter>
+  <filter>
+    <filter-name>EHCompressionFilter</filter-name>
+    <filter-class>net.sf.ehcache.constructs.web.filter.GzipFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>EHCompressionFilter</filter-name>
+    <url-pattern>*.htm</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>EHCompressionFilter</filter-name>
+    <url-pattern>*.css</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>EHCompressionFilter</filter-name>
+    <url-pattern>*.js</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>EHCompressionFilter</filter-name>
+    <url-pattern>*.swf</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>EHCompressionFilter</filter-name>
+    <url-pattern>*.xml</url-pattern>
+  </filter-mapping>
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+    <welcome-file>index.html</welcome-file>
+  </welcome-file-list>
+  <session-config>
+    <session-timeout>15</session-timeout>
+    <cookie-config>
+    <name>id</name>
+     <http-only>true</http-only>
+    </cookie-config>
+    <tracking-mode>COOKIE</tracking-mode>
+  </session-config>
+ </web-app>

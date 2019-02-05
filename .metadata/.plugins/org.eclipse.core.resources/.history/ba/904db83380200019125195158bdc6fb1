@@ -1,0 +1,186 @@
+package com.livespread.excel;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.springframework.util.CollectionUtils;
+
+import com.livespread.command.ValueCommand;
+
+
+
+public class WriteExcel {
+	@SuppressWarnings("unchecked")
+	public static void writeDataInRow(Workbook workbook, Sheet worksheet,RowIndex to,Object obj,Integer columnIndex) {
+		try{
+		Row writableRow = worksheet.getRow(to.value());
+		 columnIndex=columnIndex-1;
+		 StyleBuilder[] styleBuilderArray=null;
+		 StyleBuilder styleBuilder=null;
+		 Object[] objIn=null;
+		 if(obj instanceof Object[]) {
+		  objIn = (Object[]) obj;
+		 }
+		 else if (obj instanceof Map) {
+		   Map<String,StyleBuilder> map=(Map<String, StyleBuilder>) obj;
+		   objIn=map.keySet().toArray();
+		   styleBuilderArray=new StyleBuilder[objIn.length];
+		   for(int i=0;i<objIn.length;i++){
+			styleBuilderArray[i]=map.get(objIn[i]);
+		   }
+		  }
+		 else if (obj instanceof List) 
+		 {
+			   List<ValueCommand> valueCommands=(LinkedList<ValueCommand>) obj;
+			   if(!CollectionUtils.isEmpty(valueCommands))
+			   {
+				   objIn = new Object[valueCommands.size()];
+				   styleBuilderArray=new StyleBuilder[valueCommands.size()];
+				   int counter = 0;
+				   for(ValueCommand command : valueCommands)
+				   {
+					   objIn[counter]=command.getValue();
+					   styleBuilderArray[counter] = command.getStyleBuilder();
+					   counter++;
+				   }
+			   }			   
+		 }
+if(objIn!=null && objIn.length>0 )
+{
+		for (int i =0; i<objIn.length; i++) {
+			Cell cell=writableRow.getCell(columnIndex+i);
+				if(cell!=null){
+				CellStyle style = cell.getCellStyle();
+				if(styleBuilderArray!=null && styleBuilderArray.length>0){
+				styleBuilder=styleBuilderArray[i];
+				if(styleBuilder!=null){
+				style.setFillPattern(styleBuilder.getFillPattern());
+				style.setFillBackgroundColor(styleBuilder.getBackgroundColor());
+				style.setAlignment(styleBuilder.getCellAllignment());
+				
+	        	Font font = workbook.createFont();
+	        	font.setColor(styleBuilder.getFontColor());
+				font.setItalic(styleBuilder.isItalic);
+				font.setBoldweight(styleBuilder.getBoldWeight());
+				font.setFontName(styleBuilder.getFontName());
+				font.setFontHeightInPoints(styleBuilder.getFontHeights());
+				style.setFont(font);
+				}
+				}//end 
+				DataFormat format = workbook.createDataFormat();
+				setCellDataValue(cell,objIn[i],style,format);
+				}//end cell null if
+		}
+}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+
+	}
+
+	
+
+	@SuppressWarnings("static-access")
+	private static void setCellDataValue(Cell writebleCell, Object obj, CellStyle style, DataFormat format) 
+	{
+		try{
+		String value = null;
+    	if(obj!=null){    
+    		
+    		value = obj.toString();
+    		
+    		if(isNumeric(value))
+    		{
+    			if(value.contains(",") || value.contains("."))
+    			{
+        			value = value.replace(",", "");
+        			writebleCell.setCellValue(Integer.parseInt(value.trim()));
+        			style.setDataFormat(format.getFormat("0.00"));
+        			writebleCell.setCellStyle(style);
+        			writebleCell.setCellType(writebleCell.CELL_TYPE_NUMERIC);
+    			}
+    			else
+    			{
+        			writebleCell.setCellValue(Integer.parseInt(value.trim()));
+        			style.setDataFormat(format.getFormat("0"));
+        			writebleCell.setCellStyle(style);
+        			writebleCell.setCellType(writebleCell.CELL_TYPE_NUMERIC);
+    			}
+    		}else if(isDoubleValue(value))
+    		{
+        			value = value.replace(",", "");
+        			writebleCell.setCellValue(Double.parseDouble(value.trim()));
+        			style.setDataFormat(format.getFormat("0.00"));
+        			writebleCell.setCellStyle(style);
+        			writebleCell.setCellType(writebleCell.CELL_TYPE_NUMERIC);
+    		}else{
+    			writebleCell.setCellValue((value));
+    			writebleCell.setCellStyle(style);
+    			writebleCell.setCellType(writebleCell.CELL_TYPE_STRING);	
+    		}
+    	}else{
+        	writebleCell.setCellStyle(style);
+          	writebleCell.setCellType(writebleCell.CELL_TYPE_BLANK);
+    	}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+   }
+	
+	
+	
+	public static boolean isDoubleValue(String value)
+	{
+		value = value.replace(",", "");
+		try {
+			Double.parseDouble(value.toString().trim());
+			return true;
+		} catch (NumberFormatException e) {
+			return false;
+		}
+	}
+	public static boolean isNumeric(String value)
+	{
+		value = value.replace(",", "");
+		try {
+			Integer.parseInt(value.toString().trim());
+			return true;
+		} catch (NumberFormatException e) {
+			return false;
+		}
+	}
+	
+	
+	public static Double doubleValueConvert(String value)
+	{
+		value = value.replace(",", "");
+		Double returnValue = null;
+		try {
+			returnValue = Double.parseDouble(value.toString().trim());
+			
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		}
+		return returnValue;
+	}
+	public static Integer NumericConvert(String value)
+	{
+		value = value.replace(",", "");
+		Integer returnValue = null;
+		try {
+			returnValue = Integer.parseInt(value.toString().trim());
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		}
+		return returnValue;
+	}
+	
+}

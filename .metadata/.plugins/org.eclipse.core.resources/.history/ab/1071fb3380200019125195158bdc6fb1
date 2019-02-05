@@ -1,0 +1,96 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "NORM_QA_CHECKS_AGGREGATES")
+@NamedNativeQueries({ 
+		@NamedNativeQuery(name="getNormQAChecksAggregates",query="select ITEM_LABEL,AGGREGATE_TYPE from NORM_QA_CHECKS_AGGREGATES where CHECK_ID=:checkId")
+})
+public class NormQaChecksAggregates implements Serializable, BaseEntity {
+
+	private static final long serialVersionUID = 1L;
+	@Id
+//	@GeneratedValue(generator = "sequence")
+//	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "seq_norm_qa_checks_aggregates") })
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "CHECK_DETAIL_ID")
+	private Integer checkDetailId;
+
+	@Column(name = "CHECK_ID")
+	private Integer checkId;
+
+	@Column(name = "NI_ITEM")
+	private Integer niItem;
+
+	@Column(name = "ITEM_LABEL")
+	private String itemLabel;
+
+	@Column(name = "AGGREGATE_TYPE")
+	private String aggregateType;
+
+	public Integer getCheckDetailId() {
+		return checkDetailId;
+	}
+
+	public void setCheckDetailId(Integer checkDetailId) {
+		this.checkDetailId = checkDetailId;
+	}
+
+	public Integer getCheckId() {
+		return checkId;
+	}
+
+	public void setCheckId(Integer checkId) {
+		this.checkId = checkId;
+	}
+
+	public Integer getNiItem() {
+		return niItem;
+	}
+
+	public void setNiItem(Integer niItem) {
+		this.niItem = niItem;
+	}
+
+	public String getItemLabel() {
+		return itemLabel;
+	}
+
+	public void setItemLabel(String itemLabel) {
+		this.itemLabel = itemLabel;
+	}
+
+	public String getAggregateType() {
+		return aggregateType;
+	}
+
+	public void setAggregateType(String aggregateType) {
+		this.aggregateType = aggregateType;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

@@ -1,0 +1,27 @@
+package com.livespread.service;
+
+import java.util.Collection;
+import java.util.Date;
+import java.util.Map;
+
+import org.springframework.dao.DataAccessException;
+
+import com.livespread.domain.User;
+import com.livespread.domain.UserAuditModel;
+
+public interface UserAuditService {
+	
+	//1used for user_Audit for append URL
+	int insertUserAuditUrls(String url, User user, String fillingId, String session,Date date,Long secs,String userRole,String userSysIp);
+	
+	//2used for user_Audit for append URL
+     Map<String, String> getUrlsList();
+     
+	Collection<UserAuditModel> f_getUserAuditList(Date startDate,Date endDate,Integer userId) throws DataAccessException;
+	
+	boolean setUserSessionAsNull(User user) throws Exception;
+	boolean setUserSessionId(User user,String sessionId) throws Exception;
+	
+	String getUserSessionId(User user) throws Exception;
+	void updateUser()  throws Exception;
+}

@@ -1,0 +1,25 @@
+package com.livespread.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.livespread.command.NormTemplateExtractCommand;
+import com.livespread.command.NormalizationTemplateCommand;
+import com.livespread.domain.SubSectionMetadata;
+
+public interface NormalizationTemplateService {
+	boolean checkIndustryType(String industryType);
+
+	int addNormalizationRows(NormalizationTemplateCommand normalizationTemplateCommand);
+
+	int addDerivedrows(NormalizationTemplateCommand normalizationTemplateCommand);
+	
+	Map<Long, String> getNilIndustryList(Integer userGroupId);
+	
+	List<NormalizationTemplateCommand> exportToExcelNormItemLableData(Integer industryTypeVal);
+	
+	int addNormalizationTemplateRows(Map<String,List<NormTemplateExtractCommand>> normTemplateExtractCommandMap,String industryType,Integer userGroupId);
+	
+	Map<String, String> getSectionList();
+	List<SubSectionMetadata> getSubSectionList(String statementFormat);
+}

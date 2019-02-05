@@ -1,0 +1,280 @@
+package com.livespread.common;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.util.CollectionUtils;
+
+import com.livespread.domain.User;
+import com.livespread.security.CsrfToken;
+import com.livespread.util.WorkQueueServiceFactory;
+public class CCSRFFilter implements Filter {
+	private Logger LOGGER = Logger.getLogger(CCSRFFilter.class);
+	FilterConfig filterConfig = null;
+	Properties properties =null;
+	//List<String> cookieNameList=null;
+	public Properties loadProperties()
+	{
+		properties = new Properties();
+		try
+		{		 
+		 InputStream in = CCSRFFilter.class.getClassLoader().getResourceAsStream("application.properties");
+	
+		 properties.load(in);
+		 in.close();
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		return properties;
+	}
+
+	public void init(FilterConfig filterConfig) throws ServletException {
+		this.filterConfig = filterConfig;
+	   loadProperties();
+	   //addCookieName();
+	}
+
+	public void destroy() {
+	}
+
+	public void doFilter(ServletRequest servletRequest,
+			ServletResponse servletResponse, FilterChain filterChain)
+			throws IOException, ServletException {
+
+		HttpServletRequest request = (HttpServletRequest) servletRequest;
+		HttpServletResponse response = (HttpServletResponse) servletResponse;
+		LOGGER.info("** start----"+request.getRequestURI());
+		LOGGER.info(request.getRequestedSessionId());
+		LOGGER.info(request.getSession().getId());
+		try {
+			//token method start from
+			HttpSession session = request.getSession(false);
+			String url = request.getServletPath();
+        	String absoluteUrl = request.getRequestURL().substring(request.getRequestURL().indexOf(request.getContextPath()), request.getRequestURL().length());
+        	User userInfo = (User) request.getSession().getAttribute("user");
+			String userLoginname = userInfo != null ? userInfo.getLogin() : "--";
+			String sessionId = session == null ? "--" : session.getId();
+			String secureCookie = properties.getProperty("secureFlag");
+			
+	      	/** start
+	      	preventing  to allow users multiple login at different browsers & computers.
+	      	**/
+			if (!isURL(request.getRequestURI()) && userInfo!=null)
+			{
+				String usersessionId=WorkQueueServiceFactory.userAuditService.getUserSessionId(userInfo);
+				String reqSessionId=request.getSession().getId();
+				if(!(usersessionId!=null && usersessionId.equalsIgnoreCase(reqSessionId)))
+				{
+					session.invalidate();
+					//response.getOutputStream().write("<script>location.href='logout.htm'</script>".getBytes());
+				}
+				else if((userInfo.getUserSessionId()==null || userInfo.getUserSessionId().trim().length()==0)){
+					request.getSession().invalidate();
+					//response.getOutputStream().write("<script>location.href='logout.htm'</script>".getBytes());
+				}
+				else if((userInfo.getUserSessionId()!=null && !userInfo.getUserSessionId().trim().equals(usersessionId))){
+					request.getSession().invalidate();
+					//response.getOutputStream().write("<script>location.href='logout.htm'</script>".getBytes());
+				}
+			}
+				/** End
+		      	preventing  to allow users multiple login at different browsers & computers.
+		      	**/
+			
+			
+			
+	      	if(StringUtils.isNotBlank(url) && ((url.equalsIgnoreCase("/login.htm")) || url.equalsIgnoreCase("/logout.htm"))){
+	      		LOGGER.info("Token_tracking_for_user_["+userLoginname+"] with session id ["+sessionId+"] invoke generate token for request ["+absoluteUrl+" method="+request.getParameter("methodToCall")+"] and work queue id .");
+	      		CsrfToken.generateToken(request, response,Boolean.parseBoolean(secureCookie));
+        	}else{
+        		String cookieString = getCookieStringInfo(request);
+    			Map<String, String> cookieValueDetailsMap = getCookieValueDetailsMap(cookieString);
+    			if(!CollectionUtils.isEmpty(cookieValueDetailsMap))
+    			{
+    				if(!checkCookie(request,cookieValueDetailsMap))
+            		{
+            			request.getSession().invalidate();
+        				response.sendRedirect("login.htm?error=" + 7);
+        				return;
+            		}
+            		if(!request.getMethod().equalsIgnoreCase("GET") && !skipUrls().contains(url))
+            		{
+            			if((!CsrfToken.isValidToken(request, response,cookieValueDetailsMap))) {
+            				LOGGER.info("Token_tracking_for_user_["+userLoginname+"] with session id ["+sessionId+"] is invalidated because of invalid token for request ["+absoluteUrl+" method="+request.getParameter("methodToCall")+".");
+            				request.getSession().invalidate();
+            				response.sendRedirect("login.htm?error=" + 7);
+            				return;
+            			} else {
+            				LOGGER.info("Token_tracking_for_user_["+userLoginname+"] with session id ["+sessionId+"] invoke generate token for request ["+absoluteUrl+" method="+request.getParameter("methodToCall")+"] .");
+            				CsrfToken.generateToken(request, response,Boolean.parseBoolean(secureCookie));
+            			}
+            		}
+    			}
+    			else
+    			{
+    				request.getSession().invalidate();
+    				response.sendRedirect("login.htm");
+    				return;
+    			}
+        	
+
+        	}
+	      
+	      	filterChain.doFilter(servletRequest, servletResponse);
+		} catch (Exception ex) {
+			LOGGER.info("Log out in catch block");
+			LOGGER.error("Errror:"+ex.getStackTrace());
+			LOGGER.error("Error:", ex);
+			ex.printStackTrace();
+			request.getSession().invalidate();
+			LOGGER.info("session is invalidated from login.htm URL");
+			response.sendRedirect("login.htm?error=" + 7);
+		}
+	}
+	
+	private boolean checkCookie(HttpServletRequest request, Map<String, String> cookieValueDetailsMap)
+	{
+		boolean status = true;
+		String cookieName=null;
+		String cookieValue;
+		Cookie[] cookies = request.getCookies();
+		if(cookies!=null)
+		{
+			for (Cookie cookie : cookies) {
+				cookieName = cookie.getName();
+				cookieValue = cookie.getValue();
+				if(validateCookie(cookieName) && validateCookie(cookieValue))
+				{
+					status = false;
+					break;
+				}
+			}
+		}
+		
+		if(status)
+		{
+			if(!CollectionUtils.isEmpty(cookieValueDetailsMap))
+			{
+				for( Map.Entry<String, String> selectedCookie:cookieValueDetailsMap.entrySet())
+				{
+					if(validateCookie(selectedCookie.getValue()) && validateCookie(selectedCookie.getKey()))
+					{
+						status = false;
+						break;
+					}
+				}
+			}
+		}
+		return status;
+	}
+	
+	/*private void addCookieName() {
+		cookieNameList = new ArrayList<>();
+		cookieNameList.add("secure_tk");
+		cookieNameList.add("id");
+		cookieNameList.add("secure");
+		cookieNameList.add("httponly");				
+	}*/
+	private List<String> skipUrls() 
+	{
+		List<String> urls = new ArrayList<>();
+		urls.add("/pageSearch.htm");
+		urls.add("/upload_file.htm");
+		return urls;
+		
+	}
+	
+    @SuppressWarnings("rawtypes")
+	private String getCookieStringInfo(HttpServletRequest request) {
+    	String value =null;
+        Enumeration headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String key = (String) headerNames.nextElement();
+            if(key.equalsIgnoreCase("cookie"))
+            {
+            	value = request.getHeader(key);
+            	break;
+            }
+        }
+
+        return value;
+    }
+    
+	private Map<String, String> getCookieValueDetailsMap(String cookieString)
+	{
+		Map<String, String> cookieDetailsMap =null;
+		if(cookieString!=null && !cookieString.isEmpty())
+		{
+			cookieDetailsMap = new HashMap<>();
+			String[] cookieArray = cookieString.split(";");
+			String key =null;
+			String value =null;
+			if(cookieArray!=null && cookieArray.length>0)
+			{
+				for (String selectedCookie : cookieArray) 
+				{
+					String[] SelectedCookieDetails= selectedCookie.split("=");
+					int position = selectedCookie.indexOf("=");
+					key = SelectedCookieDetails[0];
+					if(position>-1)
+					{
+						position=position+1;
+						value = selectedCookie.substring(position, selectedCookie.length());	
+					}
+					else
+					{
+						value=null;
+					}
+					cookieDetailsMap.put(key.trim(), value);
+				}
+			}
+		}
+		return cookieDetailsMap;
+	}
+	
+	private boolean validateCookie(String cookieValue)
+	{
+		Pattern special = Pattern.compile ("[&\"\'#():=<>{}\\[\\]/\\\\,]");
+		Matcher hasSpecial = special.matcher(cookieValue);
+		return hasSpecial.find();
+	}
+
+	public boolean isURL(String strurl) {
+
+		String strMyURL[] = {"login.htm", "logout.htm","welcome.htm",
+				"forgotPwd.htm","PageNotFoundLSCustomException.htm","changePasswordByMail.htm"};
+		
+
+		for (int itr = 0; itr < strMyURL.length; ++itr) {
+			if (strurl.indexOf(strMyURL[itr]) != -1)
+				return true;
+		}
+
+		return false;
+	}
+
+
+}

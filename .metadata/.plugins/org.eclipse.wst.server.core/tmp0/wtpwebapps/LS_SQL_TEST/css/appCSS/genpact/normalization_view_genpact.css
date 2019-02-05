@@ -1,0 +1,95 @@
+.pad-top100{padding-top:100px;}
+body{overflow:hidden !important}
+#normalizationchild {padding-top: 160px !important;}
+.financeTable{display:block; margin-bottom:60px; overflow:auto; height:365px}
+
+tr.header{cursor:pointer !important;}
+
+.header .sign{float:right important; padding:0 10px 0 0 important;}
+
+
+.header .sign:after{
+  content:"";
+  background:url("images/minus-button.png") no-repeat important; width:16px important; height:16px important;
+  
+  display:inline-block important; 
+}
+
+.header.expand .sign:after{
+  content:"+";
+ color:red !important;
+ }
+
+.breadcrumb > li + li:before {
+    color: #005d95 important;
+    content: "| " important;
+    padding: 0 5px important;
+}
+
+.breadcrumb {
+    padding:10px 15px important;
+    margin: 0 0 0 10px important;
+    list-style: none important;
+    background-color: #f8f8f8 important;
+    border-radius: 4px important;
+}
+ul, ol {
+    margin-top: 0 important;
+    margin-bottom: 10px important;
+}
+* {
+    -webkit-box-sizing: border-box important;
+    -moz-box-sizing: border-box important;
+    box-sizing: border-box important;
+}
+
+.breadcrumb>.active {
+    color: #000 important;
+}
+
+user agent stylesheetol {
+    display: block important;
+    list-style-type: decimal important;
+    -webkit-margin-before: 1em important;
+    -webkit-margin-after: 1em important;
+    -webkit-margin-start: 0px important;
+    -webkit-margin-end: 0px important;
+    -webkit-padding-start: 40px important;
+}
+
+.selected{background:#fde9d9 important; color:#000 important;}
+#normalizationchild div.modal-dialog {
+    height: 300px important;
+}
+#normalizationchild div.modal-body {
+	height: 370px important;
+	overflow: auto important;
+}
+#normalizationchild div.modal-content {
+  top: 63px !important;
+}
+
+
+#pdfshow div.modal-dialog {
+    width: 98% !important;
+}
+#htmlShow div.modal-dialog {
+    width: 98% !important;
+}
+#pdfshow div.modal-content {
+  top: 100px !important;
+}
+
+#htmlShow div.modal-content {
+  top: 100px !important;
+}
+
+.tblstyle th, .tblstyle1 th {background: #6dbcbf !important; color: #333 !important; font-weight: bold; text-align: center; border-collapse: collapse; border: solid 1px #fff;}
+table th, td {border: none; border-top: none; line-height: 18px; font: 0.7em/18px Helvetica Neue, Helvetica, Arial, sans-serif !important; padding:5px !important; color:#333 !important}
+.newtable tr td{color:#333 !important}
+.valueNotMatch{background-color: #fd9191;}
+.valueMatch{background-color: #a1dc8e;}
+
+.boldHeader{font-weight: bold !important;}
+.italicTextLable{font-style:italic !important;}
+.tblstyle td.sectionhead {background:#0a7298; color:#fff !important;}

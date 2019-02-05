@@ -1,0 +1,234 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+
+import com.rage.reusable.dao.ApplicationEntity;
+
+@Entity
+@Table(name = "FILE_UPLOAD_DETAILS")
+@NamedQueries({
+		@NamedQuery(name = "getFilePathByCustomerNParserId", query = "SELECT F FROM FileUploadModel F WHERE customerId = :customerId and parserId = :parserId"),
+		@NamedQuery(name = "getFilePathByCustomerId", query = "SELECT F FROM FileUploadModel F WHERE customerId = :customerId"),
+		@NamedQuery(name = "getUploadDetailsByFilingId", query = "SELECT F FROM FileUploadModel F WHERE filingId = :filingId and parserId=:parserId order by fileUploadId ASC "),
+		@NamedQuery(name = "getProcessedFilePath_By_uploadIdAndFilingId", query = "SELECT F FROM FileUploadModel F where F.filingId = :filingId and F.fileUploadId=:uploadId"),
+		@NamedQuery(name = "getProcessedFilePath_By_FilingId", query = "SELECT F FROM FileUploadModel F where F.filingId = :filingId"),
+		@NamedQuery(name = "getFileTypeByFilingId", query = "SELECT F.fileType FROM FileUploadModel F where F.filingId = :filingId"),
+		@NamedQuery(name = "getFileNameByCustomerNParserId", query = "SELECT F.fileName FROM FileUploadModel F WHERE customerId = :customerId and parserId = :parserId"),
+		@NamedQuery(name = "getProcessedFileNameByCustomerNParserId", query = "SELECT distinct(F.processedFileName) FROM FileUploadModel F WHERE customerId = :customerId and parserId = :parserId"),
+		@NamedQuery(name = "getParserIdentifierByCustomerId", query = "SELECT distinct(F.parserIdentifier) FROM FileUploadModel F WHERE customerId = :customerId"),
+		@NamedQuery(name = "getFileUploadIdByFilingId", query = "SELECT F.fileUploadId FROM FileUploadModel F where F.filingId = :filingId"),
+})
+public class FileUploadModel extends ApplicationEntity implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+//	@GeneratedValue(generator = "sequence")
+//	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_FILE_UPLOAD_ID") })
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "FILE_UPLOAD_ID")
+	private Integer fileUploadId;
+
+	@Column(name = "CUSTOMER_ID")
+	private Integer customerId;
+
+	@Column(name = "FILE_NAME")
+	private String fileName;
+
+	@Column(name = "FILE_PATH")
+	private String filePath;
+
+	@Column(name = "FILE_TYPE")
+	private String fileType;
+
+	@Column(name = "PARSER_IDENTIFIER")
+	private String parserIdentifier;
+
+	@Column(name = "REVIEW")
+	private String review;
+
+	@Column(name = "FILE_SIZE")
+	private String fileSize;
+
+	@Column(name = "PARSER_MASTER_ID")
+	private Integer parserId;
+
+	@Column(name = "FILING_ID")
+	private Integer filingId;
+
+	@Column(name = "PROCESSED_FILE_NAME")
+	private String processedFileName;
+
+	@Column(name = "PROCESSED_FILE_PATH")
+	private String processedFilePath;
+
+	@Column(name = "FILE_PASSWORD")
+	private String filePassword;
+	
+	@Column(name = "WQ_ID")
+	private Integer wqId;
+
+	
+	public String getFilePassword() {
+		return filePassword;
+	}
+
+	public void setFilePassword(String filePassword) {
+		this.filePassword = filePassword;
+	}
+
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public String getFileSize() {
+		return fileSize;
+	}
+
+	public void setFileSize(String fileSize) {
+		this.fileSize = fileSize;
+	}
+
+	public Integer getParserId() {
+		return parserId;
+	}
+
+	public void setParserId(Integer parserId) {
+		this.parserId = parserId;
+	}
+
+	public Integer getFileUploadId() {
+		return fileUploadId;
+	}
+
+	public void setFileUploadId(Integer fileUploadId) {
+		this.fileUploadId = fileUploadId;
+	}
+
+	public Integer getCustomerId() {
+		return customerId;
+	}
+
+	public void setCustomerId(Integer customerId) {
+		this.customerId = customerId;
+	}
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	public String getFilePath() {
+		return filePath;
+	}
+
+	public void setFilePath(String filePath) {
+		this.filePath = filePath;
+	}
+
+	public String getFileType() {
+		return fileType;
+	}
+
+	public void setFileType(String fileType) {
+		this.fileType = fileType;
+	}
+
+	/**
+	 * @return the parserIdentifier
+	 */
+	public String getParserIdentifier() {
+		return parserIdentifier;
+	}
+
+	/**
+	 * @param parserIdentifier
+	 *            the parserIdentifier to set
+	 */
+	public void setParserIdentifier(String parserIdentifier) {
+		this.parserIdentifier = parserIdentifier;
+	}
+
+	/**
+	 * @return the review
+	 */
+	public String getReview() {
+		return review;
+	}
+
+	/**
+	 * @param review
+	 *            the review to set
+	 */
+	public void setReview(String review) {
+		this.review = review;
+	}
+
+	public String getProcessedFileName() {
+		return processedFileName;
+	}
+
+	public void setProcessedFileName(String processedFileName) {
+		this.processedFileName = processedFileName;
+	}
+
+	public String getProcessedFilePath() {
+		return processedFilePath;
+	}
+
+	public void setProcessedFilePath(String processedFilePath) {
+		this.processedFilePath = processedFilePath;
+	}
+	
+	
+	
+
+
+	public Integer getWqId() {
+		return wqId;
+	}
+
+	public void setWqId(Integer wqId) {
+		this.wqId = wqId;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("FileUploadModel [fileUploadId=").append(fileUploadId)
+				.append(", customerId=").append(customerId)
+				.append(", fileName=").append(fileName).append(", filePath=")
+				.append(filePath).append(", fileType=").append(fileType)
+				.append(", parserIdentifier=").append(parserIdentifier)
+				.append(", review=").append(review).append("]");
+		return builder.toString();
+	}
+
+}

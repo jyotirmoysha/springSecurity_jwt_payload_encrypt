@@ -1,0 +1,9 @@
+package com.livespread.service;
+
+import com.livespread.domain.ExportExcelMetadata;
+
+public interface ExcelExportService {
+
+	public ExportExcelMetadata f_ExcelDetailsByName(String exportName);
+
+}

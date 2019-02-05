@@ -1,0 +1,109 @@
+package com.livespread.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.livespread.domain.User;
+import com.livespread.domain.UserCustomFeatureMapping;
+import com.livespread.domain.UserFeatureMapping;
+import com.livespread.domain.UserGroupAccess;
+import com.livespread.domain.UserRole;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.livespread.domain.NamedQueryName;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Service("userDetailsService")
+public class UserDetailsServiceImpl implements UserDetailsService {
+
+	@SuppressWarnings("unused")
+	private static final int DEFAULT_ROLE = 1;
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+
+	private Logger LOGGER = Logger.getLogger(UserDetailsServiceImpl.class);
+
+	/**
+	 * Returns a populated {@link UserDetails} object. The username is first
+	 * retrieved from the database and then mapped to a {@link UserDetails}
+	 * object.
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public UserDetails loadUserByUsername(String username)
+			throws UsernameNotFoundException {
+		LOGGER.info("** start -loadUserByUsername() started");
+		try {
+			User useDetails = null;
+
+			Map<String, Object> parameterMap = new HashMap<String, Object>();
+			parameterMap.put("login", username);
+
+			List<User> usersList = (ArrayList<User>) (Object) genericDaoImpl
+					.findByNamedQuery(NamedQueryName.checkUserExistByUsername,
+							User.class, parameterMap);
+
+			if (usersList != null && usersList.isEmpty() == false) {
+				useDetails = usersList.get(0);
+
+				Map<String, Object> parameterOne = new HashMap<String, Object>();
+				parameterOne.put("groupId", useDetails.getUserGroupId());
+				List<UserRole> userRoles = (ArrayList<UserRole>) (Object) genericDaoImpl
+						.findByNamedQuery(NamedQueryName.getUserRoleByGroupId,
+								UserRole.class, parameterOne);
+
+				if (userRoles != null)
+					useDetails.setUserRoles(new HashSet(userRoles));
+
+				List<UserGroupAccess> groupAccess = (ArrayList<UserGroupAccess>) (Object) genericDaoImpl
+						.findByNamedQuery(
+								NamedQueryName.getUserGroupAccessByGroupId,
+								UserGroupAccess.class, parameterOne);
+				if (groupAccess != null)
+					useDetails.setGroupAccess(groupAccess);
+
+				List<UserFeatureMapping> ermUserFeatureMappings = (ArrayList<UserFeatureMapping>) (Object) genericDaoImpl
+						.findByNamedQuery(
+								NamedQueryName.getUserFeatureMappingByGroupId,
+								UserFeatureMapping.class, parameterOne);
+				if (ermUserFeatureMappings != null)
+					useDetails.setUserFeatureMappings(new HashSet(
+							ermUserFeatureMappings));
+				parameterOne.put("userId", useDetails.getUserId().intValue());
+				List<UserCustomFeatureMapping> customUserFeatureMappings = (ArrayList<UserCustomFeatureMapping>) (Object) genericDaoImpl
+						.findByNamedQuery(
+								NamedQueryName.getUserCustomFeatureMappingByGroupId,
+								UserCustomFeatureMapping.class, parameterOne);
+				if (customUserFeatureMappings != null)
+					useDetails.setCustomUserFeatureMappings(new HashSet(
+							customUserFeatureMappings));
+
+			} else if (usersList.size() > 1) {
+				return null;
+
+			} else if (usersList == null || usersList.isEmpty()) {
+				return null;
+
+			}
+			return useDetails;
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new UsernameNotFoundException(e.getMessage());
+		}
+	}
+
+}

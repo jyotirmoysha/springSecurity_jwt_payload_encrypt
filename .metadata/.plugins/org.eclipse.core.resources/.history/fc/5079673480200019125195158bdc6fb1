@@ -1,0 +1,24 @@
+package com.livespread.common;
+
+import java.util.Comparator;
+import java.util.List;
+
+import com.livespread.command.NormalisedParserOutput;
+
+public class AsPerLableNameComparator implements
+		Comparator<NormalisedParserOutput> {
+	private List<String> sortOrder;
+
+	public AsPerLableNameComparator(List<String> sortOrder) {
+		this.sortOrder = sortOrder;
+	}
+
+	@Override
+	public int compare(NormalisedParserOutput arg0, NormalisedParserOutput arg1) {
+
+		String a1 = arg0.getPoAsRepLabel();
+		String a2 = arg1.getPoAsRepLabel();
+		return sortOrder.indexOf(a2) - sortOrder.indexOf(a1);
+	}
+
+}

@@ -1,0 +1,107 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author KP0e1301
+ *
+ */
+
+@Entity
+@Table(name = "SUB_SECTION_METADATA")
+@NamedQueries({ @NamedQuery(name = "getsubSectionList", query = "SELECT s FROM SubSectionMetadata s order by sectionId ASC") })
+@NamedNativeQueries({@NamedNativeQuery(name="getsubSectionListBySectionId" ,query = "SELECT SUB.SUB_SECTION_NAME,SM.SM_ID,SM.SECTION_NAME FROM SUB_SECTION_METADATA SUB inner join SECTION_MAPPING SM ON SUB.SECTION_ID=SM.SM_ID where SM.SECTION_NAME=:sectionName")})
+public class SubSectionMetadata implements Serializable, BaseEntity{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@Column(name = "SUB_SECTION_METADATA_ID")
+	private Integer subSectionMetaDataId;
+
+	@Column(name = "SUB_SECTION_NAME")
+	private String subSectionName;
+
+	@Column(name = "SECTION_ID")
+	private Integer sectionId;
+
+	@Transient
+	private String sectionName;
+	
+	
+	public Integer getSubSectionMetaDataId() {
+		return subSectionMetaDataId;
+	}
+
+
+
+	public void setSubSectionMetaDataId(Integer subSectionMetaDataId) {
+		this.subSectionMetaDataId = subSectionMetaDataId;
+	}
+
+
+
+	public String getSubSectionName() {
+		return subSectionName;
+	}
+
+
+
+	public void setSubSectionName(String subSectionName) {
+		this.subSectionName = subSectionName;
+	}
+
+
+
+	
+
+
+
+	public Integer getSectionId() {
+		return sectionId;
+	}
+
+
+
+	public void setSectionId(Integer sectionId) {
+		this.sectionId = sectionId;
+	}
+
+
+
+	public String getSectionName() {
+		return sectionName;
+	}
+
+
+
+	public void setSectionName(String sectionName) {
+		this.sectionName = sectionName;
+	}
+
+
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+}

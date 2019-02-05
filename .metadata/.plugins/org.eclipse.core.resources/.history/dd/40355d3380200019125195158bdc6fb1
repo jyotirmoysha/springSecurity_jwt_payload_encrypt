@@ -1,0 +1,27 @@
+package com.livespread.util;
+
+import net.tanesha.recaptcha.ReCaptchaImpl;
+import net.tanesha.recaptcha.ReCaptchaResponse;
+
+import org.springframework.beans.factory.annotation.Value;
+
+public class RecaptchUtility {
+
+	@Value("${recaptch.privatekey}")
+	private static String PRIVATEKEY;
+
+	
+	public static boolean validRecaptch(String challenge, String response,
+			String remoteip) {
+		ReCaptchaImpl reCaptcha = new ReCaptchaImpl();
+		reCaptcha.setPrivateKey(PRIVATEKEY);
+
+		ReCaptchaResponse reCaptchaResponse = reCaptcha.checkAnswer(remoteip,
+				challenge, response);
+		if (reCaptchaResponse.isValid())
+			return true;
+		else
+			return false;
+	}
+
+}

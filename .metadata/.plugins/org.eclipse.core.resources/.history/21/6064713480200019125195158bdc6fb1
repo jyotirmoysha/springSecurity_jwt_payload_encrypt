@@ -1,0 +1,102 @@
+package com.livespread.command;
+
+public class ArsPoCommand 
+{
+	private Integer poId;
+	private String poSection;
+	private String poSubSection;
+	private String poAsRepLabel;
+	private String nilLabel;
+	private String colName;
+	private Integer niItem;
+	private Integer poIndexOrder;
+	private String mappingName;
+	private String headerLabel;
+	private String tabelLabel;
+	private String searchLevelClassName;
+
+	public String getMappingName() {
+		return mappingName;
+	}
+	public void setMappingName(String mappingName) {
+		this.mappingName = mappingName;
+	}
+	public Integer getPoId() {
+		return poId;
+	}
+	public void setPoId(Integer poId) {
+		this.poId = poId;
+	}
+	public String getPoSection() {
+		return poSection;
+	}
+	public void setPoSection(String poSection) {
+		this.poSection = poSection;
+	}
+	public String getPoSubSection() {
+		return poSubSection;
+	}
+	public void setPoSubSection(String poSubSection) {
+		this.poSubSection = poSubSection;
+	}
+	public String getPoAsRepLabel() {
+		return poAsRepLabel;
+	}
+	public void setPoAsRepLabel(String poAsRepLabel) {
+		this.poAsRepLabel = poAsRepLabel;
+	}
+	public String getNilLabel() {
+		return nilLabel;
+	}
+	public void setNilLabel(String nilLabel) {
+		this.nilLabel = nilLabel;
+	}
+	public String getColName() {
+		return colName;
+	}
+	public void setColName(String colName) {
+		this.colName = colName;
+	}
+	public Integer getNiItem() {
+		return niItem;
+	}
+	public void setNiItem(Integer niItem) {
+		this.niItem = niItem;
+	}
+	public Integer getPoIndexOrder() {
+		return poIndexOrder;
+	}
+	public void setPoIndexOrder(Integer poIndexOrder) {
+		this.poIndexOrder = poIndexOrder;
+	}
+	/**
+	 * @return the headerLabel
+	 */
+	public String getHeaderLabel() {
+		return headerLabel;
+	}
+	/**
+	 * @param headerLabel the headerLabel to set
+	 */
+	public void setHeaderLabel(String headerLabel) {
+		this.headerLabel = headerLabel;
+	}
+	/**
+	 * @return the tabelLabel
+	 */
+	public String getTabelLabel() {
+		return tabelLabel;
+	}
+	/**
+	 * @param tabelLabel the tabelLabel to set
+	 */
+	public void setTabelLabel(String tabelLabel) {
+		this.tabelLabel = tabelLabel;
+	}
+	public String getSearchLevelClassName() {
+		return searchLevelClassName;
+	}
+	public void setSearchLevelClassName(String searchLevelClassName) {
+		this.searchLevelClassName = searchLevelClassName;
+	}
+}

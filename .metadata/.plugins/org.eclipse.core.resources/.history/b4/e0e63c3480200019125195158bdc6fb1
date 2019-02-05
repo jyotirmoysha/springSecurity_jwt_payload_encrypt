@@ -1,0 +1,797 @@
+package com.livespread.controller;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
+
+import com.livespread.command.PdfExtractionMetadatCommand;
+import com.livespread.common.Constant;
+import com.livespread.domain.FinancialItems;
+import com.livespread.domain.NamedNativeQueryName;
+import com.livespread.domain.NormItemLabels;
+import com.livespread.domain.User;
+import com.livespread.service.NormalizationService;
+import com.livespread.service.UploadTempletService;
+import com.livespread.service.WorkQueueService;
+import com.livespread.util.CipherUtils;
+import com.livespread.util.NormTemplateExtractionUtil;
+import com.livespread.util.UploadUtility;
+import com.rage.extendeddao.ExtendedGenericDao;
+
+@Controller
+public class UploadTempletController {
+	
+	private Logger LOGGER = Logger.getLogger(UploadTempletController.class);
+	
+	@Value("${importNormTempletFile.Name}")
+	private String importNormTempletFileName;
+	
+	@Value("${sampleTempletFile.Path}")
+	private String sampleTempletFilePath;
+
+	@Value("${sampleTempletFile.Name}")
+	private String sampleTempletFileName;
+
+	@Value("${sampleFailedTempletFile.Name}")
+	private String sampleFailedTempletFileName;
+
+	@Value("${uploadedTempletedDirectory.path}")
+	private String uploadedTempletedDirectory;
+
+	@Value("${downloadXMLDocumentPath}")
+	private String downloadXMLDocumentPath;
+	
+	@Autowired
+	private UploadTempletService uploadTempletService;
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+
+	
+	@Autowired
+	private WorkQueueService workQueueService;
+	
+	@Autowired
+	private NormalizationService normalizationService;
+
+	
+	@RequestMapping(value = "/upload_template.htm", method = RequestMethod.POST)
+	public @ResponseBody String uploadTemp(MultipartHttpServletRequest request, HttpServletResponse response,
+			HttpSession session) throws IllegalStateException, IOException {
+		String ret = "";
+		MultipartFile file = null;
+		boolean result = true;
+		try {
+			if (uploadedTempletedDirectory != null && !uploadedTempletedDirectory.isEmpty()) {
+				Iterator<String> itr = request.getFileNames();
+				String key = (String) itr.next();
+				if (key != null && !key.isEmpty()) {
+					file = (CommonsMultipartFile) request.getFile(key);
+					String pathXlst = file.getOriginalFilename();
+					if (pathXlst != null && pathXlst.length() > 0) {
+						String[] parts = pathXlst.split("\\.");
+						if (parts.length < 3) {
+							Set<String> validFileFormats = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+							validFileFormats.add("Xls");
+							validFileFormats.add("Xlsx");
+							if (validFileFormats.contains(parts[1].trim())) {
+								String directoryPath = UploadUtility.createDirectoryPath(uploadedTempletedDirectory);
+								String uploadedFilePathAndName = directoryPath + file.getOriginalFilename();
+								DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss");
+								String currentDate = dateFormat.format(new Date());
+								String newUploadedFilePathAndName = uploadedFilePathAndName.replace(".xls", "") + "_"
+										+ currentDate + ".xls";
+								if (UploadUtility.uploadFileinTempLocation(newUploadedFilePathAndName, file)) {
+									result = validateInputRecord(newUploadedFilePathAndName,
+											file.getOriginalFilename());
+									if (result == true) {
+										ret = ret + "Document uploaded Successfully.";
+									} else {
+										ret = ret + "Document not uploaded.";
+									}
+									return ret;
+								}
+							} else {
+								ret = ret + "Not valid file.";
+							}
+						} else {
+							ret = ret + "Not valid file.";
+						}
+					} else {
+						ret = ret + "Not valid file.";
+					}
+				}else{
+					ret = ret + "File not  file.";
+				}
+			} else {
+				ret = ret + "File path not exist";
+				LOGGER.error("Error in >> uploadTemple method started.ClassName:UploadTempletController" + ret);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error in >> uploadTemple method started.ClassName:UploadTempletController");
+		}
+		LOGGER.info(" end  uploadTemple method started.ClassName:UploadTempletController ");
+		return ret;
+	}
+
+	@RequestMapping("/download.htm")
+	public void downloadFile(@RequestParam("encryptFilingId") String encryptFilingId,HttpServletRequest request,HttpServletResponse response) {
+
+		Integer fillingId =Integer.parseInt(CipherUtils.decrypt(encryptFilingId));
+		LOGGER.info("**start downloadFile filing id:"+fillingId);
+		BufferedInputStream in = null;
+		ServletOutputStream outputStream = null;
+		String filePath=null;
+		String fileName="";
+		Boolean isNotXMLGenerate=false;
+		String industryName="";
+		try {
+
+			/**
+			 * if filing id exist means request come from Genrate XML document button on normalization_view.jsp page
+			 * so download xmldocument from given path 
+			 */
+		
+		 if(fillingId!=null){
+			/**
+			 * Here we check latest xml document is created or not based on isXMLGenerate column in work_queue table
+			 * if isXMLGenerate is true then you can download the file from destination
+			 */
+			
+			 List<Object> isXMLGenerateObj=workQueueService.f_getisXMLGenerateColValue(fillingId);
+					
+			 if(!isXMLGenerateObj.isEmpty()){
+		     Object[] objIn = (Object[]) isXMLGenerateObj.get(0);
+			 if(objIn[0]!=null){
+				 isNotXMLGenerate=(Boolean) objIn[0];
+			 }if(objIn[1]!=null){
+				 industryName=objIn[1].toString();
+			   }		
+			 
+			  if(isNotXMLGenerate && !industryName.isEmpty()){
+				  fileName=industryName+"_"+fillingId+".xml";  
+			      filePath=downloadXMLDocumentPath+fileName;
+			  }else{
+				  filePath="File not exist.";
+				  LOGGER.info("file does not exists / generate xml rage call (isNotXMLGenerate false)");
+			  }
+			 }
+		  }
+		
+			if(filePath!=null){
+			LOGGER.info("dowonloaded file path="+filePath);
+			File fileToDownload = new File(filePath).getCanonicalFile();
+
+			int fSize = (int) fileToDownload.length();
+			in = new BufferedInputStream(new FileInputStream(fileToDownload));
+			outputStream = response.getOutputStream();
+
+			response.setBufferSize(fSize);
+			response.setContentType("text/xml");
+			response.setHeader("Content-Disposition", "attachment; filename="+ fileName);
+			response.setContentLength(fSize);
+			FileCopyUtils.copy(in, outputStream);
+			outputStream.flush();
+			}else{
+			ByteArrayOutputStream bytes = new ByteArrayOutputStream(1024) ;
+			Writer writer = new OutputStreamWriter(bytes, "UTF-8");
+			writer.write(Constant.CR+Constant.LF);
+			writer.write(Constant.CR+Constant.LF);
+            writer.write("File Not Exist:"+filePath) ;
+            writer.flush();
+            response.setContentLength(bytes.size()) ;
+            // Copy
+            response.getOutputStream().write(bytes.toByteArray()) ;
+				
+			}
+			
+		} catch (IOException e) {
+			LOGGER.error("--- Exception Occured --------", e);
+		    
+			try {
+				ByteArrayOutputStream bytes = new ByteArrayOutputStream(1024) ;
+				Writer writer = new OutputStreamWriter(bytes, "UTF-8");
+				writer.write(Constant.CR+Constant.LF);
+				writer.write(Constant.CR+Constant.LF);
+	            writer.write("File Not Exist:"+filePath) ;
+	            writer.flush();
+	            response.setContentLength(bytes.size()) ;
+	            // Copy
+	            response.getOutputStream().write(bytes.toByteArray()) ;
+	            
+				throw new Exception("Error performing opreration", e);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		} finally {
+			try {
+				if (in != null) {
+					in.close();
+				}
+				if (outputStream != null) {
+					outputStream.close();
+				}
+			} catch (IOException ioe) {
+				LOGGER.error("--- Exception Occured --------", ioe);
+				try {
+					throw new Exception("Error performing opreration", ioe);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			
+		}
+		
+		
+	}
+	
+	@RequestMapping("/downloadNormalizationTemplate.htm")
+	public void downloadNormalizationTemplate(HttpServletRequest request,
+			HttpServletResponse response,@RequestParam("templateType") String templateType ) {
+		LOGGER.info("** start downloadNormalizationTemplate methode ");
+		BufferedInputStream in = null;
+		ServletOutputStream outputStream = null;
+		try {
+
+			
+			String sampleFileName = "";
+			if(templateType!=null && templateType.equalsIgnoreCase("normLabel")){
+				sampleFileName = importNormTempletFileName;
+			}else{
+				sampleFileName = sampleTempletFileName;
+			}
+			String filePathToDownload = sampleTempletFilePath;
+			File fileToDownload = new File(filePathToDownload + sampleFileName).getCanonicalFile();
+
+			LOGGER.info("File path= "+filePathToDownload + sampleFileName);
+			int fSize = (int) fileToDownload.length();
+			in = new BufferedInputStream(new FileInputStream(fileToDownload));
+			outputStream = response.getOutputStream();
+
+			response.setBufferSize(fSize);
+
+			response.setHeader("Content-Disposition", "attachment; filename="+ sampleFileName);
+			response.setContentLength(fSize);
+
+			FileCopyUtils.copy(in, outputStream);
+			outputStream.flush();
+
+		} catch (IOException e) {
+			LOGGER.error("--- Exception Occured --------", e);
+			try {
+				throw new Exception("Error performing opreration", e);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		} finally {
+			try {
+				if (in != null) {
+					in.close();
+				}
+				if (outputStream != null) {
+					outputStream.close();
+				}
+			} catch (IOException ioe) {
+				LOGGER.error("--- Exception Occured --------", ioe);
+				try {
+					throw new Exception("Error performing opreration", ioe);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	public boolean validateInputRecord(String newUploadedFilePathAndName,
+			String OriginalFile) {
+
+		FileInputStream fileInputStream = null;
+		boolean result = false;
+		boolean finalResult = true;
+
+		try {
+			Map<String, String> normItemLabelsAndIdMap = getNormItemLabelsAndIdMap();
+			List<FinancialItems> failedFinancialItemsList = new ArrayList<FinancialItems>();
+			List<FinancialItems> savedFinancialItemsList = new ArrayList<FinancialItems>();
+
+			fileInputStream = new FileInputStream(newUploadedFilePathAndName);
+			HSSFWorkbook workbook = new HSSFWorkbook(fileInputStream);
+			HSSFSheet worksheet = workbook.getSheetAt(0);
+
+			Iterator<Row> rowIterator = worksheet.iterator();
+			int k = 0;
+			while (rowIterator.hasNext()) {
+				k++;
+				if (k == 1) {
+					rowIterator.next();
+					continue;
+				}
+				Row row = rowIterator.next();
+
+				String fi_section = (row.getCell(0) != null ? row.getCell(0)
+						.getStringCellValue().trim() : null);
+				String fi_sub_section = (row.getCell(1) != null ? row
+						.getCell(1).getStringCellValue().trim() : null);
+				String fi_industry = (row.getCell(2) != null ? row.getCell(2)
+						.getStringCellValue().trim() : null);
+				String fi_lable = (row.getCell(2) != null ? row.getCell(3)
+						.getStringCellValue().trim() : null);
+				String ni_lable = (row.getCell(3) != null ? row.getCell(4)
+						.getStringCellValue().trim() : null);
+
+				FinancialItems financialItems = new FinancialItems();
+				financialItems.setId(k);
+				financialItems.setFiIndexOrder(k);
+				financialItems.setFiSection(fi_section);
+				financialItems.setFiSubSection(fi_sub_section);
+				financialItems.setFiIndustry(fi_industry);
+				financialItems.setFiLabel(fi_lable);
+				financialItems.setNil_Lable(ni_lable);
+
+				financialItems.setFiLanguage("English");
+				financialItems.setCreatedDate(new Date());
+				User userObject = (User) SecurityContextHolder.getContext()
+						.getAuthentication().getPrincipal();
+				financialItems
+						.setAnalystId((int) (long) userObject.getUserId());
+				financialItems.setCreatedBy(userObject.getUsername());
+				result = validateRecord(financialItems, normItemLabelsAndIdMap);
+				if (result == false) {
+					failedFinancialItemsList.add(financialItems);
+					finalResult = false;
+				} else
+					savedFinancialItemsList.add(financialItems);
+			}
+			fileInputStream.close();
+
+			uploadTempletService.saveFinancialItemsList(
+					savedFinancialItemsList, failedFinancialItemsList);
+			if (failedFinancialItemsList.size() > 0) {
+				boolean writeResult = writefailedFinancialItemsFile(
+						newUploadedFilePathAndName, OriginalFile,
+						failedFinancialItemsList);
+				if (writeResult == false)
+					finalResult = false;
+			}
+			return finalResult;
+		} catch (Exception e) {
+			LOGGER.error(
+					"--- Exception Occured in validateInputRecord()--------", e);
+		}
+		finally {
+			try {
+
+				if (fileInputStream != null) {
+					fileInputStream.close();
+				}
+			} catch (Exception ioe) {
+				LOGGER.error(
+						"--- Exception Occured in validateInputRecord()--------",
+						ioe);
+
+			}
+		}
+		return result;
+
+	}
+
+	private String createTemporaryFile(String templateFolderPath) {
+		String fileToWritePath = templateFolderPath.replace(".xls", "")
+				+ "_FailedRecords" + ".xls";
+		String failedTempletFileName = sampleFailedTempletFileName;
+		String filePathToDownload = sampleTempletFilePath;
+
+		File fileToCopy = null;
+		File fileToWrite = null;
+		try {
+			fileToCopy = new File(filePathToDownload + failedTempletFileName).getCanonicalFile();
+			fileToWrite = new File(fileToWritePath).getCanonicalFile();
+			FileUtils.copyFile(fileToCopy, fileToWrite);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return fileToWritePath;
+	}
+
+	private boolean writefailedFinancialItemsFile(
+			String newUploadedFilePathAndName, String OriginalFile,
+			List<FinancialItems> failedFinancialItemsList) {
+		InputStream inputStream = null;
+
+		boolean result = true;
+
+		try {
+
+			String fileToWrite = createTemporaryFile(newUploadedFilePathAndName);
+			inputStream = new FileInputStream(fileToWrite);
+
+			Workbook workbook = WorkbookFactory.create(inputStream);
+
+			Sheet sheet = workbook.getSheetAt(0);
+			Row row = sheet.getRow(0);
+
+			if (failedFinancialItemsList != null
+					&& !failedFinancialItemsList.isEmpty()) {
+				int rowCount = 1;
+				short celStartForm = 0;
+
+				CellStyle textCellStyleWithLeftAlignment = workbook
+						.createCellStyle();
+				textCellStyleWithLeftAlignment
+						.setAlignment(CellStyle.ALIGN_LEFT);
+
+				for (FinancialItems financialItems : failedFinancialItemsList) {
+					short cellPosition = celStartForm;
+					row = sheet.getRow(rowCount) != null ? sheet
+							.getRow(rowCount) : sheet.createRow(rowCount);
+					createCellWithBorder(workbook, row, cellPosition++,
+							textCellStyleWithLeftAlignment,
+							financialItems.getFiSection());
+					createCellWithBorder(workbook, row, cellPosition++,
+							textCellStyleWithLeftAlignment,
+							financialItems.getFiSubSection());
+					createCellWithBorder(workbook, row, cellPosition++,
+							textCellStyleWithLeftAlignment,
+							financialItems.getFiIndustry());
+					createCellWithBorder(workbook, row, cellPosition++,
+							textCellStyleWithLeftAlignment,
+							financialItems.getFiLabel());
+					createCellWithBorder(workbook, row, cellPosition++,
+							textCellStyleWithLeftAlignment,
+							financialItems.getNil_Lable());
+					createCellWithBorder(workbook, row, cellPosition++,
+							textCellStyleWithLeftAlignment,
+							financialItems.getComment());
+					rowCount++;
+				}
+				writeAndReadTemporaryFile(fileToWrite, workbook);
+
+			}
+
+		} catch (Exception e) {
+			LOGGER.error(
+					"--- Exception Occured in writefailedFinancialItemsFile()--------",
+					e);
+			result = false;
+		} finally {
+			try {
+
+				if (inputStream != null) {
+					inputStream.close();
+				}
+			} catch (IOException ioe) {
+				LOGGER.error(
+						"--- Exception Occured in writefailedFinancialItemsFile() --------",
+						ioe);
+			}
+		}
+		return result;
+	}
+
+	private Cell createCellWithBorder(Workbook workbook, Row row, short s,
+			CellStyle cellStyle, String cellValue) {
+		Cell cell = row.createCell(s);
+		cell.setCellValue(cellValue);
+		return cell;
+	}
+
+	private void writeAndReadTemporaryFile(String filePath, Workbook workbook) {
+		FileOutputStream fileOutputStream = null;
+		try {
+			fileOutputStream = new FileOutputStream(filePath);
+			workbook.write(fileOutputStream);
+			fileOutputStream.close();
+		} catch (Exception e) {
+			LOGGER.error(
+					"--- Exception Occured while writting in workbook--------",
+					e);
+		} finally {
+			try {
+
+				if (fileOutputStream != null) {
+					fileOutputStream.close();
+				}
+			} catch (IOException ioe) {
+				LOGGER.error("--- Exception Occured --------", ioe);
+				try {
+					throw new Exception("Error performing opreration", ioe);
+				} catch (Exception e) {
+					LOGGER.error("--- Exception Occured --------", ioe);
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+	public Map<String, String> getNormItemLabelsAndIdMap() {
+
+		Map<String, String> normItemLabelsAndIdMap = new HashMap<String, String>();
+
+		List<Object> normItemLabelsAndIdList = genericDaoImpl
+				.findByNativeNamedQuery(
+						NamedNativeQueryName.getNormItemLabelsAndIdList,
+						NormItemLabels.class);
+
+		for (Object object : normItemLabelsAndIdList) {
+			Object[] objIn = (Object[]) object;
+			String NiItem = objIn[0] == null ? "" : objIn[0].toString();
+			String NiItemLable = objIn[1] == null ? "" : objIn[1].toString();
+			String IndType = objIn[2] == null ? "" : objIn[2].toString();
+			String TemplateId = objIn[3] == null ? "" : objIn[3].toString();
+
+			String NiItemLableAndIndType = IndType.toUpperCase() + ":"
+					+ NiItemLable.toUpperCase();
+			String NiItemAndTemplateID = NiItem + ":" + TemplateId;
+			normItemLabelsAndIdMap.put(NiItemLableAndIndType,
+					NiItemAndTemplateID);
+		}
+		return normItemLabelsAndIdMap;
+	}
+
+	public boolean validateRecord(FinancialItems financialItems,
+			Map<String, String> normItemLabelsAndIdMap) {
+		boolean result = true;
+		try {
+
+			String fi_section = financialItems.getFiSection();
+			String fi_industry = financialItems.getFiIndustry();
+			String fi_lable = financialItems.getFiLabel();
+			String ni_lable = financialItems.getNil_Lable();
+
+			if ((fi_section == null) || (fi_industry == null)
+					|| (fi_lable == null) || (ni_lable == null)) {
+				result = false;
+				financialItems
+						.setComment("Please enter Financial Section, Industry Type, As Reported Label or Normalized Label");
+			} else if ((fi_section.trim().length() == 0)
+					|| (fi_industry.trim().length() == 0)
+					|| (fi_lable.trim().length() == 0)
+					|| (ni_lable.trim().length() == 0)) {
+				financialItems
+						.setComment("Please enter Financial Section, Industry Type, As Reported Label or Normalized Label");
+				result = false;
+			}
+
+			String NiItem = "";
+			String NiItemAndTemplateID = "";
+			String TemplateId = "";
+
+			if ((ni_lable != null && ni_lable.length() > 0)
+					&& (fi_industry != null && fi_industry.length() > 0)) {
+				String NiLableAndIndType = fi_industry.toUpperCase() + ":"
+						+ ni_lable.toUpperCase();
+
+				NiItemAndTemplateID = normItemLabelsAndIdMap
+						.get(NiLableAndIndType);
+
+				if (NiItemAndTemplateID != null
+						&& NiItemAndTemplateID.length() > 0) {
+
+					String[] tokens = NiItemAndTemplateID.split(":");
+					NiItem = tokens[0];
+					TemplateId = tokens[1];
+
+				}
+			}
+			if ((NiItem != null && NiItem.length() > 0)
+					&& (TemplateId != null && TemplateId.length() > 0)) {
+				financialItems.setNiItem(Integer.parseInt(NiItem));
+				financialItems.setTemplateId(Integer.parseInt(TemplateId));
+			} else {
+				financialItems
+						.setComment("Please enter correct Normalized Label or Industry Type");
+				result = false;
+			}
+		} catch (Exception e) {
+			financialItems
+					.setComment("Please enter correct Normalized Label or Industry Type");
+			result = false;
+		}
+		return result;
+	}
+
+	@SuppressWarnings("unused")
+	private boolean checkforspecialChar(String checkText) {
+		boolean hasSpecialChar = false;
+		Pattern p = Pattern.compile("[^a-zA-Z0-9]");
+		hasSpecialChar = p.matcher(checkText).find();
+		return hasSpecialChar;
+
+	}
+	
+
+	@RequestMapping(value = "/companyNameAutoComplete.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody String companyNameAutoComplete(HttpServletRequest request, HttpServletResponse response,HttpSession session) throws IOException {
+	String result="";
+	try{
+	 LOGGER.info("--- CustomSearchWorkQueueController request Mapping started--------");
+ 	ObjectMapper objectMapper = new ObjectMapper();
+ 	String searchVal="";
+ 	if(request.getParameter("companyName")!=null){
+ 	searchVal=request.getParameter("companyName").toString();
+ 	}
+ 	Map<Integer,String> resultMap = uploadTempletService.f_findCompanyName(searchVal);
+ 	result = objectMapper.writeValueAsString(resultMap);
+	}
+catch (Exception e) {
+	LOGGER.error("Exception Occured CustomSearchWorkQueueController; method: autoComplete ",e);
+}
+return result;
+}
+	
+	@RequestMapping(value = "/isFinancialItemExistByCompanyId.htm", method = { RequestMethod.GET,RequestMethod.POST })
+	public @ResponseBody String isDocumentsExist(@RequestParam("companyId") String companyId) {
+
+		LOGGER.info("** Start-- isDocumentsExist methode");
+		String result1 = "";
+	
+		ObjectMapper objectMapper = new ObjectMapper();
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		
+		
+		try {
+			/*
+			 * Here we check if folder exist or not with respective transaction id list
+			 */
+			Integer companyIdNumber=null;
+		 	if(companyId!=null && companyId!=""){
+		 		try{
+		 		companyIdNumber=Integer.parseInt(companyId);	
+		 		}catch(NumberFormatException nfe){
+		 			nfe.printStackTrace();
+		 			LOGGER.error("NumberFormatException=",nfe);
+		 		}
+		 		
+			List<? extends Object> financialItemList=uploadTempletService.f_getFinancialItemByEid(companyIdNumber);
+
+				if (financialItemList.size()>0 && !financialItemList.isEmpty() && financialItemList!=null){
+					resultMap.put("existFlag", "Y");
+				}else{
+					resultMap.put("existFlag", "N");
+				}
+				result1 = objectMapper.writeValueAsString(resultMap);
+		    
+		 	}
+		
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error", e);
+		}
+		LOGGER.info("** Start-- isDocumentsExist methode");
+		return result1;
+
+	}
+	
+	@RequestMapping(value = "/companyNameForFItems.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody String companyNameForFItems(HttpServletRequest request, HttpServletResponse response,HttpSession session,
+			@RequestParam("companyNameToExport") String companyNameToExport,@RequestParam("autoCompleteflag") String autoCompleteflag) throws IOException {
+	String result="";
+	try{
+	 LOGGER.info("--- companyNameForFItems request Mapping started--------");
+ 	ObjectMapper objectMapper = new ObjectMapper();
+ 	
+ 	Map<String,String> resultMap = uploadTempletService.findCompanyDetailsByName(companyNameToExport, autoCompleteflag);
+ 	result = objectMapper.writeValueAsString(resultMap);
+	}
+catch (Exception e) {
+	LOGGER.error("Exception Occured companyNameForFItems; method: autoComplete ",e);
+}
+return result;
+}
+	
+	@RequestMapping(value = "/companyIdForFItems.htm", method = {RequestMethod.GET, RequestMethod.POST }) 
+	public @ResponseBody String companyIdForFItems(HttpServletRequest request, HttpServletResponse response,HttpSession session,
+			@RequestParam("companyIdToExport") String companyIdToExport,@RequestParam("autoCompleteflag") String autoCompleteflag) throws IOException {
+	String result="";
+	try{
+	 LOGGER.info("--- companyIdForFItems request Mapping started--------");
+ 	ObjectMapper objectMapper = new ObjectMapper();
+ 	
+ 	Map<String,String> resultMap = uploadTempletService.findCompanyDetailsById(companyIdToExport, autoCompleteflag);
+ 	result = objectMapper.writeValueAsString(resultMap);
+	}
+catch (Exception e) {
+	LOGGER.error("Exception Occured companyIdForFItems; method: autoComplete ",e);
+}
+return result;
+}
+	
+	
+	@RequestMapping(value = "/importPdfExtractionMetaDataFilter.htm", method = RequestMethod.POST)
+	   public @ResponseBody String importPdfExtractionMetaDataFilter(MultipartHttpServletRequest request, HttpServletResponse response,HttpSession session) {                 
+	 
+	    
+	     Iterator<String> itr =  request.getFileNames();
+	     List<PdfExtractionMetadatCommand> pdfExtractionMetadatCommandList=null;
+	     String status="";
+	     String approvedInPEM="";
+	     String globalLeverUpdateStatus="";
+	     MultipartFile mpf=null;
+	     User userObject = (User) session.getAttribute("user");
+		 if(itr.hasNext()){
+	    	 mpf = request.getFile(itr.next());
+	     }
+	     try {
+		     if(mpf!=null){
+		    	 pdfExtractionMetadatCommandList=NormTemplateExtractionUtil.extractPdfExtractionMetadata(mpf);
+		    	 
+		    	 status=normalizationService.bulkUpdateExtractionRules(pdfExtractionMetadatCommandList, userObject);
+					
+		     }
+		     if(null!=status && !"".equalsIgnoreCase(status)){
+		    	 String[] statusArray=status.split("~");
+		    	 if(statusArray!=null && statusArray.length==2){
+			    	 if(new Integer(statusArray[0]).intValue()>0){
+			    		 approvedInPEM = new Integer(statusArray[0]).intValue() + " record'(s) approved successfully in company level."+Constant.CR+Constant.LF;
+			    	 }
+			    	 if(new Integer(statusArray[1]).intValue()>0){
+			    		 globalLeverUpdateStatus =new Integer(statusArray[1]).intValue() + " record'(s) inserted successfully in global level."+Constant.CR+Constant.LF;
+			    	 }
+			    	 
+			    	 status="";
+			    	 status=approvedInPEM+globalLeverUpdateStatus;
+			     }
+		     }
+		     
+		     
+		     
+	     } catch (Exception e) {
+				e.printStackTrace();
+			}
+	     if("".equalsIgnoreCase(status)){
+	    	 return "No record'(s) were updated.";
+	     }
+	     return status;
+	 
+	 }
+	
+
+}

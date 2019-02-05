@@ -1,0 +1,628 @@
+package com.livespread.controller;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.StringTokenizer;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
+
+import com.livespread.domain.User;
+import com.livespread.domain.UsersGroup;
+import com.livespread.exception.UserNotLoginException;
+import com.livespread.security.CsrfToken;
+import com.livespread.service.ChangePasswordService;
+import com.livespread.service.UserGroupService;
+import com.livespread.service.WorkQueueService;
+import com.livespread.util.CipherUtils;
+import com.livespread.util.WorkQueueServiceFactory;
+import com.rage.reusable.utils.RageResourceBundle;
+
+@Controller
+public class LoginController implements InitializingBean {
+
+	protected final Log logger = LogFactory.getLog(getClass());
+
+	@Autowired
+	WorkQueueService workQueueService;
+	
+	
+	@Autowired
+	UserGroupService userGroupService;
+
+	@Autowired
+	ChangePasswordService changePasswordService;
+	
+	@Value("${secureFlag}")
+	private String secureFlag;
+	
+	@Autowired
+	RageResourceBundle rageResourceBundle;
+
+	@RequestMapping(value = "/logout.htm")
+	public String logout(Model model, HttpServletRequest request,
+			HttpServletResponse response) {
+
+		HttpSession theSession = request.getSession();
+
+		try {
+			User user = (User) request.getSession().getAttribute("user");
+			String currentSessionId=WorkQueueServiceFactory.userAuditService.getUserSessionId(user);
+			if(request.getSession().getId().equalsIgnoreCase(currentSessionId)){
+				 WorkQueueServiceFactory.userAuditService.setUserSessionAsNull(user);
+			}
+			if (request.getSession().getAttribute("LockedSession") != null) {
+				Integer loggedSessionwq = (Integer) request.getSession().getAttribute("LockedSession");
+				workQueueService.updateLockCaseForNullUser(loggedSessionwq);
+				request.getSession().removeAttribute("LockedSession");
+				
+			}
+		} catch (Exception e) {
+			logger.error("Error:",e);
+		}
+
+		/** Code ends here */
+		logger.info("Session invalidate on logout.htm URL");
+		theSession.invalidate();
+
+/*		response.setHeader("Cache-Control", "no-store,must-revalidate");
+		response.setHeader("Pragma", "no-cache");
+		response.setDateHeader("Expires", 0);*/
+
+		return "login";
+	}
+
+	@RequestMapping("/login.htm")
+	public ModelAndView login(Model model, HttpServletRequest request,
+			HttpServletResponse response) throws IOException {
+		ArrayList<String> errors = new ArrayList<String>();
+		request.getSession().setAttribute("CurrentTimeStamp",new Date().getTime());
+		if (request.getParameter("error") != null && request.getParameter("error").equalsIgnoreCase("invaildSession"))
+		{
+		errors.add("Your session is expired.");
+		model.addAttribute("errors", errors);
+		model.addAttribute("errorNo", -1);
+		request.getSession().invalidate();
+		request.getSession().setAttribute("CurrentTimeStamp",new Date().getTime());
+			return new ModelAndView("login");
+		}
+		try {
+			User userObject = null;
+
+			if (SecurityContextHolder.getContext().getAuthentication()
+					.getPrincipal() instanceof User)
+				userObject = (User) SecurityContextHolder.getContext()
+						.getAuthentication().getPrincipal();
+			if (request.getParameter("error") != null && request.getParameter("error").equalsIgnoreCase("multiple"))
+			{
+				request.getSession().setAttribute("CurrentTimeStamp",new Date().getTime());
+				errors.add("You are already logged in from other session.Are you sure you want to logout from previous session?");
+				model.addAttribute("errors", errors);
+				model.addAttribute("errorNo", -2);
+				request.getSession().setAttribute("CurrentTimeStamp",userObject.getCurrentTimeStamp());
+				return new ModelAndView("login");
+			}
+
+			if (userObject != null) {
+				request.getSession().setAttribute("user", userObject);
+				request.getSession().setAttribute("userID",userObject.getUserId());
+				request.getSession().setAttribute("userGroupId",userObject.getUserGroupId());
+				request.setAttribute("remoteIP",request.getRemoteAddr());
+				if(request.getSession().getAttribute("isRefresh")==null)
+				{
+				request.getSession().setAttribute("isRefresh",0);
+				return new ModelAndView("welcome");
+				}
+				else
+				{
+					return new ModelAndView(new RedirectView("logout.htm"));
+				}
+			}
+		} catch (Exception e) {
+			logger.info("" + e.getMessage());
+			logger.error("Error:",e);
+			
+		}
+		if (request.getParameter("error") != null
+				&& request.getParameter("error").equals("1")) {
+
+			if (request.getParameter("sessiontimeout") != null) {
+				errors.add("* Session timeout. Please re-login.");
+			} else {
+				errors.add("* Please enter valid Username");
+				errors.add("* Please enter valid Password");
+			}
+			model.addAttribute("errors", errors);
+		} else if (request.getParameter("error") != null
+				&& request.getParameter("error").equals("2")) {
+			errors.add("You have exceeded the maximum number of login attempts, please try to login after 30 minutes.Please click on 'Forgot Password' link to proceed further.");
+			model.addAttribute("errors", errors);
+		} else if (request.getParameter("error") != null
+				&& request.getParameter("error").equals("3")) {
+			errors.add("* Account is locked *");
+			model.addAttribute("errors", errors);
+		} else if (request.getParameter("error") != null
+				&& request.getParameter("error").equals("4")) {
+			errors.add("Please enter valid Username and Password");
+			model.addAttribute("errors", errors);
+		} else if (request.getParameter("error") != null
+				&& request.getParameter("error").equals("5")) {
+			errors.add("Account is removed.Please contact admin for further assistance");
+			model.addAttribute("errors", errors);
+		} else if (request.getParameter("error") != null
+				&& request.getParameter("error").equals("6")) {
+			errors.add("Your password has been changed successfully,please try to login");
+			model.addAttribute("errors", errors);
+			model.addAttribute("errorNo", 6);
+		}
+		else if (request.getParameter("error") != null
+				&& request.getParameter("error").equals("7")) {
+			errors.add("Invalid session or page expired, please try again");
+			model.addAttribute("errors", errors);
+			model.addAttribute("errorNo", 7);
+		}
+		
+		return new ModelAndView("login");
+	}
+
+	
+
+	@RequestMapping(value = "/intermediate-work-queue.htm", method = RequestMethod.GET)
+	public String intermediateWorkQueue(Model model,
+			HttpServletRequest request, HttpServletResponse response)
+			throws IOException {
+		return "intermediate-work-queue";
+	}
+
+	@RequestMapping(value = "/welcome.htm", method = RequestMethod.GET)
+	public ModelAndView welcome(Model model, HttpServletRequest request,
+			HttpServletResponse response) throws IOException,
+			UserNotLoginException, ParseException {
+
+		logger.info("START");
+		User userObject = null;
+		
+		Date currentDate = null;
+		Date dbTime = null;
+		long diffSeconds = 0l;
+		long diffMinutes = 0l;
+		long diffHours = 0l;
+		long diffDays = 0l;
+		Integer wrongPasswordCountDb =0;
+		if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof User)
+			userObject = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		System.out.println(request.getSession().getAttribute("CurrentTimeStamp"));
+
+		 //This parameter used for store page name
+		request.getSession().setAttribute("user", userObject);
+		SimpleDateFormat format2 = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss");
+		String cdate = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss").format(new Date());
+		currentDate = format2.parse(cdate.trim());
+		if (userObject != null) {
+			long sessionTimeStamp =0;
+			if(request.getSession().getAttribute("CurrentTimeStamp")!=null)
+			{
+				Long sessionTimeStampObject = (Long) request.getSession().getAttribute("CurrentTimeStamp");	
+				sessionTimeStamp =sessionTimeStampObject.longValue();
+			}
+			
+			long userTimeStamp= userObject.getCurrentTimeStamp().longValue();
+			if (sessionTimeStamp != userTimeStamp) 
+			{
+				SecurityContextHolder.getContext().setAuthentication(null);
+				return new ModelAndView(new RedirectView("login.htm?error=" + 1));
+			}
+			
+			if(userObject.getWrongPasswordCount()!=null)
+			{
+				wrongPasswordCountDb = userObject.getWrongPasswordCount();
+			}
+			logger.info("result received " + userObject);
+			model.addAttribute("pageName", "welcome");
+			if (!userObject.getFlag().equalsIgnoreCase("Active")) {
+				SecurityContextHolder.getContext().setAuthentication(null);
+				return new ModelAndView(new RedirectView("login.htm?error=" + 5));
+			}
+			if (null != userObject.getErrorMessage() && userObject.getErrorMessage() == 3) {
+				logger.info("--- account loking  >>>class  LoginController in locked mechanism update methodName welcome--------");
+				
+				if (wrongPasswordCountDb == null) {
+					wrongPasswordCountDb = 0;
+				}
+				
+				try {
+					if (wrongPasswordCountDb <= 5) {
+						dbTime = userObject.getLockedTime();
+						if (dbTime == null) {
+							dbTime = currentDate;
+						}
+						long diff = currentDate.getTime() - dbTime.getTime();
+						diffSeconds = diff / 1000 % 60;
+						diffMinutes = diff / (60 * 1000) % 60;
+						diffHours = diff / (60 * 60 * 1000) % 24;
+						diffDays = diff / (24 * 60 * 60 * 1000);
+					}
+					logger.info("diffDays" + diffDays + "diffHours" + diffHours
+							+ "diffMinutes" + diffMinutes + "diffSeconds"
+							+ diffSeconds);
+					if (diffDays < 1 && diffHours < 1 && diffMinutes < 30) {
+						if (wrongPasswordCountDb == 5) {
+							SecurityContextHolder.getContext().setAuthentication(null);
+							return new ModelAndView(new RedirectView("login.htm?error=" + 3));
+
+						} else if (wrongPasswordCountDb < 5) {
+							if (wrongPasswordCountDb == 4) {
+								 changePasswordService.wrongPasswordCountAndDate(userObject);
+								SecurityContextHolder.getContext().setAuthentication(null);
+								return new ModelAndView(new RedirectView("login.htm?error=" + 2));
+							} else {
+								changePasswordService.wrongPasswordCountAndDate(userObject);
+								SecurityContextHolder.getContext().setAuthentication(null);
+								return new ModelAndView(new RedirectView("login.htm?error=" + 1));
+							}
+						}
+					} else {
+						changePasswordService.wrongPasswordCountAndDate(userObject);
+						SecurityContextHolder.getContext().setAuthentication(null);
+						return new ModelAndView(new RedirectView("login.htm?error=" + 1));
+					}
+
+				} catch (Exception e) {
+					logger.error("Exception Occured class:ChangePasswordServiceImpl; method: updatePassword "+ e);
+					SecurityContextHolder.getContext().setAuthentication(null);
+					return new ModelAndView(new RedirectView("login.htm?error=" + 4));
+				}
+				return new ModelAndView(new RedirectView("login.htm?error=" + 4));
+			}
+			else if(wrongPasswordCountDb >= 5)
+			{
+				try {
+						dbTime = userObject.getLockedTime();
+						if (dbTime == null) {
+							dbTime = currentDate;
+						}
+						long diff = currentDate.getTime() - dbTime.getTime();
+						diffSeconds = diff / 1000 % 60;
+						diffMinutes = diff / (60 * 1000) % 60;
+						diffHours = diff / (60 * 60 * 1000) % 24;
+						diffDays = diff / (24 * 60 * 60 * 1000);
+				
+					logger.info("diffDays" + diffDays + "diffHours" + diffHours + "diffMinutes" + diffMinutes + "diffSeconds" + diffSeconds);
+					if (diffDays < 1 && diffHours < 1 && diffMinutes < 30) {
+						if (wrongPasswordCountDb == 5) {
+							SecurityContextHolder.getContext().setAuthentication(null);
+							return new ModelAndView(new RedirectView("login.htm?error=" + 3));
+
+						} else if (wrongPasswordCountDb < 5) {
+							if (wrongPasswordCountDb == 4) {
+								changePasswordService.wrongPasswordCountAndDate(userObject);
+								SecurityContextHolder.getContext().setAuthentication(null);
+								return new ModelAndView(new RedirectView("login.htm?error=" + 2));
+							} else {
+								 changePasswordService.wrongPasswordCountAndDate(userObject);
+								SecurityContextHolder.getContext().setAuthentication(null);
+								return new ModelAndView(new RedirectView("login.htm?error=" + 1));
+							}
+						}
+					} 
+				} catch (Exception e) {
+					logger.error("Exception Occured class:ChangePasswordServiceImpl; method: updatePassword "+ e);
+					SecurityContextHolder.getContext().setAuthentication(null);
+					return new ModelAndView(new RedirectView("login.htm?error=" + 4));
+				}
+			}
+			
+			else{
+				try{
+					//here we set user role manually
+					if(userObject!=null){
+					setAutheorityInSecurityContext(userObject);
+					}
+					if(userObject.getUserSessionId()==null || userObject.getUserSessionId().trim().length()==0){
+						WorkQueueServiceFactory.userAuditService.setUserSessionId(userObject, request.getSession().getId());
+						userObject.setUserSessionId(request.getSession().getId());
+						request.getSession().setAttribute("user", userObject);
+					}else if(!userObject.getUserSessionId().trim().equals(request.getSession().getId())){
+						if(request.getParameter("error")==null)
+						{
+						return new ModelAndView(new RedirectView("login.htm?error=multiple" ));	
+						}else{
+						WorkQueueServiceFactory.userAuditService.setUserSessionId(userObject, request.getSession().getId());
+						userObject.setUserSessionId(request.getSession().getId());
+						}
+						
+					}
+					
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+				
+			}
+
+			try {
+				if (request.getSession().getAttribute("LockedSession") != null) {
+					Integer loggedSessionwq = (Integer) request.getSession()
+							.getAttribute("LockedSession");
+					workQueueService.updateLockCaseForNullUser(loggedSessionwq);
+					request.getSession().removeAttribute("LockedSession");
+				}
+			} catch (Exception e) {
+				logger.error("Error:",e);
+			}
+
+			/** Code ends here */
+
+			//request.getSession().setAttribute("user", userObject);
+			request.getSession().setAttribute("lastTime",userObject.getLastLoginTime());
+			request.getSession().setAttribute("userIDWQ",CipherUtils.encrypt(userObject.getUserId() + ""));
+			request.getSession().setAttribute("USERID",userObject.getUserId());
+			request.getSession().setAttribute("USERACCESS",userObject.getUserAccess());
+			request.getSession().setAttribute("userGroupIdWQ",CipherUtils.encrypt(userObject.getUserGroupId() + ""));	
+			request.getSession().setAttribute("userGroupIdDec",	userObject.getUserGroupId());
+			request.getSession().setAttribute("userIdDec",userObject.getUserId());
+			if(request.getSession().getAttribute("isRefresh")==null)
+			{
+				request.getSession().setAttribute("isRefresh",0);
+			}
+			else
+			{
+				return new ModelAndView(new RedirectView("logout.htm"));
+			}
+			
+			
+			String tableId="workQueue";
+			if(userObject.getSalutation()!=null){
+			if(userObject.getSalutation().equalsIgnoreCase("Y")){
+				tableId="workQueueFlag";
+			}else{
+				tableId="workQueue";
+			}
+			}
+			
+			String tableName = userObject.getUserGroupId() == 4 ? "workQueueSec" : tableId;
+			request.getSession().setAttribute("tableName", tableName);
+			
+			/**
+			 * Once we come on work queue page then  we set "sessionSectionList" session to null
+			 */
+     	//user system ip for userActivity functionality.
+			String xForwardedForHeader = request.getHeader("X-Forwarded-For");
+            String sysIp="";
+         if (xForwardedForHeader == null) {
+        	 sysIp= request.getRemoteAddr();
+         } else {
+        	 sysIp= new StringTokenizer(xForwardedForHeader, ",").nextToken().trim();
+         }
+         logger.info("user system ip:: "+sysIp);
+            request.getSession().setAttribute("ipAddress", sysIp);
+			request.getSession().setAttribute("sessionSectionList", null);
+			
+			// bachProcessFlag
+			String bachProcessFlag="N";
+			String delearName="N";
+			List<String> isElementEnable=null;
+			isElementEnable= workQueueService.isEnableFlag("Work Queue",userObject.getUserGroupId());
+			if (!CollectionUtils.isEmpty(isElementEnable)) {
+				if (isElementEnable.contains("Batch Processing Button")) {
+					bachProcessFlag = "Y";
+				}
+				if (isElementEnable.contains("Dealer_Name")) {
+					delearName = "Y";
+				}
+			}
+			 request.getSession().setAttribute("bachProcessFlag", bachProcessFlag);
+			 request.getSession().setAttribute("delearName", delearName);
+			
+			//last LoginTime
+			
+			boolean updateLastLoginTime = false;
+			if(request.getSession().getAttribute("lastLogin")==null){
+			Long userId = userObject.getUserId();
+			if (userId != null) {
+				updateLastLoginTime = changePasswordService.updateLastLoginTime(userId);
+				if (updateLastLoginTime) {
+					request.getSession().setAttribute("lastLogin","Y");
+				}
+			}
+			}
+			UsersGroup getUserGroupObj=null;
+			String goldenSetGroup=null;
+			if(userObject.getUserGroupId()!=null){
+			 getUserGroupObj=userGroupService.getUserGroupbyGroupId(userObject.getUserGroupId());
+			 if(getUserGroupObj!=null){
+				 goldenSetGroup=getUserGroupObj.getGoldenSetGroup();
+			 }
+			}
+			model.addAttribute("goldenSetGroup", goldenSetGroup);
+			
+			//cookie
+			
+			/*String generatedSecretToken = CsrfToken.getToken(request);
+			String encryptedSecretToken = CipherUtils.encrypt(generatedSecretToken);
+			HttpSession session = request.getSession(false);
+			List<String> tokenList = null;
+			String absoluteUrl = request.getRequestURL().substring(request.getRequestURL().indexOf(request.getContextPath()), request.getRequestURL().length());
+			if ( session.getAttribute("tokenList")==null)
+			{
+				tokenList = new ArrayList<String>();
+				tokenList.add(generatedSecretToken);	   
+				
+			}else {
+				tokenList = (List<String>)session.getAttribute("tokenList");
+				int totalSize =10;
+				if(tokenList.size()== totalSize){     
+					tokenList = new ArrayList(tokenList.subList(1,totalSize));  
+					if(!tokenList.contains(generatedSecretToken))
+						tokenList.add(generatedSecretToken);	
+				}else{
+					if(!tokenList.contains(generatedSecretToken))
+						tokenList.add(generatedSecretToken);
+					}
+			}
+			session.setAttribute("tokenList", tokenList);
+			session.setAttribute("secretToken", encryptedSecretToken);
+			Cookie cookie = new Cookie( "secure_tk", encryptedSecretToken);
+			cookie.setMaxAge(24*60*60);	
+			if(Boolean.parseBoolean(secureFlag))
+			{
+				cookie.setSecure(true);
+				cookie.setHttpOnly(true);
+			}
+			
+			Cookie[] responseCookie = request.getCookies();
+			String responseCookieName=null;
+			if(responseCookie!=null)
+			{
+				for( Cookie selectedCookie : responseCookie ){
+					responseCookieName = selectedCookie.getName();
+					if(responseCookieName.equalsIgnoreCase("secure_tk"))
+					{
+						selectedCookie.setMaxAge(0);
+					}
+				}
+			}
+				response.addCookie( cookie );	*/
+			
+			return new ModelAndView("welcome");
+
+		} else {
+			return new ModelAndView(new RedirectView("login.htm"));
+		}
+
+	}
+
+	@Override
+	public void afterPropertiesSet() {
+
+		RageResourceBundle.getValue("dummy");
+	}
+	
+	@RequestMapping(value = "/loadWorkQueueStatus.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	boolean loadWorkQueueStatuses() {
+		logger.info("** Start loadWorkQueueStatuses method");
+		boolean flag = false;
+		try {
+			User userObject=null;
+			if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof User)
+				 userObject = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        workQueueService.f_getAllstatusList(userObject.getUserId().intValue(), userObject.getUserGroupId());
+		return true;
+		} catch (Exception e) {
+			logger.error("Error:", e);
+			e.printStackTrace();
+		}
+		logger.info("** End loadWorkQueueStatuses method ");
+		return flag;
+	}
+
+	private String getRandomToken() {
+		return "" + System.currentTimeMillis();
+	}
+	
+	
+	@RequestMapping("/releaseUserSession.htm")
+	public @ResponseBody String releaseUserSession(Model model, HttpServletRequest request,
+			HttpServletResponse response,@RequestParam("userId") String ecnryptuserId) throws IOException {
+		String userId = CipherUtils.decrypt(ecnryptuserId);
+		User userDetailsToRemoveSession=null;
+		try{
+			userDetailsToRemoveSession = changePasswordService
+					.getUserByUserId(Long.parseLong(userId));
+			User currentLoggedInUser = (User) request.getSession().getAttribute("user");
+			if((userDetailsToRemoveSession!=null && currentLoggedInUser!=null) && (userDetailsToRemoveSession.getUserId().equals(currentLoggedInUser.getUserId()))){
+				return "Self unlock is not available.";
+			}
+			if(userDetailsToRemoveSession!=null){
+				WorkQueueServiceFactory.userAuditService.setUserSessionAsNull(userDetailsToRemoveSession);
+				return " Selected user session has been released successfully.";
+			}
+			return "There is no locked session for the user";
+		}catch(Exception e){
+			e.printStackTrace();
+			return "Error occured while releasing the lock";
+		}
+	}
+	@SuppressWarnings("unchecked")
+	public void setAutheorityInSecurityContext(User userObject)
+	{
+		//Here we set user Authorities
+		if(userObject.getUserAccess()!=null && (userObject.getUserAccess()==1 || userObject.getUserAccess()==2))
+		{
+		     Collection<SimpleGrantedAuthority> oldAuthorities =(Collection<SimpleGrantedAuthority>)SecurityContextHolder.getContext().getAuthentication().getAuthorities();; 
+		     SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_ADMIN");
+		     List<SimpleGrantedAuthority> updatedAuthorities = new ArrayList<SimpleGrantedAuthority>();
+		     updatedAuthorities.add(authority);
+		     updatedAuthorities.addAll(oldAuthorities);
+		     
+		     SecurityContextHolder.getContext().setAuthentication(
+		        new UsernamePasswordAuthenticationToken(
+		                SecurityContextHolder.getContext().getAuthentication().getPrincipal(),
+		                SecurityContextHolder.getContext().getAuthentication().getCredentials(),
+		                updatedAuthorities)
+				  );
+		}
+	}
+	
+	@RequestMapping(value = "/releaseLockUser.htm", method = RequestMethod.POST)
+    public @ResponseBody int releaseLockUser(HttpServletResponse response, HttpSession session,HttpServletRequest request){
+          User userObject = null;
+          String url = "welcome";
+          String fillingId = "";
+          Date inTime= null;
+          Long seconds = null;
+          String userRole = null; 
+          int addActivity=0;
+          try {
+                if (request.getSession().getAttribute("LockedSession") != null) {
+                      userObject = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                      Integer loggedSessionwq = (Integer) request.getSession().getAttribute("LockedSession");
+                      workQueueService.updateLockCaseForNullUser(loggedSessionwq);
+                      request.getSession().removeAttribute("LockedSession");
+                      //userActivity URL
+                      Calendar endTime=Calendar.getInstance();
+                      inTime= endTime.getTime();
+                      String sessionId =session.getId();
+                      Date seEndTime  = (Date) session.getAttribute("caseStartTime");
+                      seconds =(inTime.getTime()-seEndTime.getTime())/1000;
+                      userRole = (String) session.getAttribute("userRole");
+                      String userSysIp = (String) session.getAttribute("ipAddress");
+                      addActivity= WorkQueueServiceFactory.userAuditService.insertUserAuditUrls(url, userObject, fillingId,sessionId,inTime,null,userRole,userSysIp); 
+                                            }
+          } catch (Exception e) {
+                e.printStackTrace();
+                logger.error("Error:",e);
+          }
+    return addActivity;
+    }
+
+	
+
+	
+}

@@ -1,0 +1,265 @@
+package com.livespread.controller;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.Iterator;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.log4j.Logger;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
+
+import com.livespread.domain.AutoCaseData;
+import com.livespread.domain.User;
+import com.livespread.service.BatchProcessingService;
+import com.livespread.service.NormalizationService;
+import com.livespread.util.CipherUtils;
+
+/**
+* The <code>BatchProcessingController</code> class represents character file upload functionality.
+* user can upload excel from UI and from controller side retrive data from Controller
+* @author Ganesh.Dudhade
+*/
+
+@Controller
+public class BatchProcessingController {
+
+	@Value("${batchProcessingTemplateDownloadPath}")
+	private String batchProcessingTemplateDownloadPath;
+	
+	@Value("${batchProcessingFileDestinationPath}")
+	private String batchProcessingFileDestinationPath;
+	
+	@Value("${autoCaseGeneration}")
+	private String autoCaseGeneration;
+	
+	@Autowired
+	private BatchProcessingService batchProcessingService;
+	
+	@Autowired
+	private NormalizationService normalizationService;
+	
+	private Logger LOGGER = Logger.getLogger(BatchProcessingController.class);
+
+	/**
+	 * This controller used for download Batch Processing Template from server
+	 */
+	
+	@RequestMapping(value = "/downloadBatchFileTemplate.htm", method ={RequestMethod.POST,RequestMethod.GET})
+	public void downloadBatchFileTemplate(HttpSession session, HttpServletResponse response,HttpServletRequest request){
+		LOGGER.info("**start--downloadBatchFileTemplate methode start");
+		/**
+		 * Here we need to first download template and modify sheet2 and c3 cell
+		 */
+		File file = null;
+		try{
+		file = new File(batchProcessingTemplateDownloadPath).getCanonicalFile();	
+		String userId=CipherUtils.decrypt((String)session.getAttribute("userIDWQ"));	
+		String userGroupId=CipherUtils.decrypt((String)session.getAttribute("userGroupIdWQ"));
+
+		FileInputStream fis = new FileInputStream(file);
+		XSSFWorkbook book = new XSSFWorkbook(fis);
+		XSSFSheet sheet = book.getSheet("Data");
+		LOGGER.info("sheet name="+sheet);	
+		Cell cell = null;
+		cell = sheet.getRow(1).getCell(2);
+		
+		Cell engineModeControllercell = null; 
+		engineModeControllercell = sheet.getRow(2).getCell(2);
+	
+		/**
+		 * User group id cell
+		 */
+		Cell userIdCell=null;
+		userIdCell = sheet.getRow(8).getCell(2);
+		
+		/**
+		 * This cell store user id
+		 */
+		Cell userGroupIdCell=null;
+		userGroupIdCell = sheet.getRow(9).getCell(2);
+		
+		
+		String URLController=request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath()+"/uploadBatchFile.htm";
+		String EngineModeController=request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath()+"/callBatchFileProcess.htm";
+		cell.setCellValue(URLController);
+		engineModeControllercell.setCellValue(EngineModeController);
+		userIdCell.setCellValue(userId);
+		userGroupIdCell.setCellValue(userGroupId);
+		
+		file = new File(batchProcessingFileDestinationPath + "1" + ".xlsm").getCanonicalFile();
+	    FileOutputStream fileOut = new FileOutputStream(file);
+	    book.write(fileOut);
+	    fileOut.close();
+	    
+		response.setHeader("Content-Disposition", "attachment; filename=batch_processing_file.xlsm");
+		response.setContentType("application/txt");
+		response.setContentLength(new Long(file.length()).intValue());
+		FileCopyUtils.copy(new FileInputStream(file),response.getOutputStream());
+		LOGGER.info("**End--downloadBatchFileTemplate methode start");
+		
+		if (file.delete()) {
+			LOGGER.info(file.getName() + "is deleted!");
+
+		} else {
+			LOGGER.info(file.getName() + "Delete operation is failed.");
+		}
+
+		
+		}catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:",e);
+		}
+				
+	}
+	
+	
+	
+	/**
+	 * Steps:
+	 * 1:Validation
+	 * 		a)First check the file is excel file only.
+	 * 		b)Column format should be "Company Name","Company ID","Document Processing Type" and "File Name".
+	 * 		c)All field should be entered.
+	 * 2:Business Logic
+	    	a:Read complete excel file keep file.
+	    	b:create "customer name" folder on mount point server.
+	    	c:copy respective customer file and keep in newly created folder.
+	    	d:if one customer has multiple files then copy all files from in that folder.
+	 */
+		
+	
+	@RequestMapping(value = "/uploadBatchFile.htm", method ={RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody String upload(HttpServletRequest request,HttpServletResponse response,Model map){
+		String result="fail";
+	
+		try{
+	    LOGGER.info("**start--uploadBatchFile.htm controller"); 
+		boolean isMultipartContent = ServletFileUpload.isMultipartContent(request);
+		LOGGER.info("Is Request is multipart="+isMultipartContent);
+		 
+		String userId=request.getParameter("var1");
+		
+		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+		MultipartFile multipartFile =  null; 
+		
+		 Iterator<String> iterator = multipartRequest.getFileNames();
+				while (iterator.hasNext()) {
+		        String key = (String) iterator.next();
+		        multipartFile = (CommonsMultipartFile) multipartRequest.getFile(key);
+		     
+		        /**
+		         * In excel row we get data like
+		         * id | id | Public_Text|Test.txt format split it into using "|" 
+		         */
+		        if(multipartFile.getOriginalFilename()!=null){
+		         String[] dataArray=multipartFile.getOriginalFilename().split("\\|");
+		         String custName=dataArray[0].trim();
+		         String companyId=dataArray[1].trim();
+		         String parserName=dataArray[2].trim();
+		         String fileName=dataArray[3].trim();
+		        
+		         /**Start-File Activity
+		          * Create directory based on customer name and parser typeand copy file in that folder.
+		          * if folder already existing then use the same folder, no need to create new folder.
+                 */
+		         String filePath = batchProcessingFileDestinationPath + custName+"/"+parserName+"/";
+		         File f = new File(filePath).getCanonicalFile();
+		         
+		         /**start--save data in auto_case_data table
+                  *Here we are populating records into auto_case_data table  
+                  */
+		         /**
+		          * if this path exist means for one parser there is multiple files. So need to enter duplicate entry in auto_case_data table
+		          */
+		         if (!f.exists() && !f.isDirectory()) {
+                 AutoCaseData autoCaseData=new AutoCaseData();
+                 autoCaseData.setCustomerName(custName);
+                 autoCaseData.setCompanyId(companyId);
+                 autoCaseData.setFilePath(filePath);
+                 autoCaseData.setParserType(parserName);
+                 autoCaseData.setProcessedStatus("N");
+                 autoCaseData.setCreatedBy(userId);
+                 boolean saveflag=batchProcessingService.f_saveInAutoCaseData(autoCaseData);
+                 if(saveflag){
+                	 result="success";
+                 }
+		        } 
+                 /**End**/
+		         
+		         
+		         if (!f.exists() && !f.isDirectory()) {
+		        	 f.mkdirs();
+		         }
+		         String finalFilePath=filePath + fileName;
+		         File dest = new File(finalFilePath).getCanonicalFile();
+		         if(!dest.exists()){
+                 multipartFile.transferTo(dest);
+                 result="success";
+		         }else{
+		         result="This file already exists."; 
+		         }
+                    
+                 /**End File Activity**/
+                 
+                
+		        }
+		      
+		     
+		    }
+		
+	}catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:",e);
+	}
+	 
+	return result;
+	}
+	
+	/**
+	 * This controller called from Excel macro
+	 *  
+	 */
+	@RequestMapping(value = "/callBatchFileProcess.htm", method ={RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody String callBatchProcess(HttpServletRequest request,HttpServletResponse response,HttpSession session,Model map){
+		LOGGER.info("**start--callBatchProcess controller");
+		String flag="No";
+		try{	
+/**
+ * var1 means user id
+ * var2 means userGroupId
+ */
+			User user = (User) session.getAttribute("user");
+			Integer requestId=batchProcessingService.f_saveToRequestQueueForBatchProcessing(request.getParameter("var1"),request.getParameter("var2"),autoCaseGeneration);
+			normalizationService.saveInvokeProcessTracker(requestId,null,"N",autoCaseGeneration,user.getUserId());
+			flag="Yes"; 
+		}catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error",e);
+			
+		}
+		LOGGER.info("**end--callBatchProcess controller");
+		return flag;
+	}
+}
+	
+	
+	
+

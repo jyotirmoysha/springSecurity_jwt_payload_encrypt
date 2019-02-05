@@ -1,0 +1,30 @@
+#====== SQL SEREVER ======
+#====== APPLICATION DB ======
+# Driver Class Name
+app.jdbc.driverClassName=com.microsoft.sqlserver.jdbc.SQLServerDriver
+app.jdbc.url=jdbc:sqlserver://172.25.2.148:55572;instanceName=MOODY_UAT;DatabaseName=LIVESPREAD_UAT
+app.jdbc.username=Livespread
+app.jdbc.password=Lq5DByV+tQ8KStDRtORIGg==
+app.jdbc.database=SQL_SERVER
+app.jdbc.showSql=true
+app.jdbc.databasePlatform=com.rage.extendeddao.SQLServer2012Dialect
+
+# Driver Class Name
+#=====================UIC Meta DB===========================
+uic.jdbc.driverClassName=com.microsoft.sqlserver.jdbc.SQLServerDriver
+uic.jdbc.database=SQL_SERVER
+uic.jdbc.showSql=true
+uic.jdbc.databasePlatform=com.rage.extendeddao.SQLServer2012Dialect
+uic.jdbc.url=jdbc:sqlserver://172.25.2.148:55572;instanceName=MOODY_UAT;databaseName=UIC_UAT
+uic.jdbc.username=Livespread
+uic.jdbc.password=Lq5DByV+tQ8KStDRtORIGg==
+
+# Driver Class Name
+#============================Rage DB=========================
+rage.jdbc.driverClassName=com.microsoft.sqlserver.jdbc.SQLServerDriver
+rage.jdbc.url=jdbc:sqlserver://172.25.2.148:55572;instanceName=MOODY_UAT;DatabaseName=PLATFORMDB_UAT
+rage.jdbc.username=Livespread
+rage.jdbc.password=Lq5DByV+tQ8KStDRtORIGg==
+rage.jdbc.database=SQL_SERVER
+rage.jdbc.showSql=true
+rage.jdbc.databasePlatform=com.rage.extendeddao.SQLServer2012Dialect

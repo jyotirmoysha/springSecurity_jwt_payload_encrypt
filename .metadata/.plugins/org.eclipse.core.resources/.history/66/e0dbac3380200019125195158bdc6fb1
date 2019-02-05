@@ -1,0 +1,70 @@
+package com.livespread.rage.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "PROCESSES")
+@NamedQueries({ @NamedQuery(name = "getAllRageProcess", query = "SELECT Processes FROM ProcessesModel Processes where Processes.applicationSeqId=:applicationSeqId")
+
+})
+public class ProcessesModel implements BaseEntity,Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@Column(name = "PRCS_SEQ_ID")
+	private Integer processSeqId;
+
+	@Column(name = "PRCS_NAME")
+	private String processName;
+	
+	@Column(name = "APPL_SEQ_ID")
+	private Integer applicationSeqId;
+
+	public Integer getProcessSeqId() {
+		return processSeqId;
+	}
+
+	public void setProcessSeqId(Integer processSeqId) {
+		this.processSeqId = processSeqId;
+	}
+
+	public String getProcessName() {
+		return processName;
+	}
+
+	public void setProcessName(String processName) {
+		this.processName = processName;
+	}
+
+	@Override
+	public String toString() {
+		return "ProcessesModel [processSeqId=" + processSeqId
+				+ ", processName=" + processName + "]";
+	}
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.RAGE;
+	}
+
+	public Integer getApplicationSeqId() {
+		return applicationSeqId;
+	}
+
+	public void setApplicationSeqId(Integer applicationSeqId) {
+		this.applicationSeqId = applicationSeqId;
+	}
+}

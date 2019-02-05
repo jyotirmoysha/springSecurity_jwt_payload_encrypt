@@ -1,0 +1,260 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.sql.Timestamp;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Type;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "QA_MESSAGE_CHECKLIST")
+@NamedQueries({
+		@NamedQuery(name = "findQACheckListByFilingId", query = "FROM QAMessageChecklist qc where qc.filingId = :filingId order by  qc.seqOrder,qc.checkId desc"),
+		@NamedQuery(name = "updateQACheckListCommentsByFilingIdAndCheckId", query = "UPDATE QAMessageChecklist c SET c.comments = :comments"
+				+ " WHERE c.filingId= :filingId AND c.checkId= :checkId AND c.qaMessageId= :qaMessageId"),
+		@NamedQuery(name = "findArsIdByCheckIdAndFilingId", query = "select distinct arsId FROM QAMessageChecklist qc where qc.filingId = :filingId and qc.checkId=:checkId and arsId is not null"),
+		@NamedQuery(name = "findQACheckListByFilingIdAndCheckStage", query = "FROM QAMessageChecklist qc where qc.filingId = :filingId and checkStage in :checkStage order by  qc.seqOrder,qc.checkId desc"),
+		@NamedQuery(name = "getValidationCheckNameListForStatus", query = "select new com.livespread.domain.QAMessageChecklist(checkName,checkId,section,checkStatus,qaMessage) from QAMessageChecklist where lower(checkStage) in (lower(:checkStage)) and filingId=:filingId order by checkId asc")
+
+})
+@NamedNativeQueries({ @NamedNativeQuery(name = "getSubTotalsByArsId", query = "select norm.item_label, norm.aggregate_type, ni.ni_value,ni.ars_id "
+		+ "from norm_qa_checks_aggregates norm left outer join ni_values ni on norm.ni_item= ni.ni_item "
+		+ "where norm.check_id=:checkId and ni.filing_id=:filingId "
+		+ "and ni.ars_id in (select asrep.ars_id from as_rep_statement asrep "
+		+ "where asrep.filing_id=:filingId and asrep.ars_id=:arsId)"
+		),
+@NamedNativeQuery(name="getQANormDataBycheckId",query="select NQCM.PO_SUBSECTION from NORM_QA_CHECKS_META NQCM where NQCM.CHECK_ID=:checkId"),
+
+@NamedNativeQuery(name = "getSubTotalsByArsIdForClickBack", query = "select norm.item_label, norm.aggregate_type, ni.ni_value,ni.ars_id,ni.ref_po_id,ni.NI_ID,ni.ni_item "
+					+ "from norm_qa_checks_aggregates norm left outer join ni_values ni on norm.ni_item= ni.ni_item "
+					+ "where norm.check_id=:checkId and ni.filing_id=:filingId "
+					+ "and ni.ars_id in (select asrep.ars_id from as_rep_statement asrep "
+					+ "where asrep.filing_id=:filingId and asrep.ars_id=:arsId)"
+					)
+
+})
+public class QAMessageChecklist implements BaseEntity, Serializable {
+
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "QA_MESSAGE_ID")
+	private Integer qaMessageId;
+
+	@Column(name = "FILING_ID")
+	private Integer filingId;
+
+	@Column(name = "CHECK_ID")
+	private Integer checkId;
+
+	@Column(name = "CHECK_NAME")
+	private String checkName;
+
+	@Column(name = "CHECK_STATUS")
+	private String checkStatus;
+
+	@Column(name = "QA_MESSAGE")
+	private String qaMessage;
+
+	@Column(name = "CHECK_STAGE")
+	private String checkStage;
+
+	@Column(name = "CHECK_PERIOD")
+	private String checkPeriod;
+
+	@Column(name = "SECTION")
+	private String section;
+
+	@Column(name = "ACTION_TYPE")
+	private String actionType;
+
+	@Type(type = "yes_no")
+	@Column(name = "REVIEW_FLAG")
+	private Boolean reviewFlag;
+
+	@Column(name = "COMMENTS")
+	private String comments;
+
+	@Column(name = "ARS_ID")
+	private Integer arsId;
+
+	@Column(name = "REVIEWED_DATE")
+	private Timestamp reviewDate;
+
+	@Column(name = "USER_SEQ_ID")
+	private Integer userSeqId;
+	
+	
+	@Column(name = "SEQ_ORDER")
+	private Integer seqOrder;
+
+	public Integer getqaMessageId() {
+		return qaMessageId;
+	}
+
+	public void setqaMessageId(Integer qaMessageId) {
+		this.qaMessageId = qaMessageId;
+	}
+
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	public Integer getQaMessageId() {
+		return qaMessageId;
+	}
+
+	public void setQaMessageId(Integer qaMessageId) {
+		this.qaMessageId = qaMessageId;
+	}
+
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public Integer getCheckId() {
+		return checkId;
+	}
+
+	public void setCheckId(Integer checkId) {
+		this.checkId = checkId;
+	}
+
+	public String getCheckName() {
+		return checkName;
+	}
+
+	public void setCheckName(String checkName) {
+		this.checkName = checkName;
+	}
+
+	public String getCheckStatus() {
+		return checkStatus;
+	}
+
+	public void setCheckStatus(String checkStatus) {
+		this.checkStatus = checkStatus;
+	}
+
+	public String getQaMessage() {
+		return qaMessage;
+	}
+
+	public void setQaMessage(String qaMessage) {
+		this.qaMessage = qaMessage;
+	}
+
+	public String getCheckStage() {
+		return checkStage;
+	}
+
+	public void setCheckStage(String checkStage) {
+		this.checkStage = checkStage;
+	}
+
+	public String getCheckPeriod() {
+		return checkPeriod;
+	}
+
+	public void setCheckPeriod(String checkPeriod) {
+		this.checkPeriod = checkPeriod;
+	}
+
+	public String getSection() {
+		return section;
+	}
+
+	public void setSection(String section) {
+		this.section = section;
+	}
+
+	public String getActionType() {
+		return actionType;
+	}
+
+	public void setActionType(String actionType) {
+		this.actionType = actionType;
+	}
+
+	public Boolean getReviewFlag() {
+		return reviewFlag;
+	}
+
+	public void setReviewFlag(Boolean reviewFlag) {
+		this.reviewFlag = reviewFlag;
+	}
+
+	public String getComments() {
+		return comments;
+	}
+
+	public void setComments(String comments) {
+		this.comments = comments;
+	}
+
+	public Integer getArsId() {
+		return arsId;
+	}
+
+	public void setArsId(Integer arsId) {
+		this.arsId = arsId;
+	}
+
+	public Timestamp getReviewDate() {
+		return reviewDate;
+	}
+
+	public void setReviewDate(Timestamp reviewDate) {
+		this.reviewDate = reviewDate;
+	}
+
+	public Integer getUserSeqId() {
+		return userSeqId;
+	}
+
+	public void setUserSeqId(Integer userSeqId) {
+		this.userSeqId = userSeqId;
+	}
+
+	public Integer getSeqOrder() {
+		return seqOrder;
+	}
+
+	public void setSeqOrder(Integer seqOrder) {
+		this.seqOrder = seqOrder;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+
+		return EntityType.APPLICATION;
+	}
+
+	public QAMessageChecklist() {
+		super();
+	}
+
+	public QAMessageChecklist(String checkName,Integer checkId, String section, String checkStatus, String qaMessage) {
+		super();
+		this.checkId = checkId;
+		this.checkName = checkName;
+		this.checkStatus = checkStatus;
+		this.qaMessage = qaMessage;
+		this.section = section;
+	}
+
+}

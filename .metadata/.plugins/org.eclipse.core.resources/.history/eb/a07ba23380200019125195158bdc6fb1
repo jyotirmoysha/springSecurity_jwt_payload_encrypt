@@ -1,0 +1,104 @@
+package com.livespread.security;
+
+
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.Security;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
+
+
+public abstract class AbstractSecureKey {
+
+    /**
+     * The encoding type.
+     */
+    static final String ENCODING_TYPE = "UTF-8";
+
+    public AbstractSecureKey() {
+        Security.addProvider(new com.sun.crypto.provider.SunJCE());
+    }
+
+    /**
+     * This will return encrypted string for supplied the string.
+     * @param originalString The string to be encrypted.
+     * @return It will return encrypted string.
+     */
+    private String encryptString(String originalString) {
+        try {
+            Cipher cipher = getCipherObject(Cipher.ENCRYPT_MODE);
+            if (cipher == null) {
+                return null;
+            }
+            byte[] encryptedString = cipher.doFinal(originalString.getBytes(ENCODING_TYPE));
+            String encodedCipherText = byteToBase64(encryptedString);
+            return encodedCipherText;
+        } catch (BadPaddingException e) {
+        	e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+        	e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+        	e.printStackTrace();
+        }
+        return null;
+    }
+
+    
+
+    /**
+     * From a byte[] returns a base 64 representation
+     * @param data byte[]
+     * @return String
+     * @throws IOException
+     */
+    public String byteToBase64(byte[] data) {
+        BASE64Encoder endecoder = new BASE64Encoder();
+        return endecoder.encode(data);
+    }
+
+    /**
+     * This will return decrypted or original string for supplied the string.
+     * @param encodedString The string to be decrypted.
+     * @return It will return decrypted or original string.
+     */
+    public String decryptString(String encodedString) {
+        try {
+            Cipher cipher = getCipherObject(Cipher.DECRYPT_MODE);
+            if (cipher == null) {
+                return null;
+            }
+            byte[] encodedBytes = base64ToByte(encodedString);
+            byte[] originalText = cipher.doFinal(encodedBytes);
+            return new String(originalText);
+        } catch (BadPaddingException e) {
+        	e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+        	e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+        	e.printStackTrace();
+        } catch (IOException ex) {
+        	ex.printStackTrace();
+        }
+        return null;
+    }
+
+    //This method to create the cipher object for encrypt/decrypt funcionality.
+    abstract Cipher getCipherObject(int cipherInitMode);
+
+    /**
+     * From a base 64 representation, returns the corresponding byte[]
+     * @param data String The base64 representation
+     * @return byte[]
+     * @throws IOException
+     */
+    private byte[] base64ToByte(String data) throws IOException {
+        BASE64Decoder decoder = new BASE64Decoder();
+        return decoder.decodeBuffer(data);
+    }
+}

@@ -1,0 +1,538 @@
+package com.livespread.controller;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.livespread.command.NormalisedLabelAndValues;
+import com.livespread.command.NormalisedParserOutput;
+import com.livespread.domain.ExportExcelMetadata;
+import com.livespread.domain.StatusMaster;
+import com.livespread.domain.User;
+import com.livespread.domain.WorkQueue;
+import com.livespread.service.ExcelExportService;
+import com.livespread.service.ExtractionService;
+import com.livespread.service.NormalizationService;
+import com.livespread.service.NormalizationTemplateService;
+import com.livespread.service.NormalizationViewService;
+import com.livespread.service.StatusMasterService;
+import com.livespread.service.WorkQueueService;
+import com.livespread.util.BuildGenericExcel;
+import com.livespread.util.CipherUtils;
+@Controller
+public class NormalizedViewController {
+	
+	private Logger LOGGER = Logger.getLogger(NormalizationController.class);
+
+	
+	@Autowired
+	private NormalizationService normalizationService;
+
+
+	@Autowired
+	private StatusMasterService statusMasterService;
+
+	@Autowired
+	private WorkQueueService workQueueService;
+
+	@Autowired
+	private ExcelExportService excelExportService;
+	
+	
+	@Autowired
+	private ExtractionService extractionServ;
+	@Autowired
+	private NormalizationTemplateService normalizationTemplateService;
+	@Autowired
+	private NormalizationViewService normalizationViewService;
+
+
+	
+	@Value("${anchorFileInitial}")
+	private String AnchorFileInitial;
+
+	@Value("${anchorFileExt}")
+	private String AnchorFileExt;
+
+	@Value("${anchorFileNtFound}")
+	private String fileNotFound;
+
+	@Value("${globalExcptionMsg}")
+	private String expMessage;
+	
+	@Value("${generateXMLDocument}")
+	private String generateXMLDocument;
+
+	@Value("${xbrlProcess}")
+	private String xbrlProcess;
+	
+	@Value("${JSStart}")
+	private String jsStart;
+	@Value("${JSEnd}")
+	private String jsEnd;
+	@Value("${CSStart}")
+	private String csStart;
+	@Value("${CSEnd}")
+	private String csEnd;
+	
+	@Value("${norm_DispalyRecords}")
+	private Integer norm_DispalyRecords;
+	
+	@Value("${modifiedByForBreakupQaChecks}")
+	private String modifiedBy;
+	
+	@Value("${mappingNormalizationMaster}")
+	private String mappingNormalizationMaster;
+	
+	@Value("${CSVFilePath}")
+	private String csvFilePath;
+	
+	
+	@RequestMapping(value = "/normalization_view.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public String normalizationView(HttpServletRequest request,
+			HttpServletResponse response,
+			@RequestParam("customerId") String customerId,
+			@RequestParam("fillingId") String fillingId,
+			@RequestParam("WqId") String wqId,
+			@RequestParam("customerName") String customerName,
+			@RequestParam("businessName") String businessName, String fileName,
+			@RequestParam("compIdOrCik") String compIdOrCik,@RequestParam("statementFormat") String section,Model map,
+			HttpSession session) {
+
+		LOGGER.info("------------------ normalization_view request Mapping starts --------------------wqId"+ wqId);
+		String decryptedCustomerName = CipherUtils.decrypt(customerName);
+		Integer decryptedFillingId = Integer.parseInt(CipherUtils.decrypt(fillingId));
+		Integer decryptedCustomerId = Integer.parseInt(CipherUtils.decrypt(customerId));
+		Integer decryptedWqId = Integer.parseInt(CipherUtils.decrypt(wqId));
+		String decryptedCompIdOrCik = CipherUtils.decrypt(compIdOrCik);
+		map.addAttribute("customerName", customerName);
+		map.addAttribute("businessName", businessName);
+		map.addAttribute("fileName", fileName);
+		map.addAttribute("fillingId", fillingId);
+		map.addAttribute("customerId", customerId);
+		map.addAttribute("wqId", wqId);
+		map.addAttribute("compIdOrCik", compIdOrCik);
+		map.addAttribute("decryptedCustomerName", decryptedCustomerName);
+		map.addAttribute("decryptedFillingId", decryptedFillingId);
+		map.addAttribute("decryptedCompIdOrCik", decryptedCompIdOrCik);
+		/**
+		 * Added code to implement locked by.
+		 */
+		session.removeAttribute("Session_HeaderMap");
+		session.removeAttribute("Session_NormalzedLabelsDetailsList");
+		session.removeAttribute("Session_StatusName");
+		session.removeAttribute("Session_NormalisedParserOutput");
+		session.removeAttribute("Session_ReverseFlag");
+
+		/** Code ends here */
+		String xmlFlag="N";
+		String csvFlag="N";
+		User user = (User) session.getAttribute("user");
+/*		map.addAttribute("userGroupName", user.getUsersGroupName());
+		bachProcessFlag=(String) request.getSession().getAttribute("bachProcessFlag");
+		map.addAttribute("bachProcessFlag", bachProcessFlag);*/
+		String xbrlFlag="N";
+		List<String> isElementEnable=null;
+		isElementEnable= workQueueService.isEnableFlag("NormalizedView",user.getUserGroupId());
+		if (!CollectionUtils.isEmpty(isElementEnable)) {
+			if (isElementEnable.contains("GenerateXBRL")) {
+				xbrlFlag = "Y";
+			}
+			if (isElementEnable.contains("XML")) {
+				xmlFlag = "Y";
+			}
+			if (isElementEnable.contains("CSV")) {
+				csvFlag = "Y";
+			}
+		}
+		map.addAttribute("xbrlFlag", xbrlFlag);
+		map.addAttribute("xmlFlag", xmlFlag);
+		map.addAttribute("csvFlag", csvFlag);
+		Map<String, List<NormalisedLabelAndValues>> listOfNormalzedLabelsDetails;
+		Map<String, List<NormalisedLabelAndValues>> finalListOfNormalzedLabelsDetails =new LinkedHashMap<String, List<NormalisedLabelAndValues>>();;
+		Map<String, List<String>> mapOfHeaders =new LinkedHashMap<String, List<String>>();
+		Map<String,String> sectionDisplayHeaderMap = null;
+		Integer templateId=normalizationService.getTemplateIdByFilingIdFromFiling(decryptedFillingId);
+		try {
+			
+			//Here we need check if client data exist or not in NI_Values table.
+			int niValuesClientDataCount=normalizationService.f_getNiValuesClientDataCount(decryptedFillingId);
+			boolean isClientData=false;
+			if(niValuesClientDataCount>0){
+			isClientData=true;
+			map.addAttribute("isClientData", isClientData);
+			}
+			mapOfHeaders = normalizationService.getHeaderDetails(decryptedFillingId, decryptedCustomerId, decryptedWqId,section,isClientData);
+			
+			List<String> dataTableHeaders = new ArrayList<String>();
+			dataTableHeaders.add("Account Number");
+			dataTableHeaders.add("Normalized Label");
+			String startHeaderName= "Value";
+			
+			
+			if(!CollectionUtils.isEmpty(mapOfHeaders.get("Periods")))
+			{
+				if(isClientData)
+				{
+				//Here clientData exist then repeat value1 ..valueN header
+				for(int clientDataCounter=0;clientDataCounter<2;clientDataCounter++)
+				{
+				for(int i=1;i<=mapOfHeaders.get("Periods").size();i++)
+				{
+					dataTableHeaders.add(startHeaderName+i);
+				}
+				}
+				for (Map.Entry<String,List<String>> entry : mapOfHeaders.entrySet())
+				{
+				//here client data exist so need insert duplicate headers
+				if(!entry.getKey().equalsIgnoreCase("arsId") && !entry.getKey().equalsIgnoreCase("Source Type"))
+				{
+					entry.getValue().addAll(entry.getValue());
+				}
+				if(entry.getKey()!=null && entry.getKey().equalsIgnoreCase("arsId"))
+				{
+				  map.addAttribute("ClientDataHeadColCounter", entry.getValue().size());
+				}
+				}//end for
+				
+				}else{
+					for(int i=1;i<=mapOfHeaders.get("Periods").size();i++)
+					{
+						dataTableHeaders.add(startHeaderName+i);
+					}	
+				}
+				map.addAttribute("mapOfHeaders", mapOfHeaders);
+			}	
+			
+			map.addAttribute("dataTableHeaders", dataTableHeaders);
+			session.setAttribute("dataTableHeaders", dataTableHeaders);
+			session.setAttribute("Session_HeaderMap", mapOfHeaders);
+			if (mapOfHeaders != null) 
+			{
+				
+				listOfNormalzedLabelsDetails = normalizationService.getNormalzedLabelsDetails(decryptedFillingId,decryptedCustomerId, decryptedWqId,mapOfHeaders);
+				
+				String sectionName = null;
+				Integer parserId = (Integer) session.getAttribute("sessionParserId");
+				Map<String,String> sectionMappingMap=normalizationService.f_fetchSectionListByFilingId(decryptedFillingId,parserId);
+				// Ratio Calculation declaration 
+				Map<String, List<NormalisedLabelAndValues>> ratioCalcultaionMap =new LinkedHashMap<String, List<NormalisedLabelAndValues>>();;
+				sectionDisplayHeaderMap = normalizationTemplateService.getSectionList();
+				List<String> sectionNameList=extractionServ.findSetionListByCategory("RATIO");
+				
+				
+				
+				if(listOfNormalzedLabelsDetails!=null)
+				{
+				for( Entry<String, List<NormalisedLabelAndValues>> entry : listOfNormalzedLabelsDetails.entrySet()) 
+				{
+					sectionName = entry.getKey();
+					 if(sectionMappingMap.get(sectionName)!=null || sectionDisplayHeaderMap.get(sectionName)!=null){
+						 if(sectionNameList.contains(sectionName) && sectionDisplayHeaderMap.get(sectionName)!=null){
+						//here if section from ratio category then add in Ratio Calculation list
+						 ratioCalcultaionMap.put(sectionDisplayHeaderMap.get(sectionName), entry.getValue());
+						 }else{
+						 finalListOfNormalzedLabelsDetails.put(sectionName, entry.getValue());
+						 }
+					 }else{
+						 finalListOfNormalzedLabelsDetails.put(entry.getKey(), entry.getValue());
+					 }
+				}}
+				session.setAttribute("Session_NormalzedLabelsDetailsList",finalListOfNormalzedLabelsDetails);
+				session.setAttribute("decryptedFillingId",decryptedFillingId.toString());
+				map.addAttribute("listOfNormalzedLabelsDetails",finalListOfNormalzedLabelsDetails);
+				map.addAttribute("totalRecords",mapOfHeaders.get("Statement Date").size());
+				map.addAttribute("sectionDisplayHeaderMap",sectionDisplayHeaderMap);
+				map.addAttribute("ratioCalcultaionMap",ratioCalcultaionMap);
+			    session.setAttribute("Session_ratioCalcultaionMap",ratioCalcultaionMap);
+			}
+			mapOfHeaders.remove("arsId");
+
+			/*
+			 * Here fetch single row from parser_output table
+			 */
+			NormalisedParserOutput normalisedParserOutput = normalizationService.getFirstParserOutputRecord(decryptedFillingId, "BS","STATEMENT QUALITY");
+			map.addAttribute("normalisedParserOutput", normalisedParserOutput);
+
+			session.setAttribute("Session_NormalisedParserOutput",normalisedParserOutput);
+
+			session.setAttribute("Session_ReverseFlag", "false");
+
+			List<StatusMaster> statusList = statusMasterService.getAllStatusList();
+			map.addAttribute("statusList", statusList);
+
+			String statusName = workQueueService.findStatusByFilingId(decryptedFillingId);
+			map.addAttribute("currentStatus", statusName);
+
+			session.setAttribute("Session_StatusName", statusName);
+			//hide show functionalty for account Number
+			 WorkQueue  workQueue = workQueueService.getWorkQueueDetails(decryptedWqId);
+			 String column="N";
+			 List<String> attrList= null;
+			 if(workQueue.getIndustryName() != null)
+				{
+				 attrList = normalizationService.isElementEnable("NormalizedView",templateId);
+				 if(attrList.contains("AccountNumber"))
+				 {
+					 column = "Y";
+				 }
+				}	
+			 	String nonEnglishLabelFlag="N";
+			 	 if(workQueue!=null){
+					 if(workQueue.getLanguage()!=null && !workQueue.getLanguage().equalsIgnoreCase("") && !workQueue.getLanguage().equalsIgnoreCase("English")){
+						 nonEnglishLabelFlag = "Y";
+					 }
+				 }
+				
+			 	String controllerName =  normalizationService.getDownloadControllerByTemplateId(templateId);
+			 	 
+			 	 map.addAttribute("downloadControllerName",controllerName); 
+				 map.addAttribute("nonEnglishLabelFlag",nonEnglishLabelFlag); 	
+				 map.addAttribute("column",column); 			 
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:", e);
+			map.addAttribute("errorMessage", "No data found");
+			e.printStackTrace();
+		}
+		return "normalization_view";
+	}
+
+	
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/normalizedViewExportToExcel.htm")
+	public String getnormalizedViewDataToExportInExcel(@RequestParam("customerId") String customerId,
+			@RequestParam("fillingId") String fillingId, @RequestParam("WqId") String wqId,
+			@RequestParam("customerName") String customerName, @RequestParam("businessName") String businessName,
+			String fileName, @RequestParam("compIdOrCik") String compIdOrCik,
+			@RequestParam("oparationName") String oparationName,@RequestParam("downloadType") String downloadType, Model map, RedirectAttributes redirectAttributes,
+			HttpSession session) {
+		try {
+			Map<String, Object> excelViewDataMap = new HashMap<String, Object>();
+
+			Map<String, List<NormalisedLabelAndValues>> listOfNormalzedLabelsDetails = (Map<String, List<NormalisedLabelAndValues>>) session
+					.getAttribute("Session_NormalzedLabelsDetailsList");
+			Map<String, List<NormalisedLabelAndValues>> ratioCalcultaionMap = (Map<String, List<NormalisedLabelAndValues>>) session
+					.getAttribute("Session_ratioCalcultaionMap");
+
+			Map<String, List<String>> mapOfHeaders = (Map<String, List<String>>) session
+					.getAttribute("Session_HeaderMap");
+			List<String> dataTableHeaders=(List<String>) session.getAttribute("dataTableHeaders");
+			
+			User user = (User) session.getAttribute("user");
+			Integer desWqId = Integer.parseInt(CipherUtils.decrypt(wqId));
+			Integer decryptedFillingId = Integer.parseInt(CipherUtils.decrypt(fillingId));
+
+			excelViewDataMap.put("UserGroupName", user.getUsersGroupName());
+			excelViewDataMap.put("HeaderMap", mapOfHeaders);
+			excelViewDataMap.put("StatusName", session.getAttribute("Session_StatusName"));
+			excelViewDataMap.put("NormalzedLabelsDetailsList", listOfNormalzedLabelsDetails);
+			excelViewDataMap.put("NormalisedParserOutput", session.getAttribute("Session_NormalisedParserOutput"));
+			String decryptedCustomerName = CipherUtils.decrypt(customerName);
+			String FileName = decryptedCustomerName + "_Normalized_Output.xlsx";
+
+			WorkQueue workQueue = workQueueService.getWorkQueueDetails(desWqId);
+			// hide show functionality columns a/c and AsRepLabel
+			Integer templateId = normalizationService.getTemplateIdByFilingIdFromFiling(workQueue.getFilingId());
+			List<String> listofHideClmns = normalizationService.isElementEnable("NormalizedView", templateId);
+			if(!CollectionUtils.isEmpty(listofHideClmns))
+			{
+				if(downloadType.equalsIgnoreCase("CSV"))
+				{
+					listofHideClmns.remove("AsRepLabel");
+				}
+			}
+			excelViewDataMap.put("fileName", FileName);
+			excelViewDataMap.put("clmnHideList", listofHideClmns);
+			/**
+			 * StartCodeFor excel with following parameters
+			 * 
+			 * @Param :listOfNormalzedLabelsDetails-used for
+			 */
+			Map<String,String> sectionDisplayHeaderMap = normalizationTemplateService.getSectionList();
+			Map<String, Map<String, List<? extends Object>>> dataValMap = normalizationService
+					.f_createNormalizedViewExportData(listOfNormalzedLabelsDetails, mapOfHeaders, listofHideClmns,
+							fileName,ratioCalcultaionMap,sectionDisplayHeaderMap,dataTableHeaders,downloadType);
+			if(downloadType.equalsIgnoreCase("excel"))
+			{
+			/** Generic code **/
+			String exportFunctName = "NormalizedViewExport";
+			ExportExcelMetadata exportExcelMetadata = excelExportService.f_ExcelDetailsByName(exportFunctName);
+			String tepmplateName = exportExcelMetadata.getExportTemplateName();
+			BuildGenericExcel buildGenericExcel = new BuildGenericExcel();
+			int startRowNumber = exportExcelMetadata.getStartRowNumber();
+			int startcolumnNumber = exportExcelMetadata.getStartColumnNumber();
+			String sheetHeaderType = "RowHeader";
+			// Here we get replica of template
+			String downloadedFileName = FileName;
+			String outputExcelPath = buildGenericExcel.createCloneExcelTemplate(tepmplateName, downloadedFileName);
+			// Now we create sheets based on sectionList
+			Map<String, String> sectionMappingMap = new LinkedHashMap<>();
+			sectionMappingMap.put("Normalized View", "Normalized View");
+			sectionMappingMap.put("Ratio Calculation", "Ratio Calculation");
+			buildGenericExcel.f_createSheeetsClone(sectionMappingMap, outputExcelPath);
+			buildGenericExcel.f_prepareExcelReport(downloadedFileName, dataValMap, startRowNumber, startcolumnNumber,sheetHeaderType);
+			redirectAttributes.addAttribute("fileNameWithPath", outputExcelPath);
+			LOGGER.info("**end-- downloadNormalizationExportTemplate function");
+			}//end excel write path
+			else if(downloadType.equalsIgnoreCase("CSV")){
+				String csvFileName = workQueue.getCompanyId() + "_Normalized_Output_"+decryptedFillingId+".csv";
+				boolean flag=false;
+				String fullCSVPath=csvFilePath+csvFileName;
+				
+				flag=normalizationViewService.f_writeNormViewCSVFile(dataValMap,dataTableHeaders.size(),fullCSVPath,workQueue);
+				if(flag)
+				redirectAttributes.addAttribute("fileNameWithPath", fullCSVPath);
+			}
+
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:", e);
+		}
+		
+		return "redirect:/downloadFileByPath.htm";
+	}
+
+	
+	@RequestMapping(value = "/showFormulaCalcPopUpData.htm", method = RequestMethod.POST)
+	public @ResponseBody String showFormulaCalcPopUpData(@RequestParam String templateId,@RequestParam String niItem,
+			@RequestParam String arsId,@RequestParam String filingId,HttpServletResponse response, HttpSession sessionObj,HttpServletRequest request)
+			throws IOException {
+		String result = "";
+			
+			LOGGER.info("**Start-- showFormulaCalcPopUpData methode");
+			/** here req formula,total,object list with values**/
+		try{	
+			Integer templateIdNumber=Integer.parseInt(templateId);
+			Integer niItemNumber=Integer.parseInt(niItem);
+			Integer arsIdNumber=Integer.parseInt(arsId);
+			Integer filingIdNumber =Integer.parseInt(CipherUtils.decrypt(filingId));
+			ObjectMapper objectMapper = new ObjectMapper();
+			Map<String,Object> datavalMap=normalizationService.f_getFormulaCalPopUpValues(templateIdNumber, niItemNumber,arsIdNumber,filingIdNumber); 
+			result = objectMapper.writeValueAsString(datavalMap);
+		} catch (Exception e) {
+			LOGGER.error(expMessage, e);
+			e.printStackTrace();
+		}
+		LOGGER.info("**End-- showFormulaCalcPopUpData methode");
+		return result;
+	}
+	
+	
+	 /**
+     * This function used for Genarate XML file
+     * @param Format_Type
+     * @param filingId
+     * @param TemplateId
+     * @return boolean
+     * 
+     * from above parameters we get Format_Type and filingId from UI and we fetch template_id from filing table based on filing id
+     * 
+     */
+    
+	@RequestMapping(value = "/generateXMLDocument.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	boolean generateXMLDocument(@RequestParam("formatType") String formatType,
+			@RequestParam("encryptFilingId") String encryptFilingId,HttpSession session) {
+		boolean flag = false;
+		LOGGER.info("** Start-generateXMLDocument methode");
+		try {
+			/*
+			 * This function used for update po_merge column in parser_output
+			 * table based on filing_id,section and table_id.
+			 */
+			User user = (User) session.getAttribute("user");
+			Integer filingId =Integer.parseInt(CipherUtils.decrypt(encryptFilingId));
+			int templateId=normalizationService.getTemplateIdByFilingIdFromFiling(filingId);
+			String parameters = "<Parameters><Parameter><Name>Template_ID</Name><Value>"+templateId+"</Value></Parameter>"
+					+ "<Parameter><Name>Format_Type</Name><Value>"+formatType+"</Value></Parameter>"
+					+ "<Parameter><Name>Filing_ID</Name><Value>"+filingId+"</Value></Parameter></Parameters>";
+			/**
+		     * Save request in request_queue table
+		    */
+			Integer requestId =normalizationService.rageProcessRequestQueue(generateXMLDocument,parameters);
+			normalizationService.saveInvokeProcessTracker(requestId,filingId,"N",generateXMLDocument,user.getUserId());
+			 flag=true;
+			 
+		/**
+		 * Here we update isXMLGenerate to false in work_queue table based on filing id	 
+		 */
+			 workQueueService.f_updateisXMLGenerateCol(false, filingId);
+			 
+
+		} catch (NullPointerException npe) {
+			npe.printStackTrace();
+			LOGGER.error(expMessage, npe);
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error(expMessage, e);
+		}
+
+		LOGGER.info("** End-update_NormalizedLabelColumn methode");
+
+		return flag;
+
+	}
+	
+	@RequestMapping(value = "/generateXBRLDocument.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody String generateXBRLDocument(@RequestParam("encryptFilingId") String encryptFilingId,HttpSession session)
+	{
+		String msg="";
+		LOGGER.info("** Start-generateXBRLDocument methode");
+		try {
+			/*
+			 * This function used for update po_merge column in parser_output
+			 * table based on filing_id,section and table_id.
+			 */
+			User user = (User) session.getAttribute("user");
+			String xbrlDocStatus="";
+			Integer filingId =Integer.parseInt(CipherUtils.decrypt(encryptFilingId));
+			xbrlDocStatus=workQueueService.f_getXBRLDocStatus(filingId);
+			
+			if(xbrlDocStatus!=null && xbrlDocStatus.equalsIgnoreCase("Xbrl_Generation_In_Progress")){
+			msg="Xbrl document Generation In Progress";	
+			}else{
+			String parameters = "<Parameters><Parameter><Name>FILING_ID</Name><Value>"+filingId+"</Value></Parameter></Parameters>";
+			Integer requestId =normalizationService.rageProcessRequestQueue(xbrlProcess,parameters);
+			normalizationService.saveInvokeProcessTracker(requestId,filingId,"N",xbrlProcess,user.getUserId());
+			msg="XBRL document generation request is processing.";	
+			}
+
+		} catch (NullPointerException npe) {
+			npe.printStackTrace();
+			LOGGER.error(expMessage, npe);
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error(expMessage, e);
+		}
+
+		LOGGER.info("** End-update_NormalizedLabelColumn methode");
+
+		return msg;
+
+	}
+}

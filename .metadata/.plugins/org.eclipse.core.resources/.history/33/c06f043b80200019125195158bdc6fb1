@@ -1,0 +1,42 @@
+################### Global Messages ###################
+
+globalExcptionMsg=Operation Failed, Due to Error in Process
+emptyList=Not Available
+
+
+################### Global Messages ###################
+
+customer_name_error=Customer Name is Not Valid.
+business_name_error=Business Name is Not Valid
+account_no_error=Customer Account Number is Not Valid
+captcha_error=Validation Code is Not Valid.
+company_id_error=Company Id may not be empty.
+
+################### Upload Module Messages ###################
+
+uploadExcpt=Document Not Uploaded, Due to Error in Process
+uploadRmvExcpt=Document Not Removed, Due to Error in Process
+upldDcmtValErr=Not Valid Document.
+upldDcmtRmv=Document Removed Successfully.
+upldDcmtNtRmv=Document Not Removed.
+reviewFlag=N
+
+
+################### Normalization/Extraction Messages ###################
+
+anchorFileNtFound=Processed document does not exist at the defined location
+
+
+################### UI Component properties ###################
+
+workQueue.header.1=Created Date
+workQueue.header.2=Case ID
+workQueue.header.3=Customer Name
+workQueue.header.4=Business Name
+workQueue.header.5=Account Number
+workQueue.header.6=Upload Channel
+workQueue.header.7=Document Status
+workQueue.header.8=Customer ID
+workQueue.header.9=Locked By
+
+workQueue.rangesearch.1=Start Date :

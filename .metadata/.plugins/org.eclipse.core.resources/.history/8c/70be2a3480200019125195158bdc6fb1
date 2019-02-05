@@ -1,0 +1,76 @@
+package com.livespread.dao;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import com.livespread.command.ArsPoCommand;
+import com.livespread.command.FinancialItemsCommand;
+import com.livespread.command.NormInputParamers;
+import com.livespread.command.NormalizationBreakupData;
+import com.livespread.command.PdfExtractionMetadatCommand;
+import com.livespread.domain.POCordHighlightDetails;
+import com.livespread.domain.ParserOutput;
+import com.livespread.domain.User;
+
+public interface NormalizationViewDAO {
+
+	NormalizationBreakupData normalizationBreakupDetails(Integer selectedPoId, String columnName, String coordinateColumn);
+
+	List<ArsPoCommand> f_fetchArsPoMAppingBYFilingIdandSectionList(Integer filingId, List<String> sectionList) throws Exception;
+
+	ArsPoCommand f_fetchArsPoMappingBYPoIdAndColName(Integer poId, String colName)throws Exception;
+	
+	int f_updateParserOutputByDynamicColValues(ParserOutput parserOutput,boolean nonEnglishFlag)throws Exception;
+
+	List<ParserOutput> getParserOutputByFilingIdandStatementType(NormInputParamers inputParameters) throws Exception;
+
+	List<Object> getNormalizedDataForExcel(int fillingId, Set<String> sectionSet) throws Exception;
+	/**
+	 * This methode used for fetch data from parser_output table based on following filter
+	 * custodian name
+	 * account number
+	 * time period
+	 */
+	public  List<ParserOutput> getNormalizedSearchDataForBankParser(int filingId, String statementType,int firstResult,int maxResult,String accountNumber,String timePeriod, String custodianName,String updatedAllPoId) throws Exception;
+	
+	 Integer updateUserSessionId(User user,String sessionId) throws Exception;
+	Integer updateUserSessionIdAsNull(User user) throws Exception;
+	
+	String getUserSessionId(User user) throws Exception;
+	
+	Integer updateUserSessionIdAsNullForAllUser() throws Exception;
+	List<ParserOutput> getParserOutputByFilingAndSectionForQACheck(Integer filingId, String statementType,String modifiedBy) throws Exception;
+
+	List<ParserOutput> f_getParserOutputByFilingIdandStatementTypeForNormQACheck(Integer filingId, String statementType,String subSection,String isSubSection,Integer firstRecord,Integer displayRecords,Integer colCountValue, String numberFormatCheckForMappedUnmappedItems); 
+	
+	Integer f_getCountParserOutputByFilingIdandStatementTypeForNormQACheck(Integer filingId, String statementType,Integer colCountValue);
+	
+	List<Object> getAsRepStmtByFilingId(Integer filingId,String stmtFormat);
+	
+	List<Object> getFinancialItemsByFilter(FinancialItemsCommand financialItemsCommand);
+
+	int bulkUpdateFinancialItems(List<FinancialItemsCommand> financialItemsCommandList);
+	
+	ParserOutput f_getParserOutputStatementYearByFilingIdandStatementTypeForNormQACheck(Integer fillingId,String poSection, Integer colCountValue);
+	
+	List<Object> getPdfExtractionMetaDataListByByFilter(PdfExtractionMetadatCommand pdfExtractionMetadatCommand);
+	
+	int bulkUpdateExtractionRules(List<PdfExtractionMetadatCommand> pdfExtractionMetadatCommandList);
+	
+	Long getCountResult(String nativeQuery,Map<String, Object> parameters);
+	
+	List<Object>  getListOfObjects(String nativeQuerySelect,Map<String,Object> parameters);
+	
+	List<Object>  getEListOfObjects(String nativeQuerySelect,Map<String,Object> parameters);
+
+	List<POCordHighlightDetails> getCoordinateDetailByPoIdList(List<List<Integer>> outputPoIdList);
+	public Long getECountResult(String dynamicQuery,Map<String,Object> parameters);
+	Map<Integer,String> findLineItemsByCheckId(Integer templateId,Set<Integer> checkIdList) throws Exception;
+	NormalizationBreakupData normalizationBreakupDetailsForClickBack(Integer selectedPoId, String columnName,String coordinateColumn) throws Exception;
+
+	List<ParserOutput> getParserOutputByFilingIdAndSectionAndRefPoId(NormInputParamers inputParams)throws Exception;
+
+	
+
+}

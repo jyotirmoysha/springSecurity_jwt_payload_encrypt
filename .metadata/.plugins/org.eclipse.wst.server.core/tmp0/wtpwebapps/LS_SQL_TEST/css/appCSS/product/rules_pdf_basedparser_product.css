@@ -1,0 +1,19 @@
+ body{overflow:auto !important}
+ .row-bg {background: #0095b7 !important;}
+ table tr.throw td {color: #fff !important;}
+ table th, td {border: none; border-top: none; line-height: 18px; font: 0.7em/18px Helvetica Neue, Helvetica, Arial, sans-serif !important; padding:5px !important}
+.newtable tr td{color:#333 !important; border:1px solid #ccc !important}
+ input{color:#333 !important}
+ select{color:#333 !important; padding:4px}
+.mar-bot60{margin-bottom:60px}
+.custom-bg{background:#006995; color:#fff !important; height:30px}
+.bg-blue-new{background:#0095b7}
+.white-strip{font-size:13px !important; color:#333 !important; background:#fff}
+.wdt-96{width:96%}
+.wdt-60{width:60%}
+.custom-margin{margin-bottom:10px;}
+.custom-button{padding:3px 10px; margin-top:-5px;}
+.custom-configure{padding:5px 5px 5px 10px; float:left; font-size:12px; font-weight:bold}
+.custom-pad-txtbox{padding:2px 5px 2px 5px}
+.modal-title{font-size:14px}
+.modal-header {padding: 10px 12px 10px 12px !important;}

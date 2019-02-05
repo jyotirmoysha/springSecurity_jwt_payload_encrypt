@@ -1,0 +1,125 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author KP0e1301
+ *
+ */
+@Entity
+@Table(name = "CURRENCY")
+@NamedQueries({
+	@NamedQuery(name = "getCurrencyList", query = "select currency from Currency currency where currencyName is not null "),
+	@NamedQuery(name = "getCurrencyByName", query = "select currency from Currency currency where currencyName is not null and Upper(currencyName) =Upper(:currencyName)")
+	
+})
+public class Currency implements Serializable, BaseEntity {
+	
+	
+	
+	
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "CURRENCY_Id")
+	private Integer currencyId;
+	
+	@Column(name = "CURRENCY_NAME")
+	private String currencyName;
+	
+	@Column(name = "CURRENCY_DESC")
+	private String currencyDesc;
+	
+	
+	
+	
+	
+	
+
+	public Integer getCurrencyId() {
+		return currencyId;
+	}
+
+
+
+
+
+
+
+	public void setCurrencyId(Integer currencyId) {
+		this.currencyId = currencyId;
+	}
+
+
+
+
+
+
+
+	public String getCurrencyName() {
+		return currencyName;
+	}
+
+
+
+
+
+
+
+	public void setCurrencyName(String currencyName) {
+		this.currencyName = currencyName;
+	}
+
+
+
+
+
+
+
+	public String getCurrencyDesc() {
+		return currencyDesc;
+	}
+
+
+
+
+
+
+
+	public void setCurrencyDesc(String currencyDesc) {
+		this.currencyDesc = currencyDesc;
+	}
+
+
+
+
+
+
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

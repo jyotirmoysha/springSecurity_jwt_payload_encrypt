@@ -1,0 +1,175 @@
+package com.livespread.service;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.livespread.dao.NormalizationViewDAO;
+import com.livespread.domain.MenuMappingModel;
+import com.livespread.domain.NamedQueryName;
+import com.livespread.domain.User;
+import com.livespread.domain.UserActivityDetails;
+import com.livespread.domain.UserAuditModel;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Service("userAuditService")
+public class UserAuditServiceImpl implements UserAuditService {
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+	@Autowired
+	private NormalizationViewDAO normalizationViewDAO;
+	private Logger logger = Logger.getLogger(UserAuditServiceImpl.class);
+	@Override
+	public Map<String, String> getUrlsList() {
+		logger.error("we are in UserAuditServiceImpl : method :getUrlsList for userAudit URL");
+		Map<String, String> urlPages=new HashMap<String, String>();
+		try{
+		List<Object> statusNameList = genericDaoImpl.findByNamedQuery(
+				NamedQueryName.getUrlList,MenuMappingModel.class);
+		if(statusNameList!=null){
+			for(Object object:statusNameList){
+				Object[] obj = (Object[]) object;
+				urlPages.put(obj[1] == null ? "" : obj[1].toString(), obj[0] == null ? "" : obj[0].toString());	
+				}
+		}
+		}catch(Exception e){
+			e.printStackTrace();
+			logger.error("Error in UserAuditServiceImpl  class: method :getUrlsList for insertUserAuditUrls"+e);	
+		}
+		return urlPages;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public Collection<UserAuditModel> f_getUserAuditList(Date startDate,
+			Date endDate, Integer userId) throws DataAccessException {
+		logger.info("** start--f_getUserAuditList function");
+		List<UserAuditModel> userAuditList=new ArrayList<UserAuditModel>();
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		Collection<Object> objList=null;
+		if(userId!=null && startDate!=null && endDate!=null){
+		parameterMap.put("startDate", startDate);
+		parameterMap.put("endDate", endDate);
+		parameterMap.put("userId",  userId);	
+		objList =(Collection<Object>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getUserAuditByUserIdStartDateEndDate,UserAuditModel.class,parameterMap);
+		}else if(startDate!=null && endDate!=null){
+		parameterMap.put("startDate", startDate);
+		parameterMap.put("endDate", endDate);
+		objList =(Collection<Object>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getUserAuditByStartDate_EndDate,UserAuditModel.class,parameterMap);		
+		}else if(userId!=null){
+		parameterMap.put("userId",  userId);
+		objList =(Collection<Object>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getUserAuditByUserId,UserAuditModel.class,parameterMap);
+		}
+		for(Object object : objList){
+		Object[] obj = (Object[]) object;
+		UserAuditModel auditModel=(UserAuditModel) obj[0];	
+		auditModel.setUserName(obj[1] == null ? "" : obj[1].toString());
+		userAuditList.add(auditModel);
+		}
+		logger.info("** end--f_getUserAuditList function userAuditList size=="+userAuditList.size());
+	
+		return userAuditList;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public int insertUserAuditUrls(String url, User user, String fillingId, String session,Date date,Long secs,String userRole,String userSysInfo) {
+		UserActivityDetails uad=null;	
+		try{
+		if(user!=null && url!=null){
+			uad=new UserActivityDetails();
+			if(fillingId!=null && !fillingId.isEmpty()){
+			uad.setFillingId(Integer.parseInt(fillingId));
+				if(fillingId!=null){
+			    	Map<String, Object> parameter = new HashMap<String, Object>();
+			    	parameter.put("filingId", Integer.parseInt(fillingId));
+			     }	
+	  uad.setUserRole(userRole);
+			}else{
+			uad.setFillingId(null);
+			uad.setUserRole(null);
+			}
+			uad.setUrl(url);
+			uad.setSeqNumber(1);
+			uad.setUserName(user.getUsername());
+			uad.setUserId(user.getUserId().longValue());
+			uad.setCreatedTime(date);
+			uad.setSessionid(session);
+			uad.setCaseoutTime(secs);
+			uad.setUserSysIpAddress(userSysInfo);
+	        genericDaoImpl.persist(uad);	
+		}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return 1;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean setUserSessionAsNull(User user){
+		
+		try{
+			normalizationViewDAO.updateUserSessionIdAsNull(user);
+			return true;
+			
+		}catch(Exception e){
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+public boolean setUserSessionId(User user,String sessionId){
+		
+		try{
+			normalizationViewDAO.updateUserSessionId(user, sessionId);
+			return true;
+			
+		}catch(Exception e){
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+@Override
+public String getUserSessionId(User user){
+		
+		try{
+			
+			return normalizationViewDAO.getUserSessionId(user);
+			
+		}catch(Exception e){
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+@Override
+@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+public void updateUser (){
+	
+	try{
+		
+		normalizationViewDAO.updateUserSessionIdAsNullForAllUser();
+		
+	}catch(Exception e){
+		e.printStackTrace();
+		
+	}
+}
+}

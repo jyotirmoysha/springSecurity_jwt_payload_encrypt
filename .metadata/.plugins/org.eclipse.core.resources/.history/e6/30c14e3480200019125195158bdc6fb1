@@ -1,0 +1,24 @@
+package com.livespread.controller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.livespread.common.PurgedSessionVariable;
+
+@Controller
+public class WorkQueueController  {
+
+	Logger logger = Logger.getLogger(WorkQueueController.class);
+
+	@RequestMapping(value = "workqueue.htm")
+	public String showWorkQueue(HttpServletRequest request,
+			HttpServletResponse response){
+		logger.info("showWorkQueue starts");
+		PurgedSessionVariable.removeVariableForNormalization(request.getSession());
+		return "workqueue";
+	}
+}

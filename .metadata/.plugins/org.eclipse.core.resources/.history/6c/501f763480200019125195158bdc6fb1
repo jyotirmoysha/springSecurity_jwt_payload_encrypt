@@ -1,0 +1,117 @@
+package com.livespread.command;
+
+import java.util.Date;
+import java.util.List;
+
+public class ExtractionRuleRowDataCommand {
+	
+	private Long metaDataId;
+	private Long tagId;
+	private Long createdBy;
+	private Date createdOn;
+	private Long updatedBy;
+	private Date updatedOn;
+	private List<String> values;
+	private Integer pageNumber;
+	private Integer totalCountRecords;
+	private Integer displayCount;
+	
+	private Integer indexOrder;
+	private Integer columnCounter;
+	
+	private String fileName;
+	private String tagName;
+	private String language;
+		
+	public String getFileName() {
+		return fileName;
+	}
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+	public String getTagName() {
+		return tagName;
+	}
+	public void setTagName(String tagName) {
+		this.tagName = tagName;
+	}
+	public String getLanguage() {
+		return language;
+	}
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+	public Integer getColumnCounter() {
+		return columnCounter;
+	}
+	public void setColumnCounter(Integer columnCounter) {
+		this.columnCounter = columnCounter;
+	}
+	public Integer getIndexOrder() {
+		return indexOrder;
+	}
+	public void setIndexOrder(Integer indexOrder) {
+		this.indexOrder = indexOrder;
+	}
+	public Long getMetaDataId() {
+		return metaDataId;
+	}
+	public void setMetaDataId(Long metaDataId) {
+		this.metaDataId = metaDataId;
+	}
+	public Long getTagId() {
+		return tagId;
+	}
+	public void setTagId(Long tagId) {
+		this.tagId = tagId;
+	}
+	public Date getCreatedOn() {
+		return createdOn;
+	}
+	public void setCreatedOn(Date createdOn) {
+		this.createdOn = createdOn;
+	}
+	public Date getUpdatedOn() {
+		return updatedOn;
+	}
+	public void setUpdatedOn(Date updatedOn) {
+		this.updatedOn = updatedOn;
+	}
+	public List<String> getValues() {
+		return values;
+	}
+	public void setValues(List<String> values) {
+		this.values = values;
+	}
+	public Integer getPageNumber() {
+		return pageNumber;
+	}
+	public void setPageNumber(Integer pageNumber) {
+		this.pageNumber = pageNumber;
+	}
+	public Integer getTotalCountRecords() {
+		return totalCountRecords;
+	}
+	public void setTotalCountRecords(Integer totalCountRecords) {
+		this.totalCountRecords = totalCountRecords;
+	}
+	public Integer getDisplayCount() {
+		return displayCount;
+	}
+	public void setDisplayCount(Integer displayCount) {
+		this.displayCount = displayCount;
+	}
+	public Long getCreatedBy() {
+		return createdBy;
+	}
+	public void setCreatedBy(Long createdBy) {
+		this.createdBy = createdBy;
+	}
+	public Long getUpdatedBy() {
+		return updatedBy;
+	}
+	public void setUpdatedBy(Long updatedBy) {
+		this.updatedBy = updatedBy;
+	}
+
+}

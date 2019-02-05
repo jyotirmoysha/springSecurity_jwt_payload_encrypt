@@ -1,0 +1,43 @@
+/**
+ * 
+ */
+package com.livespread.command;
+
+
+/**
+ * @author KP0e1301
+ *
+ */
+public class CurrencyCommand {
+	
+	
+	private Integer currencyId;
+	
+	private String currencyName;
+	
+	private String currencyDesc;
+
+	public Integer getCurrencyId() {
+		return currencyId;
+	}
+
+	public void setCurrencyId(Integer currencyId) {
+		this.currencyId = currencyId;
+	}
+
+	public String getCurrencyName() {
+		return currencyName;
+	}
+
+	public void setCurrencyName(String currencyName) {
+		this.currencyName = currencyName;
+	}
+
+	public String getCurrencyDesc() {
+		return currencyDesc;
+	}
+
+	public void setCurrencyDesc(String currencyDesc) {
+		this.currencyDesc = currencyDesc;
+	}
+}

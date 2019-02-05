@@ -1,0 +1,124 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * The persistent class for the "GROUP" database table.
+ * 
+ */
+
+@Entity
+@Table(name = "LS_FINANCIAL_FILE_INFO")
+@NamedQueries({
+	@NamedQuery(name = "getLanguagelist", query ="select distinct lffi.language from  LsFinancialFileInfo lffi order by lffi.language "),
+	@NamedQuery(name = "getFileslistByLanguage", query ="select distinct lffi.fileName from LsFinancialFileInfo lffi where lffi.language=:language and lffi.isActive='Y' order by lffi.fileName"),
+	@NamedQuery(name = "getTagsDetailsByFileName", query ="from LsFinancialFileInfo lffi where lffi.fileName=:fileName and lffi.language=:language"),
+	@NamedQuery(name = "getMetaRowInfoByTagId", query ="from LsFinancialFileInfo lffi where lffi.tagId=:tagId")
+})
+public class LsFinancialFileInfo implements Serializable ,BaseEntity{
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "TAG_ID", unique = true, nullable = false, precision = 38)
+	private long tagId;
+
+	
+	@Column(name = "FILENAME")
+	private String fileName;
+
+	@Column(name = "TAGNAME")
+	private String tagName;
+	
+	@Column(name = "COLUMNCOUNT")
+	private Integer columnCount;
+	
+	@Column(name = "LANGUAGE")
+	private String language;
+	
+	@Column(name = "FILE_INDEX_ORDER_COUNT")
+	private Integer fileIndexOrderCount;
+	
+	@Column(name = "IS_ACTIVE")
+	private String isActive;
+	/**
+	 * @return the language
+	 */
+	public String getLanguage() {
+		return language;
+	}
+
+	/**
+	 * @param language the language to set
+	 */
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+
+	public long getTagId() {
+		return tagId;
+	}
+
+	public void setTagId(long tagId) {
+		this.tagId = tagId;
+	}
+
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	public String getTagName() {
+		return tagName;
+	}
+
+	public void setTagName(String tagName) {
+		this.tagName = tagName;
+	}
+
+	public Integer getColumnCount() {
+		return columnCount;
+	}
+
+	public void setColumnCount(Integer columnCount) {
+		this.columnCount = columnCount;
+	}
+
+	public Integer getFileIndexOrderCount() {
+		return fileIndexOrderCount;
+	}
+
+	public void setFileIndexOrderCount(Integer fileIndexOrderCount) {
+		this.fileIndexOrderCount = fileIndexOrderCount;
+	}
+
+	public String getIsActive() {
+		return isActive;
+	}
+
+	public void setIsActive(String isActive) {
+		this.isActive = isActive;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

@@ -1,0 +1,618 @@
+/**
+ * 
+ */
+package com.livespread.service;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.livespread.domain.StatusMaster;
+import com.livespread.domain.User;
+import com.livespread.domain.WorkQueue;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.livespread.domain.NamedNativeQueryName;
+import com.livespread.domain.NamedQueryName;
+
+@Service("reportServ")
+public class ReportServiceImpl implements ReportService {
+
+	private Logger LOGGER = Logger.getLogger(ReportServiceImpl.class);
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+
+	// start an end date
+	SimpleDateFormat format1 = new SimpleDateFormat("MM/dd/yyyy");
+
+	public Map<Integer, String> getAnalystNamesByUserGroupId(Long groupId) {
+
+		LOGGER.error("**start--getAnalystNamesByUserGroupId methode");
+		/* based on groupId */
+		Map<Integer, String> map = new HashMap<Integer, String>();
+		HashMap<String, Object> parameters = new HashMap<String, Object>();
+	
+			parameters.put("groupId", groupId.intValue());
+			List<Object> usersGroup = genericDaoImpl.findByNamedQuery(
+					NamedQueryName.getUserDetailsListByGroupIdForReports,
+					User.class, parameters);
+			if(usersGroup!=null){
+			for (Object object : usersGroup) {
+				Object[] obj = (Object[]) object;
+				map.put((int) (obj[0] != null ? Long.parseLong(obj[0]
+						.toString()) : 0), obj[1] != null ? obj[1].toString()
+						: "");
+			}
+			}
+		
+		return map;
+	}
+
+	public List<User> getAnalystName(List<Object> dbList) {
+		List<User> analystList = new ArrayList<User>();
+
+		if (dbList.isEmpty()) {
+		} else {
+			for (Object outerObj : dbList) {
+				User user = new User();
+				user = (User) outerObj;
+				analystList.add(user);
+			}
+		}
+		return analystList;
+
+	}
+
+	@Override
+	public LinkedHashMap<String, Long> getAllStatusForReports(Long groupId) {
+		LOGGER.info("Starts get getAllStatusForReports  ");
+		LinkedHashMap<String, Long> hm = new LinkedHashMap<String, Long>();
+			if (groupId != null) {
+				HashMap<String, Object> parameters = new HashMap<String, Object>();
+				parameters.put("groupId", groupId.intValue());
+				List<Object> eachStatus = genericDaoImpl
+						.findByNativeNamedQuery(
+								NamedNativeQueryName.getEachStatusCountReportDefault,
+								WorkQueue.class, parameters);
+				if (!eachStatus.isEmpty()) {
+					for (Object object : eachStatus) {
+						Object[] obj = (Object[]) object;
+						hm.put(obj[0] != null ? obj[0].toString() : "",
+								(long) (obj[1] != null ? Long.parseLong(obj[1]
+										.toString()) : 0));
+					}
+				} else {
+					List<Object> resultSet = genericDaoImpl.findByNamedQuery(
+							NamedQueryName.findAllStatusList,
+							StatusMaster.class);
+				if(resultSet!=null){	
+					for (Object object : resultSet) {
+						Object[] obj = (Object[]) object;
+						hm.put(obj[1] != null ? obj[1].toString() : "",
+								(long) 0);
+					}
+				}
+				}
+			}
+	
+
+		return hm;
+	}
+
+	@Override
+	public LinkedHashMap<String, Long> getAllStatusForReportsOnChange(
+			Long groupId, Long user_Id, String startDate, String endDate,
+			String Period, String docptIdVal,String portfolio,String industryType){
+
+		LOGGER.info("Starts get getAllStatusForReportsOnChange  ");
+		LinkedHashMap<String, Long> hm = new LinkedHashMap<String, Long>();
+
+		List<Object> eachStatus = null;
+		Integer docptId = Integer.parseInt(docptIdVal);
+		
+		Date endDate1=null;
+
+			if (groupId != null) {
+				HashMap<String, Object> parameters = new HashMap<String, Object>();
+				parameters.put("groupId", groupId.intValue());
+				/**
+				 * Here we check if industryType is selected or not 
+				 */
+				if(!portfolio.equalsIgnoreCase("-1")){
+				
+				if(!industryType.equalsIgnoreCase("-1")){
+					
+					parameters.put("portfolio", portfolio);
+					parameters.put("industryType", industryType);
+				/**
+				 *This condition is true when
+				 *Period or start date and end date,group,portfolio,industry,parser and analyst is selected
+				 */
+				if((!Period.equalsIgnoreCase("Select") || !startDate.isEmpty() && !endDate.isEmpty()) && !portfolio.equalsIgnoreCase("-1") && docptId != -1 && user_Id != -1){
+					LOGGER.info("** period or start date end date,group,portfolio,industry,analyst  are selected");		
+				    /**
+				     * Here we get start date and end date from period
+				     * if period is selected
+				     */
+					if(!Period.equalsIgnoreCase("Select")){
+					parameters=f_getStartAndEndDateByPeriod(Period, parameters);
+					}else if(!startDate.isEmpty() && !endDate.isEmpty()){
+					parameters=f_getStartAndEndDate(startDate,endDate, parameters);	
+					}
+					parameters.put("parserMasterId", docptId);
+					parameters.put("user_Id", user_Id.intValue());
+					eachStatus = genericDaoImpl
+							.findByNativeNamedQuery(
+									NamedNativeQueryName.getDataByStartDateEndDate_Group_Portfolio_Indusrty_Parser_Analyst,
+									WorkQueue.class, parameters);
+					
+				}else if((!Period.equalsIgnoreCase("Select") || !startDate.isEmpty() && !endDate.isEmpty()) && !portfolio.equalsIgnoreCase("-1") && docptId != -1){
+				/**
+				 * Above condition is true when period or startdate and enddate,group,portfolio,industry parser are selected not analyst
+				 */
+					LOGGER.info("** condition is true when period or startdate and enddate,group,portfolio,industry parser are selected");		
+					if(!Period.equalsIgnoreCase("Select")){
+						parameters=f_getStartAndEndDateByPeriod(Period, parameters);
+						}else if(!startDate.isEmpty() && !endDate.isEmpty()){
+						parameters=f_getStartAndEndDate(startDate,endDate, parameters);	
+						}
+						parameters.put("parserMasterId", docptId);
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getDataByStartDateEndDate_Group_Portfolio_Indusrty_Parser,
+										WorkQueue.class, parameters);
+				
+			 }else if((!Period.equalsIgnoreCase("Select") || !startDate.isEmpty() && !endDate.isEmpty()) && !portfolio.equalsIgnoreCase("-1")){
+					/**
+					 * Above condition is true when period or startdate and enddate,group,portfolio,industry are selected not parser and analyst
+					 */
+					 LOGGER.info("** condition is true when period or startdate and enddate,group,portfolio,industry are selected");	
+						if(!Period.equalsIgnoreCase("Select")){
+							parameters=f_getStartAndEndDateByPeriod(Period, parameters);
+							}else if(!startDate.isEmpty() && !endDate.isEmpty()){
+							parameters=f_getStartAndEndDate(startDate,endDate, parameters);	
+							}
+							eachStatus = genericDaoImpl
+									.findByNativeNamedQuery(
+											NamedNativeQueryName.getDataByStartDateEndDate_Group_Portfolio_Indusrty,
+											WorkQueue.class, parameters);
+					
+				 }else if(!portfolio.equalsIgnoreCase("-1") && docptId != -1 && user_Id != -1){
+						/**
+						 * Above condition is true when group,portfolio,industry , parser are selected not period or start date and end date and analyst
+						 */ LOGGER.info("** condition is true when group,portfolio,industry , parser and anare selected");	
+								parameters.put("parserMasterId", docptId);
+								parameters.put("user_Id", user_Id);
+
+								eachStatus = genericDaoImpl
+										.findByNativeNamedQuery(
+												NamedNativeQueryName.getDataByGroup_Portfolio_Indusrty_Parser_Analyst,
+												WorkQueue.class, parameters);
+						
+					}else if(!portfolio.equalsIgnoreCase("-1") && docptId != -1){
+				/**
+				 * Above condition is true when group,portfolio,industry , parser are selected not period or start date and end date and analyst
+				 */ LOGGER.info("** condition is true when group,portfolio,industry , parser are selected");	
+						parameters.put("parserMasterId", docptId);
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getDataByGroup_Portfolio_Indusrty_Parser,
+										WorkQueue.class, parameters);
+				
+			}else if(!portfolio.equalsIgnoreCase("-1") && user_Id != -1){
+				/**
+				 * Above condition is true when group,portfolio,industry ,analyst are selected not period or start date and end date and analyst
+				 */LOGGER.info("** condition is true when group,portfolio,industry ,analyst are selected");
+						parameters.put("user_Id", user_Id.intValue());
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getDataByGroup_Portfolio_Indusrty_Analyst,
+										WorkQueue.class, parameters);
+				
+			}else if(!portfolio.equalsIgnoreCase("-1")){
+				/**
+				 * Above condition is true when group,portfolio,industry are selected not parser,period or start date and end date and analyst
+				 */
+			 LOGGER.info("** condition is true when group,portfolio,industry are selected");			
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getDataByGroup_Portfolio_Indusrty,
+										WorkQueue.class, parameters);
+				
+			}
+     	}//End Industry based condition	
+			else{
+				parameters.put("portfolio", portfolio);
+			/**
+			 * Above else block is executed when only portfolio is selected not industry  		
+			 */LOGGER.info("** condition is true when period or start date and end date ,parser and analyst are selected");
+				if((!Period.equalsIgnoreCase("Select") || !startDate.isEmpty() && !endDate.isEmpty()) && docptId != -1 && user_Id != -1){
+				/**
+				 * Above block excecuted when
+				 * period or start date and end date ,group,portfolio,parser and analyst selected	
+				 */
+					if(!Period.equalsIgnoreCase("Select")){
+						parameters=f_getStartAndEndDateByPeriod(Period, parameters);
+						}else if(!startDate.isEmpty() && !endDate.isEmpty()){
+						parameters=f_getStartAndEndDate(startDate,endDate, parameters);	
+						}
+						parameters.put("parserMasterId", docptId);
+						parameters.put("user_Id", user_Id.intValue());
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getDataByStartDateEndDate_Group_Portfolio_Parser_Analyst,
+										WorkQueue.class, parameters);
+					
+				}else if((!Period.equalsIgnoreCase("Select") || !startDate.isEmpty() && !endDate.isEmpty()) && docptId != -1){
+					/**
+					 * Above block excecuted when
+					 * period or start date and end date ,group,portfolio,parserselected	
+					 */
+					LOGGER.info("** condition is true when period or start date and end date ,parser  are selected");
+						if(!Period.equalsIgnoreCase("Select")){
+							parameters=f_getStartAndEndDateByPeriod(Period, parameters);
+							}else if(!startDate.isEmpty() && !endDate.isEmpty()){
+							parameters=f_getStartAndEndDate(startDate,endDate, parameters);	
+							}
+							parameters.put("parserMasterId", docptId);
+							eachStatus = genericDaoImpl
+									.findByNativeNamedQuery(
+											NamedNativeQueryName.getDataByStartDateEndDate_Group_Portfolio_Parser,
+											WorkQueue.class, parameters);
+						
+					}else if((!Period.equalsIgnoreCase("Select") || !startDate.isEmpty() && !endDate.isEmpty())){
+						/**
+						 * Above block excecuted when
+						 * period or start date and end date ,group,portfolio selected	
+						 */
+						LOGGER.info("** condition is true when period or start date and end date are selected");
+							if(!Period.equalsIgnoreCase("Select")){
+								parameters=f_getStartAndEndDateByPeriod(Period, parameters);
+								}else if(!startDate.isEmpty() && !endDate.isEmpty()){
+								parameters=f_getStartAndEndDate(startDate,endDate, parameters);	
+								}
+								eachStatus = genericDaoImpl
+										.findByNativeNamedQuery(
+												NamedNativeQueryName.getDataByStartDateEndDate_Group_Portfolio,
+												WorkQueue.class, parameters);
+							
+					}else if((!Period.equalsIgnoreCase("Select") || !startDate.isEmpty() && !endDate.isEmpty()) && user_Id != -1){
+						/**
+						 * Above block excecuted when
+						 * period or start date and end date ,group,portfolio,analyst selected	
+						 */
+						LOGGER.info("** period or start date and end date ,group,portfolio,analyst selected");
+							if(!Period.equalsIgnoreCase("Select")){
+								parameters=f_getStartAndEndDateByPeriod(Period, parameters);
+								}else if(!startDate.isEmpty() && !endDate.isEmpty()){
+								parameters=f_getStartAndEndDate(startDate,endDate, parameters);	
+								}
+								parameters.put("user_Id", user_Id.intValue());
+								eachStatus = genericDaoImpl
+										.findByNativeNamedQuery(
+												NamedNativeQueryName.getDataByStartDateEndDate_Group_Portfolio_Analyst,
+												WorkQueue.class, parameters);
+							
+				}else if(docptId != -1 && user_Id != -1){
+					/**
+					 * Above block excecuted when
+					 * group,portfolio,parser and analyst selected	
+					 */
+					LOGGER.info("** group,portfolio,parser and analyst selected	");
+						
+							parameters.put("parserMasterId", docptId);
+							parameters.put("user_Id", user_Id.intValue());
+							eachStatus = genericDaoImpl
+									.findByNativeNamedQuery(
+											NamedNativeQueryName.getDataByGroup_Portfolio_Parser_Analyst,
+											WorkQueue.class, parameters);
+						
+			}else if(docptId != -1){
+				/**
+				 * Above block excecuted when
+				 * group,portfolio,parser selected	
+				 */
+				LOGGER.info("** group,portfolio,parser and analyst selected	");
+						parameters.put("parserMasterId", docptId);
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getDataByGroup_Portfolio_Parser,
+										WorkQueue.class, parameters);
+					
+			}else if(user_Id != -1){
+				/**
+				 * Above block excecuted when
+				 * group,portfolio,analyst selected	
+				 */
+				LOGGER.info("** group,portfolio,and analyst selected	");
+			 	parameters.put("user_Id", user_Id.intValue());
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getDataByGroup_Portfolio_Analyst,
+										WorkQueue.class, parameters);
+					
+			}else{
+				LOGGER.info("** group,portfolio selected");
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(NamedNativeQueryName.getDataByGroup_Portfolio,WorkQueue.class, parameters);
+			}
+				
+			}
+				
+			
+		}else if (startDate.isEmpty() && endDate.isEmpty()
+						&& Period.equalsIgnoreCase("Select") && user_Id != -1) {
+					parameters.put("user_Id", user_Id.intValue());
+					/**
+					 * This condition used when start date,end date and period is empty and
+					 * groupname,subportfolio,industry and parser id and user id mandotary
+					 */
+					if (docptId != -1 && docptId != 0) {
+						LOGGER.info("1)userId" + user_Id + "groupId"
+								+ groupId.intValue() + "ParserId" + docptId);
+						parameters.put("parserMasterId", docptId);
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getEachStatusCountReportforUserIdParserIdAdmin,
+										WorkQueue.class, parameters);
+					} else {
+						/**
+						 * This condition used when only group name and userid  is selected and other field is empty
+						 */
+						LOGGER.info("2)userId" + user_Id + "groupId"
+								+ groupId.intValue());
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getEachStatusCountReportforUserId,
+										WorkQueue.class, parameters);
+					}
+
+				} else if (startDate.isEmpty() && endDate.isEmpty()
+						&& Period.equalsIgnoreCase("Select") && user_Id == -1) {
+					if (docptId != -1 && docptId != 0) {
+						/**
+						 * This condition used when only group name and parser selected 
+						 */
+						LOGGER.info("3)groupId" + groupId.intValue()
+								+ "ParserId" + docptId);
+						parameters.put("parserMasterId", docptId);
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getEachStatusCountReportDefaultforParserIdAdmin,
+										WorkQueue.class, parameters);
+					} else {
+						LOGGER.info("4)groupId" + groupId.intValue());
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getEachStatusCountReportDefault,
+										WorkQueue.class, parameters);
+					}
+				} else if (!startDate.isEmpty() && !endDate.isEmpty()
+						&& Period.equalsIgnoreCase("Select") && user_Id == -1) {
+					Date startDate1=null;
+					try {
+						startDate1 = format1.parse(startDate.trim());
+                            endDate1 = format1.parse(endDate.trim());
+						parameters.put("startDate1", startDate1);
+						parameters.put("endDate1", endDate1);
+					} catch (ParseException e) {
+						LOGGER.error("Parsing Error in Reports ServiceImpl"+e);
+						e.printStackTrace();
+					}
+					if (docptId != -1 && docptId != 0) {
+						LOGGER.info("5)groupId" + groupId.intValue()
+								+ "startDate" + startDate1 + "endDate1"
+								+ endDate1 + "ParserId" + docptId);
+						parameters.put("parserMasterId", docptId);
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getEachStatusCountReportDefaultWithDatesParserIdAdmin,
+										WorkQueue.class, parameters);
+					} else {
+						LOGGER.info("6)groupId" + groupId.intValue()
+								+ "startDate" + startDate1 + "endDate1"
+								+ endDate1);
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getEachStatusCountReportDefaultWithDates,
+										WorkQueue.class, parameters);
+					}
+
+				} else if (startDate.isEmpty() && endDate.isEmpty()
+						&& !Period.equalsIgnoreCase("Select") && user_Id == -1) {
+					// period
+					Calendar cal = Calendar.getInstance();
+					Calendar cal1 = Calendar.getInstance();
+					if (Period.contentEquals("1 Day")) {
+						cal.add(Calendar.DATE, 0);
+
+					} else if (Period.contentEquals("2 Days")) {
+						cal.add(Calendar.DATE, -1);
+					} else if (Period.contentEquals("3 Days")) {
+						cal.add(Calendar.DATE, -2);
+					} else if (Period.contentEquals("4 Days")) {
+						cal.add(Calendar.DATE, -3);
+					} else if (Period.contentEquals("5 Days")) {
+						cal.add(Calendar.DATE, -4);
+					}
+					parameters.put("startDate1", cal.getTime());
+					parameters.put("endDate1", cal1.getTime());
+					if (docptId != -1 && docptId != 0) {
+						
+						LOGGER.info("7)groupId" + groupId.intValue() + "Period"
+								+ Period + "ParserId" + docptId);
+						parameters.put("parserMasterId", docptId);
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getEachStatusCountReportDefaultWithDatesParserIdAdmin,
+										WorkQueue.class, parameters);
+					} else {
+						/**
+						 * this condition executed when start date,end date and period is selected
+						 */
+						LOGGER.info("8)groupId" + groupId.intValue() + "Period"
+								+ Period);
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getEachStatusCountReportDefaultWithDates,
+										WorkQueue.class, parameters);
+					}
+
+				} else if (!startDate.isEmpty() && !endDate.isEmpty()) {
+					parameters.put("user_Id", user_Id.intValue());
+					Date startDate1;
+					try {
+						startDate1 = format1.parse(startDate.trim());
+                        endDate1 = format1.parse(endDate.trim());
+					     parameters.put("startDate1", startDate1);
+					} catch (ParseException e) {
+						LOGGER.error("Parsing Error in Reports ServiceImpl"+e);
+						e.printStackTrace();
+					}
+
+					parameters.put("endDate1", endDate1);
+
+					if (docptId != -1 && docptId != 0) {
+						LOGGER.info("9)groupId" + groupId.intValue()
+								+ "docptId" + docptId);
+						parameters.put("parserMasterId", docptId);
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getEachStatusCountReportbyDateRangeParserAdmin,
+										WorkQueue.class, parameters);
+					} else {
+						LOGGER.info("10)groupId" + groupId.intValue());
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getEachStatusCountReportbyDateRange,
+										WorkQueue.class, parameters);
+					}
+
+				} else if (startDate.isEmpty() && endDate.isEmpty()
+						&& !Period.equalsIgnoreCase("Select")) {
+					parameters.put("user_Id", user_Id.intValue());
+					// period
+					Calendar cal = Calendar.getInstance();
+					Calendar cal1 = Calendar.getInstance();
+					if (Period.contentEquals("1 Day")) {
+						cal.add(Calendar.DATE, 0);
+
+					} else if (Period.contentEquals("2 Days")) {
+						cal.add(Calendar.DATE, -1);
+					} else if (Period.contentEquals("3 Days")) {
+						cal.add(Calendar.DATE, -2);
+					} else if (Period.contentEquals("4 Days")) {
+						cal.add(Calendar.DATE, -3);
+					} else if (Period.contentEquals("5 Days")) {
+						cal.add(Calendar.DATE, -4);
+					}
+
+					parameters.put("startDate1", cal.getTime());
+					parameters.put("endDate1", cal1.getTime());
+					if (docptId != -1 && docptId != 0) {
+						LOGGER.info("11)groupId" + groupId.intValue()
+								+ "period" + cal.getTime() + "docptId"
+								+ docptId);
+						parameters.put("parserMasterId", docptId);
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getEachStatusCountReportbyDateRangeParserAdmin,
+										WorkQueue.class, parameters);
+					} else {
+						
+						LOGGER.info("12)groupId" + groupId.intValue()
+								+ "period" + cal.getTime());
+						eachStatus = genericDaoImpl
+								.findByNativeNamedQuery(
+										NamedNativeQueryName.getEachStatusCountReportbyDateRange,
+										WorkQueue.class, parameters);
+					}
+				}
+				if (!eachStatus.isEmpty()) {
+					for (Object object : eachStatus) {
+						Object[] obj = (Object[]) object;
+						hm.put(obj[0] != null ? obj[0].toString() : "",
+								(long) (obj[1] != null ? Long.parseLong(obj[1]
+										.toString()) : 0));
+					}
+				} else {
+					List<Object> resultSet = genericDaoImpl.findByNamedQuery(
+							NamedQueryName.findAllStatusList,
+							StatusMaster.class);
+					for (Object object : resultSet) {
+						Object[] obj = (Object[]) object;
+						hm.put(obj[1] != null ? obj[1].toString() : "",
+								(long) 0);
+					}
+				}
+			}
+
+		return hm;
+	}
+
+/**
+ * This function used when user pass period(eg:1 day)
+ * @param:String period
+ * @param:HashMap<String, Object> parameters
+ * @return:HashMap<String, Object> parameters
+ */
+	
+public HashMap<String,Object> f_getStartAndEndDateByPeriod(String period,HashMap<String, Object> parameters){
+	try{
+	Calendar cal = Calendar.getInstance();
+	Calendar cal1 = Calendar.getInstance();
+	if (period.contentEquals("1 Day")) {
+		cal.add(Calendar.DATE, 0);
+
+	} else if (period.contentEquals("2 Days")) {
+		cal.add(Calendar.DATE, -1);
+	} else if (period.contentEquals("3 Days")) {
+		cal.add(Calendar.DATE, -2);
+	} else if (period.contentEquals("4 Days")) {
+		cal.add(Calendar.DATE, -3);
+	} else if (period.contentEquals("5 Days")) {
+		cal.add(Calendar.DATE, -4);
+	}
+	parameters.put("startDate1", cal.getTime());
+	parameters.put("endDate1", cal1.getTime());	
+	}catch (Exception e) {
+		e.printStackTrace();
+		LOGGER.error(e);
+	}
+	return parameters;
+}
+
+/**
+ * This function used when user select start date and end date 
+* @param:String startdate,String endDate
+* @param:HashMap<String, Object> parameters
+* @return:HashMap<String, Object> parameters
+*/
+
+public HashMap<String, Object> f_getStartAndEndDate(String startDate,String endDate,HashMap<String, Object> parameters){
+	Date startDate1=null;
+	Date endDate1=null;
+	try {
+		startDate1 = format1.parse(startDate.trim());
+        endDate1 = format1.parse(endDate.trim());
+		parameters.put("startDate1", startDate1);
+		parameters.put("endDate1", endDate1);
+	} catch (ParseException e) {
+		LOGGER.error("Parsing Error in Reports ServiceImpl"+e);
+		e.printStackTrace();
+	}
+	
+return parameters;	
+}//end f_getStartAndEndDate()
+
+}//end class

@@ -1,0 +1,26 @@
+package com.livespread.common;
+
+import java.util.Comparator;
+import java.util.List;
+
+import com.livespread.command.NormalisedParserOutput;
+import com.livespread.command.ParserOutputDisplayCommand;
+
+public class ParserOutputDisplayComparator implements
+		Comparator<ParserOutputDisplayCommand> {
+	private List<String> sortOrder;
+
+	public ParserOutputDisplayComparator(List<String> sortOrder) {
+		this.sortOrder = sortOrder;
+	}
+
+	@Override
+	public int compare(ParserOutputDisplayCommand arg0, ParserOutputDisplayCommand arg1) {
+
+		String a1 = arg0.getPoAsRepLabel();
+		String a2 = arg1.getPoAsRepLabel();
+
+		return sortOrder.indexOf(a2) - sortOrder.indexOf(a1);
+	}
+
+}

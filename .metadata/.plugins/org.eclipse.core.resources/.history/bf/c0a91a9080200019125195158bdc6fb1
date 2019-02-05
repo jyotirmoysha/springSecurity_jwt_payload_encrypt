@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+ xmlns:context="http://www.springframework.org/schema/context"
+ xmlns:aop="http://www.springframework.org/schema/aop" 
+ xmlns:tx="http://www.springframework.org/schema/tx"
+ xmlns:mvc="http://www.springframework.org/schema/mvc"
+ xmlns:util="http://www.springframework.org/schema/util"
+ xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+           http://www.springframework.org/schema/aop 
+           http://www.springframework.org/schema/aop/spring-aop-3.0.xsd 
+           http://www.springframework.org/schema/tx 
+           http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.2.xsd
+     		http://www.springframework.org/schema/mvc 
+           http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+           http://www.springframework.org/schema/util 
+           http://www.springframework.org/schema/util/spring-util-3.2.xsd"
+ default-autowire="byName">
+ 
+ <context:annotation-config />
+  <mvc:annotation-driven content-negotiation-manager="contentNegotiationManager" />
+  <bean id="contentNegotiationManager" class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+	<property name="favorPathExtension" value="false" />
+	<property name="favorParameter" value="true" />
+	<property name="mediaTypes" >
+	<value>
+		json=application/json
+		xml=application/xml
+	</value>
+	</property>
+  </bean>
+
+ <aop:aspectj-autoproxy proxy-target-class="true" />
+ 
+  
+ <context:component-scan base-package="com.rage.reusable.*.controller">
+  <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+ </context:component-scan>
+
+ <context:component-scan base-package="com.rage.reusable.*.component">
+  <context:include-filter type="annotation" expression="org.springframework.stereotype.Component" />
+ </context:component-scan>
+
+ <context:component-scan base-package="com.rage.reusable.*.service">
+  <context:include-filter type="annotation" expression="org.springframework.stereotype.Service" />
+ </context:component-scan>
+ 
+ <context:component-scan base-package="com.rage.extendeddao">
+  <context:include-filter type="annotation" expression="org.springframework.stereotype.Repository" />
+ </context:component-scan>
+
+ <context:component-scan base-package="com.rage.reusable.dao">
+  <context:include-filter type="annotation" expression="org.springframework.stereotype.Repository" />
+ </context:component-scan>
+
+ <context:component-scan base-package="com.rage.reusable.component">
+  <context:include-filter type="annotation" expression="org.springframework.stereotype.Component" />
+ </context:component-scan>
+
+ <context:component-scan base-package="com.rage.reusable.utils">
+  <context:include-filter type="annotation" expression="org.springframework.stereotype.Component" />
+ </context:component-scan>
+   
+ <context:component-scan base-package="com.rage.reusable.*.helper">
+  <context:include-filter type="annotation" expression="org.springframework.stereotype.Component" />
+ </context:component-scan>
+  
+ <context:component-scan base-package="com.rage.reusable.tag">
+  <context:include-filter type="annotation" expression="org.springframework.stereotype.Component" />
+ </context:component-scan>
+ 
+ <!-- =============== Removable code =============== -->
+ <context:component-scan base-package="test.controller">
+  <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+ </context:component-scan>
+ <!-- =============== End Removable code =============== -->
+
+ <!-- =============== Login With Security Start:: =============== -->
+ <bean id="uicUserService" class="com.rage.reusable.login.service.UicUserService">    
+	</bean>
+
+	<bean class="com.rage.reusable.login.service.DatabaseAuthenticationProvider">
+	  <property name="uicUserService" ref="uicUserService"/>
+	</bean>
+	<!-- =============== Login  End=============== -->
+ <!-- ========== Provide your implementation class for encryption and decryption services ======= -->
+  <bean name="hasher" class="com.livespread.util.MyHasher"/>
+  
+
+<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter" />
+ 
+   <!-- =============== I18N MessageSource of Both Property file and From DB STARTS HERE =============== -->
+ 
+      <!-- ==== Useful for Application Specific ====  -->
+	    <bean id="propertiesMessageSource"
+	        class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+	        <property name="basename" value="classpath:messages" />
+	        <property name="cacheSeconds" value="0"/>
+	        <property name="defaultEncoding" value="UTF-8" />
+	    </bean>
+    
+      <!-- ==== MessageSource Belongs UIC ==== -->
+	    <bean id="messageSource" class="com.rage.reusable.utils.DatabaseMessageSource">
+	        <property name="parentMessageSource" ref="propertiesMessageSource"/>
+	    </bean>
+    
+    <!-- =============== I18N MessageSource of Both Property file and From DB ENDS HERE =============== -->
+     
+    <mvc:interceptors>
+        
+        <bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor">
+            <property name="paramName" value="locale"/>
+        </bean>
+        
+      <mvc:interceptor>
+          <mvc:mapping path="/autoComplete.htm"/>
+          <mvc:mapping path="/getTablePage.htm"/>
+          <mvc:mapping path="/delete.htm"/>
+          <mvc:mapping path="/subTable.htm"/>
+          <mvc:mapping path="/saveTableContent.htm" />
+          <mvc:mapping path="/executeRageProcess.htm"/>
+          <mvc:mapping path="/exportDataSheet.htm"/>
+          <mvc:mapping path="/dynamicSearch.htm"/>
+          <mvc:mapping path="/pageSearch.htm"/>
+          <mvc:mapping path="/updateUICMsg.htm"/>
+          <mvc:mapping path="/undoDelete.htm"/>
+          <mvc:mapping path="/updateShowHideColumn.htm"/>
+          <mvc:mapping path="/getScrollTablePage.htm"/> 
+          <mvc:mapping path="/showChart.htm"/> 
+          <mvc:mapping path="/show-table.htm"/> 
+          <mvc:mapping path="/updateForm.htm" />
+          <mvc:mapping path="/saveForm.htm" />
+          <mvc:mapping path="/deleteRecordsOnScroll.htm"/>
+          <bean class="com.rage.reusable.utils.RequestInterceptor"/>
+      </mvc:interceptor>
+      
+      <mvc:interceptor>
+          <!--Belongs to Table  -->
+          <mvc:mapping path="/autoComplete.htm"/>
+          <mvc:mapping path="/getTablePage.htm"/>
+          <mvc:mapping path="/delete.htm"/>
+          <mvc:mapping path="/subTable.htm"/>
+          <mvc:mapping path="/saveTableContent.htm"/>
+          <mvc:mapping path="/exportDataSheet.htm"/>
+          <mvc:mapping path="/dynamicSearch.htm"/>
+          <mvc:mapping path="/pageSearch.htm"/>
+          <mvc:mapping path="/updateUICMsg.htm"/>
+          <mvc:mapping path="/undoDelete.htm"/>
+          <mvc:mapping path="/updateShowHideColumn.htm"/>
+          <mvc:mapping path="/getScrollTablePage.htm"/> 
+          <mvc:mapping path="/show-table.htm"/>
+		  <mvc:mapping path="/deleteRecordsOnScroll.htm"/>
+		   
+          <!--Belongs to Form -->
+          <mvc:mapping path="/getFormData.htm"/>
+          <mvc:mapping path="/saveForm.htm"/>
+          <mvc:mapping path="/postSavedata.htm"/>
+          <mvc:mapping path="/updateForm.htm"/>
+          <mvc:mapping path="/formAutoComplete.htm"/>
+          <mvc:mapping path="/ajaxSaveForm.htm"/>
+          <mvc:mapping path="/ajaxUpdateForm.htm"/>
+          
+          <!--Belongs to Chart/graph -->
+          <mvc:mapping path="/showChart.htm"/>
+          <mvc:mapping path="/showChartData.htm"/>
+          <mvc:mapping path="/getTableChartData.htm"/>
+           
+          <!--Belongs to Screen/layout/Tab -->
+          <mvc:mapping path="/showScreen.htm"/>
+          <mvc:mapping path="/showScreenLayout.htm"/>
+          
+          <!--Belongs to Search -->
+          <mvc:mapping path="/searchComp.htm"/>
+          <mvc:mapping path="/searchAutoComplete.htm"/>
+          <mvc:mapping path="/doSearch.htm"/>
+          <mvc:mapping path="/doReset.htm"/>
+          
+          <!--Belongs to Excel -->
+          <mvc:mapping path="/showExcel.htm"/>
+          
+          <!--Belongs to table of json -->
+          <mvc:mapping path="/getTableDataById.htm"/>          
+          
+          <bean class="com.rage.reusable.utils.UICWrapper"/>
+      </mvc:interceptor>
+        
+    </mvc:interceptors> 
+    
+    <!-- =============== Remove Below Code if Application already have this code =============== -->
+    
+    <!-- =============== View Resolver Starts =============== -->
+    <bean class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+	    <property name="viewClass"
+	        value="org.springframework.web.servlet.view.JstlView" />
+	    <property name="prefix" value="/WEB-INF/jsp/" />
+	    <property name="suffix" value=".jsp" />
+	</bean>
+	 <bean class="org.springframework.web.servlet.view.ResourceBundleViewResolver">
+	  <property name="basename" value="uic-view" />
+	  <property name="order" value="1"/>
+	 </bean>
+	 
+    <!-- =============== View Resolver Ends =============== -->
+ 
+ <bean class="org.springframework.web.multipart.commons.CommonsMultipartResolver" id="multipartResolver"/>
+
+ 
+<!-- ===============  UIC META DataBase Connection Details Source Starts ============== -->
+
+ <bean id="uicMetaDataSource" class="com.livespread.security.EncryptedDataSource">
+  <property name="driverClassName" value="${uic.jdbc.driverClassName}" />
+  <property name="url" value="${uic.jdbc.url}" />
+  <property name="username" value="${uic.jdbc.username}" />
+  <property name="password" value="${uic.jdbc.password}" />
+  <property name="maxActive" value="25" />
+  <property name="maxIdle" value="25" />
+  <property name="poolPreparedStatements" value="false" />
+  <property name="maxOpenPreparedStatements" value="25" />
+  <property name="testOnBorrow" value="true" />
+  <property name="testWhileIdle" value="true" /> 
+  <property name="validationQuery" value="SELECT 1" />
+  <property name="minEvictableIdleTimeMillis" value="1800000" />
+  <property name="timeBetweenEvictionRunsMillis" value="1800000" />
+ </bean>
+
+ <bean id="uicMetaDataEntityManagerFactory"
+  class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+  <property name="dataSource" ref="uicMetaDataSource" />
+  <property name="jpaVendorAdapter">
+   <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+    <property name="database" value="${uic.jdbc.database}" />
+    <property name="showSql" value="${uic.jdbc.showSql}" />
+    <property name="databasePlatform" value="${uic.jdbc.databasePlatform}"/>
+   </bean>
+  </property>  
+  <property name="persistenceUnitName" value="uicMetaDataPunit" />
+ </bean>
+ 
+ <bean id="uicMetaDataTransactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+  <property name="entityManagerFactory" ref="uicMetaDataEntityManagerFactory" />
+ </bean>
+ 
+ <tx:annotation-driven transaction-manager="uicMetaDataTransactionManager" />
+ 
+<!-- ===============  Application DataBase Connection Details Source Ends ============== -->
+
+<!-- ===============  Application DataBase Connection Details Source Starts ============== -->
+
+ <bean id="uicApplicationDataSource" class="com.livespread.security.EncryptedDataSource">
+  <property name="driverClassName" value="${app.jdbc.driverClassName}" />
+  <property name="url" value="${app.jdbc.url}" />
+  <property name="username" value="${app.jdbc.username}" />
+  <property name="password" value="${app.jdbc.password}" />
+  <property name="maxActive" value="25" />
+  <property name="maxIdle" value="25" />
+  <property name="poolPreparedStatements" value="false" />
+  <property name="maxOpenPreparedStatements" value="25" />
+  <property name="testOnBorrow" value="true" />
+  <property name="testWhileIdle" value="true" /> 
+  <property name="validationQuery" value="SELECT 1" />
+  <property name="minEvictableIdleTimeMillis" value="1800000" />
+  <property name="timeBetweenEvictionRunsMillis" value="1800000" />
+ </bean>
+
+ <bean id="uicApplicationEntityManagerFactory"
+  class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+  <property name="dataSource" ref="uicApplicationDataSource" />
+  <property name="jpaVendorAdapter">
+   <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+    <property name="database" value="${app.jdbc.database}" />
+    <property name="showSql" value="${app.jdbc.showSql}" />
+    <property name="databasePlatform" value="${app.jdbc.databasePlatform}"/>
+   </bean>
+  </property>  
+  <property name="persistenceUnitName" value="uicAppPunit" />
+ </bean>
+ 
+ <bean id="uicApplicationTransactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+  	<property name="entityManagerFactory" ref="uicApplicationEntityManagerFactory" />
+ </bean>
+ 
+ <tx:annotation-driven transaction-manager="uicApplicationTransactionManager" />
+ 
+ <!-- ===============  Application DataBase Connection Details Source Ends ============== -->
+ 
+  
+<!-- ===============  Rage DataBase Connection Details Source Starts ============== -->
+ 
+ <bean id="uicRageDataSource" class="com.livespread.security.EncryptedDataSource" destroy-method="close">
+  <property name="driverClassName" value="${rage.jdbc.driverClassName}" />
+  <property name="url" value="${rage.jdbc.url}" />
+  <property name="username" value="${rage.jdbc.username}" />
+  <property name="password" value="${rage.jdbc.password}" />
+  <property name="maxActive" value="25" />
+  <property name="maxIdle" value="25" />
+  <property name="poolPreparedStatements" value="false" />
+  <property name="maxOpenPreparedStatements" value="25" />
+  <property name="testOnBorrow" value="true" />
+  <property name="testWhileIdle" value="true" /> 
+  <property name="validationQuery" value="SELECT 1" />
+  <property name="minEvictableIdleTimeMillis" value="1800000" />
+  <property name="timeBetweenEvictionRunsMillis" value="1800000" />
+ </bean>
+ 
+ <bean id="uicRageEntityManagerFactory"
+  class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+  <property name="dataSource" ref="uicRageDataSource" />
+  <property name="jpaVendorAdapter">
+   <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+    <property name="database" value="${rage.jdbc.database}" />
+    <property name="showSql" value="${rage.jdbc.showSql}" />
+    <property name="databasePlatform" value="${rage.jdbc.databasePlatform}"/>
+   </bean>
+  </property>
+  <property name="persistenceUnitName" value="uicRagePunit" />
+ </bean>
+
+ <bean id="uicRageTransactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+  <property name="entityManagerFactory" ref="uicRageEntityManagerFactory" />
+ </bean>
+ 
+ <tx:annotation-driven transaction-manager="uicRageTransactionManager" />
+
+<!-- ===============  Rage DataBase Connection Details Source Ends ============== -->
+ 
+ <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
+ 
+ <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+       <property name="locations">
+          <list>
+               <value>classpath:*.properties</value>
+          </list>
+       </property>
+    </bean>
+ 
+    
+ <!-- Aspect -->
+ <bean id="logAspect" class="com.rage.reusable.utils.LoggingAspect" />
+ 
+ 	<util:map id="redirectUrlMap">
+       <!--  <entry key="3NovForm" value="/getFormData.htm?formId=3NovForm"/>
+        <entry key="martform" value="/getFormData.htm?formId=MartForm"/> -->
+    </util:map>    
+   <!--  <import resource="uic-security-context.xml"/>    -->
+</beans> 

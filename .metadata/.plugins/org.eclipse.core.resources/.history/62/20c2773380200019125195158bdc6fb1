@@ -1,0 +1,202 @@
+package com.livespread.service;
+
+import java.io.File;
+import java.util.ArrayList;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import com.livespread.command.ChangePasswordCommand;
+import com.livespread.command.PasswordValidator;
+import com.livespread.domain.User;
+import com.livespread.util.ValidationUtility;
+
+@Service("validationServ")
+public class ValidationService {
+
+	@Autowired
+	private ChangePasswordService changePasswordService;
+
+	private static Logger LOGGER = Logger.getLogger(ValidationUtility.class);
+	/**
+	 * @param args
+	 */
+
+	@Value("${customer_name_error}")
+	String customerNameError;
+
+	@Value("${company_id_error}")
+	String company_id_error;
+
+	@Value("${account_no_error}")
+	String accountNoError;
+
+	@Value("${business_name_error}")
+	String businessNameError;
+
+	@Value("${globalExcptionMsg}")
+	static String expMsg;
+
+	public ArrayList<String> validateCustomerDetails(String customerName,
+			String businessName, String accountNo, String companyId,Integer portfolioId,String industryId) {
+		ArrayList<String> errorList = new ArrayList<String>();
+try{
+	if (ValidationUtility.isNotempty(companyId));
+		else
+	errorList.add(company_id_error);
+
+		if (ValidationUtility.isNotempty(customerName));
+		else
+			errorList.add(customerNameError);
+		
+}catch(Exception e){
+e.printStackTrace();
+LOGGER.error("Error In ValidationService", e);
+}
+
+		return errorList;
+	}
+
+	public ArrayList<String> validateUserDetails(User user)  {
+		ArrayList<String> errorList = new ArrayList<String>();try{
+		if (!ValidationUtility.isNotempty(user.getLogin())) {
+			errorList.add("Please enter username.");
+		}
+		if (!ValidationUtility.isNotempty(user.getFirstName())) {
+			errorList.add("Please enter First Name.");
+		}
+		if (!ValidationUtility.isNotempty(user.getLastName())) {
+			errorList.add("Please enter Last Name.");
+		}
+		if (!ValidationUtility.isNotempty(user.getEmail())) {
+			errorList.add("Please enter E-mail Id.");
+		}
+		if (!ValidationUtility.isNotempty(user.getUsersGroupName())) {
+			errorList.add("Please select user group");
+		}
+
+		/*
+		 * Here check email and username already exist only for Add new user not
+		 * for update new user
+		 */
+		if (user.getUserId() == 0) {
+			/*
+			 * Here check email address already exist
+			 */
+
+			if (ValidationUtility.isNotempty(user.getEmail())) {
+				if (!ValidationUtility.emailValidation(user.getEmail())) {
+					errorList.add("Please enter a valid email address.");
+				} else {
+					/*
+					 * Here check email address already exist
+					 */
+					if (changePasswordService.isUserExistByEmail(user
+							.getEmail())) {
+						errorList.add("Entered email address already exist.");
+					}
+				}
+			}
+			/*
+			 * Here check username already exist
+			 */
+			if (ValidationUtility.isNotempty(user.getUsername())) {
+				/*
+				 * Here check username alreadt exist
+				 */
+				if (changePasswordService.isUserExistByUserName(user
+						.getUsername())) {
+					errorList.add("Entered Username already exist.");
+				}
+			}
+		} else {// end if
+			if (!ValidationUtility.emailValidation(user.getEmail())) {
+				errorList.add("Please enter a valid email address.");
+			}
+		}}
+		catch(Exception e){
+		e.printStackTrace();
+		LOGGER.error("Error in validation Service methodName:validateUserDetails"+e);
+		}
+		return errorList;
+
+	}
+
+	public ArrayList<String> validateChangePasswordDetails(
+			ChangePasswordCommand passwordCommand)  {
+		ArrayList<String> errorList = new ArrayList<String>();
+		try{
+		if (!ValidationUtility.isNotempty(passwordCommand.getUserName())) {
+			errorList.add("Please enter username.");
+		}
+		if (!ValidationUtility.isNotempty(passwordCommand.getNewPassword())) {
+			errorList.add("Please enter password.");
+		}
+		if (!ValidationUtility.isNotempty(passwordCommand.getConfirmPassword())) {
+			errorList.add("Please enter confirm password.");
+		}
+		if (passwordCommand.getNewPassword() != null
+				&& passwordCommand.getConfirmPassword() != null) {
+			if (passwordCommand.getNewPassword().equalsIgnoreCase(
+					passwordCommand.getConfirmPassword())) {
+				if (ValidationUtility.isNotempty(passwordCommand
+						.getNewPassword())) {
+					PasswordValidator validate = new PasswordValidator();
+					boolean validatePassword = validate
+							.validate(passwordCommand.getNewPassword());
+					if (!validatePassword)
+						errorList
+								.add("Password between 8 and 15 characters  ,at least one digit, one lowercase ,one uppercase letter and one special character");
+				}
+			} else {
+				errorList
+						.add("New Password and Confirm password entered do not match .");
+			}
+		}
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			LOGGER.error("Error in validation Service methodName:validateChangePasswordDetails"+e);
+			}
+		return errorList;
+
+	}
+
+	public static boolean validateUploadDocumentType(String fileName)
+			throws Exception {
+		return ValidationUtility.validateFileType(fileName);
+	}
+
+	public static boolean validateFileName(String fileName) throws Exception {
+		return ValidationUtility.checkfileName(fileName);
+	}
+
+	public static boolean checkFileExists(String filePath) {
+		LOGGER.info("------------------ checkFileExists  Starts --------------------");
+		boolean ret = false;
+		try {
+			if (!filePath.isEmpty()) {
+				File downloadFile = new File(filePath).getCanonicalFile();
+				if (downloadFile.exists())
+					ret = true;
+			}
+
+		} catch (Exception e) {
+			LOGGER.error(expMsg + e.getMessage());
+		}
+
+		LOGGER.info("------------------ checkFileExists Completed with --------------------"
+				+ ret);
+		return ret;
+		
+	}
+
+	public static boolean fileNameCheck(String fileName)
+			throws Exception {
+		return ValidationUtility.fileNameValidation(fileName);
+	}
+	
+
+}

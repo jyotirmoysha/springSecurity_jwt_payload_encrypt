@@ -1,0 +1,97 @@
+/**
+ * 
+ */
+package com.livespread.command;
+
+/**
+ * @author kp0e1301
+ *
+ */
+public class NotesCheckListCommand {
+
+	private Integer notesCheckListId;
+	
+	private Integer fillingId;
+	
+	private Integer poId;
+	
+	private String asRepLabel;
+	
+	private String section;
+	
+	private Integer totalSuppl;
+	
+	private Integer totalBreakups;
+	
+	private String pageList;
+	
+	public Integer getNotesCheckListId() {
+		return notesCheckListId;
+	}
+
+	public void setNotesCheckListId(Integer notesCheckListId) {
+		this.notesCheckListId = notesCheckListId;
+	}
+
+	public Integer getFillingId() {
+		return fillingId;
+	}
+
+	public void setFillingId(Integer fillingId) {
+		this.fillingId = fillingId;
+	}
+
+	public Integer getPoId() {
+		return poId;
+	}
+
+	public void setPoId(Integer poId) {
+		this.poId = poId;
+	}
+
+	public String getAsRepLabel() {
+		return asRepLabel;
+	}
+
+	public void setAsRepLabel(String asRepLabel) {
+		this.asRepLabel = asRepLabel;
+	}
+
+	public String getSection() {
+		return section;
+	}
+
+	public void setSection(String section) {
+		this.section = section;
+	}
+
+	public Integer getTotalSuppl() {
+		return totalSuppl;
+	}
+
+	public void setTotalSuppl(Integer totalSuppl) {
+		this.totalSuppl = totalSuppl;
+	}
+
+	public Integer getTotalBreakups() {
+		return totalBreakups;
+	}
+
+	public void setTotalBreakups(Integer totalBreakups) {
+		this.totalBreakups = totalBreakups;
+	}
+
+	/**
+	 * @return the pageList
+	 */
+	public String getPageList() {
+		return pageList;
+	}
+
+	/**
+	 * @param pageList the pageList to set
+	 */
+	public void setPageList(String pageList) {
+		this.pageList = pageList;
+	}
+}

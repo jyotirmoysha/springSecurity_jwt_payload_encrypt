@@ -1,0 +1,743 @@
+package com.livespread.service;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.livespread.command.CompanyInformationCommand;
+import com.livespread.command.CurrencyCommand;
+import com.livespread.command.FileUploadCommand;
+import com.livespread.dao.LSExtendedGenericDao;
+import com.livespread.domain.AccountingStandard;
+import com.livespread.domain.AliasBusinessEntity;
+import com.livespread.domain.BusinessEntity;
+import com.livespread.domain.CompanyInformation;
+import com.livespread.domain.Country;
+import com.livespread.domain.Currency;
+import com.livespread.domain.DealerMetadata;
+import com.livespread.domain.FileUploadModel;
+import com.livespread.domain.IndustryTypeModel;
+import com.livespread.domain.LanguageMaster;
+import com.livespread.domain.LeadBank;
+import com.livespread.domain.NaicsDescription;
+import com.livespread.domain.NamedNativeQueryName;
+import com.livespread.domain.NamedQueryName;
+import com.livespread.domain.ParserMaster;
+import com.livespread.domain.Sector;
+import com.livespread.domain.SicDescription;
+import com.livespread.domain.SubPortfolioModel;
+import com.livespread.domain.UltimateParent;
+import com.livespread.domain.UserGroupsAttributeMapping;
+import com.livespread.domain.WorkQueue;
+import com.livespread.util.AESEncryptDecrypt;
+import com.livespread.util.UploadUtility;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Service("bulkUploadService")
+public class BulkUploadServiceImpl implements BulkUploadService {
+
+	private Logger LOGGER = Logger.getLogger(BulkUploadServiceImpl.class);
+
+	@Value("${uploadTempDirectory.path}")
+	private String tempDirectoryPath;
+
+	@Value("${uploadPermanantDirectory.path}")
+	private String permanantDirectoryPath;
+
+	@Value("${reviewFlag}")
+	String reviewFlag;
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl = null;
+	
+	@Autowired
+	private LSExtendedGenericDao extendedExtendedGenericDao;
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public String uploadTempDocument(MultipartFile file, String customerId)
+			throws IllegalStateException, IOException {
+		String directoryPath = UploadUtility
+				.createDirectoryPath(tempDirectoryPath);
+		String filePath = UploadUtility.createFileName(customerId,
+				file.getOriginalFilename());
+		if (UploadUtility.uploadFileinTempLocation(directoryPath + filePath,
+				file)) {
+			LOGGER.info("--- Documents Uploaded in Temp Directory Successfully:--------");
+			return filePath;
+		} else
+			return "";
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean uploadPermanantDocument(String file, String customerId,
+			String parserName, String userName,
+			Map<String, String> fileParserMap, String parserKey, String filepwd,Map<Integer,Integer> wqParserMap) throws IllegalStateException, IOException, Exception{
+
+		LOGGER.info("--- UploadPermanantDocument Started:--------" + file);
+
+		String parserNameNId = fileParserMap.get(parserKey);
+		String[] parserNameNIdArray = null;
+		String parserId = "";
+		String fileSize = "";
+		if (null != parserNameNId) {
+			parserNameNIdArray = parserNameNId.split("~");
+			parserName = parserNameNIdArray[0];
+			parserId = parserNameNIdArray[1];
+			if (parserNameNIdArray.length == 3) {
+				fileSize = parserNameNIdArray[2];
+			}
+		}
+
+		String year = new SimpleDateFormat("yyyy").format(new Date());
+		String month = new SimpleDateFormat("MM").format(new Date());
+		String date = new SimpleDateFormat("dd").format(new Date());
+		String permanentPath = UploadUtility
+				.createDirectoryPath(permanantDirectoryPath + "/" + year + "/"
+						+ month + "/" + date + "/" + customerId + "/"
+						+ parserId + "/");
+		LOGGER.info("--- Directory Created:--------" + permanentPath);
+		String fileName = file;
+		String newFilePath = permanentPath + fileName;
+		LOGGER.info("--- UploadPermanantDocument Started:--------" + file);
+
+		if (UploadUtility.uploadFileonServer(permanentPath, fileName,
+				tempDirectoryPath)) {
+			LOGGER.info("--- Documents Uploaded in Permenant Directory Successfully:--------**"
+					+ newFilePath);
+			
+			return addFileDetails(newFilePath, customerId,
+					new File(newFilePath).getCanonicalFile(), parserName, parserId, userName,
+					fileSize, filepwd,wqParserMap);
+
+		} else {
+			LOGGER.warn("--- Documents Not Uploaded in Permenant Directory :--------"
+					+ newFilePath);
+			return false;
+		}
+	}
+
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public boolean addFileDetails(String filePath, String customerid,
+			File File, String parserName, String parserId, String userName,
+			String fileSize, String filepwd,Map<Integer,Integer> wqParserMap)  {
+		LOGGER.info("filePath : " + filePath + " customerid : " + customerid
+				+ " File : " + File + " parserName : " + parserName
+				+ " parserId : " + parserId);
+		FileUploadModel fileUploadModel = new FileUploadModel();
+		// set all values in model class
+		fileUploadModel.setFileName(File.getName());
+		fileUploadModel.setFilePath(filePath);
+		fileUploadModel.setFileType(File.getName().split("\\.")[1]);
+		fileUploadModel.setCustomerId(Integer.parseInt(customerid));
+		fileUploadModel.setCreateDate(new java.sql.Timestamp(System.currentTimeMillis()));
+		fileUploadModel.setParserIdentifier(parserName);
+		fileUploadModel.setCreatedBy(userName);
+		fileUploadModel.setReview(reviewFlag);
+		if (null != parserId && parserId != "") {
+			Integer parser_id = Integer.parseInt(parserId);
+			fileUploadModel.setParserId(parser_id);
+			
+		}
+		fileUploadModel.setFileSize(fileSize);
+		/*
+		 * Here if filepwd is 0 means no password for that file, so set it null;
+		 */
+		if (!filepwd.equalsIgnoreCase("0")) {
+
+			fileUploadModel.setFilePassword(AESEncryptDecrypt
+					.filePasswordencrypt(filepwd));
+		}
+
+		LOGGER.info("----CREATE FileUpload Model---------"
+				+ fileUploadModel.toString());
+		
+		fileUploadModel.setWqId(wqParserMap.get(fileUploadModel.getParserId()));
+		return saveFileDetails(fileUploadModel);
+
+	}
+
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	@Override
+	public boolean saveFileDetails(FileUploadModel fileUploadModel) {
+		LOGGER.info("-------  saveFileDetails starts --------------");
+		genericDaoImpl.persist(fileUploadModel);
+		return true;
+	}
+
+	@Override
+	public List<ParserMaster> getParserListByUserGroupId(String userGroupId) {
+
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("userGroupId", userGroupId);
+		List<Object> parserObjList = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getParserNameListByUserGroupId,ParserMaster.class, parameterMap);
+		List<ParserMaster> parserActualList = new ArrayList<ParserMaster>();
+		ParserMaster parserMaster = null;
+		if(!CollectionUtils.isEmpty(parserObjList)){
+			for (Object object : parserObjList) {
+				Object[] objArray = (Object[]) object;
+				parserMaster = new ParserMaster();
+				parserMaster.setId(objArray[0]!=null? new Integer(objArray[0].toString()):0);
+				parserMaster.setParserName(objArray[1]!=null? objArray[1].toString():"");
+				parserMaster.setParserDescription(objArray[2]!=null? objArray[2].toString():"");
+				parserMaster.setParserValue(objArray[3]!=null? (objArray[3].toString()+"~"+parserMaster.getId()):"");
+				parserActualList.add(parserMaster);
+			}
+		}
+		return parserActualList;
+	}
+
+	@Override
+	public List<Object> getBusinessList(String userGroupId) {
+		LOGGER.info("** start--getBusinessList methode");
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("userGroupId", userGroupId);
+		List<Object> businessNameObj = genericDaoImpl.findByNativeNamedQuery(
+				NamedNativeQueryName.getBusinessListByuserGroupId,
+				BusinessEntity.class, parameterMap);
+		
+		LOGGER.info("** end--getBusinessList methode");
+		return businessNameObj;
+	}
+
+	@Override
+	public Map<String, String> getDistinctBusinessList(String companyName) {
+		LOGGER.info("** start--getDistinctBusinessList methode");
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("cName", companyName);
+
+		List<Object> businessNameList = (List<Object>) genericDaoImpl.findByNamedQuery(NamedQueryName.getDistinctBusinessList,BusinessEntity.class,parameterMap);
+		Map<String, String> businessNameMap=null;
+		if(!businessNameList.isEmpty() && businessNameList!=null){
+			businessNameMap=new LinkedHashMap<>();
+			Object[] objIn =null;
+			for (Object object : businessNameList) {
+				objIn = (Object[]) object;
+				if(objIn[0]!=null && objIn[1]!=null){
+					businessNameMap.put(objIn[0].toString(),objIn[1].toString());
+				}
+			}
+		}
+		LOGGER.info("** End--businessNameList size=" + businessNameList.size());
+		return businessNameMap;
+	}
+	
+	
+	@Override
+	public List<SubPortfolioModel> f_getPortFolioListByGroupId(Integer userGroupId) {
+		
+		LOGGER.info("** start--f_getPortFolioAndIndustryByGroupId methode");
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("userGroupId", userGroupId);
+
+		List<SubPortfolioModel> subportFolioList=new ArrayList<SubPortfolioModel>();
+		List<Object> objectList = genericDaoImpl.findByNamedQuery(NamedQueryName.getPortFolioList, SubPortfolioModel.class,parameterMap);
+		for (Object obj : objectList) {
+			SubPortfolioModel portfolioModel=new SubPortfolioModel();
+			Object[] objIn = (Object[]) obj;
+			portfolioModel.setSubPortFolioId(objIn[0] != null ? Integer.parseInt(objIn[0].toString()) : 0);
+			portfolioModel.setSubPortFolioName(objIn[1] != null ? objIn[1].toString(): "");
+			subportFolioList.add(portfolioModel);
+		}
+	    LOGGER.info("** end--f_getPortFolioAndIndustryByGroupId methode");
+		
+	    return subportFolioList;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<IndustryTypeModel> f_getIndustryListByPortfolioId(Integer portfolioId) {
+		
+		LOGGER.info("** start--f_getIndustryListByPortfolioId methode");
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("subPortFolioId", portfolioId);
+
+		List<IndustryTypeModel> industryList =(ArrayList<IndustryTypeModel>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getIndustryList,IndustryTypeModel.class, parameterMap);
+	    LOGGER.info("** end--f_getIndustryListByPortfolioId methode");
+		
+	    return industryList;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<LanguageMaster> f_getLanguageList() {
+		LOGGER.info("** start--f_getLanguageList methode");
+		List<LanguageMaster> languageList = (ArrayList<LanguageMaster>) (Object) (genericDaoImpl
+				.findByNamedQuery(NamedQueryName.getLanguageList,
+						LanguageMaster.class));
+		LOGGER.info("** end--f_getLanguageList methode,size="+languageList.size());
+		return languageList;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Country> getCountryList() {
+		LOGGER.info("** start--getCountryList methode");
+		List<Country> countryList = (ArrayList<Country>) (Object) (genericDaoImpl
+				.findByNamedQuery(NamedQueryName.getCountryList,
+						Country.class));
+		
+		LOGGER.info("** end--getCountryList methode");
+		return countryList;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Sector> getSectorList() {
+		LOGGER.info("** start--getSectorList methode");
+		
+		List<Sector> sectorList = (ArrayList<Sector>) (Object) (genericDaoImpl
+				.findByNamedQuery(NamedQueryName.getSectorList,
+						Sector.class));
+		LOGGER.info("** end--getSectorList methode");
+		return sectorList;
+	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<LeadBank> getLeadBankList() {
+		LOGGER.info("** start--getLeadBankList methode");
+		
+		List<LeadBank> leadBankList = (ArrayList<LeadBank>) (Object) (genericDaoImpl
+				.findByNamedQuery(NamedQueryName.getLeadBankList,
+						LeadBank.class));
+		
+		LOGGER.info("** end--getLeadBankList methode");
+		return leadBankList;
+	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<UltimateParent> getUltimateParentList() {
+		LOGGER.info("** start--getUltimateParentList methode");
+		
+		List<UltimateParent> ultimateParentList = (ArrayList<UltimateParent>) (Object) (genericDaoImpl
+				.findByNamedQuery(NamedQueryName.getUltimateParentList,
+						UltimateParent.class));
+		LOGGER.info("** end--getUltimateParentList methode");
+		
+		return ultimateParentList;
+	}
+	
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<AccountingStandard> getAccountingStandardList() {
+		LOGGER.info("** start--getAccountingStandardList methode");
+		
+		List<AccountingStandard> accountingStandardList = (ArrayList<AccountingStandard>) (Object) (genericDaoImpl
+				.findByNamedQuery(NamedQueryName.getAccountingStandardList,
+						AccountingStandard.class));
+		LOGGER.info("** end--getAccountingStandardList methode");
+		
+		return accountingStandardList;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	@Override
+	public  boolean saveCompanyInformation(FileUploadCommand fileUploadCommand){
+		LOGGER.info("** start--saveCompanyInformation methode");
+		CompanyInformation companyInformation = new CompanyInformation();
+		try{
+			companyInformation.setSectorId(fileUploadCommand.getSectorId());
+			//Country
+			if(!fileUploadCommand.getCountry().getCountryName().equalsIgnoreCase("") && fileUploadCommand.getCountry().getCountryName()!=null){
+				Map<String, Object> countryParameterMap = new HashMap<String, Object>();
+				countryParameterMap.put("countryName", fileUploadCommand.getCountry().getCountryName());
+				List<Country> countryList = (ArrayList<Country>) (Object) (genericDaoImpl
+						.findByNamedQuery(NamedQueryName.getCountryByName,Country.class,countryParameterMap));
+				if(!CollectionUtils.isEmpty(countryList)){
+					companyInformation.setCountryId(countryList.get(0).getCountryId());
+					
+				}else{
+					Country country = new Country();
+					country.setCountryName(fileUploadCommand.getCountry().getCountryName());
+					Integer countryId=extendedExtendedGenericDao.saveCountry(country);
+					companyInformation.setCountryId(countryId);
+				}
+			}else{
+				companyInformation.setCountryId(-1);
+			}
+			
+			companyInformation.setFyeMonth(fileUploadCommand.getfYEMonth());
+			companyInformation.setFyeDay(fileUploadCommand.getfYEDay());
+			companyInformation.seteID(fileUploadCommand.geteID());
+			companyInformation.setCompanyId(fileUploadCommand.getCompanyId().trim());
+			companyInformation.setIndustryName(fileUploadCommand.getIndustryName());
+			companyInformation.setFyeYear(fileUploadCommand.getfYEYear());
+			companyInformation.setIndustryId(fileUploadCommand.getIndustryId());
+			companyInformation.setDealerId(fileUploadCommand.getDealerId());
+			companyInformation.setSicId(fileUploadCommand.getSicId());
+			companyInformation.setNaicsId(fileUploadCommand.getNaicsId());
+
+				
+		    Map<String, Object> parameterMap = new HashMap<String, Object>();
+			parameterMap.put("eID", fileUploadCommand.geteID());
+			
+			List<CompanyInformation> companyInformationList = (ArrayList<CompanyInformation>) (Object) genericDaoImpl.findByNamedQuery(
+					NamedQueryName.getCompanyInformationRecordByEId,CompanyInformation.class, parameterMap);
+			if(CollectionUtils.isEmpty(companyInformationList)){
+				genericDaoImpl.persist(companyInformation);
+			}else{
+				parameterMap.put("companyId", companyInformation.getCompanyId());
+				parameterMap.put("countryId", companyInformation.getCountryId());
+				parameterMap.put("fyeMonth", companyInformation.getFyeMonth());
+				parameterMap.put("fyeDay", companyInformation.getFyeDay());
+				parameterMap.put("sectorId", companyInformation.getSectorId());
+				parameterMap.put("fyeYear", companyInformation.getFyeYear());
+				parameterMap.put("companyInformationId", companyInformationList.get(0).getCompanyInformationId());
+				parameterMap.put("sicId", companyInformation.getSicId());
+				parameterMap.put("naicsId", companyInformation.getNaicsId());
+
+				genericDaoImpl.updateByNamedQuery(NamedQueryName.updateCompanyInformationRecord, CompanyInformation.class, parameterMap);
+			}
+			
+		}catch(Exception e){
+			e.printStackTrace();
+			return false;
+		}
+		LOGGER.info("** end--saveCompanyInformation methode");
+		return true;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<CompanyInformation> getCompanyInformationList(){
+LOGGER.info("** start--getCompanyInformationList methode");
+		
+		
+		List<CompanyInformation> companyInformationList = (ArrayList<CompanyInformation>) (Object) (genericDaoImpl
+				.findByNamedQuery(NamedQueryName.getCompanyInformationList,
+						CompanyInformation.class));
+		LOGGER.info("** end--getCompanyInformationList methode");
+		
+		return companyInformationList;
+	}
+	
+	
+	@Override
+	public CompanyInformationCommand getCompanyInfoByCompanyId(String companyId){
+		
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("companyId", companyId);
+		List<Object> companyInformationObjList = genericDaoImpl.findByNativeNamedQuery(
+				NamedNativeQueryName.getCompanyInfoDetailsByCompanyId,
+				CompanyInformation.class, parameterMap);
+		CompanyInformationCommand companyInformationCommand = new CompanyInformationCommand();
+		if(companyInformationObjList!=null && companyInformationObjList.size()>0){
+			Object[] objArr = (Object[]) companyInformationObjList.get(0);
+			companyInformationCommand = new CompanyInformationCommand();
+			companyInformationCommand.setCompanyInformationId(objArr[0] != null ? Integer.parseInt(objArr[0].toString()) : 0);
+			companyInformationCommand.seteID(objArr[1] != null ? Integer.parseInt(objArr[1].toString()) : 0);
+			companyInformationCommand.setCompanyId(objArr[2] != null ? objArr[2].toString().trim() : "");
+			companyInformationCommand.setCountryId(objArr[3] != null ? Integer.parseInt(objArr[3].toString()) : 0);
+			companyInformationCommand.setCountryName(objArr[4] != null ? objArr[4].toString() : "");
+			companyInformationCommand.setFyeMonth(objArr[5] != null ? objArr[5].toString() : "");
+			companyInformationCommand.setFyeDay(objArr[6] != null ? Integer.parseInt(objArr[6].toString()) : 0);
+			companyInformationCommand.setFyeYear(objArr[7] != null ? objArr[7].toString() : "");
+			companyInformationCommand.setSectorId(objArr[8] != null ? Integer.parseInt(objArr[8].toString()) : 0);
+			companyInformationCommand.setCompanyName(objArr[9] != null ? objArr[9].toString().trim() : "");
+			companyInformationCommand.setIndustryId(objArr[10] != null ? objArr[10].toString().trim() : "");
+			companyInformationCommand.setDealerId(objArr[11] != null ? Integer.parseInt(objArr[11].toString()): 0);
+		}
+		return companyInformationCommand;
+	}
+		
+	@Override
+	public CompanyInformationCommand f_getCompanyInfoList(String id,String basedOn){
+		LOGGER.info("** start f_getCompanyInfoList methode");
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		List<Object> companyInformationObjList=null;
+		if(basedOn.equalsIgnoreCase("companyName")){
+		if(id!=null){	
+		try{
+		parameterMap.put("entityId",Integer.parseInt(id));
+		companyInformationObjList = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getCompanyInfoDetailsByEntityId,CompanyInformation.class,parameterMap);
+		}catch(NumberFormatException nfe){
+		nfe.printStackTrace();
+		LOGGER.error("Error:",nfe);
+		}
+	   }
+		}else if(basedOn.equalsIgnoreCase("companyId")){
+		parameterMap.put("companyId", id);
+		companyInformationObjList = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getCompanyInfoDetailsByCompanyId,CompanyInformation.class,parameterMap);
+		}
+
+		
+		CompanyInformationCommand companyInformationCommand =null;
+		for(Object obj : companyInformationObjList){
+			Object[] objArr = (Object[]) obj;
+			companyInformationCommand = new CompanyInformationCommand();
+			companyInformationCommand.setCompanyInformationId(objArr[0] != null ? Integer.parseInt(objArr[0].toString()) : 0);
+			companyInformationCommand.seteID(objArr[1] != null ? Integer.parseInt(objArr[1].toString()) : 0);
+			companyInformationCommand.setCompanyId(objArr[2] != null ? objArr[2].toString().trim() : "");
+			companyInformationCommand.setCountryId(objArr[3] != null ? Integer.parseInt(objArr[3].toString()) : 0);
+			companyInformationCommand.setCountryName(objArr[4] != null ? objArr[4].toString() : "");
+			companyInformationCommand.setFyeMonth(objArr[5] != null ? objArr[5].toString() : "");
+			companyInformationCommand.setFyeDay(objArr[6] != null ? Integer.parseInt(objArr[6].toString()) : 0);
+			companyInformationCommand.setFyeYear(objArr[7] != null ? objArr[7].toString() : "");
+			companyInformationCommand.setSectorId(objArr[8] != null ? Integer.parseInt(objArr[8].toString()) : 0);
+			companyInformationCommand.setCompanyName(objArr[9] != null ? objArr[9].toString().trim() : "");
+			companyInformationCommand.setIndustryId(objArr[10] != null ? objArr[10].toString().trim() : "");
+			companyInformationCommand.setDealerId(objArr[11] != null ? Integer.parseInt(objArr[11].toString()) : 0);
+			companyInformationCommand.setDealerId(objArr[11] != null ? Integer.parseInt(objArr[11].toString()) : 0);
+			companyInformationCommand.setSicId(objArr[12] != null ? Integer.parseInt(objArr[12].toString()) : 0);
+			companyInformationCommand.setNaicsId(objArr[13] != null ? Integer.parseInt(objArr[13].toString()) : 0);
+			companyInformationCommand.setSicDesrcipion(objArr[14] != null ? objArr[14].toString().trim() : "");
+			companyInformationCommand.setNaicsDesrcipion(objArr[15] != null ? objArr[15].toString().trim() : "");
+		}
+		return companyInformationCommand;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.APPLICATION_TX_MANAGER)
+	public Integer saveWorkque(WorkQueue workQueue) {
+		try{
+			genericDaoImpl.persist(workQueue);
+			return workQueue.getWqId();
+		}catch(Exception e){
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see com.livespread.service.BulkUploadService#getCountryByName(java.lang.String)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public Country getCountryByName(String countryName) throws Exception 
+	{
+		Country country = null;
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("countryName", countryName);
+		List<Country> countryList = (ArrayList<Country>) (Object) (genericDaoImpl.findByNamedQuery(NamedQueryName.getCountryByName,Country.class,parameterMap));
+		if(countryList!=null && !countryList.isEmpty())
+		{
+			country = countryList.get(0);
+		}
+			return country;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.livespread.service.BulkUploadService#getAccountingStandardByName(java.lang.String)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public AccountingStandard getAccountingStandardByName(String accountingStandardName) throws Exception 
+	{
+		AccountingStandard accountingStandard = null;
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("accountingStandardName", accountingStandardName);
+		List<AccountingStandard> accountingStandardList = (ArrayList<AccountingStandard>) (Object) (genericDaoImpl.findByNamedQuery(NamedQueryName.getAccountingStandardByName,AccountingStandard.class,parameterMap));
+		if(accountingStandardList!=null && !accountingStandardList.isEmpty())
+		{
+			accountingStandard = accountingStandardList.get(0);
+		}
+			return accountingStandard;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.livespread.service.BulkUploadService#getUltimateParentByName(java.lang.String)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public UltimateParent getUltimateParentByName(String ultimateParentName) throws Exception 
+	{
+		UltimateParent ultimateParent = null;
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("ultimateParentName", ultimateParentName);
+		List<UltimateParent> ultimateParentList = (ArrayList<UltimateParent>) (Object) (genericDaoImpl.findByNamedQuery(NamedQueryName.getUltimateParentByName,UltimateParent.class,parameterMap));
+		if(ultimateParentList!=null && !ultimateParentList.isEmpty())
+		{
+			ultimateParent = ultimateParentList.get(0);
+		}
+			return ultimateParent;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.livespread.service.BulkUploadService#getLeadBankByName(java.lang.String)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public LeadBank getLeadBankByName(String leadBankName) throws Exception 
+	{
+		LeadBank leadBank = null;
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("leadBankName", leadBankName);
+		List<LeadBank> leadBankList = (ArrayList<LeadBank>) (Object) (genericDaoImpl.findByNamedQuery(NamedQueryName.getLeadBankByName,LeadBank.class,parameterMap));
+		if(leadBankList!=null && !leadBankList.isEmpty())
+		{
+			leadBank = leadBankList.get(0);
+		}
+			return leadBank;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<CurrencyCommand> getCurrencyList(){
+		LOGGER.info("** start--getCurrencyList method");
+		try{
+			List<CurrencyCommand> currencyCommandList = new ArrayList<CurrencyCommand>();
+			List<Currency> currencyList = (ArrayList<Currency>) (Object) (genericDaoImpl
+					.findByNamedQuery(NamedQueryName.getCurrencyList,
+							Currency.class));
+			CurrencyCommand currencyCommand =null;
+			if(!CollectionUtils.isEmpty(currencyList)){
+				for(Currency currency :currencyList){
+					currencyCommand= new CurrencyCommand();
+					BeanUtils.copyProperties(currency, currencyCommand);
+					currencyCommandList.add(currencyCommand);
+				}
+				
+			}
+			return currencyCommandList;
+			
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		LOGGER.info("** end--getCurrencyList method");
+		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<String> getDistinctCompanyIdList(String companyId) {
+		LOGGER.info("** start--getDistinctCompanyIdList methode");
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("companyId", companyId);
+		List<String> companyIdList= (ArrayList<String>) (Object) (genericDaoImpl.findByNamedQuery(NamedQueryName.getDistinctCompanyIdsList,AliasBusinessEntity.class,parameterMap));
+		LOGGER.info("** End--getDistinct CompanyIdList size=" + companyIdList.size());
+		return companyIdList;
+
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Collection<DealerMetadata> f_getDealsersList() {
+		LOGGER.info("** start--f_getDealsersList methode");
+		Collection<DealerMetadata> delasersList = (Collection<DealerMetadata>)(Object)(genericDaoImpl
+				.findByNamedQuery(NamedQueryName.getDealersList,
+						DealerMetadata.class));
+		LOGGER.info("** end--f_getLanguageList methode,size="+delasersList.size());
+		return delasersList;
+	}	
+	
+	
+	
+	@Override
+	public Map<String,String> getUserGrpAttrMappingList(Integer userGroupId,String screenName) {
+		LOGGER.info("start--getUserGrpAttrMappingList method");
+		Map<String,String> userGrpAttrMappingMap = new HashMap<String,String>();
+		
+		try{
+			Map<String, Object> parameterMap = new HashMap<String, Object>();
+			parameterMap.put("userGroupId", userGroupId);
+			parameterMap.put("screenName", screenName);
+			List<Object> userGrpAttrMappingObjList = genericDaoImpl.findByNativeNamedQuery(
+					NamedNativeQueryName.findUserGroupsAttributeMappingByUserGroupName, UserGroupsAttributeMapping.class,parameterMap);
+			String tempStr="";
+			if(!CollectionUtils.isEmpty(userGrpAttrMappingObjList)){
+				for (Object object : userGrpAttrMappingObjList) {
+					Object obj =  object;
+					tempStr=obj != null ? obj.toString() : "";
+					userGrpAttrMappingMap.put(tempStr,tempStr);
+				}
+			}
+			
+			
+		}catch(Exception e){
+			e.printStackTrace();
+			return userGrpAttrMappingMap;
+		}
+		
+		
+		
+		LOGGER.info("end--getUserGrpAttrMappingList method");
+		return userGrpAttrMappingMap;
+
+	}
+	
+	@Override
+	public Map<String, String> f_getSicDescription(String sicDescr) {
+		Map<String, String> sicDescrMap = new LinkedHashMap<String, String>();
+		try {
+			LOGGER.info("class UploadTempletServiceImpl : methodName >>>f_getSicDescription");
+			List<Object> result=new ArrayList<Object>();
+			Map<String, Object> parameters = new HashMap<>();
+			parameters.put("descr", sicDescr);
+			result = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getSicDescription, SicDescription.class,parameters);
+					
+			if(!result.isEmpty() && result!=null){
+				Object[] objIn =null;
+				for (Object object : result) {
+					objIn = (Object[]) object;
+					if(objIn[0]!=null && objIn[1]!=null && objIn[2]!=null){
+						sicDescrMap.put(objIn[0].toString(),objIn[1].toString()+":"+objIn[2].toString());
+					}
+				}
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:", e);
+		}
+		return sicDescrMap;
+	}
+	
+	@Override
+	public Map<String, String> f_getNaicsDescription(String sicDescr) {
+		Map<String, String> sicDescrMap = new LinkedHashMap<String, String>();
+		try {
+			LOGGER.info("class UploadTempletServiceImpl : methodName >>>f_getSicDescription");
+			List<Object> result=new ArrayList<Object>();
+			Map<String, Object> parameters = new HashMap<>();
+			parameters.put("descr", sicDescr);
+			result = genericDaoImpl.findByNativeNamedQuery(NamedNativeQueryName.getNaicsDescription, NaicsDescription.class,parameters);
+					
+			if(!result.isEmpty() && result!=null){
+				Object[] objIn =null;
+				for (Object object : result) {
+					objIn = (Object[]) object;
+					if(objIn[0]!=null && objIn[1]!=null){
+						sicDescrMap.put(objIn[0].toString(),objIn[1].toString()+":"+objIn[2].toString());
+					}
+				}
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Error:", e);
+		}		return sicDescrMap;
+	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<IndustryTypeModel> f_getIndustryTypeList() {
+		
+		LOGGER.info("** start--f_getIndustryTypeList methode");
+		List<IndustryTypeModel> industryTypeList =(ArrayList<IndustryTypeModel>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getIndustryTypeList,IndustryTypeModel.class);
+	    LOGGER.info("** end--f_getIndustryTypeList methode");
+		
+	    return industryTypeList;
+	}
+
+
+}

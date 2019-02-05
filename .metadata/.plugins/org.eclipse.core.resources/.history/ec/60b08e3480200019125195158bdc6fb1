@@ -1,0 +1,101 @@
+package com.livespread.command;
+
+public class GoldenFtrCaseMapSrchCriteriaCommand {
+	
+	private Integer keywordWQ;	
+	
+	private String compName;
+
+	private Integer featureID;
+
+	private Integer startPageNo;
+
+	private Integer endPageNo;
+	
+	private Integer userID;
+
+	/**
+	 * @return the userID
+	 */
+	public Integer getUserID() {
+		return userID;
+	}
+
+	/**
+	 * @param userID the userID to set
+	 */
+	public void setUserID(Integer userID) {
+		this.userID = userID;
+	}
+
+	/**
+	 * @return the keywordWQ
+	 */
+	public Integer getKeywordWQ() {
+		return keywordWQ;
+	}
+
+	/**
+	 * @param keywordWQ the keywordWQ to set
+	 */
+	public void setKeywordWQ(Integer keywordWQ) {
+		this.keywordWQ = keywordWQ;
+	}
+
+	/**
+	 * @return the compName
+	 */
+	public String getCompName() {
+		return compName;
+	}
+
+	/**
+	 * @param compName the compName to set
+	 */
+	public void setCompName(String compName) {
+		this.compName = compName;
+	}
+
+	/**
+	 * @return the featureID
+	 */
+	public Integer getFeatureID() {
+		return featureID;
+	}
+
+	/**
+	 * @param featureID the featureID to set
+	 */
+	public void setFeatureID(Integer featureID) {
+		this.featureID = featureID;
+	}
+
+	/**
+	 * @return the startPageNo
+	 */
+	public Integer getStartPageNo() {
+		return startPageNo;
+	}
+
+	/**
+	 * @param startPageNo the startPageNo to set
+	 */
+	public void setStartPageNo(Integer startPageNo) {
+		this.startPageNo = startPageNo;
+	}
+
+	/**
+	 * @return the endPageNo
+	 */
+	public Integer getEndPageNo() {
+		return endPageNo;
+	}
+
+	/**
+	 * @param endPageNo the endPageNo to set
+	 */
+	public void setEndPageNo(Integer endPageNo) {
+		this.endPageNo = endPageNo;
+	}
+
+}

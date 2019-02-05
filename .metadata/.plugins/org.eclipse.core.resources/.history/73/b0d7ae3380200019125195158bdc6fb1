@@ -1,0 +1,165 @@
+package com.livespread.rage.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.NamedQueries;
+import org.hibernate.annotations.NamedQuery;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "LS_SECTION_IDENTIFICATION")
+@NamedNativeQueries({
+	@NamedNativeQuery(name = "SectionIdentificationBySectionKeyWord", query = "SELECT ID FROM LS_SECTION_IDENTIFICATION where UPPER(RTRIM(LTRIM(SECTIONNAME)))=UPPER(:sectionName) "
+			+ " AND UPPER(RTRIM(LTRIM(KEYWORD)))=UPPER(:keyWord)"),
+})
+@NamedQueries({ 
+	@NamedQuery(name = "getAutoCompleteKeywordMetaDataList", query = "SELECT keyWord FROM SectionIdentification where  keyWord like :keyword"),
+	@NamedQuery(name = "getSectionMetaDataList", query = "SELECT  distinct sectionName FROM SectionIdentification"),
+	@NamedQuery(name = "getLanguageMetaDataList", query = "SELECT distinct language FROM SectionIdentification")
+
+	
+})
+
+public class SectionIdentification  implements Serializable, BaseEntity {
+	private static final long serialVersionUID = 1L;
+
+	
+	@Id
+	/*@GeneratedValue(generator = "sequence")
+	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_SECTION_IDENTIFICATION") })*/
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ID")
+	private Integer sectionIdentificationId;
+	
+	@Column(name = "LANGUAGE")
+	private String language;
+	
+	@Column(name = "SECTIONNAME")
+	private String sectionName;
+	
+	@Column(name = "KEYWORD")
+	private String keyWord;
+	
+	@Column(name = "ISREVIEWED")
+	private String isReviewed;
+	
+	@Column(name = "CREATEDBY",updatable = false)
+	private String createdBy;
+	
+	@Column(name = "CREATEDDATE", updatable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date createdDate;
+
+	@Column(name = "EID")
+	private Integer eId;
+	
+	@Column(name = "ROW_SEGMENTATION_TYPE")
+	private String rowSegmentationType;
+	
+	@Column(name = "COLUMN_SPLIT")
+	private Integer columnSplit;
+	
+	
+	
+	public Integer getSectionIdentificationId() {
+		return sectionIdentificationId;
+	}
+
+	public void setSectionIdentificationId(Integer sectionIdentificationId) {
+		this.sectionIdentificationId = sectionIdentificationId;
+	}
+
+	public String getLanguage() {
+		return language;
+	}
+
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+
+	public String getSectionName() {
+		return sectionName;
+	}
+
+	public void setSectionName(String sectionName) {
+		this.sectionName = sectionName;
+	}
+
+	public String getKeyWord() {
+		return keyWord;
+	}
+
+	public void setKeyWord(String keyWord) {
+		this.keyWord = keyWord;
+	}
+
+	public String getIsReviewed() {
+		return isReviewed;
+	}
+
+	public void setIsReviewed(String isReviewed) {
+		this.isReviewed = isReviewed;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public Integer geteId() {
+		return eId;
+	}
+
+	public void seteId(Integer eId) {
+		this.eId = eId;
+	}
+
+	public String getRowSegmentationType() {
+		return rowSegmentationType;
+	}
+
+	public void setRowSegmentationType(String rowSegmentationType) {
+		this.rowSegmentationType = rowSegmentationType;
+	}
+
+	public Integer getColumnSplit() {
+		return columnSplit;
+	}
+
+	public void setColumnSplit(Integer columnSplit) {
+		this.columnSplit = columnSplit;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.RAGE;
+	}
+
+}

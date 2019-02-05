@@ -1,0 +1,44 @@
+package com.livespread.command;
+
+import java.util.List;
+
+public class UserTemplateCommand {
+
+	List<String> templateName;
+	List<String> templateId;
+	Long user_Group_Id;
+	String user_Group_Name;
+	String createDate;
+	
+	public List<String> getTemplateName() {
+		return templateName;
+	}
+	public void setTemplateName(List<String> templateName) {
+		this.templateName = templateName;
+	}
+	public List<String> getTemplateId() {
+		return templateId;
+	}
+	public void setTemplateId(List<String> templateId) {
+		this.templateId = templateId;
+	}
+	public Long getUser_Group_Id() {
+		return user_Group_Id;
+	}
+	public void setUser_Group_Id(Long user_Group_Id) {
+		this.user_Group_Id = user_Group_Id;
+	}
+	public String getUser_Group_Name() {
+		return user_Group_Name;
+	}
+	public void setUser_Group_Name(String user_Group_Name) {
+		this.user_Group_Name = user_Group_Name;
+	}
+	public String getCreateDate() {
+		return createDate;
+	}
+	public void setCreateDate(String createDate) {
+		this.createDate = createDate;
+	}
+
+}

@@ -1,0 +1,45 @@
+
+@media screen and (min-width: 768px){
+  #maindiv{height:67% !important; overflow:auto !important;}
+}
+
+@media screen and (min-width: 800px) and (min-height: 600px){
+  #maindiv {height:43% !important; overflow: auto !important;}
+}
+
+@media screen and (min-width: 1024px) and (min-height: 768px){
+ #maindiv {height:56% !important; overflow: auto !important;}
+}
+
+@media screen and (min-width: 1024px) and (min-height: 1366px){
+ #maindiv {height:74% !important; overflow: auto !important;}
+}
+
+@media screen and (min-width: 1152px){
+ #maindiv {height:59% !important; overflow: auto !important;}
+}
+
+@media screen and (min-width: 1280px) and (min-height: 600px){
+ #maindiv {height:48% !important; overflow: auto !important;}
+}
+
+
+@media screen and (min-width: 1280px) and (min-height: 768px){
+ #maindiv{height:61% !important; overflow:auto !important;}
+}
+
+@media screen and (min-width: 1360px){
+ #maindiv{height:64% !important; overflow:auto !important;}
+}
+
+@media screen and (min-width: 1440px) and (min-height: 900px){
+ #maindiv{height:65% !important; overflow:auto !important;}
+}
+
+@media screen and (min-width: 1600px){
+ #maindiv{height:64% !important; overflow:auto !important;}
+}
+
+@media screen and (min-width: 1680px) and (min-height: 1050px){
+ #maindiv{height:70% !important; overflow:auto !important;}
+}

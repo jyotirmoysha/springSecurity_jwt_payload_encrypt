@@ -1,0 +1,27 @@
+package com.livespread.security;
+
+import org.apache.commons.dbcp.BasicDataSource;
+
+public class EncryptedDataSource extends BasicDataSource {
+
+public EncryptedDataSource() 
+{
+        super();
+}
+
+ public String getPassword() {
+  String password = super.getPassword();
+  AbstractSecureKey AESsek = SecureKeyFactory.getInstance(SecureKeyFactory.getDatabaseConnectionSecureKey());
+  return AESsek.decryptString(password);
+ }
+
+/* (non-Javadoc)
+ * @see org.apache.commons.dbcp.BasicDataSource#setPassword(java.lang.String)
+ */
+@Override
+public synchronized void setPassword(String encodedPassword){
+	AbstractSecureKey AESsek = SecureKeyFactory.getInstance(SecureKeyFactory.getDatabaseConnectionSecureKey());
+    super.password = AESsek.decryptString(encodedPassword);
+}
+
+}

@@ -1,0 +1,39 @@
+package com.livespread.service;
+
+import java.util.ArrayList;
+
+import com.livespread.domain.AliasBusinessEntity;
+import com.livespread.domain.BusinessEntity;
+import com.livespread.domain.CustomerDetails;
+
+public interface CustomerDetailsService {
+
+	int addCustomerDetails(String customerName, String businessName,
+			String accountNo, String userRName, String companyId,Integer portfolioId,Integer userGroupId,String language,String industryName,int dealerId);
+	
+	boolean updateCustomerDetails(CustomerDetails cd);
+
+	boolean deleteCustomerDetails(int clientId);
+
+	ArrayList<CustomerDetails> getAllCustomerDetails();
+
+	CustomerDetails findCustomerDetailsById(int CustomerId);
+
+	/*
+	 * This methode used for check business name is present or not in
+	 * business_entity table
+	 */
+	BusinessEntity checkEntity(String entityName);
+
+	BusinessEntity saveBusinessEntity(BusinessEntity businessEntity);
+
+	/*
+	 * This methode used for get Alias business entity based on company
+	 * id,user_group id and e_id
+	 */
+	AliasBusinessEntity getAliasBusinessEntity(
+			AliasBusinessEntity aliasBusinessEntity);
+
+	AliasBusinessEntity saveAliasBusinessEntity(
+			AliasBusinessEntity aliasBusinessEntity);
+}

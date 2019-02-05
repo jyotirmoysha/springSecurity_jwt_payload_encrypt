@@ -1,0 +1,49 @@
+package com.livespread.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import com.livespread.domain.NIValues;
+import com.livespread.domain.NamedQueryName;
+import com.livespread.domain.SectionMappingModel;
+import com.rage.extendeddao.ExtendedGenericDao;
+
+@Service
+public class ClickBackServiceImpl implements ClickBackService {
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String, String> getSectionMap() {
+			Map<String, String> map = new HashMap<String, String>();
+			List<SectionMappingModel> sectionList =(List<SectionMappingModel>) (Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getAllSections, SectionMappingModel.class);
+			for (SectionMappingModel object : sectionList) {
+			 map.put(object.getSectionName().trim(),object.getSectionDisplayName());
+			}
+		return map;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public NIValues getNiValuesByNiId(Integer niId) {
+		Map<String, Object> parameterMap = new HashMap<String, Object>();
+		parameterMap.put("niId", niId);
+		List<NIValues> objectList = (List<NIValues>)(Object) genericDaoImpl.findByNamedQuery(NamedQueryName.getNiValauesRecordNIID, NIValues.class, parameterMap);
+		if(!CollectionUtils.isEmpty(objectList)){
+			return objectList.get(0);
+			
+		}else{
+			return null;
+		}
+		
+		
+	}
+
+}

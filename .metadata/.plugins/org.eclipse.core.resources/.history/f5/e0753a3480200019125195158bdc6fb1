@@ -1,0 +1,234 @@
+package com.livespread.controller;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.livespread.command.ExtractionRuleRowDataCommand;
+import com.livespread.command.ExtractionRulesTagInfoCommand;
+import com.livespread.domain.User;
+import com.livespread.service.ExtractionDataRulesService;
+import com.livespread.util.JsonData;
+import com.livespread.util.RecordsData;
+
+@Controller
+public class ExtractionDataRulesController {
+
+	private Logger LOGGER = Logger.getLogger(ExtractionDataRulesController.class);
+
+	@Autowired
+	ExtractionDataRulesService extractionDataRulesService;
+
+
+	@RequestMapping(value = "/showExtractionDataRules.htm", method = { RequestMethod.GET,RequestMethod.POST })
+	public String adminShowExtractionDataRules(HttpServletRequest request,
+			HttpServletResponse response,Model map) {
+		LOGGER.info("**Start-- showExtractionDataRules()");
+		try {
+		List<String> languageList = extractionDataRulesService.getLanguageDetails();
+		map.addAttribute("languageDetails", languageList);	
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			LOGGER.error("Exception in >>>.class AdminUserGroupController >method::adminShowExtractionDataRules ::",ex);
+		}
+		return "extractionDataRulesAdmin";
+	}
+	
+
+	@RequestMapping(value = "/getFileNamesByLanguage.htm", method = { RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody String getFileNameDetails(@RequestParam("language") String language,
+			HttpServletRequest request) {
+		List<String>fileDetailsList = null;
+		JSONObject globalJSON = new JSONObject();
+		try {
+			if (language != null && !language.isEmpty()) {
+				fileDetailsList = extractionDataRulesService.getFilesListByLanguage(language);
+			}
+			globalJSON.put("fileList", fileDetailsList);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return globalJSON.toString();
+	}
+	
+
+	@RequestMapping(value = "/getTagsByFileName.htm", method = { RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody String getTagDetailsListByFileNameAndLanguage(@RequestParam("fileName") String fileName,@RequestParam("language") String language,
+			HttpServletRequest request) {
+		List<ExtractionRulesTagInfoCommand> extractionRulesTagInfoList = null;
+		String isTagExists="N";
+		Long selectedTagId=null;
+		Integer columnlength=null;
+		JSONObject globalJSON = new JSONObject();
+		try {
+			if ((language!=null && !language.isEmpty()) && (fileName != null && !fileName.isEmpty())) {
+				extractionRulesTagInfoList = extractionDataRulesService.getTagDetailsListByFileNameAndLanguage(fileName,language);
+			}
+			if(!CollectionUtils.isEmpty(extractionRulesTagInfoList))
+			{
+				if(extractionRulesTagInfoList.size()>1)
+				{
+					isTagExists = "Y";
+				}
+				else
+				{
+					selectedTagId=extractionRulesTagInfoList.get(0).getTagId();
+					isTagExists="N";
+					columnlength=extractionRulesTagInfoList.get(0).getColumnCount();
+				}
+				
+			}
+			globalJSON.put("tagDetails", extractionRulesTagInfoList);
+			globalJSON.put("isTagExists", isTagExists);
+			globalJSON.put("selectedTagId", selectedTagId);
+			globalJSON.put("columnlength", columnlength);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return globalJSON.toString();
+	}
+
+	@RequestMapping(value = "/getRulesExtractionPagnation.htm", produces = "text/html; charset=UTF-8", method = { RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody String getWorkQueuePageNationData(@RequestParam("tagId") Long tagId,
+			@RequestParam("pageNo") Integer pageNo,
+			@RequestParam("dispalyRecords") Integer dispalyRecords,
+			@RequestParam("searchText") String searchText,
+			HttpServletRequest request,HttpServletResponse response,
+			Model map) throws JSONException {
+	   	JSONObject jsonResponse = new JSONObject();
+	   	List<ExtractionRuleRowDataCommand> metaRowInfoList=null;
+	   	Integer countOfExtractionData=0;
+	   	Integer totalPages=0;
+	if(tagId!=null){
+	   	//countQuery
+		if(!StringUtils.isEmpty(searchText)){
+			searchText=searchText.replace("'", "''");
+			searchText=searchText.replace("[", "[[");
+		}
+		countOfExtractionData =	extractionDataRulesService.getExtractionRulesTotalRecords(tagId,searchText);
+		if(countOfExtractionData>0){
+	     metaRowInfoList =	extractionDataRulesService.getExtractionRulesData(tagId,searchText,pageNo,dispalyRecords);
+		}
+	//count of Total Pages
+		if (countOfExtractionData != null && countOfExtractionData != 0) {
+			totalPages = Math.round(countOfExtractionData / dispalyRecords);
+			long remainder = (countOfExtractionData % dispalyRecords);
+			if (totalPages != 0 && remainder != 0) {
+				++totalPages;
+			}
+		}
+		if(totalPages==0 && countOfExtractionData>0){
+				++totalPages;
+		}
+		
+	     jsonResponse.put("dispalyRecords", dispalyRecords);
+	     jsonResponse.put("totalRecordsCount", totalPages);
+	     jsonResponse.put("page", pageNo);
+	     jsonResponse.put("metaRowInfoData", metaRowInfoList);
+	     jsonResponse.put("totalRecords", countOfExtractionData);
+	}
+		return jsonResponse.toString();
+		
+		
+		
+	}
+	
+	@RequestMapping(value = "/deleteByMetaDataIds.htm", method = {RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody String deleteExtractionRulesByMetaDataId(HttpServletRequest request,HttpSession session,@RequestBody String jsonDeleteArr) {
+		LOGGER.info("**Start-- deleteExtractionRulesByMetaDataId()");
+		String deleteFlag="Rows not deleted successfully.";
+		List<Long> metadataIdsList = new ArrayList<Long>();
+		User user=null;
+		int  deleteCount=0;
+		
+		try {	
+		System.out.println("jsonDeleteArr"+jsonDeleteArr);	
+		String jsonString = jsonDeleteArr.substring(1, jsonDeleteArr.length()-1);
+		jsonString=jsonString.replace("\\", "");
+		JSONObject jsonOb = new JSONObject(jsonString);
+		org.json.JSONArray arrJson=jsonOb.getJSONArray("deleteMetaDataIds");
+		System.out.println(arrJson);
+		if(arrJson.length()>0){
+		for(int i=0;i<arrJson.length();i++){
+			metadataIdsList.add(Long.parseLong(arrJson.getString(i)));
+		}
+		user = (User) session.getAttribute("user");
+		deleteCount= extractionDataRulesService.deletaMetadataIds(metadataIdsList,user.getUserId());
+		}
+		if(deleteCount>0){
+			deleteFlag="";
+		}
+		
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			LOGGER.error("Exception in >>>.class AdminUserGroupController >method::deleteExtractionRulesByMetaDataId ::",ex);
+		}
+		return deleteFlag;
+	}
+	
+	
+	@RequestMapping(value = "/update_extractionRules.htm", produces = "text/html; charset=UTF-8", method = { RequestMethod.GET,RequestMethod.POST })
+	public  @ResponseBody String  updateInsertExtractionRules(HttpServletRequest request,@RequestBody String json,HttpServletResponse response,Model map,HttpSession session)throws IOException  {
+		LOGGER.info("**Start-- updateInsertExtractionRules()");
+		String updatedFalg="Rows not updated.";
+	 	JSONObject jsonResponse = new JSONObject();
+		User user=null;
+		int  updated =0;
+		int  inserted =0;
+		List<RecordsData> addedRecordsData=null;
+		List<RecordsData> updatedRecordsData=null;
+		try {
+		user = (User) session.getAttribute("user");
+			String jsonString = json.substring(1, json.length()-1);
+			jsonString=jsonString.replace("\\", "");
+	        ObjectMapper mapper = new ObjectMapper();
+	        JsonData jsonData = mapper.readValue(jsonString, JsonData.class);
+	        updatedRecordsData = extractionDataRulesService.updateExtractionRules(jsonData,user.getUserId());
+	        addedRecordsData= extractionDataRulesService.insertExtractionRules(jsonData,user.getUserId());
+			if(updatedRecordsData!=null  && updatedRecordsData.size()>0){
+				updated=updatedRecordsData.size();
+			}
+			if(addedRecordsData!=null  && addedRecordsData.size()>0){
+				inserted=updatedRecordsData.size();
+			}
+			updatedFalg="updated Row Count:"+updated+"inserted Count: "+inserted;
+			jsonResponse.put("updateRecordsData", updatedRecordsData);
+			jsonResponse.put("newRecordData", addedRecordsData);
+			
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			LOGGER.error("Exception in >>>.class AdminUserGroupController >method::updateInsertExtractionRules ::",ex);
+		}
+		return jsonResponse.toString();
+	}
+	
+	
+	
+
+
+
+
+	
+	
+	
+
+}

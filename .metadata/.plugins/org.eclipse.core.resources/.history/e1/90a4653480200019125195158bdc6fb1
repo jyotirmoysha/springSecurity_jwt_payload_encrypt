@@ -1,0 +1,23 @@
+package com.livespread.common;
+
+import java.util.Comparator;
+import java.util.List;
+
+import com.livespread.command.NormalizedDetails;
+
+	public class  NormalizedDetailsComparatorForSourceData implements Comparator<NormalizedDetails>{
+
+		private List<String> dataSourceSortingList;
+		public NormalizedDetailsComparatorForSourceData(List<String> dataSourceSortingList) {
+			this.dataSourceSortingList = dataSourceSortingList;
+		}
+		
+		@Override
+		public int compare(NormalizedDetails normalizedDetails1, NormalizedDetails normalizedDetails2) 
+		{
+			return dataSourceSortingList.indexOf(normalizedDetails1.getSourceData()) - dataSourceSortingList.indexOf(normalizedDetails2.getSourceData());
+		}
+
+		
+
+	}

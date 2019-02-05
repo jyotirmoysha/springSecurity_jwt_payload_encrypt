@@ -1,0 +1,17 @@
+package com.livespread.util;
+
+import com.rage.reusable.utils.Hasher;
+
+public class MyHasher implements Hasher {
+
+	@Override
+	public String encrypt(String input) {
+		return CipherUtils.encrypt(input);
+	}
+
+	@Override
+	public String decrypt(String input) {
+		return CipherUtils.decrypt(input);
+	}
+
+}

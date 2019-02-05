@@ -1,0 +1,97 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author Sainath
+ *
+ */
+@Entity
+@Table(name = "ITR_TEMPLATE_FORM_METADATA")
+@NamedQueries({
+	@NamedQuery(name = "getTemplateFormMetadataList", query = "select itrTemplateFormMetadata from ItrTemplateFormMetadata itrTemplateFormMetadata "),
+})
+public class ItrTemplateFormMetadata implements Serializable, BaseEntity{
+	
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	/*@GeneratedValue(generator = "sequence")
+	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_ITR_TEMP_FRM_META") })*/
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "TEMPLATE_FORM_ID")
+	private Integer templateFormId;
+	
+	@Column(name = "TEMPLATE_ID")
+	private Integer templateId;
+	
+	@Column(name = "TEMPLATE_NAME")
+	private String templateName;
+
+	/**
+	 * @return the templateFormId
+	 */
+	public Integer getTemplateFormId() {
+		return templateFormId;
+	}
+
+	/**
+	 * @param templateFormId the templateFormId to set
+	 */
+	public void setTemplateFormId(Integer templateFormId) {
+		this.templateFormId = templateFormId;
+	}
+
+	/**
+	 * @return the templateId
+	 */
+	public Integer getTemplateId() {
+		return templateId;
+	}
+
+	/**
+	 * @param templateId the templateId to set
+	 */
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+
+	/**
+	 * @return the templateName
+	 */
+	public String getTemplateName() {
+		return templateName;
+	}
+
+	/**
+	 * @param templateName the templateName to set
+	 */
+	public void setTemplateName(String templateName) {
+		this.templateName = templateName;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

@@ -1,0 +1,613 @@
+package com.livespread.command;
+
+import java.util.List;
+import java.util.Map;
+
+import com.livespread.domain.User;
+
+/**
+ * @author Ganesh.Dudhade
+ *
+ */
+public class NormalizeFormData {
+
+	/*********** common inputs ****************/
+	Integer fillingId;
+	Integer wqId;
+	String statementType;
+
+	String encryptedFillingId;
+	String encryptedWqId;
+
+	/******** Delete Inputs *************/
+
+	List<Integer> delPoId;
+	List<Integer> childPoId;
+	List<String> normDictPoId;
+
+	/******** Update Inputs *************/
+
+	List<Integer> updPoId;
+	List<String> updPoLable;
+	List<String> updNormLable;
+	List<String> updSubSection;
+	List<Integer> updSequence;
+	List<String> updAccountNumber;
+	List<String> updTimePeriod;
+	List<String> updCustodianName;
+	List<String> upSubTotal;
+	Map<String,List<String>> updVal;
+	List<String> upbrekUps;
+	List<String> updNote;
+	List<String> addParentPo_Id; 	//used for add duplicate row insertion 
+	
+	/******** add Inputs *************/
+	
+	List<Integer> addPoId;
+	List<String> addPoLable;
+	List<String> addNormLable;
+	List<String> addSubSection;
+	List<Integer> addSequence;
+	List<String> addAccountNumber;
+	List<String> addCustodianName;
+	List<String> addTimePeriod;
+	List<String> adSubTotal;
+	Map<String,List<String>> addVal;
+	List<String> addbrekUps;
+	List<String> isDublicate;
+	List<String> isNewAdded;
+	List<Integer> updatedAllPoId;
+	List<Integer> addedAllPoId;
+	private Integer  deletedFlag; 
+	List<String> addNote;
+	public Integer addedrowCount;
+	public Integer updatedrowCount;
+	public Integer deletedrowCount;
+	public List<String> msg;
+	
+	/**
+	 * Following fields PARSER_OUPUT_AUDIT table
+	 */
+	public String documentStatus;
+	public Integer createdBy;
+	public Integer transactionId;
+	public String refPOID;
+	public String isChild="N";
+	public List<String> nonEnglishLabel;
+	Integer templateId;
+	public String normLable;
+	public Integer normLableId;
+	private String caseStatus;
+	private Integer eId;
+	private User user;
+	private Integer valuesColumnCount;
+	private Integer childvaluesColumnCount;
+	private List<String> addNonEnglishLabel;
+	private List<String> updNonEnglishLabel;
+	private Integer parserId;
+	private String language;
+	
+	private List<String> addbrekUpsRefPoid;
+	private String subSection;
+	
+	public Integer getChildvaluesColumnCount() {
+		return childvaluesColumnCount;
+	}
+	public void setChildvaluesColumnCount(Integer childvaluesColumnCount) {
+		this.childvaluesColumnCount = childvaluesColumnCount;
+	}
+	public Map<String, List<String>> getUpdVal() {
+		return updVal;
+	}
+	public void setUpdVal(Map<String, List<String>> updVal) {
+		this.updVal = updVal;
+	}
+
+	public Map<String, List<String>> getAddVal() {
+		return addVal;
+	}
+
+	public void setAddVal(Map<String, List<String>> addVal) {
+		this.addVal = addVal;
+	}
+
+	public Integer getValuesColumnCount() {
+		return valuesColumnCount;
+	}
+
+	public void setValuesColumnCount(Integer valuesColumnCount) {
+		this.valuesColumnCount = valuesColumnCount;
+	}
+
+	public List<String> getNonEnglishLabel() {
+		return nonEnglishLabel;
+	}
+
+	public void setNonEnglishLabel(List<String> nonEnglishLabel) {
+		this.nonEnglishLabel = nonEnglishLabel;
+	}
+	
+	public Integer getTransactionId() {
+		return transactionId;
+	}
+
+	public void setTransactionId(Integer transactionId) {
+		this.transactionId = transactionId;
+	}
+
+	public String getDocumentStatus() {
+		return documentStatus;
+	}
+
+	public void setDocumentStatus(String documentStatus) {
+		this.documentStatus = documentStatus;
+	}
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Integer getDeletedrowCount() {
+		return deletedrowCount;
+	}
+
+	public void setDeletedrowCount(Integer deletedrowCount) {
+		this.deletedrowCount = deletedrowCount;
+	}
+
+	public List<String> getMsg() {
+		return msg;
+	}
+
+	public void setMsg(List<String> msg) {
+		this.msg = msg;
+	}
+
+	public Integer getAddedrowCount() {
+		return addedrowCount;
+	}
+
+	public void setAddedrowCount(Integer addedrowCount) {
+		this.addedrowCount = addedrowCount;
+	}
+
+	public Integer getUpdatedrowCount() {
+		return updatedrowCount;
+	}
+
+	public void setUpdatedrowCount(Integer updatedrowCount) {
+		this.updatedrowCount = updatedrowCount;
+	}
+
+	// This is used for fi_searchType column in financial_items table
+	public String searchype;
+
+	/************ Getter and Setter ****************/
+
+	public String getEncryptedFillingId() {
+		return encryptedFillingId;
+	}
+
+	public List<Integer> getUpdatedAllPoId() {
+		return updatedAllPoId;
+	}
+
+	public void setUpdatedAllPoId(List<Integer> updatedAllPoId) {
+		this.updatedAllPoId = updatedAllPoId;
+	}
+
+	public List<String> getUpSubTotal() {
+		return upSubTotal;
+	}
+
+	public void setUpSubTotal(List<String> upSubTotal) {
+		this.upSubTotal = upSubTotal;
+	}
+
+	public List<String> getAdSubTotal() {
+		return adSubTotal;
+	}
+
+	public void setAdSubTotal(List<String> adSubTotal) {
+		this.adSubTotal = adSubTotal;
+	}
+
+	public void setEncryptedFillingId(String encryptedFillingId) {
+		this.encryptedFillingId = encryptedFillingId;
+	}
+
+	public String getEncryptedWqId() {
+		return encryptedWqId;
+	}
+
+	public void setEncryptedWqId(String encryptedWqId) {
+		this.encryptedWqId = encryptedWqId;
+	}
+
+	public List<String> getUpdCustodianName() {
+		return updCustodianName;
+	}
+
+	public List<String> getUpbrekUps() {
+		return upbrekUps;
+	}
+
+	public void setUpbrekUps(List<String> upbrekUps) {
+		this.upbrekUps = upbrekUps;
+	}
+
+	public List<String> getAddbrekUps() {
+		return addbrekUps;
+	}
+
+	public void setAddbrekUps(List<String> addbrekUps) {
+		this.addbrekUps = addbrekUps;
+	}
+
+	public void setUpdCustodianName(List<String> updCustodianName) {
+		this.updCustodianName = updCustodianName;
+	}
+
+	public List<String> getAddCustodianName() {
+		return addCustodianName;
+	}
+
+	public void setAddCustodianName(List<String> addCustodianName) {
+		this.addCustodianName = addCustodianName;
+	}
+
+	public List<String> getUpdAccountNumber() {
+		return updAccountNumber;
+	}
+
+	public void setUpdAccountNumber(List<String> updAccountNumber) {
+		this.updAccountNumber = updAccountNumber;
+	}
+
+	public List<String> getUpdTimePeriod() {
+		return updTimePeriod;
+	}
+
+	public void setUpdTimePeriod(List<String> updTimePeriod) {
+		this.updTimePeriod = updTimePeriod;
+	}
+
+	public List<String> getAddAccountNumber() {
+		return addAccountNumber;
+	}
+
+	public void setAddAccountNumber(List<String> addAccountNumber) {
+		this.addAccountNumber = addAccountNumber;
+	}
+
+	public List<String> getAddTimePeriod() {
+		return addTimePeriod;
+	}
+
+	public void setAddTimePeriod(List<String> addTimePeriod) {
+		this.addTimePeriod = addTimePeriod;
+	}
+
+	public Integer getTemplateId() {
+		return templateId;
+	}
+
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+
+	public Integer getFillingId() {
+		return fillingId;
+	}
+
+	public List<String> getUpdSubSection() {
+		return updSubSection;
+	}
+
+	public void setUpdSubSection(List<String> updSubSection) {
+		this.updSubSection = updSubSection;
+	}
+
+	public List<String> getAddSubSection() {
+		return addSubSection;
+	}
+
+	public void setAddSubSection(List<String> addSubSection) {
+		this.addSubSection = addSubSection;
+	}
+
+	public void setFillingId(Integer fillingId) {
+		this.fillingId = fillingId;
+	}
+
+	public String getStatementType() {
+		return statementType;
+	}
+
+	public void setStatementType(String statementType) {
+		this.statementType = statementType;
+	}
+
+	public List<Integer> getDelPoId() {
+		return delPoId;
+	}
+
+	public void setDelPoId(List<Integer> delPoId) {
+		this.delPoId = delPoId;
+	}
+
+	public List<Integer> getUpdPoId() {
+		return updPoId;
+	}
+
+	public void setUpdPoId(List<Integer> updPoId) {
+		this.updPoId = updPoId;
+	}
+
+	public List<String> getUpdPoLable() {
+		return updPoLable;
+	}
+
+	public void setUpdPoLable(List<String> updPoLable) {
+		this.updPoLable = updPoLable;
+	}
+
+	public List<String> getUpdNormLable() {
+		return updNormLable;
+	}
+
+	public void setUpdNormLable(List<String> updNormLable) {
+		this.updNormLable = updNormLable;
+	}
+
+	public List<Integer> getUpdSequence() {
+		return updSequence;
+	}
+
+	public void setUpdSequence(List<Integer> updSequence) {
+		this.updSequence = updSequence;
+	}
+
+	public List<Integer> getAddPoId() {
+		return addPoId;
+	}
+
+	public void setAddPoId(List<Integer> addPoId) {
+		this.addPoId = addPoId;
+	}
+
+	public List<String> getAddPoLable() {
+		return addPoLable;
+	}
+
+	public void setAddPoLable(List<String> addPoLable) {
+		this.addPoLable = addPoLable;
+	}
+
+	public List<String> getAddNormLable() {
+		return addNormLable;
+	}
+
+	public void setAddNormLable(List<String> addNormLable) {
+		this.addNormLable = addNormLable;
+	}
+
+	public List<Integer> getAddSequence() {
+		return addSequence;
+	}
+
+	public void setAddSequence(List<Integer> addSequence) {
+		this.addSequence = addSequence;
+	}
+
+	public Integer getWqId() {
+		return wqId;
+	}
+
+	public void setWqId(Integer wqId) {
+		this.wqId = wqId;
+	}
+
+	public String getSearchype() {
+		return searchype;
+	}
+
+	public void setSearchype(String searchype) {
+		this.searchype = searchype;
+	}
+
+	
+	public List<Integer> getChildPoId() {
+		return childPoId;
+	}
+
+	public void setChildPoId(List<Integer> childPoId) {
+		this.childPoId = childPoId;
+	}
+
+	public String getRefPOID() {
+		return refPOID;
+	}
+
+	public void setRefPOID(String refPOID) {
+		this.refPOID = refPOID;
+	}
+
+	/************ To List<String> ********************/
+
+	/**
+	 * @return the normLable
+	 */
+	public String getNormLable() {
+		return normLable;
+	}
+
+	/**
+	 * @param normLable the normLable to set
+	 */
+	public void setNormLable(String normLable) {
+		this.normLable = normLable;
+	}
+
+	/**
+	 * @return the normLableId
+	 */
+	public Integer getNormLableId() {
+		return normLableId;
+	}
+
+	/**
+	 * @param normLableId the normLableId to set
+	 */
+	public void setNormLableId(Integer normLableId) {
+		this.normLableId = normLableId;
+	}
+
+	/**
+	 * @return the addNote
+	 */
+	public List<String> getAddNote() {
+		return addNote;
+	}
+
+	/**
+	 * @param addNote the addNote to set
+	 */
+	public void setAddNote(List<String> addNote) {
+		this.addNote = addNote;
+	}
+
+	/**
+	 * @return the updNote
+	 */
+	public List<String> getUpdNote() {
+		return updNote;
+	}
+
+	/**
+	 * @param updNote the updNote to set
+	 */
+	public void setUpdNote(List<String> updNote) {
+		this.updNote = updNote;
+	}
+
+	/**
+	 * @return the caseStatus
+	 */
+	public String getCaseStatus() {
+		return caseStatus;
+	}
+
+	/**
+	 * @param caseStatus the caseStatus to set
+	 */
+	public void setCaseStatus(String caseStatus) {
+		this.caseStatus = caseStatus;
+	}
+
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public List<String> getIsDublicate() {
+		return isDublicate;
+	}
+
+	public void setIsDublicate(List<String> isDublicate) {
+		this.isDublicate = isDublicate;
+	}
+
+	public String getIsChild() {
+		return isChild;
+	}
+
+	public void setIsChild(String isChild) {
+		this.isChild = isChild;
+	}
+
+	public List<String> getNormDictPoId() {
+		return normDictPoId;
+	}
+
+	public void setNormDictPoId(List<String> normDictPoId) {
+		this.normDictPoId = normDictPoId;
+	}
+
+	public List<String> getAddParentPo_Id() {
+		return addParentPo_Id;
+	}
+
+	public void setAddParentPo_Id(List<String> addParentPo_Id) {
+		this.addParentPo_Id = addParentPo_Id;
+	}
+	public List<String> getAddNonEnglishLabel() {
+		return addNonEnglishLabel;
+	}
+	public void setAddNonEnglishLabel(List<String> addNonEnglishLabel) {
+		this.addNonEnglishLabel = addNonEnglishLabel;
+	}
+	public List<String> getUpdNonEnglishLabel() {
+		return updNonEnglishLabel;
+	}
+	public void setUpdNonEnglishLabel(List<String> updNonEnglishLabel) {
+		this.updNonEnglishLabel = updNonEnglishLabel;
+	}
+	public Integer getParserId() {
+		return parserId;
+	}
+	public void setParserId(Integer parserId) {
+		this.parserId = parserId;
+	}
+	public String getLanguage() {
+		return language;
+	}
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+	public List<String> getAddbrekUpsRefPoid() {
+		return addbrekUpsRefPoid;
+	}
+	public void setAddbrekUpsRefPoid(List<String> addbrekUpsRefPoid) {
+		this.addbrekUpsRefPoid = addbrekUpsRefPoid;
+	}
+	public Integer geteId() {
+		return eId;
+	}
+	public void seteId(Integer eId) {
+		this.eId = eId;
+	}
+	public String getSubSection() {
+		return subSection;
+	}
+	public void setSubSection(String subSection) {
+		this.subSection = subSection;
+	}
+
+	public Integer getDeletedFlag() {
+		return deletedFlag;
+	}
+	public void setDeletedFlag(Integer deletedFlag) {
+		this.deletedFlag = deletedFlag;
+	}
+	public List<Integer> getAddedAllPoId() {
+		return addedAllPoId;
+	}
+	public void setAddedAllPoId(List<Integer> addedAllPoId) {
+		this.addedAllPoId = addedAllPoId;
+	}
+	public List<String> getIsNewAdded() {
+		return isNewAdded;
+	}
+	public void setIsNewAdded(List<String> isNewAdded) {
+		this.isNewAdded = isNewAdded;
+	}
+	
+}

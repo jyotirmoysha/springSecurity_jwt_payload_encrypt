@@ -1,0 +1,99 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+@Entity
+@Table(name = "LANGUAGE_MAPPING_METADATA")
+@NamedQueries({
+	@NamedQuery(name = "getLanguageIdByNonEnglishLabel", query = "select languageMappingMetadata from LanguageMappingMetadata languageMappingMetadata where nonEnglishLabel=:nonEnglishLabel and language=:language"),
+	@NamedQuery(name = "updateLanguageMappingMetadataByNonEnglishLabel", query = "update LanguageMappingMetadata set englishLabel=:englishLabel, section=:statementType where nonEnglishLabel=:nonEnglishLabel and language=:language")
+	})
+
+public class LanguageMappingMetadata implements Serializable, BaseEntity {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+//	@GeneratedValue(generator = "sequence")
+//	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_LANGUAGE_MAPPING_METADATA") })
+	
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "ASREP_LM_ID")
+	private Integer langauageId;
+	
+	@Column(name = "SECTION")
+	private String section;
+	
+	@Column(name = "ENGLISH_LABEL")
+	private String englishLabel;
+	
+	@Column(name = "NON_ENGLISH_LABEL")
+	private String nonEnglishLabel;
+	
+	@Column(name = "LANGUAGE")
+	private String language;
+
+	public Integer getLangauageId() {
+		return langauageId;
+	}
+
+	public void setLangauageId(Integer langauageId) {
+		this.langauageId = langauageId;
+	}
+
+	public String getSection() {
+		return section;
+	}
+
+	public void setSection(String section) {
+		this.section = section;
+	}
+
+	public String getEnglishLabel() {
+		return englishLabel;
+	}
+
+	public void setEnglishLabel(String englishLabel) {
+		this.englishLabel = englishLabel;
+	}
+
+	public String getNonEnglishLabel() {
+		return nonEnglishLabel;
+	}
+
+	public void setNonEnglishLabel(String nonEnglishLabel) {
+		this.nonEnglishLabel = nonEnglishLabel;
+	}
+
+	public String getLanguage() {
+		return language;
+	}
+
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

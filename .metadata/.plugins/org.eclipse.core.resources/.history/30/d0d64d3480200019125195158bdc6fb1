@@ -1,0 +1,326 @@
+package com.livespread.controller;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.json.stream.JsonGenerationException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.livespread.command.NormTemplateExtractCommand;
+import com.livespread.command.NormalizationTemplateCommand;
+import com.livespread.domain.SubSectionMetadata;
+import com.livespread.domain.User;
+import com.livespread.service.NormalizationTemplateService;
+import com.livespread.util.NormTemplateExtractionUtil;
+
+@Controller
+public class NormalizationTemplateController {
+	@Resource
+	private NormalizationTemplateService normalizationTemplateService;
+	private Logger LOGGER = Logger
+			.getLogger(NormalizationTemplateController.class);
+
+	@RequestMapping(value = "/normalizationTemplate.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public String normalization(HttpServletRequest request,
+			HttpServletResponse response, HttpSession session, Model map) {
+		Map<Long, String> nilIndustryList = new HashMap<Long, String>();
+		try {
+			User user = (User) session.getAttribute("user");
+			Integer userGroupId = user.getUserGroupId();
+			nilIndustryList = normalizationTemplateService.getNilIndustryList(userGroupId);
+			Map<String, String> sectionMap=normalizationTemplateService.getSectionList();
+			Map<String, String> sectionMapbySectionNameAsKey=new HashMap<String,String>();
+			for (Map.Entry<String, String> entry : sectionMap.entrySet())
+			{
+				sectionMapbySectionNameAsKey.put(entry.getValue(), entry.getKey());
+			}
+			session.removeAttribute("sectionMapbySectionNameAsKey");
+			session.setAttribute("sectionMapbySectionNameAsKey", sectionMapbySectionNameAsKey);
+			map.addAttribute("nilIndustryList", nilIndustryList);
+			map.addAttribute("sectionMap", sectionMap);
+		} catch (Exception e) {
+			LOGGER.error(
+					"Exception Occured class:NormalizationTemplateController; method: normalization ",
+					e);
+			e.printStackTrace();
+		}
+		return "normalizationTemplate";
+	}
+
+	@RequestMapping(value = "/checkIndustryTypeVal.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String checkIndustry(HttpServletRequest request,
+			HttpServletResponse response) {
+		LOGGER.info("start>>>.class Name:NormalizationTemplateController >method::checkIndustry");
+		Boolean updated = false;
+		String status = "";
+		try {
+
+			String industryTypeVal = request.getParameter("industryTypeVal");
+			updated = normalizationTemplateService
+					.checkIndustryType(industryTypeVal);
+			if (updated) {
+				status = " Industry type already exists in Other Group";
+			}
+		} catch (Exception e) {
+			LOGGER.error(
+					"Exception Occured class:NormalizationTemplateController; method: checkIndustry ",
+					e);
+			e.printStackTrace();
+		}
+		return status;
+	}
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/insertNormalization.htm", method = {
+			RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody
+	String insertNormalization(HttpServletRequest request,
+			HttpServletResponse response, HttpSession session,
+			NormalizationTemplateCommand normalizationTemplateCommand) {
+		LOGGER.info("class Name:NormalizationTemplateController >method::insertNormalization>> insertNormalization");
+		User user = (User) session.getAttribute("user");
+		Integer userGroupId = user.getUserGroupId();
+
+		String status = "";
+		int addRowsCount = 0;
+		int finalRows = 0;
+		String[] sectionNameArray = request.getParameterValues("fsTd1 []");
+		String[] nldTd2 = request.getParameterValues("nldTd2 []");
+		String[] nlTd3 = request.getParameterValues("nlTd3 []");
+		String[] derived4 = request.getParameterValues("derived4 []");
+		String[] formula5 = request.getParameterValues("formula5 []");
+		String industryTypeVal = request.getParameter("industryTypeVal");
+		String[] subTotalArray = request.getParameterValues("subTotalArray []");
+		String[] subSectionArray = request.getParameterValues("subSectionArray []");
+		
+		try {
+			if ((null!=sectionNameArray && sectionNameArray.length != 0 ) && (null!=nldTd2 && nldTd2.length != 0) && (null!=nlTd3 && nlTd3.length!=0) 
+					&& (null!=industryTypeVal && industryTypeVal.length() != 0)  && (null!=derived4 && derived4.length != 0) 
+					&& (null!=formula5 && formula5.length != 0) && (null!=subSectionArray && subSectionArray.length!=0)) {
+				
+				Map<String,String> sectionMapbySectionNameAsKey=(HashMap<String,String>)session.getAttribute("sectionMapbySectionNameAsKey");
+				List<String> sectionNameList = new ArrayList<String>();
+				List<String> labelSectionList = new ArrayList<String>();
+				for (String sectionName : sectionNameArray) {
+					sectionNameList.add(sectionName);
+					labelSectionList.add(sectionMapbySectionNameAsKey.get(sectionName));
+				}
+				List<Integer> nldVal2 = new ArrayList<Integer>();
+				for (String nld : nldTd2) {
+					nldVal2.add(Integer.parseInt(nld));
+				}
+				List<String> nlTdVal3 = new ArrayList<String>();
+				for (String nlT : nlTd3) {
+					nlTdVal3.add(nlT);
+				}
+				//header insert in normalizationTemplate	
+				List<String> categiry = new ArrayList<String>();
+				for (String derived : derived4) {
+					if(derived.equalsIgnoreCase("2")){
+						categiry.add("A");
+					}else{
+                    	categiry.add("");
+                    }
+				}
+				//derived update DISPLAY_FORMAT
+				List<String> dispalyFormat = new ArrayList<String>();
+				List<String> derivedVal4 = new ArrayList<String>();
+				for (String derived : derived4) {
+					if (derived.equalsIgnoreCase("3")) {
+						derivedVal4.add("derived");
+						dispalyFormat.add("B");
+					} else {
+						derivedVal4.add(" ");
+						dispalyFormat.add("");
+					}
+				}
+				List<String> formulaVal5 = new ArrayList<String>();
+				for (String formula : formula5) {
+					formulaVal5.add(formula);
+				}
+				List<String> subTotalCheckList = new ArrayList<String>();
+				for (String subTotalCheck : subTotalArray) {
+					subTotalCheckList.add(subTotalCheck);
+				}
+				List<String> subSectionList =new ArrayList<String>();
+				for (String subSection : subSectionArray) {
+					subSectionList.add(subSection);
+				}
+				normalizationTemplateCommand.setFinancialSection(sectionNameList);
+				normalizationTemplateCommand.setNormalizedLabelId(nldVal2);
+				normalizationTemplateCommand.setNormalizedLabel(nlTdVal3);
+				normalizationTemplateCommand.setDerived(derivedVal4);
+				normalizationTemplateCommand.setFormula(formulaVal5);
+				normalizationTemplateCommand.setIndustryType(industryTypeVal);
+				normalizationTemplateCommand.setUserGroupId(userGroupId);
+				normalizationTemplateCommand.setCategiry(categiry);
+				normalizationTemplateCommand.setDispalyFormat(dispalyFormat);
+				normalizationTemplateCommand.setSubTotalChek(subTotalCheckList);
+				normalizationTemplateCommand.setLabelSectionList(labelSectionList);
+				normalizationTemplateCommand.setSubSectionList(subSectionList);
+				addRowsCount = normalizationTemplateService.addNormalizationRows(normalizationTemplateCommand);
+				finalRows=sectionNameList.size();
+				if (finalRows == addRowsCount) {
+					normalizationTemplateService.addDerivedrows(normalizationTemplateCommand);
+					if (finalRows == 0) {
+						status = "No rows are added";
+					}else{
+						status=finalRows + " rows inserted.  ";
+					}
+				} else {
+					status = "error";
+
+				}
+
+			}
+		} catch (Exception e) {
+			LOGGER.error(
+					"Exception Occured class:NormalizationTemplateController; method: insertNormalization ",
+					e);
+			e.printStackTrace();
+		}
+		return status;
+	}
+
+	@RequestMapping(value = "/normalizationTemplateExportToExcel.htm")
+	public ModelAndView getnormalizationToExportInExcel(
+			@RequestParam("industryTypeVal") Integer industryTypeVal,
+			@RequestParam("industrytext") String industrytext, Model map,
+			HttpSession session) {
+		LOGGER.info("  class:NormalizationTemplateController; method: getnormalizationToExportInExcel ");
+		List<NormalizationTemplateCommand> nilIndustryList = null;
+		ModelAndView data = new ModelAndView(
+				"normalizationTemplateExcelBuilder");
+		try {
+			if (industryTypeVal != null) {
+				nilIndustryList = normalizationTemplateService
+						.exportToExcelNormItemLableData(industryTypeVal);
+				String fileName = industrytext + "_NormalizationTempalte.xls";
+				data.addObject("nilIndustryList", nilIndustryList);
+				data.addObject("fileName", fileName);
+			}
+		} catch (Exception e) {
+			LOGGER.error(
+					"Exception Occured class:NormalizationTemplateController; method: getnormalizationToExportInExcel ",
+					e);
+			e.printStackTrace();
+		}
+		return data;
+
+	}
+	
+	 @SuppressWarnings({"unchecked" })
+	@RequestMapping(value = "/uploadNormalizationTemp.htm", method = RequestMethod.POST)
+	   public @ResponseBody String upload(MultipartHttpServletRequest request, HttpServletResponse response,HttpSession session) {                 
+	 
+	     //0. notice, we have used MultipartHttpServletRequest
+	 
+	     //1. get the files from the request object
+	     Iterator<String> itr =  request.getFileNames();
+	     Map<String,List<NormTemplateExtractCommand>> normTemplateExtractCommandMap=new HashMap<String, List<NormTemplateExtractCommand>>();
+	     String status="";
+	     MultipartFile mpf=null;
+	   
+	     String[] errorsArray=null;
+	     User user = (User) session.getAttribute("user");
+			Integer userGroupId = user.getUserGroupId();
+	     if(itr.hasNext()){
+	    	 mpf = request.getFile(itr.next());
+	     }
+	    
+	     try {
+		     if(mpf!=null){
+		    	
+		    	 String industryType=NormTemplateExtractionUtil.getIndustryType(mpf);
+		    	 if(industryType.equalsIgnoreCase("")){
+		    		 return "Industry type should not be blank";
+		    	 }
+		    	 errorsArray=industryType.split("~");
+		    	 if(errorsArray.length>1){
+		    		 if(errorsArray[0].equalsIgnoreCase("errors")){
+		    			 status=errorsArray[1];
+		    			 return status;
+		    			 
+		    		 }
+		    	 }
+		    	 boolean isIndustryExists = normalizationTemplateService.checkIndustryType(industryType);
+					if (isIndustryExists) {
+						status = " Industry type already exists in Other Group";
+						return status;
+					}else{
+						
+						Map<String,String> sectionMapbySectionNameAsKey=(HashMap<String,String>)session.getAttribute("sectionMapbySectionNameAsKey");
+						
+						if(CollectionUtils.isEmpty(sectionMapbySectionNameAsKey)){
+							sectionMapbySectionNameAsKey=new HashMap<String,String>();
+						}
+						normTemplateExtractCommandMap=NormTemplateExtractionUtil.extractTemplate(mpf,sectionMapbySectionNameAsKey);
+						
+						if(normTemplateExtractCommandMap!=null && normTemplateExtractCommandMap.size()>0){
+							normalizationTemplateService.addNormalizationTemplateRows(normTemplateExtractCommandMap, industryType,userGroupId);
+						}else{
+							return "Please check the uploaded template format and data";
+						}
+					}
+		     }
+		     
+	     } catch (Exception e) {
+				e.printStackTrace();
+			}
+	     return status;
+	 }
+	 
+	 @RequestMapping(value = "/getSubSectionList.htm")
+		public @ResponseBody Map<String, String> getSubSectionList(@RequestParam("sectionName") String statementFormat,
+				Model map,HttpServletRequest request,HttpSession session) {
+				LOGGER.info("--- viewReportPage request Mapping completed with viewReportPage--------");
+				Map<String, String> data = new HashMap<String, String>();
+				try {
+					List<SubSectionMetadata> subSectionList=normalizationTemplateService.getSubSectionList(statementFormat);
+					if(!CollectionUtils.isEmpty(subSectionList)){
+						ObjectMapper mapper = new ObjectMapper();
+						data.put("subSectonListCount", mapper.writeValueAsString(subSectionList.size()));
+						String subSectonListStr = mapper.writeValueAsString(subSectionList);
+						data.put("subSectonListStr", subSectonListStr);
+					}else{
+						data.put("subSectonListCount", "0");
+						data.put("subSectonListStr", "");
+					}
+				} catch (JsonGenerationException e) {
+					LOGGER.error("Error:", e);
+					e.printStackTrace();
+				} catch (JsonMappingException e) {
+					LOGGER.error("Error:", e);
+					e.printStackTrace();
+				} catch (IOException e) {
+					LOGGER.error("Error:", e);
+					LOGGER.error("Exception Occured class:ReportController; method: getAnalystSummery ",e);
+					e.printStackTrace();
+				}
+			return data;
+		}
+
+}

@@ -1,0 +1,42 @@
+/**
+ * 
+ */
+package com.livespread.util;
+
+import java.util.ResourceBundle;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+
+/**
+ * @author KP0e1301
+ *
+ */
+public class UpdateUser extends HttpServlet{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	public void init() throws ServletException
+    {
+          System.out.println("--init called-------");
+          try{
+        	  //WorkQueueServiceFactory.userAuditService.updateUser();
+        	  ResourceBundle versionProperties = ResourceBundle.getBundle("application");
+        	  String version = versionProperties.getString("VERSION_ID");
+        	  String cssType = versionProperties.getString("cssType");
+        	  String clientSpecificHeaderFooter ="N";
+        	  if(versionProperties.containsKey("clientSpecificHeaderFooterEnable"))
+        		{
+        		  clientSpecificHeaderFooter = versionProperties.getString("clientSpecificHeaderFooterEnable");
+        		}
+        	  getServletContext().setAttribute("cssType", cssType);
+        	  getServletContext().setAttribute("version", version);
+        	  getServletContext().setAttribute("clientSpecificHeaderFooter", clientSpecificHeaderFooter);
+          }catch(Exception e){
+        	  e.printStackTrace();
+          }
+          System.out.println("----------");
+    }
+}

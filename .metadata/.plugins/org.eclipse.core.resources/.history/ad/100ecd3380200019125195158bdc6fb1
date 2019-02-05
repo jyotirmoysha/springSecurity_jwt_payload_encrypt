@@ -1,0 +1,56 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "USER_GROUP_ACCESS")
+@NamedQueries({ @NamedQuery(name = "getUserGroupAccessByGroupId", query = "from UserGroupAccess where userGroupId = :groupId")
+})
+public class UserGroupAccess implements BaseEntity, Serializable {
+
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	@Column(name = "TEMPLATE_ID")
+	private Integer templateId;
+	
+	@Column(name = "USER_GROUP_ID")
+	private Integer userGroupId; 
+
+
+	public Integer getTemplateId() {
+		return templateId;
+	}
+
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+	
+
+
+	public Integer getUserGroupId() {
+		return userGroupId;
+	}
+
+	public void setUserGroupId(Integer userGroupId) {
+		this.userGroupId = userGroupId;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}	
+}

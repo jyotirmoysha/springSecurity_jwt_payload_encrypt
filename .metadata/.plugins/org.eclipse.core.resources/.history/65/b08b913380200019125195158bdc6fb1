@@ -1,0 +1,58 @@
+package com.livespread.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.livespread.domain.ExcelSheetMetadata;
+import com.livespread.domain.ExcelTableMetadata;
+import com.livespread.domain.ExportExcelMetadata;
+import com.livespread.domain.NamedQueryName;
+import com.rage.extendeddao.ExtendedGenericDao;
+
+@Service("excelExportService")
+public class ExcelExportServiceImpl implements ExcelExportService{
+	private Logger LOGGER = Logger.getLogger(ExcelExportServiceImpl.class);
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(readOnly = true)
+	public ExportExcelMetadata f_ExcelDetailsByName(String exportName) {
+	LOGGER.info("**start--f_ExcelDetailsByName methode");
+	LOGGER.info("Export functionality name="+exportName);
+	Map<String,Map<String,Map<String,List<Integer>>>> dataValMap=new LinkedHashMap<>();
+	HashMap<String, Object> parameters = new HashMap<String, Object>();
+	parameters.put("exportFunctionalityName", exportName);
+	ExportExcelMetadata excelMetadata=(ExportExcelMetadata)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getExcelExportName, ExportExcelMetadata.class, parameters).get(0);
+	String excelName=excelMetadata.getExportTemplateName();
+	int excelId=excelMetadata.getExcelId();
+	//here we fetch sheets list based on excel id
+	parameters.put("excelId", excelId);
+	List<ExcelSheetMetadata> excelSheetList=(List<ExcelSheetMetadata>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getSheetNamesByExcelId, ExcelSheetMetadata.class, parameters);
+	Map<String,Map<String,List<Integer>>> sheetMap=new LinkedHashMap<>();
+	for(ExcelSheetMetadata excelSheetMetadata:excelSheetList){
+	parameters.put("sheetId", excelSheetMetadata.getSheetId());
+	List<ExcelTableMetadata> excelTableList=(List<ExcelTableMetadata>)(Object)genericDaoImpl.findByNamedQuery(NamedQueryName.getTableNamesByExcelId, ExcelTableMetadata.class, parameters);
+	Map<String,List<Integer>> tableMap=new LinkedHashMap<>();
+	for(ExcelTableMetadata excelTableMetadata:excelTableList){
+		List<Integer> startRowColList=new ArrayList<>();
+		startRowColList.add(excelTableMetadata.getStartRowNumber());
+		startRowColList.add(excelTableMetadata.getStartColumnNumber());
+		tableMap.put(excelTableMetadata.getTableName(), startRowColList);
+	}
+	sheetMap.put(excelSheetMetadata.getSheetName(), tableMap);
+}
+	dataValMap.put(excelName, sheetMap);
+	
+	return excelMetadata;
+	}
+}

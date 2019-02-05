@@ -1,0 +1,84 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author sd0e482
+ *
+ */
+@Entity
+@Table(name = "TEMPLATE_SECTION_ORDER")
+@NamedQueries({ 
+  @NamedQuery(name = "getSectionOrderForTemplate", query = "SELECT sectionName from TemplateSectionOrder  where templateId = :templateId ORDER BY displayOrder asc")
+})
+public class TemplateSectionOrder implements Serializable, BaseEntity {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	@Id
+	@Column(name = "TEMPLATE_ID")
+	private Integer templateId;
+	
+	@Column(name = "SECTION_NAME")
+	private String sectionName;
+	
+	@Column(name = "DISPLAY_ORDER")
+	private Integer displayOrder;
+	/**
+	 * @return the templateId
+	 */
+	public Integer getTemplateId() {
+		return templateId;
+	}
+	/**
+	 * @param templateId the templateId to set
+	 */
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+	/**
+	 * @return the sectionName
+	 */
+	public String getSectionName() {
+		return sectionName;
+	}
+	/**
+	 * @param sectionName the sectionName to set
+	 */
+	public void setSectionName(String sectionName) {
+		this.sectionName = sectionName;
+	}
+	/**
+	 * @return the displayOrder
+	 */
+	public Integer getDisplayOrder() {
+		return displayOrder;
+	}
+	/**
+	 * @param displayOrder the displayOrder to set
+	 */
+	public void setDisplayOrder(Integer displayOrder) {
+		this.displayOrder = displayOrder;
+	}
+	
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

@@ -1,0 +1,240 @@
+package com.livespread.command;
+
+import java.util.List;
+import java.util.Map;
+
+public class QACheckListData  implements Comparable<QACheckListData>{
+
+	private String filingId;
+	private Integer qaMessageId;
+	private String qaMessageIdString;
+	private Integer checkId;
+	private String checkIdString;
+	private String checkStage;
+	private String checkName;
+	private String checkStatus;
+	private String qaMessage;
+	private String actionType;
+	private String section;
+	private Boolean reviewFlag;
+	private String comments;
+	private String labels;
+	private String values;
+	private String aggregate_type;
+	private Integer arsId;
+	private String arv_value;
+	private List<String> checkStatusList;
+	private Map<Integer,String> checkStatusMap;
+	private Integer seqOrder;
+	private String qaMessageIdVal;
+	private String  checkIdVal;
+	private String  linetItemLabel;
+
+	public String getArv_value() {
+		return arv_value;
+	}
+
+	public void setArv_value(String arv_value) {
+		this.arv_value = arv_value;
+	}
+
+	public Integer getArsId() {
+		return arsId;
+	}
+
+	public void setArsId(Integer arsId) {
+		this.arsId = arsId;
+	}
+
+	public String getAggregate_type() {
+		return aggregate_type;
+	}
+
+	public void setAggregate_type(String aggregate_type) {
+		this.aggregate_type = aggregate_type;
+	}
+
+	public String getLabels() {
+		return labels;
+	}
+
+	public void setLabels(String labels) {
+		this.labels = labels;
+	}
+
+	public String getValues() {
+		return values;
+	}
+
+	public void setValues(String values) {
+		this.values = values;
+	}
+
+	public String getFilingId() {
+		return filingId;
+	}
+
+	public void setFilingId(String filingId) {
+		this.filingId = filingId;
+	}
+
+	public Integer getQaMessageId() {
+		return qaMessageId;
+	}
+
+	public void setQaMessageId(Integer qaMessageId) {
+		this.qaMessageId = qaMessageId;
+	}
+
+	public Integer getCheckId() {
+		return checkId;
+	}
+
+	public void setCheckId(Integer checkId) {
+		this.checkId = checkId;
+	}
+
+	public String getCheckStage() {
+		return checkStage;
+	}
+
+	public void setCheckStage(String checkStage) {
+		this.checkStage = checkStage;
+	}
+
+	public String getCheckName() {
+		return checkName;
+	}
+
+	public void setCheckName(String checkName) {
+		this.checkName = checkName;
+	}
+
+	public String getCheckStatus() {
+		return checkStatus;
+	}
+
+	public void setCheckStatus(String checkStatus) {
+		this.checkStatus = checkStatus;
+	}
+
+	public String getQaMessage() {
+		return qaMessage;
+	}
+
+	public void setQaMessage(String qaMessage) {
+		this.qaMessage = qaMessage;
+	}
+
+	public String getActionType() {
+		return actionType;
+	}
+
+	public void setActionType(String actionType) {
+		this.actionType = actionType;
+	}
+
+	public String getSection() {
+		return section;
+	}
+
+	public void setSection(String section) {
+		this.section = section;
+	}
+
+	public Boolean getReviewFlag() {
+		return reviewFlag;
+	}
+
+	public void setReviewFlag(Boolean reviewFlag) {
+		this.reviewFlag = reviewFlag;
+	}
+
+	public String getComments() {
+		return comments;
+	}
+
+	public void setComments(String comments) {
+		this.comments = comments;
+	}
+
+	public String getQaMessageIdString() {
+		return qaMessageIdString;
+	}
+
+	public void setQaMessageIdString(String qaMessageIdString) {
+		this.qaMessageIdString = qaMessageIdString;
+	}
+
+	public String getCheckIdString() {
+		return checkIdString;
+	}
+
+	public void setCheckIdString(String checkIdString) {
+		this.checkIdString = checkIdString;
+	}
+
+	public List<String> getCheckStatusList() {
+		return checkStatusList;
+	}
+
+	public void setCheckStatusList(List<String> checkStatusList) {
+		this.checkStatusList = checkStatusList;
+	}
+
+	public Map<Integer, String> getCheckStatusMap() {
+		return checkStatusMap;
+	}
+
+	public void setCheckStatusMap(Map<Integer, String> checkStatusMap) {
+		this.checkStatusMap = checkStatusMap;
+	}
+
+	
+	public Integer getSeqOrder() {
+		return seqOrder;
+	}
+
+	public void setSeqOrder(Integer seqOrder) {
+		this.seqOrder = seqOrder;
+	}
+
+	public int compareTo(QACheckListData qaCheckListData){  
+		if(null!=qaCheckListData && null!=qaCheckListData.checkId){
+			if(this.checkId==qaCheckListData.checkId)  
+				return 0;  
+				else if(this.checkId>qaCheckListData.checkId)  
+				return 1;  
+				else  
+				return -1; 
+		}else{
+			return -1; 
+		}
+		 
+		}
+
+	public String getQaMessageIdVal() {
+		return qaMessageIdVal;
+	}
+
+	public void setQaMessageIdVal(String qaMessageIdVal) {
+		this.qaMessageIdVal = qaMessageIdVal;
+	}
+
+	public String getCheckIdVal() {
+		return checkIdVal;
+	}
+
+	public void setCheckIdVal(String checkIdVal) {
+		this.checkIdVal = checkIdVal;
+	}
+
+	public String getLinetItemLabel() {
+		return linetItemLabel;
+	}
+
+	public void setLinetItemLabel(String linetItemLabel) {
+		this.linetItemLabel = linetItemLabel;
+	}  
+	
+}

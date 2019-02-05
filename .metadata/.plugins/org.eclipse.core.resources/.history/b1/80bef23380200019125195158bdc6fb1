@@ -1,0 +1,586 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.security.Principal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.GrantedAuthorityImpl;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "users")
+@NamedQueries({
+		@NamedQuery(name = "getUserDetailsList", query = "SELECT U FROM User U"),
+		@NamedQuery(name = "getUserDetailsListByGroupIdForReports", query = "select userId,login from User where userGroupId= :groupId  order by userId  asc"),
+		@NamedQuery(name = "updateUserPassword", query = "update User set password=:changePassword, modifiedDate=:modifiedDate  where userId=:userId"),
+		@NamedQuery(name = "updateLastLoginTime", query = "update User set lastLoginTime=:updateTime, lockedTime=:lockedTime, wrongPasswordCount=:zero  where userId=:userId"),
+		@NamedQuery(name = "getBeforePasswordCount", query = "select wrongPasswordCount from User WHERE login=:firstName"),
+		@NamedQuery(name = "updateLockedTime", query = "update User set lockedTime=:lockedTime, wrongPasswordCount=(select isnull(max(wrongPasswordCount),0)+1 from User where userId=:userId)  where userId=:userId"),
+		@NamedQuery(name = "releaseLockTime", query = "update User set lockedTime=:lockedTime, wrongPasswordCount=:zero  where userId=:userId"),
+		@NamedQuery(name = "findUserDetailsForAdmin", query = "select userId, login, usersGroupName, email,createdDate,flag ,' ' as Edit, ' ' as Remove, usersGroupName as ugn, userGroupId  from User order by userId desc"),
+		@NamedQuery(name = "findCountOfUserDetailsForAdmin", query = "select count(userId) from User"),
+		@NamedQuery(name = "findUserDetailsForAdminByGroupId", query = "select userId, login, usersGroupName, email,createdDate,flag ,' ' as Edit, ' ' as Remove, usersGroupName as ugn, userGroupId from User where userGroupId=:userGroupId order by userId desc"),
+		@NamedQuery(name = "findCountOfUserDetailsForAdminByGroupId", query = "select count(userId) from User where userGroupId=:userGroupId"),
+		@NamedQuery(name = "checkUserExistByEmail", query = "from User where email=:email"),
+		@NamedQuery(name = "checkUserExistByUsername", query = "from User where LOWER(login) = LOWER(:login)"),
+		@NamedQuery(name = "getUserByUserId", query = "from User where userId=:userId"),
+		@NamedQuery(name = "updateUser", query = "update User set firstName=:firstName,lastName=:lastName,userGroupId=:userGroupId,usersGroupName=:usersGroupName,modifiedBy=:modifiedBy,modifiedDate=:modifiedDate,userAccess=:userAccess,flag=:flag where userId=:userId"),
+		@NamedQuery(name = "deleteUser", query = "update User set modifiedBy=:modifiedBy,modifiedDate=:modifiedDate,flag=:flag where userId=:userId"),
+		@NamedQuery(name = "getActiveUserList", query = "SELECT U FROM User U where U.flag='Active' order by U.userId desc"),
+		@NamedQuery(name = "findChecker", query = "SELECT distinct U.login,U.userId FROM User U order by U.login"),
+		@NamedQuery(name = "findMaker", query = "SELECT distinct U.login,U.userId FROM User U order by U.login"),
+		@NamedQuery(name = "deleteUsersByGroupId", query = "update User set modifiedBy=:modifiedBy,modifiedDate=:modifiedDate,flag=:flag where userGroupId in (select usersGroupId from UsersGroup where usersGroupId=:usersGroupId or parentUserGroup=:usersGroupId)"),
+		@NamedQuery(name = "setUserSessionId", query = "update User set userSessionId =:userSessionId where userId=:userId"),
+		@NamedQuery(name = "setUserSessionIdNull", query = "update User set userSessionId =null where userId=:userId")
+})
+public class User implements Serializable, BaseEntity,
+		org.springframework.security.core.userdetails.UserDetails, Principal {
+	private static final long serialVersionUID = 1L;
+
+	@Id
+//	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence")
+//	@SequenceGenerator(name = "sequence", sequenceName = "SEQ_USERS", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "USER_ID", unique = true, precision = 38)
+	private Long userId;
+
+	@Column(nullable = false, name = "Login")
+	private String login;
+
+	@Column(name = "PASSWORD")
+	private String password;
+
+	@Column(name = "FIRST_NAME")
+	private String firstName;
+
+	@Column(name = "LAST_NAME")
+	private String lastName;
+
+	@Column(name = "EMAIL")
+	private String email;
+
+	@Column(name = "TELEPHONE")
+	private String telephone;
+
+	@Column(name = "CITY")
+	private String city;
+
+	@Column(name = "STATE")
+	private String state;
+
+	@Column(name = "ZIP_CODE")
+	private String zipCode;
+
+	@Column(name = "COUNTRY")
+	private String country;
+
+	@Column(name = "CREATED_BY")
+	private String createdBy;
+
+	@Column(name = "CREATED_DATE")
+	private Timestamp createdDate;
+
+	@Column(name = "MODIFIED_BY")
+	private String modifiedBy;
+
+	@Column(name = "MODIFIED_DATE")
+	private Timestamp modifiedDate;
+
+	@Column(name = "USER_ACCESS")
+	private Integer userAccess;
+
+	@Column(name = "TITLE")
+	private Integer title = null;
+
+	// bi-directional many-to-one association to UsersGroup
+	@Column(name = "USERS_GROUP_ID")
+	private Integer userGroupId;
+
+	@Column(name = "USER_GROUP_NAME")
+	private String usersGroupName;
+
+	// for wrong passwordCount.
+	@Column(name = "WRONG_PASSWORD_COUNT")
+	private Integer wrongPasswordCount;
+
+	// for lastLoginTime USER.
+	@Column(name = "LAST_LOGIN_TIME")
+	private Timestamp lastLoginTime;
+
+	// for lockedTime
+
+	@Column(name = "LOCKED_TIME")
+	private Timestamp lockedTime;
+
+	// for Admin
+	@Column(name = "FLAG")
+	private String flag;
+	
+	@Column(name = "SALUTATION")
+	private String salutation;
+	
+	@Column(name = "USER_SESSION_ID")
+	private String userSessionId;
+	
+	
+	@Transient
+	private Integer errorMessage;
+
+	@Transient
+	private Long currentTimeStamp;
+	
+	public Integer getErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(Integer errorMessage) {
+		this.errorMessage = errorMessage;
+	}
+
+	public Integer getWrongPasswordCount() {
+		return wrongPasswordCount;
+	}
+
+	public void setWrongPasswordCount(Integer wrongPasswordCount) {
+		this.wrongPasswordCount = wrongPasswordCount;
+	}
+
+	public Timestamp getLastLoginTime() {
+		return lastLoginTime;
+	}
+
+	public void setLastLoginTime(Timestamp lastLoginTime) {
+		this.lastLoginTime = lastLoginTime;
+	}
+
+	public Timestamp getLockedTime() {
+		return lockedTime;
+	}
+
+	public void setLockedTime(Timestamp lockedTime) {
+		this.lockedTime = lockedTime;
+	}
+
+	public String getUsersGroupName() {
+		return usersGroupName;
+	}
+
+	public void setUsersGroupName(String usersGroupName) {
+		this.usersGroupName = usersGroupName;
+	}
+
+	public String getFlag() {
+		return flag;
+	}
+
+	public void setFlag(String flag) {
+		this.flag = flag;
+	}
+
+	public User() {
+	}
+
+	public User(Long userId) {
+		this.userId = userId;
+	}
+
+	/**
+	 * @param email2
+	 * @param object
+	 * @param object2
+	 */
+	public User(Long userId, String firstName, String email) {
+		this.userId = userId;
+		this.firstName = firstName;
+		this.email = email;
+	}
+
+	public Integer getTitle() {
+		return title;
+	}
+
+	public void setTitle(Integer title) {
+		this.title = title;
+	}
+
+	public Integer getUserGroupId() {
+		return userGroupId;
+	}
+
+	public void setUserGroupId(Integer userGroupId) {
+		this.userGroupId = userGroupId;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Timestamp getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Timestamp createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public String getLogin() {
+		return login;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
+	public String getModifiedBy() {
+		return modifiedBy;
+	}
+
+	public void setModifiedBy(String modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
+	public Timestamp getModifiedDate() {
+		return modifiedDate;
+	}
+
+	public void setModifiedDate(Timestamp modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+	public String getTelephone() {
+		return telephone;
+	}
+
+	public void setTelephone(String telephone) {
+		this.telephone = telephone;
+	}
+
+	public String getZipCode() {
+		return zipCode;
+	}
+
+	public void setZipCode(String zipCode) {
+		this.zipCode = zipCode;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return true;
+	}
+
+	/**
+	 * @return the userId
+	 */
+	public Long getUserId() {
+		return userId;
+	}
+
+	/**
+	 * @param userId
+	 *            the userId to set
+	 */
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getState() {
+		return state;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
+
+	@Override
+	public String getName() {
+		return firstName;
+	}
+
+	@Override
+	public String getPassword() {
+		return this.password;
+	}
+
+	@Override
+	public String getUsername() {
+		return this.login;
+	}
+
+	@Override
+	public boolean isAccountNonExpired() {
+		return true;
+	}
+
+	@Override
+	public boolean isAccountNonLocked() {
+		return true;
+	}
+
+	@Override
+	public boolean isCredentialsNonExpired() {
+		return true;
+	}
+
+	public Integer getUserAccess() {
+		return userAccess;
+	}
+
+	public void setUserAccess(Integer userAccess) {
+		this.userAccess = userAccess;
+	}
+
+
+	
+	public String getSalutation() {
+		return salutation;
+	}
+
+	public void setSalutation(String salutation) {
+		this.salutation = salutation;
+	}
+	
+	@Transient
+	private Set<UserRole> userRoles;
+
+	@Transient
+	private Set<UserFeatureMapping> userFeatureMappings;
+
+	@Transient
+	private Set<UserCustomFeatureMapping> customUserFeatureMappings;
+
+	@Transient
+	private List<UserGroupAccess> groupAccess;
+
+	public Set<UserRole> getUserRoles() {
+		return userRoles;
+	}
+
+	public void setUserRoles(Set<UserRole> userRoles) {
+		this.userRoles = userRoles;
+	}
+
+	public Set<UserFeatureMapping> getUserFeatureMappings() {
+		return userFeatureMappings;
+	}
+
+	public void setUserFeatureMappings(
+			Set<UserFeatureMapping> userFeatureMappings) {
+		this.userFeatureMappings = userFeatureMappings;
+	}
+
+	public Set<UserCustomFeatureMapping> getCustomUserFeatureMappings() {
+		return customUserFeatureMappings;
+	}
+
+	public void setCustomUserFeatureMappings(
+			Set<UserCustomFeatureMapping> customUserFeatureMappings) {
+		this.customUserFeatureMappings = customUserFeatureMappings;
+	}
+
+	
+	@Override
+	public Collection<GrantedAuthority> getAuthorities() {
+
+		List<GrantedAuthority> authList = new ArrayList<GrantedAuthority>();
+		// ADD USER ROLES
+		for (UserRole role : userRoles) {
+
+			authList.add(new GrantedAuthorityImpl(role.getRole()));
+		}
+
+		// ADD Group FEATURES
+		for (UserFeatureMapping userFeatureMapping : userFeatureMappings) {
+			authList.add(new GrantedAuthorityImpl(userFeatureMapping
+					.getErmApplicationFeature().getFeatureName()));
+		}
+		// Add custom user features
+		for (UserCustomFeatureMapping userFeatureMapping : customUserFeatureMappings) {
+			authList.add(new GrantedAuthorityImpl(userFeatureMapping
+					.getErmApplicationFeature().getFeatureName()));
+		}
+		return authList;
+
+	}
+
+	public static boolean isRolePresent(
+			Collection<GrantedAuthority> authorities, String role) {
+		boolean isRolePresent = false;
+		for (GrantedAuthority grantedAuthority : authorities) {
+			isRolePresent = grantedAuthority.getAuthority().equals(role);
+			if (isRolePresent)
+				break;
+		}
+		return isRolePresent;
+
+	}
+
+	/**
+	 * @return the groupAccess
+	 */
+	public List<UserGroupAccess> getGroupAccess() {
+		if (groupAccess != null) {
+			if (this.userGroupAccessMap == null) {
+				userGroupAccessMap = new HashMap<Integer, UserGroupAccess>();
+				for (UserGroupAccess userGroupAccess : groupAccess) {
+					userGroupAccessMap.put(userGroupAccess.getTemplateId(),
+							userGroupAccess);
+				}
+			}
+		}
+		return groupAccess;
+	}
+
+	/**
+	 * @param groupAccess
+	 *            the groupAccess to set
+	 */
+	public void setGroupAccess(List<UserGroupAccess> groupAccess) {
+		this.groupAccess = groupAccess;
+	}
+
+	@Transient
+	Map<Integer, UserGroupAccess> userGroupAccessMap = null;
+
+	/**
+	 * @return the userGroupAccessMap
+	 */
+	public Map<Integer, UserGroupAccess> getUserGroupAccessMap() {
+		if (userGroupAccessMap == null) {
+			this.getUserAccess();
+		}
+
+		return userGroupAccessMap;
+	}
+
+	/**
+	 * @param userGroupAccessMap
+	 *            the userGroupAccessMap to set
+	 */
+	public void setUserGroupAccessMap(
+			Map<Integer, UserGroupAccess> userGroupAccessMap) {
+		this.userGroupAccessMap = userGroupAccessMap;
+	}
+
+
+	public void setUserId(long userId) {
+		this.userId = userId;
+	}
+
+	
+	
+	public String getUserSessionId() {
+		return userSessionId;
+	}
+
+	public void setUserSessionId(String userSessionId) {
+		this.userSessionId = userSessionId;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+	
+
+   
+
+    @Override
+    public boolean equals(Object other)
+    {
+          return (other instanceof User) && (userId != null) ? userId.equals(((User) other).userId) : (other == this);
+    }
+    
+
+    @Override
+    public int hashCode()
+    {
+          return (userId != null) ? (this.getClass().hashCode() + userId.hashCode()) : super.hashCode();
+    }
+
+	/**
+	 * @return the currentTimeStamp
+	 */
+	public Long getCurrentTimeStamp() {
+		return currentTimeStamp;
+	}
+
+	/**
+	 * @param currentTimeStamp the currentTimeStamp to set
+	 */
+	public void setCurrentTimeStamp(Long currentTimeStamp) {
+		this.currentTimeStamp = currentTimeStamp;
+	}
+    
+    
+}

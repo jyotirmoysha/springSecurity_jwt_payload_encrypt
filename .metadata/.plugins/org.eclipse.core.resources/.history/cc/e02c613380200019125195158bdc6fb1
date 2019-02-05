@@ -1,0 +1,346 @@
+/**
+ * 
+ */
+package com.livespread.service;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.springframework.dao.DataAccessException;
+
+import com.livespread.command.ArsPoCommand;
+import com.livespread.command.FinancialItemsCommand;
+import com.livespread.command.NormInputParamers;
+import com.livespread.command.NormalisedLabelAndValues;
+import com.livespread.command.NormalisedParserOutput;
+import com.livespread.command.NormalizationBreakupData;
+import com.livespread.command.NormalizeFormData;
+import com.livespread.command.NormalizeViewForDebitACHCommand;
+import com.livespread.command.NotesCheckListCommand;
+import com.livespread.command.ParserOutputCommand;
+import com.livespread.command.PdfExtractionMetadatCommand;
+import com.livespread.command.ScaleChangeSignPoMappingCommand;
+import com.livespread.command.ScaleCommand;
+import com.livespread.domain.ArsPoMapping;
+import com.livespread.domain.AsRepStatement;
+import com.livespread.domain.Filings;
+import com.livespread.domain.NIValues;
+import com.livespread.domain.NormItemLabels;
+import com.livespread.domain.ParserOutput;
+import com.livespread.domain.QACheckFilterMapping;
+import com.livespread.domain.User;
+
+public interface NormalizationService {
+
+	List<ParserOutput> getNormalizedDataForEnhancedPublicParser(String stmtFormat,int WqId, int fillingid, Integer startNum, Integer endNum);
+
+	List<ParserOutput> getNormalizedData(NormInputParamers Inputparameters) ;
+	
+	List<ParserOutput> getNormalizedDataForDealerFormParser(String stmtFormat, int WqId, int fillingid,Integer startNum,Integer endNum) ;
+
+	String getTextDataFromFile(String filePath) throws IOException ;
+
+	List<String> getOrgionalFileNames(String customerId, String wqId);
+
+
+	NormalizeFormData addNormalizedData(NormalizeFormData nfd);
+
+	NormalizeFormData updateNormalizedData(NormalizeFormData nfd,String isChild);
+
+	NormalizeFormData deleteNormalizeData(NormalizeFormData nfd);
+
+	List<NormItemLabels> getListOfNormItemLabels(String stmtFormat,
+			Integer fillingId);
+
+	Map<String, List<String>> getHeaderDetails(Integer fillingId,
+			Integer customerId, Integer wqId,String section,boolean isClientData);
+
+	Map<String, List<NormalisedLabelAndValues>> getNormalzedLabelsDetails(
+			Integer fillingId, Integer customerId, Integer wqId,
+			Map<String, List<String>> mapOfHeaders) ;
+
+	/*
+	 * This Function used for fetch data from SUB_SECTION_MASTER table by
+	 * statmentwise(ie IS,BS,CF)
+	 */
+	List<String> getListOfSection(String stmtFormat,Integer templateId);
+
+	List<Object> getNormalizedDataForXsl(int WqId, int fillingId);
+	
+	List<Object> getNormalizedDataForDealerFormXsl(int WqId, int fillingId,String sectionName);
+	
+	
+
+	List<Object> getNormalizedDataOfBanksForXsl(int WqId, int fillingId);
+
+	void updateFilings(Integer fillingId, String type, Integer templateId);
+
+	Integer saveToRequestQueueForNormalizeTemplate(Integer fillingId, String type, String processName);
+
+	String insertGlobelLevelData(NormalizeFormData nfd);
+
+	void importExcelDataInParserOutPut(List<ParserOutput> pOutPutList,
+			Integer customerId, Integer fillingId);
+
+	List<String> getAccountNoFromParserOutput(Integer fillingId,
+			String po_Section);
+
+	List<String> getTimePeriodFromParserOutput(Integer fillingId,
+			String po_Section);
+
+	List<String> getcustodianNameFromParserOutput(Integer fillingId,
+			String po_Section);
+
+	List<String> f_getTimePeriodByAccountNumber(Integer fillingId,
+			String po_Section, String accountNumber);
+
+	List<String> f_getCustodianNameByAccountNumber(Integer fillingId,
+			String po_Section, String accountNumber);
+
+	Map<String, Map<String, Object>> getBankHeaderDetails(List<String> accId,
+			Integer fillingId);
+
+	List<String> getAccountIDByFillingId(Integer filingId) ;
+
+	NormalisedParserOutput getFirstParserOutputRecord(Integer filingId,
+			String section, String poAsRepLabel);
+
+	List<Object> getNormalizedDataForSUPPLXsl(int WqId, int fillingId);
+
+	/*
+	 * This function used for update nulll value NI_ITEM and NIL_LABEL column in
+	 * parser output table based on filingId and section
+	 */
+
+	void updateNormalizedLabelColumn(Integer filingId, Integer niItem,
+			String niLabel, String section);
+
+	/*
+	 * This function used for update NI_ITEM and NIL_LABEL column using in
+	 * parser output table based on filingId and section
+	 */
+	void updateCustomMapping(String nilLable, Integer niItem, Integer filingId,
+			String section, String asrepLable);
+
+	/*
+	 * This function used for get parser output data for Supplemental
+	 * Information
+	 */
+
+	List<Object> getNormalizedDataForSupplementalInfo(String stmtFormat,
+			int WqId, int fillingid);
+
+	/*
+	 * This function used for fetch distinct sub section from parser output
+	 */
+
+	List<String> getDistinctSubSectionByFilingId(Integer fillingId,
+			String section);
+
+	/*
+	 * This function used for get Bank Header details for DebitACH and Bank
+	 * parser
+	 */
+
+	Map<String, Map<String, NormalizeViewForDebitACHCommand>> getBankHeaderDetailsForDebitACH(
+			List<String> accId, Integer fillingId, String nil_section);
+
+	void downloadCRTemplate(
+			Map<String, List<NormalisedLabelAndValues>> normalzedLabelsDetailsMap,
+			String oparationName, String customerName,
+			String downloadedCRTemplatePath, String CRTemplateFilePath,
+			Map<String, List<String>> mapOfHeaders);
+	
+	/*
+	 * 
+	 * * This function used for get Template Id and Template Name based on group
+	 * id
+	 */
+	//List<NormItemLabels> getNormalizeTemplateList(int userGroupId);
+
+	List<NormItemLabels> getIndustryName(int templateId);
+
+	/*
+	 * This function used for get next sequence value
+	 */
+	Integer getNextSequenceValue();
+
+
+	/*
+	 * This function used for get template id from filing table based in filing
+	 * id
+	 */
+	int getTemplateIdByFilingIdFromFiling(int filingId);
+
+	
+	/**
+	 * This methode used for get data from  PDf_extration_metadata for pdf_based_parser based on filing id  
+	 */
+Map<String,List<PdfExtractionMetadatCommand>> f_getPDFExtMetadata(Integer filingId);
+
+/**
+ * This method used for update po_merge column in parser_output table based on setion,table id and filing id
+ */
+String f_mergePdfBasedParser(String checkboxArray,int filingId);	
+
+
+/**
+ * This methode used for delete data from LS_PDF_EXTRACTION_METADATA table and parser_output table
+ */
+boolean f_deleteStatementData(String checkboxArray,Integer filingId);
+
+
+/**
+ * This methode store data in language_mapping_metadata table 
+ */
+
+boolean f_saveInLanguageMappingMetadata(List<Integer> poIdList);
+
+/**
+ * This methode used for ger max transaction id from parser_output_audit table
+ * @return:transaction Id
+ */
+Integer f_getMaxTransactionId();
+
+/**
+ * This method save data in parser_output_audit table
+ */
+
+/**
+ * This method used for fetched records from parser_output and section_mapping based on po id 
+ */
+Map<String,String> f_fetchSectionListByFilingId(Integer filingId,Integer parserId);
+
+/**
+ * this methode used for fetch parser_output records based on filingid and norm item label is not null
+ */
+
+List<ParserOutput> f_fetchParserOutputByNormLabel(Integer filingId,String levelName,List<String> sectionList) ;
+
+/**
+ * This method used for generic save in request_queue based on 
+ */
+
+
+List<AsRepStatement> getAsRepStmtByFilingId(Integer filingId,String stmtFormat);
+List<NormItemLabels> getListOfNormItemLabelsByTemplateId(String stmtFormat,Integer fillingId);
+
+boolean updateNormalizedLabelByPoID(NormalizeFormData normalizeFormData);
+
+void createArsPoMapping(ArsPoMapping arsPoMapping,NIValues niValues);
+ArsPoMapping getAsRepPOMappingByFilingId(Integer poId,String coulmnName);
+
+/**
+ * This method used for update normalized label in parser_output table based on po id
+ */
+void  createNIValiues(NIValues niValues);
+
+List<ParserOutput> getchildNormalizedDataByPoId(Integer PoId);
+List<Integer> selectSupplPoIds(Integer fillingId);
+List<Integer> selectBreakupsPoIds(Integer fillingId);
+List<ParserOutputCommand> getArsPoMappingListByFilingId(List<ParserOutput> parserOutPutList);
+List<NotesCheckListCommand> getNotesCheckList(Integer filingId) throws DataAccessException;
+boolean deleteArsPoMapping(Integer Poid,String columnName);
+List<ArsPoMapping>  getArsPoMappingdByFilingId(Integer fillingId);
+List<NormalizationBreakupData> getchildNormalizedDataByNiId(Integer niId);
+//notes update code
+boolean updateNotes(Integer decryptedWqEid, String Notestext); 
+
+String findNoteTextByWqEid(Integer decryptedWqEid);
+
+List<ScaleCommand> getScaleList() throws Exception;
+
+List<ScaleChangeSignPoMappingCommand> getScaleChangeSignPoMappingList(Integer filingId) throws Exception;
+
+boolean createOrUpdateScaleChangePoMapping(ScaleChangeSignPoMappingCommand scaleChangeSignPoMappingCommand ) throws Exception;
+
+boolean createOrUpdateSignChangePoMapping(ScaleChangeSignPoMappingCommand scaleChangeSignPoMappingCommand ) throws Exception;
+
+ScaleChangeSignPoMappingCommand getScaleChangeSignPoMappingListByPoId(Integer poId,String ColName)  throws Exception;
+
+/**
+ * In this methode update pocrudaccount based on poId in parser_output table 
+ */
+boolean f_updatePoCrudAccountByPOID(int poId)throws Exception;
+
+ParserOutput getParserOutputByPoID(Integer poId)  throws Exception;
+
+List<ArsPoCommand> f_fetchArsPoMAppingBYFilingIdandSectionList(Integer filingId, List<String> sectionList) throws Exception;
+// by section name
+List<Object> getNormalizedDataForXsl(int WqId, int fillingId,String sectionName);
+
+Map<Integer, List<ParserOutputCommand>> getChildRecordsforReviewMapping(Integer filingId) throws Exception;
+
+/**
+ * This method return column count exist in table 
+ */
+int f_findOutValuesColumnCount(int filingId,String section) throws DataAccessException;
+
+List<String> isElementEnable(String screenName, Integer templateId);
+
+Integer getTotalRecords(Integer fillingId, String stmtFormat, Integer parserId);
+
+List<ParserOutput> getAsRepLabelContextTxtValues(Integer fillingId);
+
+boolean updateByAsRepLabelPoId(Integer fillingId,String asRepLableSection,Integer asRepLable_PoId,List<Integer> poids);
+List<Object> getNormalizedDataForExcel(int fillingId,Set<String> sectionSet);
+Map<String, Map<String, List<? extends Object>>> f_createNormalizedViewExportData(Map<String, List<NormalisedLabelAndValues>> listOfNormalzedLabelsDetails,
+		Map<String, List<String>> mapOfHeaders, List<String> listofHideClmns, String fileName,Map<String, List<NormalisedLabelAndValues>> ratioCalcultaionMap,Map<String,String> sectionDisplayHeaderMap,List<String> dataTableHeaders,String downloadType);
+/**
+ * This function used for searchable bank parser
+ */
+List<ParserOutput> getNormalizedDataByFilter(String stmtFormat, int WqId, int fillingid,Integer startNum,Integer endNum,String accountNumber,String timePeriod,String custodianName, String updatedAllPoId) ;
+
+
+List<ParserOutput> getNormalizedDataForQAChecks(String stmtFormat,int fillingId,String modifiedBy) throws Exception;
+
+List<ParserOutput> f_getQANormDataBycheckId(Integer checkId,Integer fillingId,String poSection,String isSubSection,Integer firstRecord,Integer displayRecords,Integer colCountValue);
+
+List<QACheckFilterMapping> getPoModifyByList();
+Integer f_getQANormDataCountBycheckId(Integer fillingId,String poSection,Integer colCountValue);
+
+int f_findOutValuesColumnCountForQaCheckBreakup(int filingId, String section,String modifiedBy) throws DataAccessException;
+
+List<Object> getFinancialItemsByFilter(FinancialItemsCommand financialItemsCommand);
+
+String bulkUpdateFinancialItems(List<FinancialItemsCommand> financialItemsCommandList,User userObject);
+
+ParserOutput f_getStatementYearParserOutputData(Integer fillingId, String poSection, Integer colCountValue);
+
+
+List<Object> getPdfExtractionMetaDataListByByFilter(PdfExtractionMetadatCommand pdfExtractionMetadatCommand);
+
+String bulkUpdateExtractionRules(List<PdfExtractionMetadatCommand> pdfExtractionMetadatCommandList,User userObject);
+
+String getDownloadControllerByTemplateId(Integer templateId) throws Exception;
+
+String checkBalancingValue(Integer nivId)throws Exception;
+
+String getSectionNameBySectionDisplayName(String sheetName)throws Exception;
+Filings getFilingsByFillingId(int filingId) throws Exception;
+List<NormalizationBreakupData> getchildNormalizedDataByNiIdForClickBack(NIValues niValues,Integer niItem)  throws Exception;
+
+List<ParserOutput> f_getQANormDataBycheckIdForSubTotal(Integer checkId,Integer fillingId,String poSection,String isSubSection,Integer firstRecord,Integer displayRecords,Integer colCountValue);
+
+
+NormItemLabels getNormItemLabelDetailsByTemplateIdAndNiItem(Integer templateId, Integer niItemId)throws Exception;
+
+public Integer rageProcessRequestQueue(String processName,String parameters) throws DataAccessException;
+
+void saveInvokeProcessTracker(Integer requestId, Integer filingId, String processedFlag, String processName, Long userId);
+
+void updateWqStatusByFilingId(Integer fillingId, String workQueueStatus)throws Exception;
+
+String getNormItemLabelsByNiItemAndTemplateId(Integer niItemId, Integer templateId)throws Exception;
+
+String getTemplateNameByTemplateId(Integer templateId)throws Exception;
+
+void updateWqStatusAndTemplateNameByFilingId(Integer fillingId, String workQueueStatus, String templateName)throws Exception;
+Map<String,Object> f_getFormulaCalPopUpValues(Integer templateId, Integer niItem,Integer arsIdNumber,Integer filingIdNumber)throws Exception;
+int f_getNiValuesClientDataCount(Integer filingId);
+
+List<ParserOutput> getNormalizedDataByRefPoId(NormInputParamers inputParams);
+
+}

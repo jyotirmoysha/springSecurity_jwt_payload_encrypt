@@ -1,0 +1,184 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author KP0e1301
+ *
+ */
+@Entity
+@Table(name = "SCALE_CHANGE_SIGN_PO_MAPPING")
+@NamedQueries({
+	@NamedQuery(name = "getScaleChangeSignPoMappingListbyFilingId", query = "select scaleChangeSignPoMapping from ScaleChangeSignPoMapping scaleChangeSignPoMapping where filingId = :filingId"),
+	@NamedQuery(name = "getScaleChangeSignPoMappingListbypoIdandColumnName", query = "select scaleChangeSignPoMapping from ScaleChangeSignPoMapping scaleChangeSignPoMapping where poId = :poId and poColumnName like CONCAT('%',:poColumnName)")
+})
+public class ScaleChangeSignPoMapping implements Serializable, BaseEntity{
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+
+	@Id
+	/*@GeneratedValue(generator = "sequence")
+	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_ARS_PO_MAPPING_ID") })*/
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "SCALE_CHANGE_SIGN_MAPPING_ID")
+	private Integer scaleChangeSignPoMappingId;
+	
+	
+	@Column(name = "FILING_ID")
+	private Integer filingId;
+	
+	@Column(name = "PO_ID")
+	private Integer poId;
+	
+	@Column(name = "PO_COLUMN_NAME")
+	private String poColumnName;
+	
+	@Column(name = "SCALE_CHANGE")
+	private String scaleChange;
+	
+	@Column(name = "SCALE_VALUE")
+	private String scaleVal;
+	
+	@Column(name = "SIGN_CHANGE")
+	private String signChange;
+	
+	@Column(name = "SIGN_VAL")
+	private String signVal;
+	
+	@Column(name = "CREATED_BY", updatable = false)
+	private Integer createdBy;
+	
+	@Column(name = "CREATED_DATE", updatable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date createdDate;
+	
+	@Column(name = "USER_ROLE")
+	private String userRole;
+	
+
+	public Integer getScaleChangeSignPoMappingId() {
+		return scaleChangeSignPoMappingId;
+	}
+
+	public void setScaleChangeSignPoMappingId(Integer scaleChangeSignPoMappingId) {
+		this.scaleChangeSignPoMappingId = scaleChangeSignPoMappingId;
+	}
+
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public Integer getPoId() {
+		return poId;
+	}
+
+	public void setPoId(Integer poId) {
+		this.poId = poId;
+	}
+
+	public String getPoColumnName() {
+		return poColumnName;
+	}
+
+	public void setPoColumnName(String poColumnName) {
+		this.poColumnName = poColumnName;
+	}
+
+	public String getScaleChange() {
+		return scaleChange;
+	}
+
+	public void setScaleChange(String scaleChange) {
+		this.scaleChange = scaleChange;
+	}
+
+	
+
+	public String getScaleVal() {
+		return scaleVal;
+	}
+
+	public void setScaleVal(String scaleVal) {
+		this.scaleVal = scaleVal;
+	}
+
+	public String getSignChange() {
+		return signChange;
+	}
+
+	public void setSignChange(String signChange) {
+		this.signChange = signChange;
+	}
+	
+			
+	public String getSignVal() {
+		return signVal;
+	}
+
+	public void setSignVal(String signVal) {
+		this.signVal = signVal;
+	}
+
+	
+	
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public String getUserRole() {
+		return userRole;
+	}
+
+	public void setUserRole(String userRole) {
+		this.userRole = userRole;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+	
+	
+
+}

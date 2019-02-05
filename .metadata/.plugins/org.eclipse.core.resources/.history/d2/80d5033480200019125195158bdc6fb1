@@ -1,0 +1,80 @@
+/**
+ * 
+ */
+package com.livespread.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+/**
+ * @author KP0e1301
+ *
+ */
+@Entity
+@Table(name = "COUNTRY")
+@NamedQueries({
+	@NamedQuery(name = "getCountryList", query = "select country from Country country "),
+	@NamedQuery(name = "getCountryByCountryId", query = "select country from Country country where country.countryId=:countryId "),
+	@NamedQuery(name = "getCountryByName", query = "select country from Country country where countryName is not null and Upper(countryName) =Upper(:countryName)")
+})
+public class Country implements Serializable, BaseEntity{
+	
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	/*@GeneratedValue(generator = "sequence")
+	@GenericGenerator(name = "sequence", strategy = "sequence", parameters = { @Parameter(name = "sequence", value = "SEQ_ARS_PO_MAPPING_ID") })*/
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "COUNTRY_ID")
+	private Integer countryId;
+	
+	@Column(name = "COUNTRY_NAME")
+	private String countryName;
+
+	
+	
+	public Integer getCountryId() {
+		return countryId;
+	}
+
+
+
+	public void setCountryId(Integer countryId) {
+		this.countryId = countryId;
+	}
+
+
+
+	public String getCountryName() {
+		return countryName;
+	}
+
+
+
+	public void setCountryName(String countryName) {
+		this.countryName = countryName;
+	}
+
+
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

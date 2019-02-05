@@ -1,0 +1,16 @@
+package com.livespread.util;
+
+import java.util.Map;
+
+public class GetKeyFromValueInMap {
+
+	  public static Object getKeyFromValue(Map hm, Object value) {
+          for (Object o : hm.keySet()) {
+            if (hm.get(o).equals(value)) {
+              return o;
+            }
+          }
+          return null;
+        }
+
+}

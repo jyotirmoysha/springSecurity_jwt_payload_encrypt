@@ -1,0 +1,28 @@
+package com.livespread.common;
+
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+
+import com.livespread.command.DatePeriodCommand;
+
+public class DateAndPeriodComparator implements Comparator<DatePeriodCommand> {
+	private List<Comparator<DatePeriodCommand>> listComparators;
+
+	@SuppressWarnings("unchecked")
+	public DateAndPeriodComparator(Comparator<DatePeriodCommand>... comparators) {
+		this.listComparators = Arrays.asList(comparators);
+	}
+
+	@Override
+	public int compare(DatePeriodCommand emp1, DatePeriodCommand emp2) {
+		for (Comparator<DatePeriodCommand> comparator : listComparators) {
+			int result = comparator.compare(emp1, emp2);
+			if (result != 0) {
+				return result;
+			}
+		}
+		return 0;
+
+	}
+}

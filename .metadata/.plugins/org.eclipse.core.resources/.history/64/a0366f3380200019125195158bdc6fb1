@@ -1,0 +1,123 @@
+package com.livespread.service;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.dao.DataAccessException;
+
+import com.livespread.domain.User;
+import com.livespread.domain.WorkQueue;
+
+public interface WorkQueueService {
+
+	List<WorkQueue> getworKQueueList();
+
+	String findStatusByFilingId(Integer filingId);
+
+	void updateLockCaseForUser(Integer wqId, User user);
+
+	void updateAllLockedCaseesForUser(String userId);
+
+	boolean validateIfWorkQueueIsLocked(Integer wqId);
+
+	Integer getParserIdFromWorkQueue(Integer wqId) ;
+	
+	// added By Naveed.Khan
+	WorkQueue getWorkQueueDetails(Integer wqId) ;
+	// added By Naveed.Khan
+	int updateStartedOnForMakerChecker1Checker2(Integer wqId,String makerOrCheckerFlag) ;
+	// added By Naveed.Khan
+	WorkQueue getWorkQueueDetailsUsingFilingId(Integer filingId) ;
+	// added By Naveed.Khan
+	int submitCase(Integer wqId);
+	// added By Naveed.Khan
+	boolean allowUserToAccessWorkQueue(WorkQueue workQueue,HttpSession session);
+	// added By Naveed.Khan	
+	int updateMakerCheckerStatus(Integer makerOrCheckerId,Integer filingId,String makerOrCheckerFlag);
+	
+	Map<String, Boolean> validateIfWorkQueueIsLockedByUser(WorkQueue workQueue,
+			String userLogin);
+
+	void updateLockCaseForNullUser(Integer wqId);
+
+	void updateLockCaseForNullUser1(Integer wqId);
+
+	void setLockedByNull();
+	
+	WorkQueue getCompanyId(Integer fillingId);
+
+	List<Object> getAutoComplete(Map<String, Object> paramMap, String fieldName);
+/**
+ * @param :monthyear, period	
+ */
+	int f_updateMonthYearAndPeriod(String monthYear,String period,Integer fillingId);
+	/**
+	 * This methode used for get all filing id with respective status from work_queue table based on following condtion
+	 * whose staus is
+	 * @return
+	 */
+	Map<Integer,String> f_getAllstatusList(Integer userId,Integer userGroupId);
+/**
+ * This methode used for fetch locked cased from work_queue table
+ */
+	List<WorkQueue> f_getLockedCases(Integer userGroupId,Integer user_role);
+		
+/**
+ * This method used for update work queue table based on filing id 	
+ */
+Integer f_releaseCasesByFilingId(List<Integer> filingIdList);	
+
+String findLanguageByFilingId(Integer filingId);
+
+/**
+ * This method used for update isXMLGenerate coloumn in work_queue table based on filing id 
+ */
+
+void f_updateisXMLGenerateCol(boolean flag,Integer filingId) throws DataAccessException;
+
+/**
+ * THis method used for fetch isXMLGenerate column value from work_queue table 
+*/
+ List<Object> f_getisXMLGenerateColValue(Integer filingId) throws DataAccessException;
+ 
+ boolean updateWorkque(WorkQueue workQueue);
+ 
+ /**
+  * THis method used for fetch work_queue taable data whose transaction id is not null 
+ */
+ List<WorkQueue> f_getWorkQueueByTranactionId(Integer userGroupId) throws DataAccessException;
+  
+ List<WorkQueue> f_getWorkQueueByTranactionIdAndStatus(Integer transactionId,String wqStatus,Integer userGroupId) throws DataAccessException;
+
+ List<Integer> f_getAllTransIdList(Integer userGroupId) throws DataAccessException;
+
+ List<String> isEnableFlag(String screenName, Integer userGroupId);
+
+String caseStatus(WorkQueue workQueue, User user);
+Integer f_getEntityIdByFilingId(Integer filingId);
+Integer f_getTemplateIdByFilingId(Integer filingId);
+/** This function used for fetch parser name based from filing id from work_queue table**/
+String f_getParserNameByFilingId(Integer filingId);
+Integer f_getParserIdFromWorkQueueByFilingId(Integer filingId);
+
+List<String> getTransactionsIdsList(String transactionId);
+
+int updateTransactionId(List<Integer> caseIds, Integer batchId);
+
+String getIndustryTypeIdByFilingId(Integer filingId);
+
+Integer getRageApplicationIdByRageApplicationName(String rageApplicationName) throws Exception;
+
+String getJbossCategory()throws Exception;
+public Integer f_getMaxBatchIdWorkQueue();
+
+int f_updateGoldenCaseDataByFilingIds(List<Integer> filingId);
+
+String f_getXBRLDocStatus(Integer filingId) throws DataAccessException;
+
+boolean updateWqStatusAndOcrTypeByFilingId(Integer filingId,String wqStatus, String ocrType);
+
+}
+

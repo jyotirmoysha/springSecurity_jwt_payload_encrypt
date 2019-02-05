@@ -1,0 +1,52 @@
+/**
+ * 
+ */
+package com.livespread.command;
+
+/**
+ * @author sd0e482
+ *
+ */
+public class POCordHighlightDetailsCommand 
+{
+	private String PoCordId;
+	private String coordinates;
+	private Integer uploadId;
+	/**
+	 * @return the poCordId
+	 */
+	public String getPoCordId() {
+		return PoCordId;
+	}
+	/**
+	 * @param poCordId the poCordId to set
+	 */
+	public void setPoCordId(String poCordId) {
+		PoCordId = poCordId;
+	}
+	/**
+	 * @return the coordinates
+	 */
+	public String getCoordinates() {
+		return coordinates;
+	}
+	/**
+	 * @param coordinates the coordinates to set
+	 */
+	public void setCoordinates(String coordinates) {
+		this.coordinates = coordinates;
+	}
+	/**
+	 * @return the uploadId
+	 */
+	public Integer getUploadId() {
+		return uploadId;
+	}
+	/**
+	 * @param uploadId the uploadId to set
+	 */
+	public void setUploadId(Integer uploadId) {
+		this.uploadId = uploadId;
+	}
+
+}

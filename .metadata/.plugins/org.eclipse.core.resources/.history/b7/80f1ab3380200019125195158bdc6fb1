@@ -1,0 +1,67 @@
+package com.livespread.rage.domain;
+
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "APPLICATIONS")
+@NamedQueries({
+	@NamedQuery(name = "getRageApplicationIdByRageApplicationName", query = "select app.applicationSeqId from Applications app where app.applicationName = :applicationName")
+})
+public class Applications implements BaseEntity,Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	@Column(name = "APPL_NAME")
+	private String applicationName;
+
+	@Column(name = "APPL_SEQ_ID")
+	private Integer applicationSeqId;
+
+	/**
+	 * @return the applicationName
+	 */
+	public String getApplicationName() {
+		return applicationName;
+	}
+
+	/**
+	 * @param applicationName the applicationName to set
+	 */
+	public void setApplicationName(String applicationName) {
+		this.applicationName = applicationName;
+	}
+
+	/**
+	 * @return the applicationSeqId
+	 */
+	public Integer getApplicationSeqId() {
+		return applicationSeqId;
+	}
+
+	/**
+	 * @param applicationSeqId the applicationSeqId to set
+	 */
+	public void setApplicationSeqId(Integer applicationSeqId) {
+		this.applicationSeqId = applicationSeqId;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.RAGE;
+	}
+
+}

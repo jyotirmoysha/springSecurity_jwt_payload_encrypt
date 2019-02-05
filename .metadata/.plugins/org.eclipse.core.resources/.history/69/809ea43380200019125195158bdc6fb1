@@ -1,0 +1,66 @@
+package com.livespread.security;
+
+
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ResourceBundle;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.spec.SecretKeySpec;
+
+import com.livespread.common.service.CustomContextListener;
+
+
+final class DatabaseConnectionSecureKeyImpl extends AbstractSecureKey {
+
+	/**
+	 * The algorithm name for AES-256.
+	 */
+	private static final String ALGORITHM_TYPE_AES_256 = "AES";
+
+	/**
+	 * The key size for AES-256 encryption.
+	 */
+	private static final int AES_256_KEY_SIZE = 256;
+	/**
+	 * Key for AES-256 encryption.
+	 */
+
+
+	public DatabaseConnectionSecureKeyImpl() {
+	}
+
+	//This method to create the cipher object for encrypt/decrypt funcionality.
+	protected Cipher getCipherObject(int cipherInitMode) {
+		try {
+			KeyGenerator keyGenerator = KeyGenerator.getInstance(ALGORITHM_TYPE_AES_256, new com.sun.crypto.provider.SunJCE());
+			keyGenerator.init(AES_256_KEY_SIZE);
+
+			byte[] fileByte = new byte[32];
+			ResourceBundle resource = ResourceBundle.getBundle("application");
+			String fileName = resource.getString("UNLOCK_PATH");
+			String path = DatabaseConnectionSecureKeyImpl.class.getClassLoader().getResource(fileName).getPath().toString();
+			FileInputStream fin = new FileInputStream(path);
+			fin.read(fileByte);
+			SecretKeySpec secretKeySpec = new SecretKeySpec(fileByte, ALGORITHM_TYPE_AES_256);
+			Cipher cipher = Cipher.getInstance(ALGORITHM_TYPE_AES_256, new com.sun.crypto.provider.SunJCE());
+			cipher.init(cipherInitMode, secretKeySpec);
+			fin.close();
+			return cipher;
+		} catch (javax.crypto.NoSuchPaddingException e) {
+			e.printStackTrace();
+		} catch (java.security.NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (java.security.InvalidKeyException e) {
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+}

@@ -1,0 +1,56 @@
+package com.livespread.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.livespread.rage.domain.StandardTagsDefinition;
+import com.rage.extendeddao.ExtendedGenericDao;
+import com.livespread.domain.NamedNativeQueryName;
+import com.rage.reusable.constants.ReusableConstant;
+
+@Service("standardTagsDeinitionService")
+public class StandardTagsDeinitionServiceImpl implements
+		StandardTagsDeinitionService {
+
+	@Autowired
+	private ExtendedGenericDao genericDaoImpl;
+
+	private Logger LOGGER = Logger
+			.getLogger(StandardTagsDeinitionServiceImpl.class);
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+	public List<String> f_getDistinctSection() {
+		LOGGER.info("** Starts f_getDistinctSection method");
+		List<String> sectionList = (List<String>) (Object) genericDaoImpl
+				.findByNativeNamedQuery(
+						NamedNativeQueryName.getDistinctSection,
+						StandardTagsDefinition.class);
+		LOGGER.info("** End f_getDistinctSection method");
+		return sectionList;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, value=ReusableConstant.RAGE_TX_MANAGER)
+	public List<String> f_getTagNameBySection(String section){
+		LOGGER.info("** Starts f_getTagNameBySection method");
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("section", section);
+		List<String> tagNameList = (List<String>) (Object) genericDaoImpl
+				.findByNativeNamedQuery(
+						NamedNativeQueryName.getTagNameBySection,
+						StandardTagsDefinition.class, parameters);
+		LOGGER.info("** End f_getTagNameBySection method");
+		return tagNameList;
+	}
+
+}

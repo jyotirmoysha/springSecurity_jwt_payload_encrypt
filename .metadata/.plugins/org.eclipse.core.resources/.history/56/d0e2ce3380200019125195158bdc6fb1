@@ -1,0 +1,149 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "MENU_MAPPING")
+
+@NamedQueries(value = {
+		@NamedQuery(name = "getUrlList", query = "select menuName, menuRequestURL from MenuMappingModel")
+})
+public class MenuMappingModel implements Serializable, BaseEntity {
+
+	@Id
+	@GeneratedValue
+	@Column(name = "MENU_ID")
+	private Integer menuId;
+	
+	@Column(name = "MENU_NAME")
+	private String menuName;
+	
+	@Column(name = "MENU_REQUEST_URL")
+	private String menuRequestURL;
+	
+	@Column(name = "MENU_PAGE_NAME")
+	private String MenuPageName;
+
+	public String getMenuName() {
+		return menuName;
+	}
+
+	public void setMenuName(String menuName) {
+		this.menuName = menuName;
+	}
+
+
+
+	public String getMenuRequestURL() {
+		return menuRequestURL;
+	}
+
+	public void setMenuRequestURL(String menuRequestURL) {
+		this.menuRequestURL = menuRequestURL;
+	}
+
+	public String getMenuPageName() {
+		return MenuPageName;
+	}
+
+	public void setMenuPageName(String menuPageName) {
+		MenuPageName = menuPageName;
+	}
+
+
+
+	@Column(name = "CREATED_BY", updatable = false)
+	private Integer createdBy;
+
+	@Column(name = "MODIFIED_BY")
+	private Integer modifiedBy;
+
+	@Column(name = "CREATED_DATE", updatable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date createdDate;
+
+	@Column(name = "MODIFIED_DATE")
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(style = "M-")
+	private Date modifiedDate;
+	
+	
+	
+	
+	public Integer getMenuId() {
+		return menuId;
+	}
+
+	public void setMenuId(Integer menuId) {
+		this.menuId = menuId;
+	}
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Integer getModifiedBy() {
+		return modifiedBy;
+	}
+
+	public void setModifiedBy(Integer modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public Date getModifiedDate() {
+		return modifiedDate;
+	}
+
+	public void setModifiedDate(Date modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+	@PrePersist
+	public void onCreate() {
+		this.createdDate = new java.util.Date();
+		this.createdBy = createdBy;
+	}
+
+	@PreUpdate
+	public void onUpdate() {
+		this.modifiedDate = new java.util.Date();
+		this.modifiedBy = modifiedBy;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}

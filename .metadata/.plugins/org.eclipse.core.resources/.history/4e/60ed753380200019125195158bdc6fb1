@@ -1,0 +1,164 @@
+package com.livespread.service;
+
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import com.livespread.command.ValueCommand;
+import com.livespread.domain.WorkQueue;
+import com.livespread.excel.StyleBuilder;
+import com.livespread.util.CSVWriter;
+
+@Service("normalizationViewService")
+public class NormalizationViewServiceImpl implements NormalizationViewService {
+	
+	@Override
+	public boolean f_writeNormViewCSVFile(Map<String, Map<String, List<? extends Object>>> dataValMap,Integer colCounter,String fileNameAndPath, WorkQueue workQueue) {
+		boolean flag=false;
+ 
+		if(!CollectionUtils.isEmpty(dataValMap))
+		{
+		CSVWriter csv = null;
+		PrintWriter pw = null;
+		try {
+		
+		pw = new PrintWriter( new FileWriter(fileNameAndPath));
+	    csv = new CSVWriter(pw, false, ',', System.getProperty("line.separator") );
+	    if(!dataValMap.keySet().isEmpty())
+	    {
+		 List<Object[]> rowDataList=new ArrayList<>();
+		 Object[] accountIdobjIn=new Object[colCounter];
+		 accountIdobjIn[0]="AccountID";
+		 for(int counter=1;counter<colCounter-1;counter++)
+		 {
+		 accountIdobjIn[counter]=workQueue.getCompanyId();
+		 }
+		 rowDataList.add(accountIdobjIn);
+/*		 Object[] companyNameobjIn=new Object[colCounter];
+		 companyNameobjIn[0]="Company Name";
+		 companyNameobjIn[1]=workQueue.getWqCustomerName();
+		 rowDataList.add(companyNameobjIn);*/
+		 for (String sheetName : dataValMap.keySet())  
+		 {//here we get Normalized View sheet name
+			 Map<String, List<? extends Object>> objectListMap=dataValMap.get(sheetName);
+			 List<? extends Object> objectList=null;
+			 if(!sheetName.equalsIgnoreCase("Normalized View"))
+			 {
+				Object[] sheetNameobjIn=new Object[colCounter];
+				sheetNameobjIn[0]=sheetName;
+				rowDataList.add(sheetNameobjIn);
+			 }
+			 for(String tableName:objectListMap.keySet())
+			 {
+				 //here final object list array
+				 objectList=objectListMap.get(tableName);
+				 //create row array
+				 if(!CollectionUtils.isEmpty(objectList))
+				 {
+				 for(Object object:objectList)
+				 { 
+					 
+					 Object[] objIn=new Object[colCounter];
+					 //[Statement Date, 12/31/2016, 12/31/2015, 12/31/2014]
+					 if(object instanceof Object[])
+					 {
+					  objIn = (Object[]) object;
+					  rowDataList.add(objIn);
+					}
+					 else if (object instanceof Map)
+					 {
+					   Map<String,StyleBuilder> map=(Map<String, StyleBuilder>) object;
+					
+					  objIn=map.keySet().toArray();
+					   if(objIn.length<colCounter)
+						 {
+						   objIn = Arrays.copyOf(objIn, colCounter);
+						 }
+					   rowDataList.add(objIn);
+					  }
+					 else if (object instanceof List)
+					 {
+					   List<ValueCommand> valueCommands=(LinkedList<ValueCommand>) object;
+					   if(valueCommands.size()<colCounter)
+					   {
+					    do {
+						  valueCommands.add(null);
+					   	} while (valueCommands.size()<colCounter);
+					   }
+						   if(!CollectionUtils.isEmpty(valueCommands))
+						   {
+							   objIn = new Object[valueCommands.size()];
+							   int counter = 0;
+							   
+							   for(ValueCommand command : valueCommands)
+							   {
+								   if(command!=null)
+								   {
+								   objIn[counter]=command.getValue();
+								   counter++;
+								   }
+							   }
+							  rowDataList.add(objIn);
+						   }			   
+					 }
+					//here calculate no columns in excel 
+				 }
+				 
+			 }//end objectlist empty condition
+			 }
+	   }//end sheet name for loop.
+		 
+		 if(!CollectionUtils.isEmpty(rowDataList))
+			{
+			 Map <Integer,List> csvDataMap=new HashMap<Integer,List>();
+			    for (Object[] object :   rowDataList)
+			    {
+			    	for(Integer i=0;i<object.length;i++)
+			    	{
+			    		List dataList=new ArrayList<String>();
+			    		if(csvDataMap.containsKey((i+1)))
+			    		{
+			    			dataList=csvDataMap.get((i+1));
+				    	}
+			    		if(object[i]!=null){
+			    		String celVal=object[i].toString();
+			    		dataList.add(celVal);
+			    		}
+			    		else
+			    		dataList.add(object[i]);
+			    		
+			    		csvDataMap.put((i+1),dataList);
+			    	}
+			    }
+			   
+			    	for (Integer seq : csvDataMap.keySet())
+				    {
+			        	String[] dataArray=new String[] {""};
+			    		dataArray=(String[]) csvDataMap.get(seq).toArray(new String[]{});
+			    		csv.writeln(dataArray);
+				    	
+				    }
+			    	
+				
+			}//end rowlist empty check
+		 flag=true;
+	 }
+		} catch (Exception e) {
+			e.printStackTrace();
+	    }finally {
+		    	csv.close();
+		}
+		}//
+		
+		return flag;
+	}
+
+}

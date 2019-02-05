@@ -1,0 +1,175 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+@NamedNativeQueries({
+	@NamedNativeQuery(name = "getMaxNIID", query = "SELECT MAX(NI_ID) FROM  NI_VALUES "),
+	@NamedNativeQuery(name = "deleteByNIID", query = "DELETE FROM NI_VALUES  WHERE NI_ID IN (:niId)"),
+	@NamedNativeQuery(name = "getRefPoIds", query = "select REF_PO_ID from NI_VALUES where NI_ID =:niId "),
+	@NamedNativeQuery(name = "getBalancingValue", query = "select EH_ID from NI_VALUES where NI_ID =:niId ")
+})
+@NamedQueries({
+	@NamedQuery(name = "getNiValauesRecordNIID", query = "select nIValues from NIValues nIValues where niId in (:niId) "),
+	@NamedQuery(name = "updateNIValueColumnByNIID", query = "update NIValues set niValue =:niValue, refPoId =:refPoId where niId=:niId"),
+	@NamedQuery(name = "getNiValauesRecordByFILID", query = "select nIValues from NIValues nIValues where arsId = :arsId and filingId =:fillingId and  niItem =:niItem"),
+	@NamedQuery(name = "updateNIValueRecordbyNIID", query = "update NIValues set niItem =:niItem, arsId =:arsId where niId=:niId"),
+	@NamedQuery(name = "countClientData", query = "select count(*) from NIValues where filingId=:filingId and sourceData='Client'")
+})
+@Entity
+@Table(name = "NI_VALUES")
+public class NIValues implements Serializable, BaseEntity {
+
+	private static final long serialVersionUID = 1L;
+	
+	@Column(name = "E_ID")
+	private Integer eId;
+
+	@Column(name = "ARS_ID")
+	private Integer arsId;
+
+	@Column(name = "FI_ID")
+	private Integer fiId;
+	
+	@Id
+	@Column(name = "NI_ID")
+	private Integer niId;
+
+	@Column(name = "NI_VALUE")
+	private BigDecimal niValue;
+
+	@Column(name = "NI_SUBTOTAL")
+	private String niSubTotal;
+
+	@Column(name = "FILING_ID")
+	private Integer filingId;
+
+	@Column(name = "TEMPLATE_ID")
+	private Integer templateId;
+
+	@Column(name = "NI_ITEM")
+	private Integer niItem;
+	
+	@Column(name = "REF_PO_ID")
+	private String refPoId;
+	
+	@Column(name = "EH_ID")
+	private Integer balancingValue;
+
+	@Column(name = "SOURCE_DATA")
+	private String sourceData;
+	
+	public String getSourceData() {
+		return sourceData;
+	}
+
+	public void setSourceData(String sourceData) {
+		this.sourceData = sourceData;
+	}
+
+	public Integer geteId() {
+		return eId;
+	}
+
+	public void seteId(Integer eId) {
+		this.eId = eId;
+	}
+
+	public Integer getArsId() {
+		return arsId;
+	}
+
+	public void setArsId(Integer arsId) {
+		this.arsId = arsId;
+	}
+
+	public Integer getFiId() {
+		return fiId;
+	}
+
+	public void setFiId(Integer fiId) {
+		this.fiId = fiId;
+	}
+
+	public Integer getNiId() {
+		return niId;
+	}
+
+	public void setNiId(Integer niId) {
+		this.niId = niId;
+	}
+
+	public BigDecimal getNiValue() {
+		return niValue;
+	}
+
+	public void setNiValue(BigDecimal niValue) {
+		this.niValue = niValue;
+	}
+
+	public String getNiSubTotal() {
+		return niSubTotal;
+	}
+
+	public void setNiSubTotal(String niSubTotal) {
+		this.niSubTotal = niSubTotal;
+	}
+
+	public Integer getFilingId() {
+		return filingId;
+	}
+
+	public void setFilingId(Integer filingId) {
+		this.filingId = filingId;
+	}
+
+	public Integer getTemplateId() {
+		return templateId;
+	}
+
+	public void setTemplateId(Integer templateId) {
+		this.templateId = templateId;
+	}
+
+	public Integer getNiItem() {
+		return niItem;
+	}
+
+	public void setNiItem(Integer niItem) {
+		this.niItem = niItem;
+	}
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+	public String getRefPoId() {
+		return refPoId;
+	}
+
+	public void setRefPoId(String refPoId) {
+		this.refPoId = refPoId;
+	}
+
+	public Integer getBalancingValue() {
+		return balancingValue;
+	}
+
+	public void setBalancingValue(Integer balancingValue) {
+		this.balancingValue = balancingValue;
+	}
+	
+	
+}

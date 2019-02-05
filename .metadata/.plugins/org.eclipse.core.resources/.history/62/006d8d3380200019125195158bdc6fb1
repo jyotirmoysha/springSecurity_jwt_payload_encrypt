@@ -1,0 +1,39 @@
+package com.livespread.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.dao.DataAccessException;
+
+import com.livespread.command.GoldenCaseWorkQueueCommand;
+import com.livespread.command.GoldenFtrCaseMapSrchCriteriaCommand;
+import com.livespread.domain.GoldenSetBatchTracker;
+import com.livespread.domain.GoldenSetMetadata;
+import com.livespread.domain.GoldenSetReports;
+
+public interface GoldenFeatureCaseMappingService {
+
+	List<GoldenSetMetadata> f_getGoldenCaseFeatures();
+	
+	List<Object> getFeatureCaseMappings(Integer userId) throws DataAccessException ;
+	
+	Long getFeatureCaseMappingsCount(GoldenFtrCaseMapSrchCriteriaCommand cmd) throws DataAccessException ;
+	
+	int updateWorkQueueByCaseId(Integer caseID,Integer wqId) throws DataAccessException ;
+	
+	Long getTotalRecordsOfFeatureCaseMapping(Integer userId ) throws DataAccessException;
+	
+	//List<Object> getFeatureCaseMappingsJSON(Integer userId,Integer startPageNo, Integer endPageNo) throws DataAccessException ;
+	List<Object> getFeatureCaseMappingsJSON(GoldenFtrCaseMapSrchCriteriaCommand cmd) throws DataAccessException ;
+	
+	List<String> getKeywordListWQ(String keyword,Integer userId);
+	
+	List<String> getKeywordListCN(String keyword,Integer userId);
+	Map<String,List<GoldenCaseWorkQueueCommand>> f_getFeatureFilingIdAssociation(Integer userGroupId);
+
+	List<GoldenSetBatchTracker> f_getCaseSummaryData();
+	List<GoldenSetReports> f_getFeatureDataReportByBatchIdAndCaseId(Integer batchId,Integer caseId);
+	GoldenSetBatchTracker f_goldenSetTrackeryBatchId(Integer batchId);
+
+	
+}

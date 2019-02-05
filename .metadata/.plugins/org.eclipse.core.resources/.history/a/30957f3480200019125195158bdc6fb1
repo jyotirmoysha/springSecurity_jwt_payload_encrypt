@@ -1,0 +1,354 @@
+/**
+ * 
+ */
+package com.livespread.command;
+
+/**
+ * @author KP0e1301
+ *
+ */
+public class CompanyInformationCommand {
+	private Integer companyInformationId;
+	private Integer eID;
+	private String companyId;
+	private Integer countryId;
+	private String fyeMonth ="";
+	private Integer fyeDay;
+	private String isUltimateParent ="Y";
+	private Integer ultimateParentId;
+	private String isLeadBank = "Y";
+	private Integer leadBankId;
+	private Integer accountingStandardId;
+	private Integer sectorId;
+	private String countryName;
+	private String ultimateParentName;
+	private String leadBankName;
+	private String accountingStandardName;
+	private String sectorName;
+	private String industryName;
+	private String fyeYear;
+	private String isIslamicBankingCustoms;
+	private String publicationDate;
+	private String sourceDate;
+	private String periodEndDate;
+	private String reportingFrequency;
+	private String periodCycleDate;
+	private String domicile;
+	private String reportingCurrency;
+	private String consolidated;
+	private String isSingleEntity;
+	private String ownerShipType;
+	private String versionName;
+	private String companyName;
+	private String industryId;
+	private Integer dealerId;
+	private Integer sicId;
+	private Integer naicsId;
+	private String sicDesrcipion;
+	private String naicsDesrcipion;
+
+	public Integer getSicId() {
+		return sicId;
+	}
+
+	public void setSicId(Integer sicId) {
+		this.sicId = sicId;
+	}
+
+	public Integer getNaicsId() {
+		return naicsId;
+	}
+
+	public void setNaicsId(Integer naicsId) {
+		this.naicsId = naicsId;
+	}
+
+	public String getSicDesrcipion() {
+		return sicDesrcipion;
+	}
+
+	public void setSicDesrcipion(String sicDesrcipion) {
+		this.sicDesrcipion = sicDesrcipion;
+	}
+
+	public String getNaicsDesrcipion() {
+		return naicsDesrcipion;
+	}
+
+	public void setNaicsDesrcipion(String naicsDesrcipion) {
+		this.naicsDesrcipion = naicsDesrcipion;
+	}
+
+	public Integer getDealerId() {
+		return dealerId;
+	}
+
+	public void setDealerId(Integer dealerId) {
+		this.dealerId = dealerId;
+	}
+
+	public String getIndustryId() {
+		return industryId;
+	}
+
+	public void setIndustryId(String industryId) {
+		this.industryId = industryId;
+	}
+
+	public Integer getCompanyInformationId() {
+		return companyInformationId;
+	}
+
+	public void setCompanyInformationId(Integer companyInformationId) {
+		this.companyInformationId = companyInformationId;
+	}
+
+	public Integer geteID() {
+		return eID;
+	}
+
+	public void seteID(Integer eID) {
+		this.eID = eID;
+	}
+
+	public String getCompanyId() {
+		return companyId;
+	}
+
+	public void setCompanyId(String companyId) {
+		this.companyId = companyId;
+	}
+
+	public Integer getCountryId() {
+		return countryId;
+	}
+
+	public void setCountryId(Integer countryId) {
+		this.countryId = countryId;
+	}
+
+	public String getFyeMonth() {
+		return fyeMonth;
+	}
+
+	public void setFyeMonth(String fyeMonth) {
+		this.fyeMonth = fyeMonth;
+	}
+
+	public Integer getFyeDay() {
+		return fyeDay;
+	}
+
+	public void setFyeDay(Integer fyeDay) {
+		this.fyeDay = fyeDay;
+	}
+
+	public String getIsUltimateParent() {
+		return isUltimateParent;
+	}
+
+	public void setIsUltimateParent(String isUltimateParent) {
+		this.isUltimateParent = isUltimateParent;
+	}
+
+	public Integer getUltimateParentId() {
+		return ultimateParentId;
+	}
+
+	public void setUltimateParentId(Integer ultimateParentId) {
+		this.ultimateParentId = ultimateParentId;
+	}
+
+	public String getIsLeadBank() {
+		return isLeadBank;
+	}
+
+	public void setIsLeadBank(String isLeadBank) {
+		this.isLeadBank = isLeadBank;
+	}
+
+	public Integer getAccountingStandardId() {
+		return accountingStandardId;
+	}
+
+	public void setAccountingStandardId(Integer accountingStandardId) {
+		this.accountingStandardId = accountingStandardId;
+	}
+
+	public Integer getSectorId() {
+		return sectorId;
+	}
+
+	public void setSectorId(Integer sectorId) {
+		this.sectorId = sectorId;
+	}
+
+	public String getCountryName() {
+		return countryName;
+	}
+
+	public void setCountryName(String countryName) {
+		this.countryName = countryName;
+	}
+
+	public String getUltimateParentName() {
+		return ultimateParentName;
+	}
+
+	public void setUltimateParentName(String ultimateParentName) {
+		this.ultimateParentName = ultimateParentName;
+	}
+
+	public String getAccountingStandardName() {
+		return accountingStandardName;
+	}
+
+	public void setAccountingStandardName(String accountingStandardName) {
+		this.accountingStandardName = accountingStandardName;
+	}
+
+	public String getSectorName() {
+		return sectorName;
+	}
+
+	public void setSectorName(String sectorName) {
+		this.sectorName = sectorName;
+	}
+
+	public Integer getLeadBankId() {
+		return leadBankId;
+	}
+
+	public void setLeadBankId(Integer leadBankId) {
+		this.leadBankId = leadBankId;
+	}
+
+	public String getLeadBankName() {
+		return leadBankName;
+	}
+
+	public void setLeadBankName(String leadBankName) {
+		this.leadBankName = leadBankName;
+	}
+
+	public String getIndustryName() {
+		return industryName;
+	}
+
+	public void setIndustryName(String industryName) {
+		this.industryName = industryName;
+	}
+
+	public String getFyeYear() {
+		return fyeYear;
+	}
+
+	public void setFyeYear(String fyeYear) {
+		this.fyeYear = fyeYear;
+	}
+
+	public String getIsIslamicBankingCustoms() {
+		return isIslamicBankingCustoms;
+	}
+
+	public void setIsIslamicBankingCustoms(String isIslamicBankingCustoms) {
+		this.isIslamicBankingCustoms = isIslamicBankingCustoms;
+	}
+
+	public String getPublicationDate() {
+		return publicationDate;
+	}
+
+	public void setPublicationDate(String publicationDate) {
+		this.publicationDate = publicationDate;
+	}
+
+	public String getSourceDate() {
+		return sourceDate;
+	}
+
+	public void setSourceDate(String sourceDate) {
+		this.sourceDate = sourceDate;
+	}
+
+	public String getPeriodEndDate() {
+		return periodEndDate;
+	}
+
+	public void setPeriodEndDate(String periodEndDate) {
+		this.periodEndDate = periodEndDate;
+	}
+
+	public String getReportingFrequency() {
+		return reportingFrequency;
+	}
+
+	public void setReportingFrequency(String reportingFrequency) {
+		this.reportingFrequency = reportingFrequency;
+	}
+
+	public String getPeriodCycleDate() {
+		return periodCycleDate;
+	}
+
+	public void setPeriodCycleDate(String periodCycleDate) {
+		this.periodCycleDate = periodCycleDate;
+	}
+
+	public String getDomicile() {
+		return domicile;
+	}
+
+	public void setDomicile(String domicile) {
+		this.domicile = domicile;
+	}
+
+	public String getReportingCurrency() {
+		return reportingCurrency;
+	}
+
+	public void setReportingCurrency(String reportingCurrency) {
+		this.reportingCurrency = reportingCurrency;
+	}
+
+	public String getConsolidated() {
+		return consolidated;
+	}
+
+	public void setConsolidated(String consolidated) {
+		this.consolidated = consolidated;
+	}
+
+	public String getIsSingleEntity() {
+		return isSingleEntity;
+	}
+
+	public void setIsSingleEntity(String isSingleEntity) {
+		this.isSingleEntity = isSingleEntity;
+	}
+
+	public String getOwnerShipType() {
+		return ownerShipType;
+	}
+
+	public void setOwnerShipType(String ownerShipType) {
+		this.ownerShipType = ownerShipType;
+	}
+
+	public String getVersionName() {
+		return versionName;
+	}
+
+	public void setVersionName(String versionName) {
+		this.versionName = versionName;
+	}
+
+	public String getCompanyName() {
+		return companyName;
+	}
+
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
+	}
+	
+}

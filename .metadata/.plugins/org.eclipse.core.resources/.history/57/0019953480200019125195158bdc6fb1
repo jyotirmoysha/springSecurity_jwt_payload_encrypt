@@ -1,0 +1,90 @@
+package com.livespread.command;
+
+public class ChangePasswordCommand {
+
+	private Long userId;
+	private String userName;
+	private String oldPassword;
+	private String newPassword;
+	private String confirmPassword;
+	private String changePassword;
+	private String activationId;
+
+	// This variable is declare for to find out forgot password link
+	private String keynode3;
+
+	public String getKeynode3() {
+		return keynode3;
+	}
+
+	public void setKeynode3(String keynode3) {
+		this.keynode3 = keynode3;
+	}
+
+	private String emailId;
+
+	public String getEmailId() {
+		return emailId;
+	}
+
+	public void setEmailId(String emailId) {
+		this.emailId = emailId;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+
+	public String getChangePassword() {
+		return changePassword;
+	}
+
+	public void setChangePassword(String changePassword) {
+		this.changePassword = changePassword;
+	}
+
+	public String getOldPassword() {
+		return oldPassword;
+	}
+
+	public void setOldPassword(String oldPassword) {
+		this.oldPassword = oldPassword;
+	}
+
+	public String getNewPassword() {
+		return newPassword;
+	}
+
+	public void setNewPassword(String newPassword) {
+		this.newPassword = newPassword;
+	}
+
+	public String getConfirmPassword() {
+		return confirmPassword;
+	}
+
+	public void setConfirmPassword(String confirmPassword) {
+		this.confirmPassword = confirmPassword;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public String getActivationId() {
+		return activationId;
+	}
+
+	public void setActivationId(String activationId) {
+		this.activationId = activationId;
+	}
+
+}

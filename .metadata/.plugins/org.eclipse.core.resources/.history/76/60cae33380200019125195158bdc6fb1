@@ -1,0 +1,296 @@
+package com.livespread.domain;
+
+import java.io.Serializable;
+import java.sql.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.Table;
+
+import com.rage.reusable.dao.BaseEntity;
+import com.rage.reusable.dao.EntityType;
+
+@Entity
+@Table(name = "MAPPING_STATS")
+@NamedNativeQueries({
+	@NamedNativeQuery(name = "getMappingStatsDataByFilingId", query = "select MS_ID,FILING_ID,CREATED_DATE,TOTAL_MAPPING,TOTAL_EXACT,TOTAL_SUGGESTIVE,EXACT_RETAINED,EXACT_CHANGE,"
+			+ "SUGGESTIVE_EXACT,SUGGESTIVE_CHANGE,NEWLY_ADDED,NO_MAPPING,ADDITIONAL_MAPPING,MAPPING_LEVEL,TOTAL_MAP_MODIFICATION,VALUE_MODIFICATION,SCALE_SIGN_MODIFICATION,"
+			+ "SCALE_MODIFICATION,SIGN_MODIFICATION,ADD_MAP_WITH_RULE,ADD_MAP_WITHOUT_RULE,DUPLICATE_ADDED,DELETED_RECORD,CLEARED_MAPPING from MAPPING_STATS where FILING_ID=:filingId order by MS_ID"),
+	@NamedNativeQuery(name = "getMappingStatsDataByFilingIdStartDateEndDate", query = "select MS_ID,FILING_ID,CREATED_DATE,TOTAL_MAPPING,TOTAL_EXACT,TOTAL_SUGGESTIVE,EXACT_RETAINED,EXACT_CHANGE,"
+			+ "SUGGESTIVE_EXACT,SUGGESTIVE_CHANGE,NEWLY_ADDED,NO_MAPPING,ADDITIONAL_MAPPING,MAPPING_LEVEL,TOTAL_MAP_MODIFICATION,VALUE_MODIFICATION,SCALE_SIGN_MODIFICATION,"
+			+ "SCALE_MODIFICATION,SIGN_MODIFICATION,ADD_MAP_WITH_RULE,ADD_MAP_WITHOUT_RULE,DUPLICATE_ADDED,DELETED_RECORD,CLEARED_MAPPING from MAPPING_STATS"
+			+ " where FILING_ID=:filingId and CREATED_DATE BETWEEN :startDate AND :endDate order by MS_ID"),
+	@NamedNativeQuery(name = "getMappingStatsDataByStartDateEndDate", query = "select MS_ID,FILING_ID,CREATED_DATE,TOTAL_MAPPING,TOTAL_EXACT,TOTAL_SUGGESTIVE,EXACT_RETAINED,EXACT_CHANGE,"
+			+ "SUGGESTIVE_EXACT,SUGGESTIVE_CHANGE,NEWLY_ADDED,NO_MAPPING,ADDITIONAL_MAPPING,MAPPING_LEVEL,TOTAL_MAP_MODIFICATION,VALUE_MODIFICATION,SCALE_SIGN_MODIFICATION,"
+			+ "SCALE_MODIFICATION,SIGN_MODIFICATION,ADD_MAP_WITH_RULE,ADD_MAP_WITHOUT_RULE,DUPLICATE_ADDED,DELETED_RECORD,CLEARED_MAPPING from MAPPING_STATS"
+			+ " where CREATED_DATE BETWEEN :startDate AND :endDate order by MS_ID")
+
+
+ })
+
+
+public class MappingStatsModel implements Serializable, BaseEntity{
+	
+	private static final long serialVersionUID = 1;
+	@Id
+	@Column(name = "MS_ID")
+	private Integer ms_id ;
+	@Column(name = "FILING_ID")
+	private Integer FILING_ID ;
+	@Column(name = "CREATED_DATE")
+	private Date created_date;
+	@Column(name = "TOTAL_MAPPING")
+	private Integer totalMapping ;
+	@Column(name = "TOTAL_EXACT")
+	private Integer total_exact ;
+	@Column(name = "TOTAL_SUGGESTIVE")
+	private Integer TOTAL_SUGGESTIVE ;
+	@Column(name = "EXACT_RETAINED")
+	private Integer EXACT_RETAINED ;
+	@Column(name = "EXACT_CHANGE")
+	private Integer EXACT_CHANGE ;
+	@Column(name = "SUGGESTIVE_EXACT")
+	private Integer SUGGESTIVE_EXACT ;
+	@Column(name = "SUGGESTIVE_CHANGE")
+	private Integer SUGGESTIVE_CHANGE ;
+	@Column(name = "NEWLY_ADDED")
+	private Integer NEWLY_ADDED ;
+	@Column(name = "NO_MAPPING")
+	private Integer NO_MAPPING ;
+	@Column(name = "ADDITIONAL_MAPPING")
+	private Integer ADDITIONAL_MAPPING ;
+	@Column(name = "MAPPING_LEVEL")
+	private String MAPPING_LEVEL ;
+	@Column(name = "TOTAL_MAP_MODIFICATION")
+	private Integer TOTAL_MAP_MODIFICATION ;
+	@Column(name = "VALUE_MODIFICATION")
+	private Integer VALUE_MODIFICATION ;
+	@Column(name = "SCALE_SIGN_MODIFICATION")
+	private Integer SCALE_SIGN_MODIFICATION ;
+	@Column(name = "SCALE_MODIFICATION")
+	private Integer SCALE_MODIFICATION ;
+	@Column(name = "SIGN_MODIFICATION")
+	private Integer SIGN_MODIFICATION ;
+	@Column(name = "ADD_MAP_WITH_RULE")
+	private Integer ADD_MAP_WITH_RULE ;
+	@Column(name = "ADD_MAP_WITHOUT_RULE")
+	private Integer ADD_MAP_WITHOUT_RULE ;
+	@Column(name = "DUPLICATE_ADDED")
+	private Integer DUPLICATE_ADDED ;
+	@Column(name = "DELETED_RECORD")
+	private Integer DELETED_RECORD ;
+	@Column(name = "CLEARED_MAPPING")
+	private Integer CLEARED_MAPPING ;
+	public Integer getMs_id() {
+		return ms_id;
+	}
+	public void setMs_id(Integer ms_id) {
+		this.ms_id = ms_id;
+	}
+
+	public Integer getFILING_ID() {
+		return FILING_ID;
+	}
+
+	public void setFILING_ID(Integer fILING_ID) {
+		FILING_ID = fILING_ID;
+	}
+
+	public Date getCreated_date() {
+		return created_date;
+	}
+
+	public void setCreated_date(Date created_date) {
+		this.created_date = created_date;
+	}
+
+	public Integer getTotalMapping() {
+		return totalMapping;
+	}
+
+	public void setTotalMapping(Integer totalMapping) {
+		this.totalMapping = totalMapping;
+	}
+
+	public Integer getTotal_exact() {
+		return total_exact;
+	}
+
+	public void setTotal_exact(Integer total_exact) {
+		this.total_exact = total_exact;
+	}
+
+	public Integer getTOTAL_SUGGESTIVE() {
+		return TOTAL_SUGGESTIVE;
+	}
+
+	public void setTOTAL_SUGGESTIVE(Integer tOTAL_SUGGESTIVE) {
+		TOTAL_SUGGESTIVE = tOTAL_SUGGESTIVE;
+	}
+
+	public Integer getEXACT_RETAINED() {
+		return EXACT_RETAINED;
+	}
+
+	public void setEXACT_RETAINED(Integer eXACT_RETAINED) {
+		EXACT_RETAINED = eXACT_RETAINED;
+	}
+
+	public Integer getEXACT_CHANGE() {
+		return EXACT_CHANGE;
+	}
+
+	public void setEXACT_CHANGE(Integer eXACT_CHANGE) {
+		EXACT_CHANGE = eXACT_CHANGE;
+	}
+
+	public Integer getSUGGESTIVE_EXACT() {
+		return SUGGESTIVE_EXACT;
+	}
+
+	public void setSUGGESTIVE_EXACT(Integer sUGGESTIVE_EXACT) {
+		SUGGESTIVE_EXACT = sUGGESTIVE_EXACT;
+	}
+
+	public Integer getSUGGESTIVE_CHANGE() {
+		return SUGGESTIVE_CHANGE;
+	}
+	public void setSUGGESTIVE_CHANGE(Integer sUGGESTIVE_CHANGE) {
+		SUGGESTIVE_CHANGE = sUGGESTIVE_CHANGE;
+	}
+	public Integer getNEWLY_ADDED() {
+		return NEWLY_ADDED;
+	}
+	public void setNEWLY_ADDED(Integer nEWLY_ADDED) {
+		NEWLY_ADDED = nEWLY_ADDED;
+	}
+	public Integer getNO_MAPPING() {
+		return NO_MAPPING;
+	}
+	public void setNO_MAPPING(Integer nO_MAPPING) {
+		NO_MAPPING = nO_MAPPING;
+	}
+	public Integer getADDITIONAL_MAPPING() {
+		return ADDITIONAL_MAPPING;
+	}
+	public void setADDITIONAL_MAPPING(Integer aDDITIONAL_MAPPING) {
+		ADDITIONAL_MAPPING = aDDITIONAL_MAPPING;
+	}
+	public String getMAPPING_LEVEL() {
+		return MAPPING_LEVEL;
+	}
+	public void setMAPPING_LEVEL(String mAPPING_LEVEL) {
+		MAPPING_LEVEL = mAPPING_LEVEL;
+	}
+
+
+	public Integer getTOTAL_MAP_MODIFICATION() {
+		return TOTAL_MAP_MODIFICATION;
+	}
+
+
+	public void setTOTAL_MAP_MODIFICATION(Integer tOTAL_MAP_MODIFICATION) {
+		TOTAL_MAP_MODIFICATION = tOTAL_MAP_MODIFICATION;
+	}
+
+
+	public Integer getVALUE_MODIFICATION() {
+		return VALUE_MODIFICATION;
+	}
+
+
+	public void setVALUE_MODIFICATION(Integer vALUE_MODIFICATION) {
+		VALUE_MODIFICATION = vALUE_MODIFICATION;
+	}
+
+
+	public Integer getSCALE_SIGN_MODIFICATION() {
+		return SCALE_SIGN_MODIFICATION;
+	}
+
+
+	public void setSCALE_SIGN_MODIFICATION(Integer sCALE_SIGN_MODIFICATION) {
+		SCALE_SIGN_MODIFICATION = sCALE_SIGN_MODIFICATION;
+	}
+
+
+	public Integer getSCALE_MODIFICATION() {
+		return SCALE_MODIFICATION;
+	}
+
+
+	public void setSCALE_MODIFICATION(Integer sCALE_MODIFICATION) {
+		SCALE_MODIFICATION = sCALE_MODIFICATION;
+	}
+
+
+	public Integer getSIGN_MODIFICATION() {
+		return SIGN_MODIFICATION;
+	}
+
+
+	public void setSIGN_MODIFICATION(Integer sIGN_MODIFICATION) {
+		SIGN_MODIFICATION = sIGN_MODIFICATION;
+	}
+
+
+	public Integer getADD_MAP_WITH_RULE() {
+		return ADD_MAP_WITH_RULE;
+	}
+
+
+	public void setADD_MAP_WITH_RULE(Integer aDD_MAP_WITH_RULE) {
+		ADD_MAP_WITH_RULE = aDD_MAP_WITH_RULE;
+	}
+
+
+	public Integer getADD_MAP_WITHOUT_RULE() {
+		return ADD_MAP_WITHOUT_RULE;
+	}
+
+
+	public void setADD_MAP_WITHOUT_RULE(Integer aDD_MAP_WITHOUT_RULE) {
+		ADD_MAP_WITHOUT_RULE = aDD_MAP_WITHOUT_RULE;
+	}
+
+
+	public Integer getDUPLICATE_ADDED() {
+		return DUPLICATE_ADDED;
+	}
+
+
+	public void setDUPLICATE_ADDED(Integer dUPLICATE_ADDED) {
+		DUPLICATE_ADDED = dUPLICATE_ADDED;
+	}
+
+
+	public Integer getDELETED_RECORD() {
+		return DELETED_RECORD;
+	}
+
+
+	public void setDELETED_RECORD(Integer dELETED_RECORD) {
+		DELETED_RECORD = dELETED_RECORD;
+	}
+
+
+	public Integer getCLEARED_MAPPING() {
+		return CLEARED_MAPPING;
+	}
+
+
+	public void setCLEARED_MAPPING(Integer cLEARED_MAPPING) {
+		CLEARED_MAPPING = cLEARED_MAPPING;
+	}
+
+
+	@Override
+	public EntityType getEntityType() {
+		return EntityType.APPLICATION;
+	}
+
+}
+	

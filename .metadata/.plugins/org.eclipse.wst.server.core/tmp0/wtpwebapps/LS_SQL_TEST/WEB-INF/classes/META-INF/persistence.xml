@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="1.0"
+	xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd">
+
+	<persistence-unit name="uicMetaDataPunit">
+		<class>com.rage.reusable.domains.ConfigurationMaster</class>
+		<class>com.rage.reusable.domains.TableDetails</class>
+		<class>com.rage.reusable.domains.TableElementDetails</class>
+		<class>com.rage.reusable.domains.TableCondPresentation</class>
+		<class>com.rage.reusable.domains.I18nMessages</class>
+		<class>com.rage.reusable.domains.TableQueryDetails</class>
+		<class>com.rage.reusable.domains.UICGraphAttributes</class>
+		<class>com.rage.reusable.domains.UICGraphComponent</class>
+		<class>com.rage.reusable.domains.FormAttributes</class>
+		<class>com.rage.reusable.domains.TableTranspose</class>
+		<class>com.rage.reusable.domains.TableTransposeGroup</class>
+		<class>com.rage.reusable.domains.UICScreen</class>
+		<class>com.rage.reusable.domains.UICScreenLayout</class>
+		<class>com.rage.reusable.domains.TabComponent</class>
+		<class>com.rage.reusable.domains.TabAttribute</class>
+		<class>com.rage.reusable.domains.ExcelComponent</class>
+		<class>com.rage.reusable.domains.ExcelAttribute</class>
+		<class>com.rage.reusable.domains.ScreenInfoReq</class>
+		<class>com.rage.reusable.domains.UICComponentDetails</class>
+		<class>com.rage.reusable.domains.UICSearchComponent</class>
+		<class>com.rage.reusable.domains.UICSearchAttribute</class>
+		<class>com.rage.reusable.domains.UICSearchMapping</class>
+		<class>com.rage.reusable.domains.RageSecurityConfigMetaData</class>
+		<class>com.rage.reusable.domains.UICEvents</class>
+		<class>com.rage.reusable.domains.UICActions</class>
+		<class>com.rage.reusable.domains.UICButtons</class>
+	</persistence-unit>
+	
+	<persistence-unit name="uicAppPunit">	
+		<class>com.livespread.domain.AliasBusinessEntity</class>
+		<class>com.livespread.domain.ApplicationFeatures</class>
+		<class>com.livespread.domain.AsRepStatement</class>
+		<class>com.livespread.domain.AutoCaseData</class>
+		<class>com.livespread.domain.BusinessEntity</class>
+		<class>com.livespread.domain.CustomerDetails</class>
+		<class>com.livespread.domain.DocumentModel</class>
+		<class>com.livespread.domain.FileUploadModel</class>
+		<class>com.livespread.domain.POCordHighlightDetails</class>
+		<class>com.livespread.domain.Filings</class>
+		<class>com.livespread.domain.FinancialItems</class>
+		<class>com.livespread.domain.IndustryTypeModel</class>
+		<class>com.livespread.domain.NIBankValues</class>
+		<class>com.livespread.domain.NormItemLabels</class>
+		<class>com.livespread.domain.NormQaChecksAggregates</class>
+		<class>com.livespread.domain.NormQaChecksMeta</class>
+		<class>com.livespread.domain.ParserMaster</class>
+		<class>com.livespread.domain.ParserOutput</class>
+		<class>com.livespread.domain.ParserOutputAudit</class>
+		<class>com.livespread.domain.POAnchors</class>
+		<class>com.livespread.domain.QAMessageChecklist</class>
+		<class>com.livespread.domain.StatusMaster</class>
+		<class>com.livespread.domain.SubPortfolioModel</class>
+		<class>com.livespread.domain.SubSection_Master</class>
+		<class>com.livespread.domain.User</class>
+		<class>com.livespread.domain.UserActivationDetails</class>
+		<class>com.livespread.domain.UserCustomFeatureMapping</class>
+		<class>com.livespread.domain.UserFeatureMapping</class>
+		<class>com.livespread.domain.UserGroupAccess</class>
+		<class>com.livespread.domain.UserGroupParserMapping</class>
+		<class>com.livespread.domain.UserRole</class>
+		<class>com.livespread.domain.UsersGroup</class>
+		<class>com.livespread.domain.WorkQueue</class>
+		<class>com.livespread.domain.SectionMappingModel</class>
+		<class>com.livespread.domain.LanguageMappingMetadata</class>
+		<class>com.livespread.domain.LanguageMaster</class>
+		<class>com.livespread.domain.UserAuditModel</class>
+		<class>com.livespread.domain.MenuMappingModel</class>
+		<class>com.livespread.domain.ParserOutputAuditTrail</class>
+		<class>com.livespread.domain.AuditTrailStatementSummary</class>
+		<class>com.livespread.domain.AuditTrailRolesSummary</class>
+		<class>com.livespread.domain.ProcessingReportTracker</class>
+		<class>com.livespread.domain.ProcessLogTracker</class>
+		
+	 </persistence-unit>
+
+	<persistence-unit name="uicRagePunit">
+      <class>com.livespread.rage.domain.ExtractionMetadata</class>
+	  <class>com.livespread.rage.domain.ExtractorRunProperties</class>
+	  <class>com.livespread.rage.domain.ExtractorTableidRouteByCik</class>
+	  <class>com.livespread.rage.domain.PdfExtractionMetadata</class>
+	  <class>com.livespread.rage.domain.ProcessesModel</class>
+	  <class>com.livespread.rage.domain.RequestQueue</class>
+	  <class>com.livespread.rage.domain.StandardTagsDefinition</class>
+	  <class>com.livespread.domain.ReprocessAudit</class>
+	</persistence-unit>
+
+</persistence>
+  

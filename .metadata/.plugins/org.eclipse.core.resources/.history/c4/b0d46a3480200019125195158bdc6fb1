@@ -1,0 +1,17 @@
+package com.livespread.common;
+
+import javax.servlet.http.HttpSession;
+
+public class PurgedSessionVariable {
+
+	public static void removeVariableForNormalization(HttpSession session) {
+		session.removeAttribute("NIItemHeaderList");
+		session.removeAttribute("NIItemMap");
+		session.removeAttribute("NIItemValueMap");
+		session.removeAttribute("NIDepositItemValueMap");
+		session.removeAttribute("Session_HeaderMap");
+		session.removeAttribute("Session_NormalzedLabelsDetailsList");
+		session.removeAttribute("Session_StatusName");
+	}
+
+}

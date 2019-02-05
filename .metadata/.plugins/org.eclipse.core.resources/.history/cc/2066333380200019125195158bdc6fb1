@@ -1,0 +1,27 @@
+package com.livespread.util;
+
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class GetMaxIndexListFromList {
+	
+	public static int getMaxValue(ArrayList<Integer> numArrayList) {
+	    int maxValue = Collections.max(numArrayList);
+	    return maxValue;
+	}
+	
+	
+	public static ArrayList<Integer> maxIndices(ArrayList<Integer> list) {
+		ArrayList<Integer> indices = new ArrayList<Integer>();
+	    int max =  getMaxValue(list);
+	    for (int i = 0; i < list.size(); i++) {
+	       if(list.get(i) == max) {
+	           indices.add(i);
+	        }
+	     }
+
+	     return indices;
+	}
+	
+
+}

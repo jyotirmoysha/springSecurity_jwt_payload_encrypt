@@ -1,0 +1,11 @@
+package com.livespread.service;
+
+import java.util.Map;
+
+import com.livespread.domain.NIValues;
+
+public interface ClickBackService {
+	Map<String, String> getSectionMap() throws Exception;
+	NIValues getNiValuesByNiId(Integer niId) throws Exception;
+
+}
